@@ -1,0 +1,81 @@
+# requirements.txt สำหรับ Hugging Face Space (Docker, CPU)
+#
+# คัดจาก requirements_lock.txt ของ venv ที่พิสูจน์แล้วว่ารัน 172 เทิร์นผ่าน
+# โดยไล่ import จริงจากไฟล์โค้ดทุกไฟล์ ไม่ได้เดาจากชื่อแพ็กเกจ
+# ของที่ lock มี 127 ตัว แต่ส่วนใหญ่เป็นเครื่องมือสกัดข้อมูลจาก PDF และกราฟ
+# ซึ่งใช้ตอนสร้างฐานข้อมูล ไม่ได้ใช้ตอนตอบคำถาม
+#
+# วิธีอ่าน: ปักหมุดเฉพาะตัวที่โค้ดเรียกตรง ๆ กับตัวที่เคยมีปัญหาเรื่องเวอร์ชัน
+# ที่เหลือปล่อยให้ pip แก้เอง ถ้าปักหมุดทั้ง 127 ตัวจะมีโอกาสชนกันเองสูง
+
+# ── torch ต้องมาจาก index ของ PyTorch ไม่ใช่ PyPI ──
+# ทดลองถอดสองบรรทัดนี้ออกแล้วให้ pip แก้เอง ผลคือมันลาก nvidia-* กับ cuda-toolkit
+# มาสิบห้าแพ็กเกจ รวมหลาย GB ซึ่ง Space CPU ใช้ไม่ได้และ build ไม่ผ่านโควตาพื้นที่
+# ป้ายกำกับ +cpu มีอยู่เฉพาะใน index ด้านล่าง pip จึงไปหยิบจากที่นั่นแน่นอน
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.5.1+cpu
+torchvision==0.20.1+cpu
+
+# ── โมเดลข้อความและรูป ──
+# transformers ต้องเป็น 4.44.2 เท่านั้น
+#   ตั้งแต่ 4.57 ขึ้นไป Jina v3 พังที่ hasattr(torch, torch_dtype)
+#   เพราะ chatbot_v5.py ส่ง torch_dtype= เข้าไป (check_app.py เตือนข้อนี้ไว้)
+#   เจอมาแล้วจริงตอน 4 ต.ค. บนเครื่องที่ใช้ python ผิดตัว
+transformers==4.44.2
+tokenizers==0.19.1
+safetensors==0.8.0
+accelerate==1.14.0
+peft==0.18.1
+huggingface_hub==0.36.2
+einops==0.8.2
+sentencepiece==0.2.2
+
+# ── ค้นข้อมูล ──
+qdrant-client==1.17.0
+numpy==2.2.6
+networkx==3.4.2
+
+# ── LLM ──
+google-generativeai==0.8.6
+protobuf==5.29.6
+
+# ── เว็บ ──
+fastapi==0.141.1
+starlette==0.52.1
+uvicorn==0.52.4
+python-multipart==0.0.32
+python-dotenv==1.2.1
+
+# ── pillow 11 ไม่ใช่ 12 — ต่างจาก requirements_lock.txt โดยตั้งใจ ──
+# เครื่องคุณมี pillow 12.3.0 คู่กับ gradio 5.49.1 ซึ่งจริง ๆ ขัดกัน
+# gradio 5.49.1 ประกาศว่าต้องการ pillow<12.0 (gradio 5 ทุกรุ่นเป็นแบบนี้)
+# เครื่องคุณอยู่ในสภาพนั้นได้เพราะติดตั้งคนละเวลา แต่ pip ติดตั้งใหม่จากศูนย์จะปฏิเสธ
+# ทดลอง pip install --dry-run แล้วได้ ResolutionImpossible จริง
+# จึงปัก 11.3.0 ซึ่งเป็นตัวที่ pip เลือกเองเมื่อปล่อยให้แก้ — ปักไว้เพื่อให้ได้ตัวเดิมทุกครั้ง
+#
+# ⚠️ ต้องทดสอบเส้นทางรูปหนึ่งครั้งหลัง Space ขึ้น — ส่งรูปโซ่เข้าไปแล้วดูว่าตอบได้
+#    โค้ดใช้แค่ Image.open convert resize thumbnail ซึ่งไม่เปลี่ยนระหว่าง 11 กับ 12
+#    แต่นี่เป็นเวอร์ชันที่ไม่เคยรันกับ 172 เทิร์น จึงต้องเห็นกับตาก่อน ไม่ใช่เชื่อเอา
+pillow==11.3.0
+
+# ── chatbot_v5.py import gradio ตั้งแต่บรรทัด 35 ──
+# ตัว Space ใช้ FastAPI ไม่ได้ใช้หน้า Gradio แต่ถ้าไม่ลง import จะล้มตั้งแต่เริ่ม
+# เอาออกได้ถ้าแก้ chatbot_v5.py ให้เลิก import — แต่นั่นต้องรันเทสต์ใหม่ทั้งชุด
+gradio==5.49.1
+
+# ── ที่ตัดออกและเหตุผล ──
+# pywin32          ของ Windows ล้วน ลง Linux ไม่ได้ ติดไปจะ build พัง
+# colorama         สีใน console ของ Windows ไม่ต้องใช้
+# torchaudio       ไม่มีไฟล์ไหน import เลย
+# easyocr pytesseract pdf2image pdfminer.six pdfplumber pymupdf pypdfium2
+# opencv-python-headless scikit-image shapely pyclipper python-bidi
+# imageio tifffile lazy-loader ninja
+#                  ชุดสกัดข้อมูลจาก PDF ใช้ตอนสร้าง modutech_v30.json
+#                  pymupdf มีแค่ใน patch_v30_1.py ซึ่งเป็นสคริปต์แก้ข้อมูล ไม่ใช่ตัวตอบ
+# matplotlib seaborn contourpy cycler fonttools kiwisolver pyparsing
+#                  วาดกราฟตอนประเมินผล ไม่ได้ใช้ตอนตอบ
+# pandas pytz tzdata scikit-learn scipy joblib threadpoolctl
+#                  ไม่มีไฟล์ไหน import
+# ruff             เครื่องมือตรวจโค้ด
+# gradio_client aiofiles ffmpy pydub ฯลฯ
+#                  เป็นของที่ gradio ลากมาเอง ไม่ต้องระบุ
