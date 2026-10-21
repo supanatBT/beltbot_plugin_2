@@ -1,0 +1,156 @@
+{
+  "label": "phase2b-yardstick",
+  "time": "2026-10-10 22:48:45",
+  "suites": {
+    "testsuite_120.py": {
+      "exit": 0,
+      "passed": 150,
+      "total": 150,
+      "seconds": 1.9,
+      "ok": true
+    },
+    "test_sprocket_flow.py": {
+      "exit": 0,
+      "passed": 45,
+      "total": 45,
+      "seconds": 1.4,
+      "ok": true
+    },
+    "test_context_voice.py": {
+      "exit": 0,
+      "passed": 6,
+      "total": 6,
+      "seconds": 2.1,
+      "ok": true
+    },
+    "testcases_graph.py": {
+      "exit": 0,
+      "passed": 33,
+      "total": 33,
+      "seconds": 1.0,
+      "ok": true
+    },
+    "test_resume.py": {
+      "exit": 0,
+      "passed": 22,
+      "total": 22,
+      "seconds": 0.1,
+      "ok": true
+    },
+    "test_api_resume.py": {
+      "exit": 0,
+      "passed": 17,
+      "total": 17,
+      "seconds": 0.8,
+      "ok": true
+    },
+    "test_modutech_kg.py": {
+      "exit": 0,
+      "passed": 36,
+      "total": 36,
+      "seconds": 0.3,
+      "ok": true
+    },
+    "test_increment_status.py": {
+      "exit": 0,
+      "passed": 1,
+      "total": 1,
+      "seconds": 0.3,
+      "ok": true
+    },
+    "test_core_registry.py": {
+      "exit": 0,
+      "passed": 44,
+      "total": 44,
+      "seconds": 0.8,
+      "ok": true
+    },
+    "test_core_dialogue.py": {
+      "exit": 0,
+      "passed": 22,
+      "total": 22,
+      "seconds": 0.1,
+      "ok": true
+    },
+    "test_core_router.py": {
+      "exit": 0,
+      "passed": 14,
+      "total": 14,
+      "seconds": 0.5,
+      "ok": true
+    },
+    "test_core_decide.py": {
+      "exit": 0,
+      "passed": 20,
+      "total": 20,
+      "seconds": 1.0,
+      "ok": true
+    },
+    "test_webapi_sanitize.py": {
+      "exit": 0,
+      "passed": 7,
+      "total": 7,
+      "seconds": 0.5,
+      "ok": true
+    },
+    "test_assistant_resume.py": {
+      "exit": 0,
+      "passed": 10,
+      "total": 10,
+      "seconds": 1.8,
+      "ok": true
+    },
+    "brands/demo/test_demo.py": {
+      "exit": 0,
+      "passed": 19,
+      "total": 19,
+      "seconds": 0.4,
+      "ok": true
+    }
+  },
+  "generated": {
+    "testcases_modutech_136.csv": "bb264a72ca969308",
+    "testcases_graph_relations.csv": "cc0eab16f762e09a"
+  },
+  "drift": [],
+  "core_grep_hits": 0,
+  "dockerignore_training": true,
+  "prompt_snapshot_ok": false,
+  "prompt_snapshot": [
+    "เทิร์น 279 · เรียก Gemini 194 · tool 5 · error 0",
+    "  ✗ snapshot_extra.csv SNAP-IMG-THEN-MOD t2  ต่างที่ ['gemini']",
+    "  ✗ snapshot_extra.csv SNAP-MOD-EXPLORE t1  ต่างที่ ['gemini']",
+    "  ✗ snapshot_extra.csv SNAP-MOD-MIXED t1  ต่างที่ ['gemini']",
+    "  ✗ snapshot_extra.csv SNAP-MOD-SPROCKET t1  ต่างที่ ['gemini']",
+    "  ✗ snapshot_extra.csv SNAP-MOD-TEMP t2  ต่างที่ ['gemini']",
+    "  ✗ snapshot_extra.csv SNAP-NOBRAND t1  ต่างที่ ['new_messages']",
+    "  ✗ snapshot_extra.csv SNAP-SWITCH t1  ต่างที่ ['gemini']",
+    "  ✗ snapshot_extra.csv SNAP-WEAK2 t1  ต่างที่ ['gemini', 'refs']",
+    "  ✗ testcases_graph_relations.csv MAT-G01 t1  ต่างที่ ['gemini']",
+    "  ✗ testcases_graph_relations.csv MAT-G02 t1  ต่างที่ ['gemini']",
+    "  ✗ testcases_graph_relations.csv MAT-G03 t1  ต่างที่ ['gemini']",
+    "  ✗ testcases_graph_relations.csv MAT-G04 t1  ต่างที่ ['gemini']",
+    "  ✗ testcases_graph_relations.csv MAT-G05 t1  ต่างที่ ['gemini']",
+    "  ✗ testcases_graph_relations.csv SER-01 t1  ต่างที่ ['gemini']",
+    "  ✗ testcases_graph_relations.csv SER-02 t1  ต่างที่ ['gemini']",
+    "ต่าง 162 จุด",
+    "[ทุกแบรนด์] เทิร์น 279 · เรียก Gemini 194 · tool 5 · error 0",
+    "[ทุกแบรนด์]   ✗ snapshot_extra.csv SNAP-IMG-THEN-MOD t2  ต่างที่ ['gemini']",
+    "[ทุกแบรนด์]   ✗ snapshot_extra.csv SNAP-MOD-EXPLORE t1  ต่างที่ ['gemini']",
+    "[ทุกแบรนด์]   ✗ snapshot_extra.csv SNAP-MOD-MIXED t1  ต่างที่ ['gemini']",
+    "[ทุกแบรนด์]   ✗ snapshot_extra.csv SNAP-MOD-SPROCKET t1  ต่างที่ ['gemini']",
+    "[ทุกแบรนด์]   ✗ snapshot_extra.csv SNAP-MOD-TEMP t2  ต่างที่ ['gemini']",
+    "[ทุกแบรนด์]   ✗ snapshot_extra.csv SNAP-NOBRAND t1  ต่างที่ ['new_messages']",
+    "[ทุกแบรนด์]   ✗ snapshot_extra.csv SNAP-SWITCH t1  ต่างที่ ['gemini']",
+    "[ทุกแบรนด์]   ✗ snapshot_extra.csv SNAP-WEAK2 t1  ต่างที่ ['gemini', 'refs']",
+    "[ทุกแบรนด์]   ✗ testcases_graph_relations.csv MAT-G01 t1  ต่างที่ ['gemini']",
+    "[ทุกแบรนด์]   ✗ testcases_graph_relations.csv MAT-G02 t1  ต่างที่ ['gemini']",
+    "[ทุกแบรนด์]   ✗ testcases_graph_relations.csv MAT-G03 t1  ต่างที่ ['gemini']",
+    "[ทุกแบรนด์]   ✗ testcases_graph_relations.csv MAT-G04 t1  ต่างที่ ['gemini']",
+    "[ทุกแบรนด์]   ✗ testcases_graph_relations.csv MAT-G05 t1  ต่างที่ ['gemini']",
+    "[ทุกแบรนด์]   ✗ testcases_graph_relations.csv SER-01 t1  ต่างที่ ['gemini']",
+    "[ทุกแบรนด์]   ✗ testcases_graph_relations.csv SER-02 t1  ต่างที่ ['gemini']",
+    "[ทุกแบรนด์] ต่าง 162 จุด"
+  ],
+  "gates_ok": false
+}

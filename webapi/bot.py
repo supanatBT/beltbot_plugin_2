@@ -26,7 +26,7 @@ SessionStore อยู่ในหน่วยความจำ จึงหา
 เบราว์เซอร์เห็นพาธนั้นอยู่แล้ว ส่งออกไปคือยกเลิกการป้องกันของตัวเอง
 
 state ที่ client ส่งมาถือเป็นข้อมูลที่เชื่อไม่ได้ ต้องผ่าน sanitize_dialog_state() ก่อน
-ค่าสเปกปลอมไม่ได้อยู่แล้วเพราะเกตอ่านจาก modutech_v30_1.json ใหม่ทุกเทิร์น
+ค่าสเปกปลอมไม่ได้อยู่แล้วเพราะเกตอ่านจาก modutech_v30_3.json ใหม่ทุกเทิร์น
 สิ่งที่ปลอมได้คือรหัสรุ่นกับ slot ซึ่งทำให้คำตอบของตัวเองผิด ไม่กระทบผู้ใช้คนอื่น
 """
 from __future__ import annotations
@@ -219,7 +219,62 @@ def rebuild_history(messages: Any) -> list:
 
 
 def sanitize_dialog_state(raw: Any, mod: Any) -> dict:
-    """กรอง DialogState ที่ client ส่งมา — เก็บเฉพาะที่มีจริงในฐานข้อมูล
+    """กรอง DialogState ที่ client ส่งมา — แต่ละแบรนด์ตรวจรหัสของตัวเอง (ชั้น 6)
+
+    ไม่งั้น client ส่งรหัสมั่วมาแล้วบอตได้ products = [] ซึ่งดูเหมือน
+    "เล่มไม่มีข้อมูล" ทั้งที่จริงคือรหัสไม่มีอยู่
+
+    ขั้นที่นี่ทำให้ทุกแบรนด์ (ไม่รู้จักแบรนด์ไหน)
+      list  เก็บเฉพาะ string ไม่เกิน RESUME_MAX_CODES · dict ไม่เกิน RESUME_MAX_SLOTS คู่
+      brand ต้องเป็นแบรนด์ที่มีปลั๊กอิน · pending ไม่กู้ (บริบทเดิมหายไปแล้ว)
+    ขั้นของแบรนด์: plugin.sanitize_state() — รหัสนี้มีจริงไหม slot ไหนรู้จัก
+    โมดูลที่ไม่มีปลั๊กอิน (fakebot) ใช้ทางเดิม _sanitize_legacy
+    """
+    if not isinstance(raw, dict):
+        return {}
+    plugins = getattr(mod, "plugins", None)
+    state_cls = getattr(mod, "DialogState", None)
+    if not plugins or state_cls is None:
+        return _sanitize_legacy(raw, mod)
+
+    def bound(v):
+        if isinstance(v, list):
+            return [x for x in v if isinstance(x, str)][:RESUME_MAX_CODES]
+        if isinstance(v, dict):
+            return dict(list(v.items())[:RESUME_MAX_SLOTS])
+        return v
+
+    brand = raw.get("brand")
+    out: dict = {"brand": brand if brand in plugins else None}
+    for key, p in plugins.items():
+        pre = f"{key}_"
+        fields = {k[len(pre):]: bound(v) for k, v in raw.items() if isinstance(k, str) and k.startswith(pre)}
+        for f, v in p.sanitize_state(fields).items():
+            out[pre + f] = v
+    out["pending"] = None
+    out["pending_question"] = ""
+    return state_cls.from_dict(out).to_dict()
+
+
+def state_resumable(state: dict, mod: Any) -> bool:
+    """มีของพอให้กู้ไหม — แบรนด์ที่รู้แล้ว หรือแบรนด์ใดมีรุ่นในความสนใจ"""
+    if not state:
+        return False
+    plugins = getattr(mod, "plugins", None)
+    if not plugins:
+        return any(state.get(k) for k in ("brand", "modutech_codes", "movex_pids"))
+    if state.get("brand"):
+        return True
+    for key, p in plugins.items():
+        pre = f"{key}_"
+        if p.resumable({k[len(pre):]: v for k, v in state.items() if k.startswith(pre)}):
+            return True
+    return False
+
+
+def _sanitize_legacy(raw: Any, mod: Any) -> dict:
+    """ทางเดิม — ใช้กับโมดูลที่ไม่มีปลั๊กอิน (fakebot ของ test_resume.py)
+    กรอง DialogState ที่ client ส่งมา — เก็บเฉพาะที่มีจริงในฐานข้อมูล
 
     สองชั้น
       1. DialogState.from_dict กรองคีย์ที่คลาสไม่รู้จักออก (แก้ไว้ 1 ต.ค.)
@@ -318,7 +373,7 @@ class BotAdapter:
         info["messages"] = len(s.history)
 
         state = sanitize_dialog_state((resume or {}).get("dialog_state"), mod)
-        if state and any(state.get(k) for k in ("brand", "modutech_codes", "movex_pids")):
+        if state_resumable(state, mod):
             sid = mod.logger.new_session()
             mod._dialog_states[sid] = state
             s.bot_session_id = sid

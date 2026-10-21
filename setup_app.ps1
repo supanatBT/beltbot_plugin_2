@@ -1,11 +1,16 @@
-# setup_app.ps1 — ประกอบโฟลเดอร์นี้ให้ครบในครั้งเดียว
+﻿# setup_app.ps1 — ประกอบโฟลเดอร์นี้ให้ครบในครั้งเดียว
 #
 # ทำไมต้องมีสคริปต์ ไม่ทำมือ
 #   ลำดับการคัดลอกสำคัญกว่าที่คิด zip ของเว็บ (27 ก.ย.) มี chatbot_v5.py ·
 #   modutech_gates.py · dialogue_state.py รุ่นก่อนการแก้วันที่ 29–30 ก.ย. อยู่ด้วย
 #   ถ้าคัดลอกสลับลำดับ งานที่แก้ไปจะหายเงียบ ๆ ไม่มี error บอตยังรันได้ แค่ตอบผิดแบบเดิม
 #   (เคยเกิดกับ sales_contact.py ที่เบอร์โทรหายไปเพราะ zip เก่าทับ)
-#   สคริปต์นี้บังคับลำดับ zip → โฟลเดอร์ที่รันได้ → latest\ เป็นขั้นสุดท้ายเสมอ
+#   สคริปต์นี้บังคับลำดับ zip → โฟลเดอร์ที่รันได้ (ไฟล์ที่ใหม่กว่าทับทีหลังเสมอ)
+#
+# 7 ต.ค. — ตัดขั้น "ทับด้วย latest\" ออก (ผู้ใช้ยืนยัน: ไฟล์ที่รากใหม่กว่า latest\
+#   และ latest\ ไม่ได้อัปเดตเลยตั้งแต่ย้ายมา ขั้นนั้นจึงเอาของ 30 ก.ย. ทับงาน 1–2 ต.ค.)
+# โฟลเดอร์ beltbot_plugin (โครงปลั๊กอินแบรนด์) ไม่ประกอบด้วยสคริปต์นี้
+#   ต้นทางของโค้ดคือ git branch brand-plugin — 17_app_test ไม่มี core\ กับ brands\
 #
 # ตัวอย่าง
 #   .\setup_app.ps1 -From "E:\Project2\modutech_artifacts\final\17_app_test" `
@@ -29,7 +34,7 @@ if ((Resolve-Path $From).Path -eq (Resolve-Path $root).Path) {
 }
 
 # ── 1. หน้าเว็บกับ app.py จาก zip ─────────────────────────────
-Write-Host "1/4 แตก zip ของเว็บ" -ForegroundColor Cyan
+Write-Host "1/3 แตก zip ของเว็บ" -ForegroundColor Cyan
 $tmp = Join-Path $env:TEMP ("beltbot_" + [guid]::NewGuid().ToString("N").Substring(0, 8))
 Expand-Archive -Path $Zip -DestinationPath $tmp -Force
 
@@ -48,19 +53,11 @@ Remove-Item $tmp -Recurse -Force
 # ── 2. โค้ด ฐานข้อมูล โมเดล จากโฟลเดอร์ที่รันได้อยู่ ────────────
 # -Exclude app.py กันไม่ให้ทับ backend ของเว็บที่เพิ่งได้จาก zip
 # ขั้นนี้กินเวลาสุด เพราะมี qdrant สองตัวและโฟลเดอร์ ViT LoRA
-Write-Host "2/4 คัดลอกจาก $From (ใหญ่ ใช้เวลาสักครู่)" -ForegroundColor Cyan
+Write-Host "2/3 คัดลอกจาก $From (ใหญ่ ใช้เวลาสักครู่)" -ForegroundColor Cyan
 Copy-Item "$From\*" $root -Recurse -Force -Exclude app.py
 
-# ── 3. ของที่แก้ 29–30 ก.ย. — ขั้นสุดท้ายเสมอ ──────────────────
-Write-Host "3/4 ทับด้วยไฟล์ใน latest\" -ForegroundColor Cyan
-if (-not (Test-Path "$root\latest")) { Write-Host "   ไม่พบ latest\" -ForegroundColor Red; exit 1 }
-Get-ChildItem "$root\latest" -File | ForEach-Object {
-    Copy-Item $_.FullName $root -Force
-    Write-Host "   ทับ $($_.Name)"
-}
-
-# ── 4. ค่าตั้ง ────────────────────────────────────────────────
-Write-Host "4/4 ค่าตั้ง" -ForegroundColor Cyan
+# ── 3. ค่าตั้ง ────────────────────────────────────────────────
+Write-Host "3/3 ค่าตั้ง" -ForegroundColor Cyan
 if (-not (Test-Path "$root\.env")) {
     Copy-Item "$root\.env.example" "$root\.env"
     Write-Host "   สร้าง .env แล้ว — ยังต้องใส่ GEMINI_API_KEY และ PROXY_SECRET"

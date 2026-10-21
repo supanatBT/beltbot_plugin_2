@@ -34,6 +34,14 @@ metric ที่ชั้นนี้ตรวจ
 
   # เทียบสองรอบ
   python run_answer_eval.py --compare baseline_answer_movex.json after_answer_movex.json
+
+  # log เข้า MLflow (training/mlruns · HANDOFF ข้อ 5.3) — ระบุรอบเสมอ ห้ามสรุปจากรอบเดียว
+  python run_answer_eval.py --module assistant --testcases testcases_modutech_136.csv -o run8.json \
+      --mlflow --code refactor --round 1
+
+คำต้องห้ามทั้งชุด (leaks) — เฟส 0 ของ HANDOFF_brand_plugin
+  นับ ห้าม · ให้บอกเฉพาะ · ระบบจึง ในทุกคำตอบ ("ลูกค้า" เลิกนับ 10 ต.ค. — ผู้ใช้ตัดสินว่าเป็นภาษาบริการ) รายงานแยก **ไม่เปลี่ยนผ่าน/ตก**
+  (ถ้าปนกับเกณฑ์เดิม ตัวเลข 170/172 จะขยับทั้งที่ระบบไม่ได้เปลี่ยน)
 """
 
 from __future__ import annotations
@@ -226,7 +234,9 @@ def run(module_name: str, testcases: str, only: set[str] | None,
     bot = importlib.import_module(module_name)
     if not hasattr(bot, "chat_interaction"):
         sys.exit(f"❌ {module_name} ไม่มีฟังก์ชัน chat_interaction")
-    print("✅ พร้อม")
+    llm = getattr(getattr(bot, "engine", None), "llm", None)
+    llm_desc = llm.describe() if hasattr(llm, "describe") else "(ไม่ทราบ)"
+    print(f"✅ พร้อม · LLM: {llm_desc}")       # 13 ต.ค. — ยืนยันว่า GEMINI_THINKING มีผลจริง
 
     rows = list(csv.DictReader(open(testcases, encoding="utf-8-sig")))
     if only:
@@ -279,6 +289,8 @@ def run(module_name: str, testcases: str, only: set[str] | None,
             error = None
             reply = ""
             t0 = time.perf_counter()
+            if llm is not None and hasattr(llm, "last_usage"):
+                llm.last_usage = None
             try:
                 out = bot.chat_interaction(
                     query, image, history, last_pids, session_id, vit_signal, graph_result)
@@ -297,6 +309,7 @@ def run(module_name: str, testcases: str, only: set[str] | None,
                 "query": query,
                 "metrics": split_tokens(case.get("metrics", "")),
                 "seconds": round(time.perf_counter() - t0, 1),
+                "llm_usage": getattr(llm, "last_usage", None),
             })
             results.append(outcome)
 
@@ -314,6 +327,7 @@ def run(module_name: str, testcases: str, only: set[str] | None,
 
     return {
         "module": module_name,
+        "llm": llm_desc,
         "testcases": testcases,
         "total_turns": len(results),
         "graded": len(graded),
@@ -326,8 +340,19 @@ def run(module_name: str, testcases: str, only: set[str] | None,
         "by_category": {k: f"{sum(v)}/{len(v)}" for k, v in sorted(per_cat.items())},
         "by_check": dict(Counter(
             k for r in graded for k, v in r["checks"].items() if not v)),
+        "leaks": _leaks(results),
         "results": results,
     }
+
+
+def _leaks(results: list) -> dict:
+    """คำต้องห้ามทั้งชุด — ตัวชี้วัดแยก ไม่แตะ passed (ดู training/eval_mlflow.py)"""
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent / "training"))
+        from eval_mlflow import leak_summary
+        return leak_summary(results)
+    except ImportError:
+        return {}
 
 
 def print_summary(s: dict) -> None:
@@ -346,6 +371,10 @@ def print_summary(s: dict) -> None:
         print("\n  แยกตามหมวด:")
         for k, v in s["by_category"].items():
             print(f"    {k:<16} {v}")
+    lk = s.get("leaks") or {}
+    if lk.get("turns_with_leak"):
+        words = " · ".join(f"{w} {n}" for w, n in lk["per_word"].items())
+        print(f"\n  คำต้องห้ามหลุดในคำตอบ {lk['turns_with_leak']} เทิร์น ({words}) — ไม่นับในผ่าน/ตก")
     if s["by_check"]:
         print("\n  เกณฑ์ที่ตกบ่อยสุด:")
         for k, v in sorted(s["by_check"].items(), key=lambda x: -x[1]):
@@ -404,6 +433,9 @@ def main() -> None:
     ap.add_argument("--limit", type=int)
     ap.add_argument("-o", "--out")
     ap.add_argument("--compare", nargs=2, metavar=("ก่อน", "หลัง"))
+    ap.add_argument("--mlflow", action="store_true", help="log ผลรอบนี้เข้า training/mlruns")
+    ap.add_argument("--code", default="", help="ป้ายโค้ดที่วัด เช่น pre-refactor / refactor")
+    ap.add_argument("--round", default="", help="รอบที่เท่าไหร่ของโค้ดชุดนี้")
     args = ap.parse_args()
 
     if args.compare:
@@ -424,6 +456,12 @@ def main() -> None:
         Path(args.out).write_text(json.dumps(summary, ensure_ascii=False, indent=1),
                                   encoding="utf-8")
         print(f"\n📄 {args.out}")
+
+    if args.mlflow:
+        sys.path.insert(0, str(Path(__file__).resolve().parent / "training"))
+        from eval_mlflow import log_eval
+        rid = log_eval(summary, json_path=args.out, code=args.code, round_no=args.round)
+        print(f"📈 MLflow run {rid[:8]} (experiment answer_eval)")
 
 
 if __name__ == "__main__":

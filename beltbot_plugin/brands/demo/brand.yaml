@@ -1,0 +1,31 @@
+# brands/demo/brand.yaml — แบรนด์ที่สามสำหรับพิสูจน์ว่าขยายได้ (HANDOFF ข้อ 8)
+# ไม่ใช่สินค้าจริง ข้อมูล 3 รุ่นเป็นค่าสมมติ · ปิดได้ด้วย enabled: false บรรทัดเดียว
+protocol: 1
+key: demo
+enabled: true            # ผู้ใช้ตัดสิน 7 ต.ค.: เปิดในระบบใหม่
+
+info:
+  name: Demo
+  order: 3
+  kind_th: สายพานตัวอย่าง
+  menu_line_th: "สายพานตัวอย่าง Demo — แบรนด์ทดสอบการขยายระบบ (ข้อมูลสมมติ ไม่ใช่สินค้าจริง)"
+  offtopic_th: สายพานตัวอย่าง Demo
+  category_th: สายพานตัวอย่าง
+  answer_patterns: ['\bdemo\b', 'เดโม', 'สายพานตัวอย่าง']
+
+# สถานะข้ามเทิร์น — ส่งออกเป็น demo_<ช่อง>
+state:
+  codes: []
+
+data:
+  products: products.json
+
+image:
+  enabled: false         # ไม่มีโมเดลรูป — ช่องเดียวกับแบรนด์อื่น ใส่ vit/labels/thresholds/collection แล้วเปิดได้
+  vit:
+    base: google/vit-base-patch16-224-in21k
+    adapter: null
+    revision: null
+  labels: null
+  thresholds: null
+  collection: demo_images

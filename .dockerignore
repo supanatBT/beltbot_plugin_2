@@ -9,7 +9,9 @@
 web/
 
 # เครื่องมือพัฒนาและชุดทดสอบ ไม่ได้ใช้ตอนตอบคำถาม
+# **/ ด้วย — เทสต์ของแต่ละแบรนด์อยู่ใต้ brands/<key>/ (pattern ไม่มี **/ จับแค่ที่ราก)
 test_*.py
+**/test_*.py
 testsuite_*.py
 testcases_*.py
 testcases_*.csv
@@ -20,6 +22,10 @@ probe_env.py
 fakebot.py
 inspect_collections.py
 patch_v30_1.py
+patch_v30_2.py
+CHANGELOG_v30_2.md
+patch_v30_3.py
+CHANGELOG_v30_3.md
 *_before_prompt_fix.py
 run*.json
 graph_run*.json
@@ -32,6 +38,8 @@ build_modutech_*.py
 # ของดิบที่ไม่ได้ใช้ตอนรัน
 modutech_v29.json
 modutech_v30.json
+modutech_v30_1.json
+modutech_v30_2.json
 requirements_lock.txt
 
 # ขยะ
@@ -42,3 +50,6 @@ __pycache__/
 .vscode/
 logs/
 *.log
+
+# training/ — สมุดทดลอง ไม่ใช่ของที่ระบบรัน (HANDOFF_brand_plugin ข้อ 5.2)
+training/

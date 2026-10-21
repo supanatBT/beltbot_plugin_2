@@ -2,7 +2,7 @@
 
 ## ทำไมไฟล์บอตต้องอยู่ "แบน ๆ" ที่ราก
 
-`chatbot_v5.py` อ้างพาธแบบ `./qdrant_db` · `./modutech_v30_1.json` · `./movex-lora-tuned-3`
+`chatbot_v5.py` อ้างพาธแบบ `./qdrant_db` · `./modutech_v30_3.json` · `./movex-lora-tuned-3`
 พาธแบบนี้นับจาก **โฟลเดอร์ที่สั่งรัน** ไม่ใช่จากที่ไฟล์วางอยู่ ถ้าเอาไปซ้อนชั้นแล้วเปิดจากที่อื่น
 จะขึ้น `FileNotFoundError` ทั้งที่ไฟล์อยู่ครบ — เสียเวลาไล่หาโดยไม่จำเป็น
 
@@ -17,14 +17,14 @@
 │
 ├─ โค้ด 10 ไฟล์ ─────────────── มาจาก 17_app_test ยกเว้น app.py ที่มาจาก zip
 │   app.py                      FastAPI ที่หน้าเว็บเรียก          ← zip
-│   chatbot_v5.py               ตัวบอต โหลดโมเดล ต่อ Gemini       ← latest\
+│   chatbot_v5.py               ตัวบอต โหลดโมเดล ต่อ Gemini
 │   retriever_v4.py             ค้นจาก Qdrant
 │   knowledge_graph.py          กราฟความเข้ากันได้ของ Movex
 │   pipeline_logger.py          บันทึกทุกขั้นของการตอบ
-│   modutech_gates.py           เกตกรองคำตอบ Modutech             ← latest\
+│   modutech_gates.py           เกตกรองคำตอบ Modutech
 │   modutech_router.py          แยก Movex / Modutech
 │   modutech_turn.py            ประกอบคำตอบหนึ่งเทิร์น
-│   dialogue_state.py           จำบริบทข้ามเทิร์น                 ← latest\
+│   dialogue_state.py           จำบริบทข้ามเทิร์น
 │   sales_contact.py            เบอร์/อีเมลฝ่ายขายตัวจริง
 │
 ├─ ข้อมูลและโมเดล 6 อย่าง ────── ยกมาจาก 17_app_test ทั้งหมด
@@ -33,7 +33,7 @@
 │   movex_kg.db                  กราฟ Movex
 │   movex-lora-tuned-3\          ViT LoRA ที่เทรนไว้ (ใช้ตอนส่งรูป)
 │   qdrant_modutech_db\          ฐานเวกเตอร์ Modutech (collection แยก)
-│   modutech_v30_1.json          68 · 211 · 651                   ← latest\
+│   modutech_v30_3.json          68 · 211 · 651
 │
 ├─ ค่าตั้ง 2 ไฟล์ ──────────────
 │   .env                        GEMINI_API_KEY + PROXY_SECRET
@@ -48,21 +48,19 @@
 │   run_app.ps1                 เปิด backend รอจนพร้อม แล้วเปิดหน้าเว็บ
 │   .env.example · web\.env.local.example
 │
-├─ latest\ ──────────────────── ของที่แก้ 29–30 ก.ย. ต้นฉบับอยู่ที่นี่
-│   chatbot_v5.py · modutech_gates.py · dialogue_state.py · modutech_v30_1.json
-│
 └─ ชุดทดสอบ ──────────────────
     testsuite_120.py            136 เคส ชั้นเกต ไม่ใช้ LLM ไม่ใช้เน็ต
     testcases_modutech_136.csv  158 เทิร์น สำหรับรันกับบอตตัวเต็ม
     patch_v30_1.py              สคริปต์ที่สร้าง v30_1 จาก v30
+    patch_v30_2.py              สคริปต์ที่สร้าง v30_2 จาก v30_1 (หมายเหตุสภาวะเปียก · CHANGELOG_v30_2.md)
+    patch_v30_3.py              สคริปต์ที่สร้าง v30_3 จาก v30_2 (ฝ่ายเทคนิค → พนักงานฝ่ายขาย · CHANGELOG_v30_3.md)
     test_increment_status.py    เทสต์ย่อยของตัวอ่านค่าเพิ่มทีละ
 ```
 
-`latest\` มีอยู่เพื่อกันปัญหาเดียว คือ **ลำดับการคัดลอก** zip ของเว็บ (27 ก.ย.) มี
-`chatbot_v5.py` · `modutech_gates.py` · `dialogue_state.py` รุ่นก่อนการแก้อยู่ด้วย
-ถ้าคัดลอกสลับลำดับ งานสองวันจะหาย **โดยไม่มี error** บอตยังรันได้ แค่กลับไปตอบผิดแบบเดิม
-(เคยเกิดกับ `sales_contact.py` ที่เบอร์โทรหายเพราะ zip เก่าทับ) `setup_app.ps1` บังคับให้
-`latest\` เป็นขั้นสุดท้ายเสมอ ทำมือแล้วลืมได้ สคริปต์ลืมไม่ได้
+**`latest\` เลิกใช้แล้ว (7 ต.ค.)** — ผู้ใช้ยืนยันว่าไฟล์ที่รากใหม่กว่า `latest\`
+และ `latest\` ไม่ได้อัปเดตเลยตั้งแต่ย้ายมา ขั้น "ทับด้วย latest\ เป็นขั้นสุดท้าย" เดิมจึงกลับด้าน:
+มันเอาของ 30 ก.ย. ทับงานกราฟกับรหัสสเตอร์ของ 1–2 ต.ค. แบบเงียบ ๆ ตัดออกจาก `setup_app.ps1` แล้ว
+หลักเดิมยังใช้ได้ — ลำดับการคัดลอกต้องให้ของที่ใหม่กว่าทับทีหลังเสมอ — แค่ `latest\` ไม่ใช่ของที่ใหม่กว่า
 
 ---
 
@@ -94,8 +92,8 @@ $py = "E:\Project2\modutech_artifacts\final\8_buildchunks\.venv\Scripts\python.e
 | 0 สภาพแวดล้อม | `sys.executable` · เวอร์ชัน transformers · torch · qdrant_client · peft · gradio เทียบกับ `env_lock.json` ที่จดไว้รอบแรก | ใช้ python ผิดตัว — 30 ก.ย. prompt ขึ้น `(.venv)` แต่เรียกตัวหลัก แล้วพังตั้งแต่ import |
 | 1 โค้ด | ครบ 10 ไฟล์ที่ `chatbot_v5.py` import | ลืมคัดลอกไฟล์ไหนไป จะพังตอน import ไม่ใช่ตอนตอบ ดูเหมือนโค้ดเสีย |
 | 2 ข้อมูลและโมเดล | หกอย่างมีจริงและมีขนาด · `qdrant_db` มี collection `movex_text_chunks` กับ `movex_images` | คัดลอก qdrant มาไม่ครบ — บอตขึ้นได้แต่ค้นไม่เจออะไรเลย ดูเหมือนโมเดลโง่ ไม่เหมือนไฟล์หาย |
-| 3 เวอร์ชัน | หา 6 ข้อความเฉพาะในโค้ด เช่น `inch_basis` · `NO_INCREMENT_TH` · `FOLLOWUP_MAX_CHARS` · และ `MODUTECH_JSON` ต้องชี้ v30_1 | zip เก่าทับของใหม่ — ไม่ดูวันที่ไฟล์ เพราะวันที่เปลี่ยนตอนคัดลอกอยู่แล้ว |
-| 4 เนื้อข้อมูล | นับ 68 · 211 · 651 · ทุกรุ่นมี `notes` · MD254 RR เกรด PPH เป็น `unconfirmed` · `sales_contact.py` ไม่ว่าง | เอา v30 หรือ v29 มาใช้ · เบอร์โทรหาย |
+| 3 เวอร์ชัน | หา 6 ข้อความเฉพาะในโค้ด เช่น `inch_basis` · `NO_INCREMENT_TH` · `FOLLOWUP_MAX_CHARS` · และ `MODUTECH_JSON` ต้องชี้ v30_3 | zip เก่าทับของใหม่ — ไม่ดูวันที่ไฟล์ เพราะวันที่เปลี่ยนตอนคัดลอกอยู่แล้ว |
+| 4 เนื้อข้อมูล | นับ 68 · 211 · 651 · ทุกรุ่นมี `notes` · หมายเหตุเปียกเป็นฉบับ v30_2 · ไม่มี "ฝ่ายเทคนิค" (v30_3) · MD254 RR เกรด PPH เป็น `unconfirmed` · `sales_contact.py` ไม่ว่าง | เอา v30 หรือ v29 มาใช้ · เบอร์โทรหาย |
 | 5–6 เว็บและค่าตั้ง | ไฟล์ Next.js สี่ตัว · มี node · `PROXY_SECRET` สองฝั่งตรงกัน · `SPACE_URL` ชี้ 127.0.0.1 · มี `GEMINI_API_KEY` | secret ไม่ตรง — หน้าเว็บขึ้นปกติแต่พิมพ์แล้ว error |
 
 ที่เป็น `⚠` รันได้แต่ควรรู้ ที่เป็น `✗` ต้องแก้ก่อน

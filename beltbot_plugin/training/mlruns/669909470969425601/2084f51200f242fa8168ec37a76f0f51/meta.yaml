@@ -1,0 +1,14 @@
+artifact_uri: file:///home/claude/beltbot_plugin/training/mlruns/669909470969425601/2084f51200f242fa8168ec37a76f0f51/artifacts
+end_time: 1791362434616
+entry_point_name: ''
+experiment_id: '669909470969425601'
+lifecycle_stage: active
+run_id: 2084f51200f242fa8168ec37a76f0f51
+run_name: drop-latest
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1791362434570
+status: 3
+tags: []
+user_id: root

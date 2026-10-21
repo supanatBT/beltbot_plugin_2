@@ -9,7 +9,7 @@
   เช่น ค่าเพิ่มทีละที่ควรแสดง อ่านจากหมายเหตุในเล่มผ่าน catalogue_increment_status()
   ถ้าข้อมูลเปลี่ยน เทสต์จะเปลี่ยนตาม ไม่ค้างอยู่กับเลขเก่า
 
-รัน: python testsuite_120.py [modutech_v30_1.json]
+รัน: python testsuite_120.py [modutech_v30_3.json]
 """
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ from modutech_gates import (Catalogue, Slots, catalogue_increment_status,
                             catalogue_nonstandard_increment, run_gates)
 from modutech_router import ExploratoryQuery
 
-PATH = sys.argv[1] if len(sys.argv) > 1 else "modutech_v30_1.json"
+PATH = sys.argv[1] if len(sys.argv) > 1 else "modutech_v30_3.json"
 CAT = Catalogue(PATH)
 DM = DialogueManager({}, CAT)
 BY = {p["belt_code"]: p for p in CAT.products}
@@ -76,6 +76,15 @@ def note_has(i, *subs):
         n = (r[i]["payload"][0].get("width_note_th") if r[i]["payload"] else "") or ""
         miss = [s for s in subs if s not in n]
         return None if not miss else f"width_note ขาด {miss} · ได้: {n[:120]}"
+    return f
+
+
+def rule_has(i, *subs):
+    """คำสั่งถึง LLM แยกอยู่ใน gate_rules_th (เฟส 2) — turn.py ย้ายไปส่วนกฎของ prompt"""
+    def f(r):
+        rs = " · ".join((r[i]["payload"][0].get("gate_rules_th") if r[i]["payload"] else []) or [])
+        miss = [s for s in subs if s not in rs]
+        return None if not miss else f"gate_rules ขาด {miss} · ได้: {rs[:120]}"
     return f
 
 
@@ -248,8 +257,9 @@ for n, (code_, inc) in enumerate(SHOWN[:10], 1):
 for n, code_ in enumerate(HIDDEN_MIN[:8], 1):
     we = BY[code_]["specifications"]["width_effective"]
     case(f"WD-M{n:02d}", "width_min", [f"{code_} กว้างเท่าไหร่"],
-         all_(note_has(0, f"{we['orderable_min_mm']:g}", "ห้ามรับปากว่าผลิตได้"),
-              note_hasnt(0, "สั่งพิเศษ")),
+         all_(note_has(0, f"{we['orderable_min_mm']:g}", "ต้องให้พนักงานฝ่ายขายยืนยันก่อน"),
+              rule_has(0, "ห้ามรับปาก"),
+              note_hasnt(0, "สั่งพิเศษ", "ห้าม")),
          f"{code_}: บอกค่าต่ำสุดได้ แต่ห้ามรับปาก")
 
 # เคสตรึงตัวเลข — กลุ่มข้างบนสร้างจากไฟล์ที่กำลังทดสอบ จึงเปลี่ยนตามข้อมูลและจับ "ข้อมูลหาย" ไม่ได้
@@ -268,9 +278,9 @@ case("WD-I03", "width_inch", ["EC254 R กว้างกี่นิ้ว"], a
 case("WD-X01", "width_special", ["HC127 C ขอกว้าง 150 มม. ได้ไหม"],
      note_has(0, "ฝ่ายขาย"), "ขนาดนอกมาตรฐาน ต้องส่งฝ่ายขาย")
 case("WD-X02", "width_special", ["EC254 C กว้าง 76.2 มม. ได้ไหม"],
-     note_has(0, "ยืนยันกับฝ่ายเทคนิค"), "ตารางแคบกว่าค่าต่ำสุด ต้องเตือน")
+     note_has(0, "ยืนยันกับพนักงานฝ่ายขาย"), "ตารางแคบกว่าค่าต่ำสุด ต้องเตือน")
 case("WD-X03", "width_special", ["XP254 EVO CR กว้างเท่าไหร่"],
-     note_has(0, "ยืนยันกับฝ่ายเทคนิค"), "กลุ่ม disputed")
+     note_has(0, "ยืนยันกับพนักงานฝ่ายขาย"), "กลุ่ม disputed")
 
 # ── D. อุณหภูมิ (20) ──────────────────────────────────────────
 case("TP-001", "temp", ["MD254 RR ทนร้อนกี่องศา"], act(0, "ask"), "ต้องถามเปียก/แห้งก่อน")
@@ -298,7 +308,7 @@ case("TP-010", "temp", ["EC254 C ไลน์แห้ง ทนเย็นก�
 # ระบบต้องใช้ค่าที่ต่ำกว่า (115) และต้องเตือนว่าสองแหล่งไม่ตรงกัน ไม่ใช่เลือกข้างเงียบ ๆ
 case("TP-011", "temp", ["HP508 RR ทนร้อนกี่องศา", "ไลน์แห้ง"],
      all_(temp_of(1, "PPH", "max_c", 115.0),
-          gate_note_has(1, "ตารางสเปกระบุอุณหภูมิสูงกว่าคุณสมบัติวัสดุ")),
+          gate_note_has(1, "ระบุสูงสุด 118 °C"), gate_note_has(1, "ระบุ 115 °C")),   # เฟส 2: คำเตือนมีตัวเลขทั้งสองแหล่ง
      "HP508 RR: เล่ม 118 vs ทะเบียน 115 → ใช้ 115 พร้อมคำเตือน")
 case("TP-012", "temp", ["HC508 PR22 ทนร้อนกี่องศา", "ไลน์แห้ง"],
      temp_of(1, "PPH", "max_c", 110.0), "PPH ของ HC508 PR22 = 110")
@@ -311,7 +321,12 @@ case("TP-015", "temp", ["MD254 RR ใช้ที่ 100 องศา ไลน�
      else f"เกรดที่เหลือ {[v['belt_material'] for v in r[0]['payload'][0]['variants']]}",
      "ที่ 100 °C เหลือแต่ PP")
 case("TP-016", "temp", ["MP80 C ใช้ที่ 80 องศา ไลน์เปียก ได้ไหม"],
-     lambda r: None if not r[0]["payload"] else "ไม่ควรเหลือรุ่นไหนเลย", "80 °C เปียก ต้องตัดหมด")
+     # เฟส 2 (10 ต.ค.): เดิมตรวจว่า payload ว่าง แต่ Context ว่างทำให้ LLM ตอบว่า "ไม่มีข้อมูลรุ่นนี้" (ผิด)
+     # ตอนนี้ต้องเหลือรุ่นไว้ ไม่มีเกรดไหนผ่าน และบอกค่าสูงสุดจริงในสภาวะเปียก (POM 60 °C)
+     lambda r: None if (r[0]["payload"] and not r[0]["payload"][0]["variants"]
+                        and any("60 °C" in n for n in r[0]["payload"][0]["gate_notes_th"]))
+     else f"ต้องเหลือ MP80 C ไม่มีเกรดไหนผ่าน และบอก 60 °C · ได้ {r[0]['payload']}",
+     "80 °C เปียก ไม่มีเกรดไหนผ่าน ต้องบอกค่าสูงสุดจริง")
 case("TP-017", "temp", ["EC127 C ทนร้อนกี่องศา", "แห้ง"],
      temp_of(1, "PP", "max_c", 105.0), "PP แห้ง 105")
 # เกรด PE ทนเปียกได้ 65 แต่พิน POM ได้แค่ 60 — ต้องใช้ค่าของชั้นที่แคบที่สุด ไม่ใช่ค่าของเนื้อสายพาน
@@ -460,13 +475,14 @@ case("EX-003", "explore", ["สายพาน Modutech ที่ใช้ก้
      all_(act(0, "search"), search_count(0, 2), search_has(0, "HD635 C", "MD254 GAP48%-EHT")),
      "พินสแตนเลส → 2 รุ่น")
 # คำว่า "สายพาน" เฉย ๆ ใช้ได้ทั้งสองแบรนด์ ระบบจึงต้องถามแบรนด์ก่อน แล้วค่อยค้นเมื่อรู้
-case("EX-004", "explore", ["มีสายพานพื้นที่เปิดอย่างน้อย 45% ไหม", "Modutech"],
-     all_(act(0, "ask"), act(1, "search"), search_has(1, "MD127 GAP50%", "SM254 FG50%")),
-     "open area ≥ 45% (ถามแบรนด์ก่อน)")
+# เฟส 2 (10 ต.ค.): พื้นที่เปิด · kg/m² มีแต่สายพานโมดูลาร์ → ค้นทันที ไม่ถามแบรนด์ก่อน (เดิมสองเทิร์น)
+case("EX-004", "explore", ["มีสายพานพื้นที่เปิดอย่างน้อย 45% ไหม"],
+     all_(act(0, "search"), search_has(0, "MD127 GAP50%", "SM254 FG50%")),
+     "open area ≥ 45% (คุณสมบัติของสายพานโมดูลาร์ ค้นได้ทันที)")
 case("EX-005", "explore", ["มีสายพานพิทช์ไม่เกิน 10 มม. ไหม", "Modutech"],
      all_(act(0, "ask"), act(1, "search"), search_has(1, "MP80 C")), "พิทช์ ≤ 10")
-case("EX-006", "explore", ["ต้องการสายพานน้ำหนักไม่เกิน 5 kg/m2", "Modutech"],
-     all_(act(0, "ask"), act(1, "search")), "น้ำหนัก ≤ 5")
+case("EX-006", "explore", ["ต้องการสายพานน้ำหนักไม่เกิน 5 kg/m2"],
+     act(0, "search"), "น้ำหนัก ≤ 5 kg/m² (คุณสมบัติของสายพานโมดูลาร์ ค้นได้ทันที)")
 case("EX-007", "explore", ["สายพานผิว Flush Grid มีรุ่นไหนบ้าง"], act(0, "search"), "ค้นตามผิว")
 case("EX-008", "explore", ["มีสายพานรับแรงดึงเกิน 200000 N/m ไหม"],
      all_(act(0, "search"), search_count(0, 0)), "ไม่มีจริง ต้องตอบว่าไม่มี")

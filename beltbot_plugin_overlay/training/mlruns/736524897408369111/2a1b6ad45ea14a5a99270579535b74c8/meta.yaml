@@ -1,0 +1,15 @@
+artifact_uri: file:///home/claude/beltbot_plugin/training/mlruns/736524897408369111/2a1b6ad45ea14a5a99270579535b74c8/artifacts
+deleted_time: 1791367156585
+end_time: 1791367154738
+entry_point_name: ''
+experiment_id: '736524897408369111'
+lifecycle_stage: deleted
+run_id: 2a1b6ad45ea14a5a99270579535b74c8
+run_name: smoke
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1791367154707
+status: 3
+tags: []
+user_id: root

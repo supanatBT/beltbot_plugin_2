@@ -1,0 +1,45 @@
+{
+ "module": "assistant",
+ "testcases": "testcases_modutech_136.csv",
+ "total_turns": 1,
+ "graded": 1,
+ "passed": 1,
+ "failed": 0,
+ "skipped_no_image": 0,
+ "turns_with_image": 0,
+ "errors": 0,
+ "seconds": 9.0,
+ "by_category": {
+  "explore": "1/1"
+ },
+ "by_check": {},
+ "leaks": {
+  "turns_with_leak": 0,
+  "per_word": {},
+  "turns": []
+ },
+ "results": [
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech ที่มีรูปแบบพื้นผิว **Flush Grid** จากฐานข้อมูลมีทั้งหมด 20 รุ่น ดังนี้ครับ\n\n**สายพานวิ่งตรง (Straight Running):**\n* **MP80 FG**\n* **SM127 FG**\n* **EC127 FG**\n* **MD127 GAP50%**\n* **HC152 FG**\n* **SM254 FG50%**\n* **MD254 FG**\n* **MD254 GAP48%**\n* **MD254 GAP48%-EHT**\n* **EC508 FG**\n* **MD508 FG**\n* **XP254 PR22%**\n\n**สายพานวิ่งโค้ง (Radius / Curve):**\n* **EC254 R**\n* **EC254 R-TABE**\n* **EC254 R-TABM**\n* **EC254 TR**\n* **EC254 TR-TAB**\n* **EC381 R**\n* **EC508 R**\n* **EC508 TR**\n\nหากต้องการข้อมูลสเปกเพิ่มเติม เช่น ระยะพิตช์ (Pitch), วัสดุสายพาน/พิน หรือสภาวะการใช้งานของรุ่นใด สามารถสอบถามเพิ่มเติมได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "EX-007",
+   "turn": "1",
+   "category": "explore",
+   "query": "สายพานผิว Flush Grid มีรุ่นไหนบ้าง",
+   "metrics": [
+    "explore"
+   ],
+   "seconds": 8.0
+  }
+ ]
+}

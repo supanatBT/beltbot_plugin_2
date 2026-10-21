@@ -1,0 +1,38 @@
+# brands/movex/brand.yaml — หนึ่งแบรนด์ = หนึ่งโฟลเดอร์ = หนึ่งไฟล์ตั้งค่า
+protocol: 1
+key: movex
+enabled: true
+
+info:
+  name: Movex
+  order: 1
+  kind_th: โซ่ท็อปเชน
+  menu_line_th: "โซ่ท็อปเชน Movex — ลำเลียงขวด กระป๋อง ลัง ในไลน์บรรจุเครื่องดื่ม"
+  offtopic_th: โซ่ลำเลียง Movex
+  category_th: โซ่ลำเลียง
+  answer_patterns: ['movex', 'มูฟเว็กซ์', 'โซ่', 'top\s*chain', 'ท็อปเชน']   # เลข 1 แกนกลางเติมจาก order
+
+# สถานะข้ามเทิร์น — ส่งออกเป็น movex_<ช่อง> (ชื่อเดิมที่เบราว์เซอร์เก็บไว้)
+state:
+  pids: []          # รุ่นที่อยู่ในความสนใจ
+  series: null      # ซีรีส์ที่รู้แล้วแต่ยังไม่รู้ความกว้าง
+
+data:                                   # พาธนับจากโฟลเดอร์นี้ — ไม่ขึ้นกับว่าสั่งรันจากไหน
+  products: ../../extracted_data_v3_machine_ready.json
+  graph_db: ../../movex_kg.db
+  qdrant_path: ../../qdrant_db          # ห้ามแก้ collection — ครอบด้วย adapter เท่านั้น
+  text_collection: movex_text_chunks
+
+image:
+  enabled: auto                         # auto = เปิดเมื่อมีทั้งโมเดลและ collection ที่มีข้อมูล
+  vit:
+    base: google/vit-base-patch16-224-in21k
+    adapter: ../../movex-lora-tuned-3   # โฟลเดอร์ local — ยังไม่ได้ขึ้น HF Hub
+    revision: "sha256:d29b4849e9a869a9" # local ใช้ hash ของ adapter_model.safetensors แทน tag
+  labels: ../../movex-lora-tuned-3/label_mapping.json   # 10 คลาส — นับจากไฟล์ ไม่ฝังในโค้ด
+  thresholds: thresholds.json
+  collection: movex_images
+  reject_th: >-
+    ❌ ระบบตรวจพบว่ารูปภาพที่อัปโหลดไม่เกี่ยวข้องกับสินค้าในระบบ หรือยังไม่ชัดพอให้ระบุรุ่น
+    กรุณาอัปโหลดภาพโซ่หรือสเตอร์ที่ชัดเจน (ถ่ายจากด้านบนให้เห็นแผ่นโซ่)
+    หรือแจ้งรหัสที่ปั๊มบนตัวสินค้าครับ

@@ -1,0 +1,49 @@
+# ของที่ไม่ควรเข้าไปอยู่ใน image ของ Space
+
+# ความลับ — สำคัญที่สุด Space นี้เปิดสาธารณะ
+.env
+.env.*
+*.key
+
+# หน้าเว็บ deploy ที่ Vercel คนละที่กัน ไม่ต้องอยู่ใน image
+web/
+
+# เครื่องมือพัฒนาและชุดทดสอบ ไม่ได้ใช้ตอนตอบคำถาม
+# **/ ด้วย — เทสต์ของแต่ละแบรนด์อยู่ใต้ brands/<key>/ (pattern ไม่มี **/ จับแค่ที่ราก)
+test_*.py
+**/test_*.py
+testsuite_*.py
+testcases_*.py
+testcases_*.csv
+run_answer_eval.py
+run_testcases.py
+check_app.py
+probe_env.py
+fakebot.py
+inspect_collections.py
+patch_v30_1.py
+*_before_prompt_fix.py
+run*.json
+graph_run*.json
+*_report.json
+
+# สคริปต์สร้างข้อมูล — ห้ามอยู่ใน image เพราะ build_database.py ลบ collection
+build_database.py
+build_modutech_*.py
+
+# ของดิบที่ไม่ได้ใช้ตอนรัน
+modutech_v29.json
+modutech_v30.json
+requirements_lock.txt
+
+# ขยะ
+__pycache__/
+*.pyc
+.git/
+.gitignore
+.vscode/
+logs/
+*.log
+
+# training/ — สมุดทดลอง ไม่ใช่ของที่ระบบรัน (HANDOFF_brand_plugin ข้อ 5.2)
+training/

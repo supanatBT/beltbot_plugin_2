@@ -1,0 +1,17 @@
+{
+  "turns_with_leak": 8,
+  "per_word": {
+    "\u0e23\u0e30\u0e1a\u0e1a\u0e08\u0e36\u0e07": 6,
+    "\u0e25\u0e39\u0e01\u0e04\u0e49\u0e32": 2
+  },
+  "turns": [
+    "WD-S06 t1",
+    "WD-X01 t1",
+    "WD-X02 t1",
+    "TP-003 t2",
+    "TP-004 t2",
+    "TP-011 t2",
+    "TP-012 t2",
+    "TP-019 t2"
+  ]
+}

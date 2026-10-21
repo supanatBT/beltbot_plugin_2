@@ -97,7 +97,7 @@ TP-012,temp,temp,multi,2,ไลน์แห้ง,,HC508 PR22 | 93 | 65 | 105,,,
 TP-013,temp,temp,single,1,EC127 GT ทนร้อนกี่องศา,,EC127 GT | 60,,,,,,,temp,รุ่นไม่มี slot ตอบได้เลย
 TP-014,temp,temp,single,1,MD254 RR ใช้ที่ 100 องศา ไลน์แห้ง ได้ไหม,,MD254 RR | 105,,,,,,,temp,PPH ถูกตัดที่ 100 แต่ต้องเตือน
 TP-015,temp,temp,single,1,MD254 RR ใช้ที่ 100 องศา ไลน์แห้ง ได้ไหม,,MD254 RR | 105,,,,,,,temp,ที่ 100 °C เหลือแต่ PP
-TP-016,temp,temp,single,1,MP80 C ใช้ที่ 80 องศา ไลน์เปียก ได้ไหม,,,,,,,,,temp,80 °C เปียก ต้องตัดหมด
+TP-016,temp,temp,single,1,MP80 C ใช้ที่ 80 องศา ไลน์เปียก ได้ไหม,,MP80 C,,,,,,,temp,80 °C เปียก ไม่มีเกรดไหนผ่าน ต้องบอกค่าสูงสุดจริง
 TP-017,temp,temp,multi,1,EC127 C ทนร้อนกี่องศา,,,เปียก | แห้ง,,True,,,,temp,PP แห้ง 105
 TP-017,temp,temp,multi,2,แห้ง,,EC127 C | 93 | 105 | 65,,,,,,,temp,
 TP-018,temp,temp,multi,1,MD508 C ทนร้อนกี่องศา,,,เปียก | แห้ง,,True,,,,temp,PE/พิน POM เปียก → พินเป็นตัวจำกัดที่ 60
@@ -153,15 +153,13 @@ ES-017,escalate,escalate,single,1,HC127 C กว้างเท่าไหร�
 EX-001,explore,explore,single,1,ต้องการสายพานรับแรงดึงอย่างน้อย 50000 N/m,,HD635 C | MD508 C | MD508 NS,,,,,,,explore,แรงดึง ≥ 50000 → 3 รุ่น
 EX-002,explore,explore,single,1,สายพาน Modutech ผิวลูกกลิ้งมีรุ่นไหนบ้าง,,MD254 C-RT | MD254 FG-RT | EC508 C-RT,,,,,,,explore,ผิวลูกกลิ้ง
 EX-003,explore,explore,single,1,สายพาน Modutech ที่ใช้ก้านสแตนเลสมีรุ่นไหนบ้าง,,MD254 GAP48%-EHT | HD635 C,,,,,,,explore,พินสแตนเลส → 2 รุ่น
-EX-004,explore,explore,multi,1,มีสายพานพื้นที่เปิดอย่างน้อย 45% ไหม,,,Movex | Modutech,,True,,,,explore,open area ≥ 45% (ถามแบรนด์ก่อน)
-EX-004,explore,explore,multi,2,Modutech,,MD127 GAP50% | SM254 FG50% | MD254 GAP48%,,,,,,,explore,
+EX-004,explore,explore,single,1,มีสายพานพื้นที่เปิดอย่างน้อย 45% ไหม,,MD127 GAP50% | SM254 FG50% | MD254 GAP48%,,,,,,,explore,open area ≥ 45% (คุณสมบัติของสายพานโมดูลาร์ ค้นได้ทันที)
 EX-005,explore,explore,multi,1,มีสายพานพิทช์ไม่เกิน 10 มม. ไหม,,,Movex | Modutech,,True,,,,explore,พิทช์ ≤ 10
 EX-005,explore,explore,multi,2,Modutech,,MP80 C | MP80 FG | MP80 NP,,,,,,,explore,
-EX-006,explore,explore,multi,1,ต้องการสายพานน้ำหนักไม่เกิน 5 kg/m2,,,Movex | Modutech,,True,,,,explore,น้ำหนัก ≤ 5
-EX-006,explore,explore,multi,2,Modutech,,MD127 GAP50% | SM254 FG50% | SM127 FG,,,,,,,explore,
+EX-006,explore,explore,single,1,ต้องการสายพานน้ำหนักไม่เกิน 5 kg/m2,,MD127 GAP50% | SM254 FG50% | SM127 FG,,,,,,,explore,น้ำหนัก ≤ 5 kg/m² (คุณสมบัติของสายพานโมดูลาร์ ค้นได้ทันที)
 EX-007,explore,explore,single,1,สายพานผิว Flush Grid มีรุ่นไหนบ้าง,,MP80 FG | SM127 FG | EC127 FG,,,,,,,explore,ค้นตามผิว
 EX-008,explore,explore,single,1,มีสายพานรับแรงดึงเกิน 200000 N/m ไหม,,,ไม่มี | ไม่พบ,,,,,,explore,ไม่มีจริง ต้องตอบว่าไม่มี
-EX-009,explore,explore,single,1,สายพานผิวกันลื่นมีรุ่นไหนบ้าง,,MP80 NS | XP254 EVO CR | MD508 NS,,,,,,,explore,Non Slip
+EX-009,explore,explore,single,1,สายพานผิวกันลื่นมีรุ่นไหนบ้าง,,MP80 NS | SM127 FG-GT | EC127 GT,,,,,,,explore,Non Slip
 EX-010,explore,explore,single,1,ต้องการสายพานรับแรงดึงอย่างน้อย 50000 N/m,,HD635 C | MD508 C | MD508 NS,,,,,,,explore,ต้องบอกว่าค้นครบทั้งฐาน
 AP-001,application,application,single,1,สายพานสำหรับไลน์ตัดแต่งเลาะกระดูกไก่ ใช้รุ่นไหนดี,,EC254 C | EC508 C | EC508 PR11,,,,,,,application,เลาะกระดูกไก่
 AP-002,application,application,single,1,สายพานทางเข้าเตาอบขนมปัง ใช้รุ่นไหนได้บ้าง,,EC127 FG | MD127 GAP50% | MD254 GAP48%,,,,,,,application,เตาอบเบเกอรี่

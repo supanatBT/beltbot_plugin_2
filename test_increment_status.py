@@ -69,7 +69,7 @@ def shows_increment(product, slots=Slots()):
 
 
 def main():
-    path = sys.argv[1] if len(sys.argv) > 1 else "modutech_v30_1.json"
+    path = sys.argv[1] if len(sys.argv) > 1 else "modutech_v30_3.json"
     print("1) ทดสอบรูปแบบข้อความ")
     bad = unit()
 

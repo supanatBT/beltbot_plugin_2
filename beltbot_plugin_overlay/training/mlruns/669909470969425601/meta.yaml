@@ -1,0 +1,9 @@
+artifact_location: file:///home/claude/beltbot_plugin/training/mlruns/669909470969425601
+creation_time: 1791359521416
+effective_trace_archival_retention: null
+experiment_id: '669909470969425601'
+last_update_time: 1791359521416
+lifecycle_stage: active
+name: gates
+trace_location: null
+workspace: default

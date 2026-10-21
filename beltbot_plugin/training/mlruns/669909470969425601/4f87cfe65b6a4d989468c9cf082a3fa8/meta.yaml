@@ -1,0 +1,14 @@
+artifact_uri: file:///home/claude/beltbot_plugin/training/mlruns/669909470969425601/4f87cfe65b6a4d989468c9cf082a3fa8/artifacts
+end_time: 1791365955523
+entry_point_name: ''
+experiment_id: '669909470969425601'
+lifecycle_stage: active
+run_id: 4f87cfe65b6a4d989468c9cf082a3fa8
+run_name: layer4-decide-plugins
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1791365955469
+status: 3
+tags: []
+user_id: root

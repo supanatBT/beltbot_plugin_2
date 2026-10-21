@@ -1,0 +1,186 @@
+{
+ "module": "assistant",
+ "llm": "google-genai · gemini-flash-latest · thinking {'level': 'low'}",
+ "testcases": "testcases_modutech_136.csv",
+ "total_turns": 6,
+ "graded": 6,
+ "passed": 6,
+ "failed": 0,
+ "skipped_no_image": 0,
+ "turns_with_image": 0,
+ "errors": 0,
+ "seconds": 53.3,
+ "by_category": {
+  "application": "5/5",
+  "routing": "1/1"
+ },
+ "by_check": {},
+ "leaks": {
+  "turns_with_leak": 0,
+  "per_word": {},
+  "turns": []
+ },
+ "results": [
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับงานไลน์ตัดแบ่ง เลาะกระดูก และตัดแต่งในอุตสาหกรรมสัตว์ปีก (Cut-up / Deboning / Trim Lines) ในแคตตาล็อก Modutech มีระบุสายพานที่รองรับการใช้งานนี้ไว้ทั้งหมด 6 รุ่น พร้อมเกรดวัสดุที่แนะนำ ดังนี้ครับ:\n\n1. **EC254 C** (พิทช์ 25.4 มม., ผิว Flat Top แบบทึบ) — วัสดุ **PE**\n2. **EC508 C** (พิทช์ 50.8 มม., ผิว Flat Top แบบทึบ) — วัสดุ **PE**\n3. **EC508 PR11** (พิทช์ 50.8 มม., ผิว Perforated Flat Top พื้นที่เปิด 11%) — วัสดุ **PE** *(หมายเหตุ: รุ่นนี้ในสายการผลิตไม่มีเกรด POM)*\n4. **HC127 C** (พิทช์ 12.7 มม., ผิว Flat Top แบบทึบ) — วัสดุ **POM** *(หมายเหตุ: รุ่นนี้ในสายการผลิตไม่มีเกรด PP)*\n5. **HC508 C** (พิทช์ 50.8 มม., ผิว Flat Top แบบทึบ โครงสร้าง Easy Clean) — วัสดุ **PE**\n6. **MP80 C** (พิทช์ 8.0 มม. Micropitch สำหรับจุดถ่ายโอนแคบ, ผิว Flat Top แบบทึบ) — วัสดุ **POM**\n\nทั้ง 6 รุ่นเป็นสายพานสำหรับวิ่งทางตรงครับ หากลูกค้ามีข้อกำหนดเพิ่มเติม เช่น ขนาดความกว้างของสายพาน หรือต้องการข้อมูลสเปกด้านอื่นเพิ่มเติม สามารถสอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-013",
+   "turn": "1",
+   "category": "routing",
+   "query": "สายพานเลาะกระดูกไก่",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 4.7,
+   "llm_usage": {
+    "prompt_token_count": 15402,
+    "candidates_token_count": 401,
+    "total_token_count": 15803
+   }
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับงานไลน์ตัดแบ่ง เลาะกระดูก และตัดแต่งในอุตสาหกรรมสัตว์ปีก (Poultry: Cut-up / Deboning / Trim Lines) ในแคตตาล็อก Modutech มีระบุรุ่นที่ใช้งานได้จริงทั้งหมด 6 รุ่น พร้อมเกรดวัสดุที่แนะนำ ดังนี้ครับ\n\n1. **EC254 C** (พิทช์ 25.4 มม. / ผิว Flat Top แบบทึบ)\n   - เกรดวัสดุที่ระบุสำหรับงานนี้: **PE**\n2. **EC508 C** (พิทช์ 50.8 มม. / ผิว Flat Top แบบทึบ หนาแข็งแรง)\n   - เกรดวัสดุที่ระบุสำหรับงานนี้: **PE**\n3. **EC508 PR11** (พิทช์ 50.8 มม. / ผิว Perforated Flat Top มีรูเปิด 11%)\n   - เกรดวัสดุที่ระบุสำหรับงานนี้: **PE** (รุ่นนี้ผลิตเฉพาะเกรด PE และ PP ไม่มีเกรด POM ในสายการผลิตครับ)\n4. **HC127 C** (พิทช์ 12.7 มม. / ผิว Flat Top แบบทึบ)\n   - เกรดวัสดุที่ระบุสำหรับงานนี้: **POM** (รุ่นนี้มีผลิตเฉพาะเกรด POM ไม่มีเกรด PP ในสายการผลิตครับ)\n5. **HC508 C** (พิทช์ 50.8 มม. / ผิว Flat Top แบบทึบ ออกแบบบานพับเปิดทำความสะอาดง่าย)\n   - เกรดวัสดุที่ระบุสำหรับงานนี้: **PE**\n6. **MP80 C** (พิทช์ 8.0 มม. / ผิว Flat Top แบบทึบ สำหรับจุดถ่ายโอนแคบ/knife edge)\n   - เกรดวัสดุที่ระบุสำหรับงานนี้: **POM**\n\nหากต้องการตรวจสอบขนาดความกว้าง สเปกการรับแรง หรือข้อมูลเพิ่มเติม สามารถแจ้งรายละเอียดของไลน์ลำเลียงเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-001",
+   "turn": "1",
+   "category": "application",
+   "query": "สายพานสำหรับไลน์ตัดแต่งเลาะกระดูกไก่ ใช้รุ่นไหนดี",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 5.4,
+   "llm_usage": {
+    "prompt_token_count": 15404,
+    "candidates_token_count": 481,
+    "total_token_count": 15885
+   }
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับงานทางเข้าเตาอบ (Oven Infeed) ในอุตสาหกรรมเบเกอรี่ แคตตาล็อก Modutech ระบุรุ่นและเกรดวัสดุที่รองรับไว้ครบทั้ง 7 รุ่น ดังนี้ครับ:\n\n1. **EC127 FG** — วัสดุ **PP** (ผิว Flush Grid พื้นที่เปิด 20%)\n2. **MD127 GAP50%** — วัสดุ **POM** (ผิว Flush Grid พื้นที่เปิด 50%)\n3. **MD254 GAP48%** — วัสดุ **POM** (ผิว Flush Grid พื้นที่เปิด 48%)\n4. **MP80 C** — วัสดุ **POM** (ผิว Flat Top แบบทึบ ระยะพิทช์ 8 mm เหมาะกับจุดถ่ายโอนแคบ)\n5. **MP80 FG** — วัสดุ **POM** (ผิว Flush Grid พื้นที่เปิด 34% ระยะพิทช์ 8 mm)\n6. **MP80 NS** — วัสดุ **POM** (ผิว Non Slip กันลื่น ระยะพิทช์ 8 mm)\n7. **SM254 FG50%** — วัสดุ **PA6** (ผิว Flush Grid พื้นที่เปิด 50%) \n   *(หมายเหตุ: ในแคตตาล็อกหน้างานระบุตระกูล PA แต่ตารางสเปกของรุ่นนี้ผลิตเฉพาะเกรด PA6 และแคตตาล็อกไม่แนะนำให้ใช้เกรด PA6 ในสภาวะเปียกครับ)*\n\nหากต้องการทราบข้อมูลสเปกเพิ่มเติมของรุ่นใด เช่น ความกว้าง หรือต้องการดูเรื่องการรับอุณหภูมิ สามารถแจ้งเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-002",
+   "turn": "1",
+   "category": "application",
+   "query": "สายพานทางเข้าเตาอบขนมปัง ใช้รุ่นไหนได้บ้าง",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 5.0,
+   "llm_usage": {
+    "prompt_token_count": 15098,
+    "candidates_token_count": 375,
+    "total_token_count": 15473
+   }
+  },
+  {
+   "checks": {
+    "no_error": true
+   },
+   "passed": true,
+   "reply": "ในแคตตาล็อก Modutech ไม่มีระบุงาน \"ไลน์แล่ปลา\" ไว้โดยตรงครับ แต่ในกลุ่มอุตสาหกรรมปลาและอาหารทะเล (Fish & Seafood) มีรุ่นที่ระบุสำหรับการใช้งานในไลน์แปรรูป โต๊ะตรวจสอบ และการตัดแต่ง โดยมีรายละเอียดดังนี้ครับ\n\n**รุ่นที่ผลิตในเกรดทนการบาด (Cut Resistant: CR):**\n* **HC508 C-MTW** (เกรด CR, ICR, POM) — แคตตาล็อกระบุสำหรับไลน์แปรรูป (Processing lines) และโต๊ะตรวจสอบ (Control tables) โดยเป็นรุ่นที่มีตัวเลือกวัสดุเกรด CR (Cut Resistant) และ ICR ซึ่งเหมาะกับจุดที่มีการสัมผัสของมีคมหรือการตัดแต่ง (รุ่นอื่นในอุตสาหกรรมนี้ไม่มีตัวเลือกเกรดดังกล่าวในสายการผลิตครับ)\n\n---\n\n**รุ่นอื่น ๆ ในกลุ่มอุตสาหกรรมปลาและอาหารทะเล (ตัวอย่างรุ่นเด่น):**\n* **EC254 C** (เกรด PE) — แคตตาล็อกระบุสำหรับโต๊ะตรวจสอบ, เครื่องตรวจจับโลหะ, ลำเลียงยกระดับแนวชัน ผิวหน้าเรียบตัน (Flat Top) ทำความสะอาดง่าย\n* **MD254 FG** (เกรด POM, PE, PP) — แคตตาล็อกระบุสำหรับไลน์แปรรูป, การสะเด็ดน้ำ, เครื่องชุบเกล็ดขนมปัง, ลำเลียงกล่อง\n* **HC127 C** (เกรด POM) — แคตตาล็อกระบุสำหรับไลน์แปรรูป, โต๊ะตรวจสอบ, การเคลือบน้ำแข็ง\n* **EC508 C** (เกรด PP, POM, PE) — แคตตาล็อกระบุสำหรับไลน์แปรรูป, โต๊ะตรวจสอบ, การเคลือบน้ำแข็ง, ลำเลียงแนวชัน\n\n**รุ่นอื่น ๆ ที่ระบุในอุตสาหกรรมปลาและอาหารทะเลทั้งหมด:**  \nMP80 C, MP80 FG, MP80 NP, MP80 NS, SM127 CRV, SM127 FG, EC127 C, EC127 FG, MD127 GAP50%, HC152 C, HC152 FG, EC254 NT, EC254 PR16, EC254 R, EC254 R-GT, EC254 TR, MD254 C, MD254 GAP48%, MD254 GT, EC381 R, EC508 FG, EC508 FG-NT, EC508 NT, EC508 PR11, EC508 R, EC508 TR, HC508 C, MD508 C, MD508 FG\n\nหากต้องการข้อมูลสเปกเพิ่มเติม เช่น ระยะพิทช์ หรือขนาดหน้ากว้าง สามารถสอบถามรายละเอียดเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-004",
+   "turn": "1",
+   "category": "application",
+   "query": "สายพานสำหรับไลน์แล่ปลา",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 7.0,
+   "llm_usage": {
+    "prompt_token_count": 13042,
+    "candidates_token_count": 650,
+    "total_token_count": 13692
+   }
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับงานในอุตสาหกรรมกล่องลูกฟูก (Corrugated) ในแคตตาล็อก Modutech มีสายพานโมดูลาร์ที่ระบุการใช้งานรองรับทั้งหมด 16 รุ่น พร้อมเกรดวัสดุที่แนะนำ ดังนี้ครับ:\n\n1. **EC127 C** (Flat Top, Pitch 12.7 มม.) — วัสดุ POM\n2. **EC127 FG** (Flush Grid, Pitch 12.7 มม.) — วัสดุ POM\n3. **EC127 GT** (Grip Top, Pitch 12.7 มม.) — วัสดุ PP\n4. **HC152 C** (Flat Top, Pitch 15.24 มม.) — วัสดุ POM\n5. **HC152 FG-GT** (Flush Grid Grip Top, Pitch 15.24 มม.) — วัสดุ PP\n6. **HD254 C** (Flat Top, Pitch 25.4 มม.) — วัสดุ POM *(หมายเหตุ: ความกว้างขั้นต่ำที่ยืนยันได้คือ 170 มม.)*\n7. **MD254 C** (Flat Top, Pitch 25.4 มม.) — วัสดุ POM\n8. **MD508 C** (Flat Top, Pitch 50.8 มม.) — วัสดุ POM\n9. **MD508 NS** — วัสดุ POM\n10. **SM127 C** — วัสดุ POM\n11. **SM127 FG** — วัสดุ POM\n12. **XP254 BT** — วัสดุ POM\n13. **XP254 C** — วัสดุ POM\n14. **XP254 EVO CR** — วัสดุ POM\n15. **XP254 EVO FLT** — วัสดุ POM\n16. **XP254 PR22%** — วัสดุ POM\n\nสายพานเหล่านี้รองรับหลากหลายจุดการทำงานในไลน์กล่องลูกฟูก เช่น เครื่องเรียงกล่องลง (Down Stacker), การจัดการกองกล่อง (Stack Handling), รถลำเลียงถ่ายโอน (Transfer Car), จุดถ่ายโอน 90 องศา (90° Transfer), ชุดป้อนสายรัด (Strap Feed), ชุดป้อนชิ้นงาน (Feeder) และเครื่องจัดเรียงพาเลท (Palletizer)\n\nหากคุณลูกค้ามีจุดติดตั้ง รูปแบบการลำเลียง (แนวราบ/ทางลาด) หรือสเปกขนาดความกว้างที่ต้องการ สามารถแจ้งเพิ่มเติมเพื่อเลือกรุ่นที่เหมาะสมได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-006",
+   "turn": "1",
+   "category": "application",
+   "query": "สายพานสำหรับลำเลียงกล่องลูกฟูก",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 19.8,
+   "llm_usage": {
+    "prompt_token_count": 16998,
+    "candidates_token_count": 589,
+    "total_token_count": 17587
+   }
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับงานลำเลียงผ่าน**เครื่องตรวจจับโลหะ (Metal Detection)** ในแคตตาล็อก Modutech มีระบุการใช้งานและผลิตจริงทั้งหมด 17 รุ่น พร้อมเกรดวัสดุที่รองรับ ดังนี้ครับ:\n\n1. **EC127 C** (วัสดุ: PE, PP)\n2. **EC127 FG** (วัสดุ: PE, PP)\n3. **EC254 C** (วัสดุ: PE, PP)\n4. **EC254 NT** (วัสดุ: PE)\n5. **EC508 C** (วัสดุ: PE)\n6. **EC508 PR11** (วัสดุ: PE) *(หมายเหตุ: รุ่นนี้ไม่มีผลิตในเกรด POM)*\n7. **EC508 PR22%** (วัสดุ: PE)\n8. **HC127 C** (วัสดุ: POM) *(หมายเหตุ: รุ่นนี้ไม่มีผลิตในเกรด PP)*\n9. **HC152 C** (วัสดุ: PE, POM, PP)\n10. **HC152 FG** (วัสดุ: PE, PP)\n11. **HC508 C** (วัสดุ: PE)\n12. **HC508 C-MTW** (วัสดุ: PE)\n13. **MD127 GAP50%** (วัสดุ: POM, PP)\n14. **MD254 C** (วัสดุ: PE, PP)\n15. **MD254 FG** (วัสดุ: PE, PP)\n16. **MP80 C** (วัสดุ: POM)\n17. **SM127 C** (วัสดุ: PP)\n\nหากต้องการให้แนะนำรุ่นที่เหมาะสมกับขนาดสินค้า น้ำหนัก หรือลักษณะหน้างาน สามารถแจ้งรายละเอียดเพิ่มเติมเพื่อตรวจสอบสเปกได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-007",
+   "turn": "1",
+   "category": "application",
+   "query": "สายพานเข้าเครื่องตรวจจับโลหะ",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 5.4,
+   "llm_usage": {
+    "prompt_token_count": 19633,
+    "candidates_token_count": 434,
+    "total_token_count": 20067
+   }
+  }
+ ]
+}

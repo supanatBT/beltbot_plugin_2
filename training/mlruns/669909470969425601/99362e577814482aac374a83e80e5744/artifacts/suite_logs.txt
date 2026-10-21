@@ -1,0 +1,376 @@
+===== testsuite_120.py
+ชุดทดสอบ 150 เคส · ข้อมูล modutech_v30_1.json
+
+  ✅ application        8/8
+  ✅ code              12/12
+  ✅ curve              6/6
+  ✅ escalate          24/24
+  ✅ explore           10/10
+  ✅ material           8/8
+  ✅ routing           18/18
+  ✅ strength           4/4
+  ✅ temp              20/20
+  ✅ width_inch         3/3
+  ✅ width_min          8/8
+  ✅ width_pinned       5/5
+  ✅ width_shown       10/10
+  ✅ width_silent      11/11
+  ✅ width_special      3/3
+
+รวม 150/150
+
+เขียน testcases_modutech_136.csv (172 เทิร์น) — สคีมาเดียวกับ testcases_v2.csv รันกับบอตตัวเต็มได้เลย
+
+
+===== test_sprocket_flow.py
+1) สายพานที่เล่มผูกสเตอร์ไว้
+  ✓ มีคีย์ sprockets ใน context
+  ✓ ได้สเตอร์ 9 ตัว
+  ✓ ไม่ส่งสเตอร์ตัวเดียวกันซ้ำ
+  ✓ มี link ของสายพานติดมาด้วย
+
+2) สายพานที่เล่มไม่ได้ผูกสเตอร์ไว้ — ต้องบอก ไม่ใช่เงียบ ไม่ใช่เดา
+  ✓ MD508 C: สเตอร์ 0 ตัว + มีคำเตือน
+  ✓ MD508 FG: สเตอร์ 0 ตัว + มีคำเตือน
+  ✓ SM127 FG-GT: สเตอร์ 0 ตัว + มีคำเตือน
+  ✓ EC254 TR-TAB: สเตอร์ 0 ตัว + มีคำเตือน
+
+3) ลูกค้าพิมพ์รหัสสเตอร์มาเดี่ยว ๆ
+  ✓ แปลงกลับได้เป็น EC127 C/FG/GT
+  ✓ แนบ record ของสายพานทั้งสามรุ่น
+  ✓ เหลือเฉพาะสเตอร์ตัวที่ถาม ไม่เทมาทั้งซีรีส์
+  ✓ ไม่ตั้ง slot material จากวัสดุต่อท้ายรหัส
+  ✓ prompt มีกฎกำกับการใช้ sprocket_query
+  ✓ ไม่ส่ง kg มาก็ไม่พัง (แค่ตอบไม่ได้)
+
+4) ขนาดสเตอร์และรูเพลาต้องไม่หลุดเข้า prompt — ตรวจทุกรุ่นที่มีสเตอร์
+  ✓ ทั้ง 57 รุ่นไม่มีขนาดหลุด
+  ✓ แต่ละสเตอร์ยังมีคำเตือนให้ขอขนาดจากฝ่ายขาย
+
+5) คำถามที่ไม่ได้ถามสเตอร์ ต้องไม่แนบสเตอร์มาให้เปลือง
+  ✓ 'HC508 C ทนอุณหภูมิเท่าไหร่' ไม่มีคีย์ sprockets
+  ✓ 'HC508 C กว้างเท่าไหร่' ไม่มีคีย์ sprockets
+
+6) ใช้ได้กับกราฟทั้งสองแบบ — สร้างสด และโหลดจากไฟล์ .db
+⚡ KnowledgeGraph loaded from SQLite in 14ms
+   📁 ./modutech_kg.db
+   nodes=228  edges=1462  built=2026-09-30T21:38:53
+  ✓ ไฟล์ .db ไม่มีฟิลด์ที่ sprocket_gate บล็อก
+  ✓ ลายนิ้วมือในไฟล์ตรงกับ JSON ปัจจุบัน
+  ✓ shim แปลงรหัสสเตอร์ได้ผลเท่ากันทั้งสองแบบ
+  ✓ ได้ record สายพานเท่ากันทั้งสองแบบ
+
+7) BELONGS_TO — รุ่นอื่นในซีรีส์เดียวกัน (ตอบได้จากกราฟเท่านั้น)
+  ✓ HC508 C ได้ 21 รุ่นในซีรีส์เดียวกัน
+  ✓ ไม่มีตัวเองอยู่ในรายการ
+  ✓ ทุกรุ่นในรายการอยู่ในซีรีส์เดียวกันจริง
+  ✓ มีคำกำกับห้ามสรุปว่าใช้แทนกันได้
+  ✓ คำถามที่ไม่ได้ถามซีรีส์ ไม่แนบ same_series มาให้เปลือง
+  ✓ ไม่ส่ง kg มา ก็ไม่มีคีย์นี้ ไม่ใช่พัง
+  ✓ prompt มีกฎกำกับการใช้ same_series
+⚡ KnowledgeGraph loaded from SQLite in 6ms
+   📁 ./modutech_kg.db
+   nodes=228  edges=1462  built=2026-09-30T21:38:53
+  ✓ กราฟจากไฟล์ .db ให้รายชื่อเท่ากับกราฟที่สร้างสด
+
+8) รหัสสเตอร์เดี่ยว ๆ ต้องไม่ถูกตีเป็นคำถามแนะนำรุ่นแบบเปิด
+  ✓ EC127SQZ19*PA: ได้ action=answer ไม่ใช่ถามกลับ
+  ✓ EC127SQZ19*PA: แปลงกลับได้ ['EC127 C', 'EC127 FG', 'EC127 GT']
+  ✓ HD635SQZ10*POM: ได้ action=answer ไม่ใช่ถามกลับ
+  ✓ HD635SQZ10*POM: แปลงกลับได้ ['HD635 C']
+  ✓ 'อยากได้สายพาน Modutech แนะ' ยังทำงานเหมือนเดิม
+  ✓ 'สายพานสำหรับไลน์เปียก' ยังทำงานเหมือนเดิม
+  ✓ คำถามแนะนำรุ่นแบบเปิดยังถามกลับ
+
+9) คำกำกับขนาดสเตอร์ต้องบอกเหตุผลจริง ไม่ปล่อยให้ LLM เติมเอง
+  ✓ คำกำกับบอกว่าเล่มพิมพ์ค่าไว้
+  ✓ คำกำกับบอกเหตุผลว่าไม่มีนิยามสัญลักษณ์
+  ✓ คำกำกับห้าม LLM อ้างว่าแคตตาล็อกไม่มีข้อมูล
+  ✓ ยังไม่มีตัวเลขขนาดหลุดมาพร้อมคำกำกับ
+
+รวม 41/41
+
+
+===== testcases_graph.py
+✓ ตรวจแล้ว 33 เคสเป็นธรรมทั้งหมด (คำที่ห้ามไม่อยู่ใน context · คำที่ต้องมีหาได้ใน context)
+เขียน testcases_graph_relations.csv — 33 เคส
+  graph_blocked        3
+  graph_compatible     20
+  graph_material       5
+  graph_series         5
+
+รันกับบอตตัวเต็ม:
+  python run_answer_eval.py --module chatbot_v5 --testcases testcases_graph_relations.csv -o graph_run1.json
+
+
+===== test_resume.py
+
+1) rebuild_history
+  ✓ เก็บเฉพาะ user/assistant
+  ✓ ไม่มีคีย์ path หลุดมา
+  ✓ ข้ามรูป · notice · ข้อความว่าง · ชนิดผิด
+  ✓ ตัดข้อความยาวเกิน
+  ✓ input ไม่ใช่ list → []
+  ✓ จำกัดจำนวนเทิร์น
+
+2) sanitize_dialog_state
+  ✓ เก็บรหัสที่มีจริง
+  ✓ เก็บ pid ที่มีจริง
+  ✓ ตัด slot ที่ไม่รู้จัก
+  ✓ ไม่กู้ pending
+  ✓ ตัดคีย์ที่คลาสไม่รู้จัก
+  ✓ brand ปลอมถูกตัด
+  ✓ input ไม่ใช่ dict → {}
+
+3) seed_session แล้วถามต่อ
+  ✓ รายงานจำนวนข้อความ
+  ✓ รายงานว่ากู้สถานะได้
+  ✓ ได้ bot_session_id
+  ✓ สถานะอยู่ใน _dialog_states
+  ✓ บอทเห็นประวัติเดิม
+  ✓ บอทเห็นรหัสในบริบท
+  ✓ current_state คืนของจริง
+
+4) ไม่มี resume ก็ต้องทำงานเหมือนเดิม
+  ✓ resume ว่าง → ไม่กู้สถานะ
+  ✓ เริ่มจากศูนย์ได้
+
+──────────────────────────────────────────────
+22/22 ผ่าน
+
+
+===== test_api_resume.py
+
+1) ไม่ส่ง resume — ต้องเหมือนเดิมทุกอย่าง
+  ✓ ตอบ 200
+  ✓ มี session_id
+  ✓ มีคีย์ state เพิ่มมา
+  ✓ บอทเริ่มจากประวัติเปล่า
+
+2) session หาย + ส่ง resume → ถามต่อได้
+  ✓ ตอบ 200
+  ✓ ได้ session ใหม่ (เบราว์เซอร์ใช้ตรวจว่ากู้เกิดขึ้น)
+  ✓ บอทเห็นประวัติ 2 ข้อความ (notice ถูกข้าม)
+  ✓ บอทเห็นรหัสในบริบท
+  ✓ รหัสปลอมถูกตัด
+  ✓ state กลับไปให้เบราว์เซอร์
+  ✓ ไม่คืน pending
+  ✓ slot ที่รู้จักยังอยู่
+
+3) session ยังอยู่ — resume ต้องไม่ทับของฝั่งเซิร์ฟเวอร์
+  ✓ นับต่อจากของเดิม ไม่ใช่ของใน resume
+
+4) resume พัง / ใหญ่เกิน / ไม่ใช่ dict
+  ✓ JSON พัง → ไม่ล้ม ตอบปกติ
+  ✓ ไม่ใช่ dict → ไม่ล้ม
+  ✓ ใหญ่เกิน → 400 resume_too_large
+
+5) state ไม่หลุดพาธรูปในเครื่องเซิร์ฟเวอร์
+  ✓ ไม่มีพาธเซิร์ฟเวอร์ในคำตอบ
+
+──────────────────────────────────────────────
+17/17 ผ่าน
+2026-10-07 16:28:12,529 INFO beltbot: โหลด fakebot เสร็จใน 0.0 วินาที
+2026-10-07 16:28:12,556 INFO beltbot: turn session=ccNhcbia ip=testclient image=False decision=answer 0ms
+2026-10-07 16:28:12,557 INFO httpx: HTTP Request: POST http://testserver/api/chat "HTTP/1.1 200 OK"
+2026-10-07 16:28:12,558 INFO beltbot: โหลด fakebot เสร็จใน 0.0 วินาที
+2026-10-07 16:28:12,607 INFO beltbot: resume session=eFfoGSpu ข้อความ 2 สถานะ กู้ได้
+2026-10-07 16:28:12,608 INFO beltbot: turn session=eFfoGSpu ip=testclient image=False decision=answer 0ms
+2026-10-07 16:28:12,609 INFO httpx: HTTP Request: POST http://testserver/api/chat "HTTP/1.1 200 OK"
+2026-10-07 16:28:12,609 INFO beltbot: โหลด fakebot เสร็จใน 0.0 วินาที
+2026-10-07 16:28:12,618 INFO beltbot: turn session=nZ9oOV4y ip=testclient image=False decision=answer 0ms
+2026-10-07 16:28:12,619 INFO httpx: HTTP Request: POST http://testserver/api/chat "HTTP/1.1 200 OK"
+2026-10-07 16:28:12,621 INFO beltbot: turn session=nZ9oOV4y ip=testclient image=False decision=answer 0ms
+2026-10-07 16:28:12,622 INFO httpx: HTTP Request: POST http://testserver/api/chat "HTTP/1.1 200 OK"
+2026-10-07 16:28:12,622 INFO beltbot: โหลด fakebot เสร็จใน 0.0 วินาที
+2026-10-07 16:28:12,630 INFO beltbot: turn session=s-HRng5d ip=testclient image=False decision=answer 0ms
+2026-10-07 16:28:12,631 INFO httpx: HTTP Request: POST http://testserver/api/chat "HTTP/1.1 200 OK"
+2026-10-07 16:28:12,633 INFO beltbot: turn session=X0RFO6S1 ip=testclient image=False decision=answer 0ms
+2026-10-07 16:28:12,634 INFO httpx: HTTP Request: POST http://testserver/api/chat "HTTP/1.1 200 OK"
+2026-10-07 16:28:12,670 INFO httpx: HTTP Request: POST http://testserver/api/chat "HTTP/1.1 400 Bad Request"
+2026-10-07 16:28:12,671 INFO beltbot: โหลด fakebot เสร็จใน 0.0 วินาที
+2026-10-07 16:28:12,680 INFO beltbot: resume session=kVm4BGuM ข้อความ 1 สถานะ กู้ได้
+2026-10-07 16:28:12,680 INFO beltbot: turn session=kVm4BGuM ip=testclient image=False decision=answer 0ms
+2026-10-07 16:28:12,681 INFO httpx: HTTP Request: POST http://testserver/api/chat "HTTP/1.1 200 OK"
+
+
+===== test_modutech_kg.py
+1) สร้างกราฟและนับ
+  ✓ สายพาน 68 ปม
+  ✓ สเตอร์ 142 ปม
+  ✓ ไม่มีปมวัสดุลอย
+
+2) ความสัมพันธ์ตรงกับไฟล์
+  ✓ คู่สายพาน-สเตอร์ 560 คู่ ตรงกันหมด
+  ✓ เส้นเป็นสองทาง ถามกลับได้
+  ✓ สายพานที่ไม่มีคู่สเตอร์ 11 รุ่น
+  ✓ MD508 ทั้ง 6 รุ่นอยู่ในกลุ่มนั้น
+  ✓ MD508 C ถามสเตอร์ได้ [] ไม่ใช่เดา
+
+3) กราฟไม่ถือตัวเลข — ค่าที่เกตบล็อกรั่วออกไม่ได้
+  ✓ ไม่มี Di_mm ในกราฟ
+  ✓ ไม่มี Do_mm ในกราฟ
+  ✓ ไม่มี Bore_mm ในกราฟ
+  ✓ ไม่มี Bore_inch ในกราฟ
+  ✓ ไม่มี pitch_diameter ในกราฟ
+  ✓ ไม่มี Max_Working_Load_N ในกราฟ
+  ✓ ไม่มี Weight_kg_m ในกราฟ
+  ✓ ไม่มี temperature ในกราฟ
+  ✓ ไม่มีค่าตัวเลขใน attrs เลย
+  ✓ teeth เก็บเป็นข้อความที่เล่มพิมพ์ ไม่ใช่ตัวเลขให้คำนวณ
+
+4) ไม่แก้ข้อมูลที่รับมา
+  ✓ dict ต้นทางไม่ถูกแก้
+
+5) ข้อมูลขาด = หยุด ไม่เดินต่อ
+  ✓ สเตอร์หายไปหนึ่งตัวต้อง raise
+  ✓ ผูกกับรุ่นที่ไม่มีต้อง raise
+
+6) ส่วนที่ RetrieverV4 เรียก
+  ✓ expand_products คืนสเตอร์ของรุ่นนั้น
+  ✓ .compatible กับ .compatible_products ชี้ของเดียวกัน
+  ✓ รหัสที่ไม่รู้จักได้ context ว่าง ไม่ใช่ error
+  ✓ ไม่ส่ง product_ids มาเลยก็ไม่พัง
+  ✓ รับคีย์เวิร์ดชื่ออื่นได้
+
+7) ตรงกับที่ RetrieverV4 เรียกจริง (retriever_v4.py บรรทัด 712)
+  ✓ seed_product_ids= ใช้ได้
+  ✓ include_same_series=True ได้รุ่นในซีรีส์
+  ✓ include_same_material=False ไม่ดึงวัสดุ
+  ✓ include_compatible=False ไม่ดึงสเตอร์
+  ✓ material_details มี full_name ให้ to_llm_context ใช้
+  ✓ process_details ว่างเสมอ (เล่มไม่มีข้อมูลกระบวนการผลิต)
+  ✓ รับรหัสสเตอร์เป็น seed ได้ (hop 2 ของ retriever)
+
+8) ถามกลับจากรหัสสเตอร์
+  ✓ EC127SQZ24*PA → EC127 C/FG/GT
+  ✓ รหัสที่ไม่มีในเล่มคืน [] ไม่ใช่เดา
+  ✓ ส่งหลายรหัสแล้วไม่ซ้ำ
+
+รวม 36/36
+
+
+===== test_increment_status.py
+1) ทดสอบรูปแบบข้อความ
+   ok  found       76.2   | Standard belt increments 76.2 mm
+   ok  found       76.2   | Standard Belt Increments 76,2
+   ok  found       76.2   | - Standard belt increments 76,2 mm.
+   ok  unreadable  None   | Standard belt increments: 76.2 mm
+   ok  unreadable  None   | Standard belt increments = 76,2 mm
+   ok  found       50.0   | Standard belt increment 50 mm.
+   ok  found       101.6  | Standard b elt increme nts 101,6 m m.
+   ok  unreadable  None   | Standard belt increments are 76.2 mm
+   ok  not_printed None   | Non-standard belt increments 16,6 mm
+   ok  not_printed None   | Belt is FDA approved
+   ok  no_notes           | notes = []
+   ok  no_notes           | notes = None
+   ok  not_printed        | notes = ['x']
+
+2) สถานะของทั้ง 68 รุ่นใน modutech_v30_1.json
+    {'found': 63, 'not_printed': 5}
+
+3) พฤติกรรมกับ v30 ต้องไม่เปลี่ยน (นับเฉพาะรุ่นที่ gate เขียนข้อความใหม่)
+   รุ่นที่ gate เขียนใหม่: 15
+   แสดงค่าเพิ่มทีละ 12: EC254 R, EC254 R-GT, EC254 R-TABE, EC254 R-TABM, EC254 TR, EC254 TR-TAB, MD254 RR, XP254 BT, EC508 C, EC508 C-RT, EC508 GT, EC508 PR22%
+   ซ่อนไว้ 3: HC127 C, MD127 GAP50%, XP254 GT
+
+4) จำลองวันที่ข้อความในเล่มเปลี่ยนรูป (เติมโคลอน)
+   ใช้รุ่น HC127 C (เดิมอ่านได้ 101.6)
+   หลังเติมโคลอน สถานะ = unreadable
+   โค้ดเดิมจะ : แสดง (เพราะ None ถูกตีความว่าเล่มไม่ได้ระบุ)
+   โค้ดใหม่จะ : ไม่แสดง
+   ✅ เงียบไว้ตามหลัก ไม่เดา เตือนแทน
+
+สรุป: ผ่านทุกข้อ
+
+
+===== test_core_registry.py
+1) แบรนด์ที่มีอยู่
+  ✓ หาเจอ movex แล้ว modutech เรียงตาม order
+  ✓ พาธนับจากโฟลเดอร์แบรนด์
+  ✓ Modutech ไม่มีรูป → auto ปิด พร้อมเหตุผล
+  ✓ Movex ไม่ส่งตัวตรวจ collection → auto ยังไม่เปิด (ยืนยันไม่ได้)
+
+2) ทะเบียนโมเดล Movex
+  ✓ labels.json มี 10 คลาส
+  ✓ checkpoint มี 10 คลาสจริง (อ่านหัว safetensors)
+  ✓ revision ตรงกับ hash ของไฟล์
+  ✓ ลำดับคลาสตาม id
+  ✓ thresholds ระบุที่มา
+  ✓ auto + collection มีข้อมูล → เปิด
+  ✓ auto + collection ว่าง → ปิด
+
+3) ข้อความรวมหลายแบรนด์ประกอบจาก brand.yaml ได้ตรงของเดิมทุกตัวอักษร
+  ✓ เมนูถามแบรนด์
+  ✓ ปฏิเสธนอกเรื่อง
+  ✓ ทักทาย
+  ✓ ถามยืนยันเมื่อเจอสองแบรนด์
+  ✓ ปฏิเสธรูป
+  ✓ คำตอบเลือกแบรนด์ (ไม่รวมเลขเมนู)
+
+4) ของที่ประกาศไม่ตรงของจริง ต้องหยุดพร้อมบอกค่าทั้งสองฝั่ง
+  ✓ labels 9 แต่ checkpoint 10
+  ✓ revision ไม่ตรงกับไฟล์
+  ✓ adapter บน Hub ห้ามใช้ main
+  ✓ adapter บน Hub ที่มี tag ผ่าน
+  ✓ threshold นอกช่วง 0..1
+  ✓ enabled: true แต่ขาด labels → หยุด
+  ✓ enabled: auto แต่ขาด labels → ปิดพร้อมเหตุผล
+  ✓ enabled: true แต่ collection ว่าง → หยุด
+
+5) brand.yaml ผิดรูป
+  ✓ key ไม่ตรงชื่อโฟลเดอร์
+  ✓ key มี _ (แยกสถานะกลับไม่ได้)
+  ✓ protocol ไม่ตรง
+  ✓ order ซ้ำ
+  ✓ regex เสีย
+  ✓ info ขาดช่อง
+  ✓ enabled: false → ข้าม
+  ✓ include_disabled เห็นครบ
+  ✓ only ระบุแบรนด์ที่ไม่มี
+  ✓ ยังไม่มี plugin.py → หยุดพร้อมบอกไฟล์
+
+6) ชื่อเดิมของ Modutech ชี้ไปโมดูลจริงตัวเดียวกัน (ไม่ใช่สำเนา)
+  ✓ modutech_gates is brands.modutech.gates
+  ✓ modutech_router is brands.modutech.router
+  ✓ modutech_turn is brands.modutech.turn
+  ✓ modutech_kg is brands.modutech.kg
+
+7) แกนกลางไม่มีชื่อแบรนด์
+  ✓ grep core/*.py
+
+รวม 40/40
+
+
+===== test_core_dialogue.py
+1) เหมือน dataclass เดิม
+  ✓ คีย์และลำดับคีย์เท่าเดิม
+  ✓ ค่าเริ่มต้นเท่าเดิม
+  ✓ from_dict → to_dict ตัวอย่าง 0
+  ✓ from_dict → to_dict ตัวอย่าง 1
+  ✓ from_dict → to_dict ตัวอย่าง 2
+  ✓ from_dict → to_dict ตัวอย่าง 3
+  ✓ from_dict → to_dict ตัวอย่าง 4
+  ✓ สร้างด้วย keyword แบบเดิม
+  ✓ ชื่อที่ไม่รู้จัก → AttributeError
+
+2) ชื่อแบนกับที่เก็บจริง
+  ✓ แก้ในที่ผ่านชื่อแบน ถึง brands จริง
+  ✓ เขียนผ่านชื่อแบน
+  ✓ deepcopy แยกขาด
+  ✓ to_dict ไม่ผูกกับสถานะจริง
+  ✓ เท่ากันเมื่อค่าเท่ากัน
+  ✓ reset_brand คืนค่าเริ่มต้นเฉพาะแบรนด์นั้น
+
+3) แบรนด์ที่สาม — ไม่ต้องแก้ core
+  ✓ แยก demo_codes กลับเข้า brands['demo']
+  ✓ รหัสของแต่ละแบรนด์ไม่ปนกัน
+  ✓ ส่งออกครบสามแบรนด์
+  ✓ สถานะแบบสองแบรนด์อ่านสถานะสามแบรนด์ได้ (ทิ้งของที่ไม่รู้จัก)
+
+4) schema ผิดรูป
+  ✓ key มี _
+  ✓ ช่องไม่ใช่ identifier
+  ✓ state ไม่ใช่ dict
+
+รวม 22/22

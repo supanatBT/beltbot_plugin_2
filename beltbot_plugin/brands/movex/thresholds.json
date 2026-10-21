@@ -1,0 +1,7 @@
+{
+  "answer": 0.90,
+  "series": 0.50,
+  "dominant": 0.85,
+  "confidence": 0.50,
+  "source": "legacy_hardcoded — ย้ายมาจากโค้ด (DialogueManager.VIT_ANSWER/VIT_SERIES, RetrieverV4Config) ไม่ได้มาจากขั้นปรับเกณฑ์ · ต้องแทนด้วยผลจาก training/ เมื่อเทรนรอบใหม่"
+}

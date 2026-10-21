@@ -1,0 +1,14 @@
+artifact_uri: file:///home/claude/beltbot_plugin/training/mlruns/669909470969425601/4d672fc4bb6540838d65ec68f3e2aefb/artifacts
+end_time: 1791361272385
+entry_point_name: ''
+experiment_id: '669909470969425601'
+lifecycle_stage: active
+run_id: 4d672fc4bb6540838d65ec68f3e2aefb
+run_name: layer1a-move-modutech
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1791361272337
+status: 3
+tags: []
+user_id: root

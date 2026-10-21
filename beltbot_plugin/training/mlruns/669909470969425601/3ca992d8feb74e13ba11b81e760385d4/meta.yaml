@@ -1,0 +1,14 @@
+artifact_uri: file:///home/claude/beltbot_plugin/training/mlruns/669909470969425601/3ca992d8feb74e13ba11b81e760385d4/artifacts
+end_time: 1791361464164
+entry_point_name: ''
+experiment_id: '669909470969425601'
+lifecycle_stage: active
+run_id: 3ca992d8feb74e13ba11b81e760385d4
+run_name: layer1b-registry-models
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1791361464122
+status: 3
+tags: []
+user_id: root

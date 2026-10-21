@@ -127,34 +127,72 @@ else:
     print(f"   บันทึกไว้ที่ {LOCK.name} แล้ว รอบหน้าจะเทียบให้")
 
 # ── 1. โค้ด ──────────────────────────────────────────────────
-# ชื่อพวกนี้มาจากบรรทัด import ของ chatbot_v5.py ขาดตัวไหนพังตอน import ทันที
+# ชื่อพวกนี้มาจากบรรทัด import ของ assistant.py และปลั๊กอิน ขาดตัวไหนพังตอน import ทันที
 CODE = {
-    "chatbot_v5.py":     "ตัวบอต — โหลดโมเดล ต่อ Gemini คุมบทสนทนา",
+    "assistant.py":      "ตัวบอต — โหลดโมเดล ต่อ Gemini ประกอบปลั๊กอิน (ชื่อใหม่ของ chatbot_v5.py)",
+    "chatbot_v5.py":     "ชื่อเดิม → assistant.py",
+    "core/turn.py":      "หนึ่งเทิร์นของแชต (ไม่รู้จักแบรนด์)",
+    "brands/movex/runtime.py":    "ค้น/tool/prompt ของ Movex (ครอบ retriever_v4)",
+    "brands/modutech/runtime.py": "ค้น/tool ของ Modutech (collection แยก)",
     "app.py":            "FastAPI ที่หน้าเว็บเรียก (มาจาก beltbot_web_deploy.zip)",
     "retriever_v4.py":   "ค้นข้อมูลจาก Qdrant",
     "knowledge_graph.py": "กราฟความเข้ากันได้ของ Movex",
     "pipeline_logger.py": "บันทึกทุกขั้นของการตอบ",
-    "modutech_gates.py": "เกตกรองคำตอบ Modutech",
-    "modutech_router.py": "แยกว่าคำถามเป็น Movex หรือ Modutech",
-    "modutech_turn.py":  "ประกอบคำตอบหนึ่งเทิร์นของ Modutech",
-    "dialogue_state.py": "จำบริบทข้ามเทิร์น",
-    "modutech_kg.py":    "กราฟความสัมพันธ์ + ตัวโหลดที่ตรวจลายนิ้วมือ",
+    "brands/modutech/gates.py":  "เกตกรองคำตอบ Modutech",
+    "brands/modutech/router.py": "แยกว่าคำถามเป็น Movex หรือ Modutech",
+    "brands/modutech/turn.py":   "ประกอบคำตอบหนึ่งเทิร์นของ Modutech",
+    "dialogue_state.py": "ทางเข้าชื่อเดิม → core/decide.py + brands/*/plugin.py",
+    "core/decide.py":    "ตัดสินก่อนถึง LLM ส่วนกลาง (ไม่รู้จักแบรนด์)",
+    "brands/movex/plugin.py":    "ตัดสินของ Movex",
+    "brands/modutech/plugin.py": "ตัดสินของ Modutech",
+    "brands/modutech/kg.py":     "กราฟความสัมพันธ์ + ตัวโหลดที่ตรวจลายนิ้วมือ",
+    # ชื่อเดิมที่ราก — ตัวชี้ไปโมดูลจริงใน brands/modutech/ (ชุดเกต import ชื่อนี้)
+    "modutech_gates.py": "ชื่อเดิม → brands/modutech/gates.py",
+    "modutech_router.py": "ชื่อเดิม → brands/modutech/router.py",
+    "modutech_turn.py":  "ชื่อเดิม → brands/modutech/turn.py",
+    "modutech_kg.py":    "ชื่อเดิม → brands/modutech/kg.py",
     "knowledge_graph.py": "คลาสกราฟที่ใช้ร่วมกับ Movex (โหลดไฟล์ .db)",
     "sales_contact.py":  "เบอร์/อีเมลฝ่ายขายตัวจริง",
 }
 
-print("\n1) ไฟล์โค้ด (ต้องอยู่แบน ๆ ที่โฟลเดอร์นี้)")
+print("\n1) ไฟล์โค้ด (ที่รากกับใต้ brands/)")
 for f, why in CODE.items():
     check((ROOT / f).is_file(), f"   ✓ {f} — {why}", f"   ✗ ไม่พบ {f} ({why})")
 
 # ── 2. ข้อมูลและโมเดลในเครื่อง ────────────────────────────────
-# พาธพวกนี้อ่านจากค่าคงที่ใน chatbot_v5.py ไม่ได้เขียนทับด้วยมือ
-src5 = read(ROOT / "chatbot_v5.py")
+# พาธพวกนี้อ่านจาก brands/<key>/brand.yaml › data (ชั้น 5 — เดิมอ่านจากค่าคงที่ใน chatbot_v5.py)
+src5 = read(ROOT / "assistant.py")
+
+
+def _brand(key: str) -> dict:
+    import yaml
+    p = ROOT / "brands" / key / "brand.yaml"
+    return (yaml.safe_load(p.read_text(encoding="utf-8")) or {}) if p.is_file() else {}
+
+
+def _bpath(key: str, *keys: str, default: str = "") -> str:
+    node = _brand(key)
+    for k in keys:
+        node = (node or {}).get(k) if isinstance(node, dict) else None
+    if not node:
+        return default
+    rel = os.path.relpath(os.path.normpath(os.path.join(ROOT, "brands", key, node)), ROOT)
+    return "./" + rel.replace(os.sep, "/")
+
+
+_CONSTS = {
+    "QDRANT_PATH": _bpath("movex", "data", "qdrant_path", default="./qdrant_db"),
+    "JSON_PATH": _bpath("movex", "data", "products", default="./extracted_data_v3_machine_ready.json"),
+    "KG_DB_PATH": _bpath("movex", "data", "graph_db", default="./movex_kg.db"),
+    "VIT_MODEL_PATH": _bpath("movex", "image", "vit", "adapter", default="./movex-lora-tuned-3"),
+    "MODUTECH_JSON": _bpath("modutech", "data", "catalogue", default="./modutech_v30_3.json"),
+    "MODUTECH_KG_DB": _bpath("modutech", "data", "graph_db", default="./modutech_kg.db"),
+    "MODUTECH_QDRANT": _bpath("modutech", "data", "qdrant_path", default="./qdrant_modutech_db"),
+}
 
 
 def const(name: str, default: str) -> str:
-    m = re.search(rf'^{name}\s*=\s*["\']([^"\']+)', src5, re.M)
-    return m.group(1) if m else default
+    return _CONSTS.get(name) or default
 
 
 NEEDED = [
@@ -162,8 +200,8 @@ NEEDED = [
     (const("JSON_PATH", "./extracted_data_v3_machine_ready.json"), "file", "ข้อมูลสินค้า Movex"),
     (const("KG_DB_PATH", "./movex_kg.db"), "file", "กราฟ Movex"),
     (const("VIT_MODEL_PATH", "./movex-lora-tuned-3"), "dir", "ViT LoRA ที่เทรนไว้ (ใช้ตอนส่งรูป)"),
-    (const("MODUTECH_JSON", "./modutech_v30_1.json"), "file", "ข้อมูล Modutech"),
-    ("./qdrant_modutech_db", "dir", "ฐานเวกเตอร์ Modutech (collection แยกจาก Movex)"),
+    (const("MODUTECH_JSON", "./modutech_v30_3.json"), "file", "ข้อมูล Modutech"),
+    (const("MODUTECH_QDRANT", "./qdrant_modutech_db"), "dir", "ฐานเวกเตอร์ Modutech (collection แยกจาก Movex)"),
 ]
 
 print("\n2) ข้อมูลและโมเดลในเครื่อง")
@@ -192,13 +230,14 @@ for rel, expect in ((const("QDRANT_PATH", "./qdrant_db"), ("movex_text_chunks", 
 # ── 3. เวอร์ชันของไฟล์ที่แก้ 29–30 ก.ย. ───────────────────────
 # ตรวจด้วยข้อความเฉพาะในโค้ด ไม่ใช่วันที่ไฟล์ ซึ่งเปลี่ยนตอนคัดลอกอยู่แล้ว
 MARKERS = {
-    "modutech_gates.py": [
+    "brands/modutech/gates.py": [
         ("inch_basis", "ค่านิ้วคำนวณจาก มม. ทุกฟิลด์ (30 ก.ย.)"),
         ("NO_INCREMENT_TH", "ไม่ประกาศค่าเพิ่มทีละที่ยืนยันไม่ได้ (29 ก.ย.)"),
         ("catalogue_nonstandard_increment", "อ่านขนาดนอกมาตรฐานจากเล่ม (29 ก.ย.)"),
         ("temperature_unconfirmed_th", "คำเตือน MD254 RR (29 ก.ย.)"),
     ],
-    "dialogue_state.py": [
+    # ย้ายจาก dialogue_state.py ไป core/decide.py (ชั้น 4)
+    "core/decide.py": [
         ("FOLLOWUP_MAX_CHARS", "คำถามต่อเนื่องสั้น ๆ ไม่ถูกตีเป็นนอกเรื่อง (29 ก.ย.)"),
         ("นิ้ว", "คำหน่วยวัดใน DOMAIN_WORDS (29 ก.ย.)"),
     ],
@@ -215,20 +254,20 @@ for fname, marks in MARKERS.items():
 
 if src5:
     got = const("MODUTECH_JSON", "(ไม่พบบรรทัด)")
-    check(got.endswith("modutech_v30_1.json"),
-          f"   ✓ chatbot_v5.py ชี้ไป {got}",
-          f"   ✗ chatbot_v5.py ชี้ไป {got} — ต้องเป็น ./modutech_v30_1.json ไม่ใช่ v30 หรือ v29")
+    check(got.endswith("modutech_v30_3.json"),
+          f"   ✓ brands/modutech/brand.yaml ชี้ไป {got}",
+          f"   ✗ brands/modutech/brand.yaml ชี้ไป {got} — ต้องเป็น ./modutech_v30_3.json ไม่ใช่ v30 หรือ v29")
     # torch_dtype= พังกับ transformers บางเวอร์ชัน (TypeError: hasattr) แล้วกลับมารันได้เอง
     # จึงเตือนอย่างเดียว ไม่บล็อก
     check("torch_dtype=" not in src5,
           "   ✓ ไม่ได้ส่ง torch_dtype เข้า from_pretrained",
-          "   ⚠ chatbot_v5.py ส่ง torch_dtype= เข้า Jina v3 — เคยพังเมื่อ transformers อัปเดต\n"
+          "   ⚠ assistant.py ส่ง torch_dtype= เข้า Jina v3 — เคยพังเมื่อ transformers อัปเดต\n"
           "       ถ้าขึ้น TypeError: hasattr(): attribute name must be string ให้ตัดออก\n"
           "       แล้วใช้ .to(device=DEVICE, dtype=...) ต่อท้ายแทน", hard=False)
 
 # ── 4. เนื้อข้อมูล ───────────────────────────────────────────
 print("\n4) เนื้อข้อมูล Modutech")
-jp = ROOT / const("MODUTECH_JSON", "./modutech_v30_1.json").lstrip("./")
+jp = ROOT / const("MODUTECH_JSON", "./modutech_v30_3.json").lstrip("./")
 if jp.is_file():
     try:
         data = json.loads(jp.read_text(encoding="utf-8"))
@@ -242,7 +281,7 @@ if jp.is_file():
         empty = [p["belt_code"] for p in prods
                  if not (p.get("specifications", {}).get("notes") or [])]
         check(not empty, "   ✓ ทุกรุ่นมีหมายเหตุจากเล่มครบ",
-              f"   ✗ มี {len(empty)} รุ่นที่ notes ว่าง — ไฟล์นี้คือ v30 เก่า ไม่ใช่ v30_1")
+              f"   ✗ มี {len(empty)} รุ่นที่ notes ว่าง — ไฟล์นี้คือ v30 เก่า ไม่ใช่ v30_3")
         md = next((p for p in prods if p["belt_code"] == "MD254 RR"), None)
         if md:
             # เกรดอยู่ใต้ specifications.variants ไม่ใช่ที่รากของสินค้า
@@ -251,6 +290,20 @@ if jp.is_file():
             check(bool(v) and v[0].get("temperature_trust") == "unconfirmed",
                   "   ✓ MD254 RR เกรด PPH ตั้ง temperature_trust = unconfirmed แล้ว",
                   "   ✗ MD254 RR เกรด PPH ยังไม่ได้ตั้ง unconfirmed — จะตอบ 93 °C โดยไม่เตือน")
+        # v30_2 (11 ต.ค.): หมายเหตุสภาวะเปียกเขียนใหม่ ของเดิมเก็บไว้ใน wet_note_th_v30
+        effs = [x.get("temperature_effective") or {} for p in prods
+                for x in p.get("specifications", {}).get("variants") or []]
+        n_new = sum("wet_note_th_v30" in e for e in effs)
+        old_left = sum("ชั้นที่มีข้อมูล" in (e.get("wet_note_th") or "") for e in effs)
+        check(n_new == 75 and not old_left,
+              f"   ✓ หมายเหตุสภาวะเปียกเป็นฉบับ v30_2 ({n_new} variant)",
+              f"   ✗ หมายเหตุสภาวะเปียกยังเป็นของเก่า ({n_new}/75 · เหลือข้อความเดิม {old_left}) — ไฟล์นี้คือ v30_1 ไม่ใช่ v30_2")
+        # v30_3 (11 ต.ค. ค่ำ): ทุกจุดที่ให้ลูกค้ายืนยันใช้พนักงานฝ่ายขาย ไม่ใช่ฝ่ายเทคนิค
+        tech_left = jp.read_text(encoding="utf-8").count("ฝ่ายเทคนิค") - sum(
+            x.get("old", "").count("ฝ่ายเทคนิค") for x in data.get("_text_patch_v30_3") or [])
+        check("_text_patch_v30_3" in data and tech_left == 0,
+              "   ✓ ข้อความยืนยันใช้พนักงานฝ่ายขาย (v30_3)",
+              f"   ✗ ยังไม่ใช่ v30_3 (เหลือ 'ฝ่ายเทคนิค' {tech_left} จุดนอกบันทึกแพตช์)")
     except json.JSONDecodeError as e:
         bad.append(f"   ✗ อ่าน {jp.name} ไม่ได้: {e}")
 
@@ -334,11 +387,45 @@ s_secret, w_secret = se.get("PROXY_SECRET", ""), we.get("PROXY_SECRET", "")
 check(bool(s_secret) and s_secret == w_secret,
       "   ✓ PROXY_SECRET สองฝั่งตรงกัน",
       "   ✗ PROXY_SECRET ไม่ตรงกันหรือยังว่าง — หน้าเว็บจะขึ้นปกติแต่พิมพ์แล้ว error")
+# 10 ต.ค. — สองไฟล์ตรงกันทั้งคู่แต่ได้ 403: Next.js ตัดคำพูดออก ตัวอ่าน .env ของ run_app.ps1 ไม่ตัด
+# backend จึงถือ "abc" (มีคำพูด) ส่วนหน้าเว็บส่ง abc → เทียบไฟล์ดิบอย่างเดียวจับไม่ได้
+# ทุกค่าใน .env ไม่ใช่แค่ PROXY_SECRET — GEMINI_API_KEY ที่มีคำพูดได้ API_KEY_INVALID (เจอ 10 ต.ค.)
+def _q(v: str) -> bool:
+    return len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'"
+_quoted = [f".env:{k}" for k, v in se.items() if _q(v)] + \
+          [f"web/.env.local:{k}" for k in ("PROXY_SECRET",) if _q(we.get(k, ""))]
+check(not _quoted, "   ✓ ค่าใน .env ไม่มีเครื่องหมายคำพูดครอบ",
+      f"   ✗ มีเครื่องหมายคำพูดครอบ: {', '.join(_quoted)} — run_app.ps1 ไม่ตัดคำพูด"
+      " (PROXY_SECRET → 403 · GEMINI_API_KEY → API_KEY_INVALID) · ลบคำพูดออก")
 check(we.get("SPACE_URL", "").startswith("http://127.0.0.1"),
       f"   ✓ SPACE_URL = {we.get('SPACE_URL')}",
       f"   ✗ SPACE_URL = {we.get('SPACE_URL') or '(ว่าง)'} รันในเครื่องต้องเป็น http://127.0.0.1:7860")
 check(bool(se.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")),
       "   ✓ มี GEMINI_API_KEY", "   ✗ ยังไม่มี GEMINI_API_KEY ใน .env")
+
+# 13 ต.ค. — GEMINI_THINKING ต้องใช้ google-genai · venv นี้ Python 3.10.0 + gradio (pydantic < 2.12) ใช้ได้แค่ 2.8.x
+_think = se.get("GEMINI_THINKING") or os.environ.get("GEMINI_THINKING") or ""
+if _think.strip():
+    try:
+        from core.llm import parse_thinking
+        _tc = parse_thinking(_think)
+        check(True, f"   ✓ GEMINI_THINKING={_think.strip()} → {_tc}", "")
+    except ValueError as e:
+        check(False, "", f"   ✗ {e}")
+    try:
+        from importlib.metadata import version as _ver
+        _gg, _pd = _ver("google-genai"), _ver("pydantic")
+        check(_gg.startswith("2.8.") and tuple(int(x) for x in _pd.split(".")[:2]) < (2, 12),
+              f"   ✓ google-genai {_gg} · pydantic {_pd}",
+              f"   ✗ google-genai {_gg} · pydantic {_pd} — ต้องเป็น google-genai 2.8.x กับ pydantic < 2.12 "
+              "(ดูหัวไฟล์ core/llm.py)")
+        import google.genai  # noqa: F401
+        check(True, "   ✓ import google-genai ได้", "")
+    except Exception as e:                                   # noqa: BLE001
+        check(False, "", f"   ✗ GEMINI_THINKING ตั้งไว้แต่ใช้ google-genai ไม่ได้ ({type(e).__name__}: {e})"
+                         " — ติดตั้งตามหัวไฟล์ core/llm.py หรือลบ GEMINI_THINKING ออกจาก .env")
+else:
+    warn.append("   ⚠ ยังไม่ได้ตั้ง GEMINI_THINKING — ใช้ thinking เต็ม (ช้ากว่า) · ดูหัวไฟล์ core/llm.py")
 
 # ── สรุป ─────────────────────────────────────────────────────
 for line in ok:

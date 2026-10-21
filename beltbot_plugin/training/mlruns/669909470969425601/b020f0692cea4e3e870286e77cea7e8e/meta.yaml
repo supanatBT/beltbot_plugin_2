@@ -1,0 +1,14 @@
+artifact_uri: file:///home/claude/beltbot_plugin/training/mlruns/669909470969425601/b020f0692cea4e3e870286e77cea7e8e/artifacts
+end_time: 1791366820954
+entry_point_name: ''
+experiment_id: '669909470969425601'
+lifecycle_stage: active
+run_id: b020f0692cea4e3e870286e77cea7e8e
+run_name: layer7-ready-for-brands
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1791366820907
+status: 3
+tags: []
+user_id: root

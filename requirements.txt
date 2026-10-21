@@ -38,6 +38,8 @@ networkx==3.4.2
 # ── LLM ──
 google-generativeai==0.8.6
 protobuf==5.29.6
+# GEMINI_THINKING (13 ต.ค.) — 2.8.0 คือรุ่นสุดท้ายที่ยอม pydantic < 2.12 (gradio 5.49 ต้องการ · ≥ 2.9 บังคับ ≥ 2.12.5)
+google-genai==2.8.0
 
 # ── เว็บ ──
 fastapi==0.141.1
@@ -79,3 +81,6 @@ gradio==5.49.1
 # ruff             เครื่องมือตรวจโค้ด
 # gradio_client aiofiles ffmpy pydub ฯลฯ
 #                  เป็นของที่ gradio ลากมาเอง ไม่ต้องระบุ
+
+# brands/*/brand.yaml — เดิมได้มาทางอ้อมจาก transformers ตอนนี้แกนกลางใช้ตรง จึงปักหมุดเอง
+PyYAML==6.0.3

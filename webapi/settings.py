@@ -23,7 +23,7 @@ def _list(name: str, default: str) -> list[str]:
 @dataclass
 class Settings:
     # ── บอท ──
-    bot_module: str = field(default_factory=lambda: os.environ.get("BOT_MODULE", "chatbot_v5"))
+    bot_module: str = field(default_factory=lambda: os.environ.get("BOT_MODULE", "assistant"))
     warm_on_start: bool = field(default_factory=lambda: os.environ.get("WARM_ON_START", "1") == "1")
 
     # ── ความปลอดภัย ──

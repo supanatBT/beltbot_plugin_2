@@ -1,0 +1,14 @@
+artifact_uri: file:///home/claude/beltbot_plugin/training/mlruns/669909470969425601/145cb1c204dc4fa29a2dce071d7d5dff/artifacts
+end_time: 1791365491667
+entry_point_name: ''
+experiment_id: '669909470969425601'
+lifecycle_stage: active
+run_id: 145cb1c204dc4fa29a2dce071d7d5dff
+run_name: layer3-router
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1791365491617
+status: 3
+tags: []
+user_id: root

@@ -10,3 +10,6 @@ latest/
 __pycache__/
 *.pyc
 logs/
+# snapshot ต่อรอบใหญ่ ~5MB — ผลสรุปอยู่ใน MLflow และ gate_snapshots/<label>.json แล้ว
+training/gate_snapshots/prompt_*.json
+training/out/

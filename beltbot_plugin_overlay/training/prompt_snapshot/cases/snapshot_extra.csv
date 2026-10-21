@@ -1,0 +1,44 @@
+id,turn_number,user_text,image
+SNAP-IMG-HIGH,1,,snap_bank_3_n0.02
+SNAP-IMG-HIGH,2,รับแรงได้เท่าไหร่,
+SNAP-IMG-HIGH-Q,1,โซ่นี้เลี้ยวได้ไหม,snap_bank_40_n0.02
+SNAP-IMG-MID,1,,snap_bank_12_n0.9
+SNAP-IMG-MID,2,82.5,
+SNAP-IMG-LOW,1,,snap_bank_70_n3.0
+SNAP-IMG-REJECT,1,,snap_random_7
+SNAP-IMG-REJECT-Q,1,นี่คือรุ่นอะไร,snap_random_8
+SNAP-MX-CODE,1,LF 820 K325 รับแรงเท่าไหร่,
+SNAP-MX-CODE,2,แล้วน้ำหนักล่ะ,
+SNAP-MX-CODE,3,ขอ datasheet ด้วย,
+SNAP-MX-SERIES,1,โซ่ 880 กว้างเท่าไหร่,
+SNAP-MX-SERIES,2,82.5,
+SNAP-MX-SERIES,3,ทำจากวัสดุอะไร,
+SNAP-MX-ART,1,สเตอร์ 54201 ใช้กับโซ่รุ่นไหน,
+SNAP-MX-DATASHEET,1,ขอ drawing LF880 TAB K450,
+SNAP-MX-MIXED,1,LF820 K325 ราคาเท่าไหร่ และกว้างเท่าไหร่,
+SNAP-MX-PRICE,1,LF820 K325 ราคาเท่าไหร่,
+SNAP-MX-ORDER,1,อยากสั่งซื้อโซ่ LF821 K750,
+SNAP-SS,1,มีรุ่นสแตนเลสไหม,
+SNAP-CONTACT,1,ขอเบอร์ฝ่ายขาย,
+SNAP-SWITCH,1,MP80 C พิทช์เท่าไหร่,
+SNAP-SWITCH,2,แล้วโซ่ LF820 K325 ล่ะ,
+SNAP-SWITCH,3,กว้างเท่าไหร่,
+SNAP-BOTH,1,MP80 C กับ LF820 K325 ต่างกันยังไง,
+SNAP-BOTH,2,2,
+SNAP-NOBRAND,1,แนะนำสายพานหน่อย,
+SNAP-NOBRAND,2,1,
+SNAP-WEAK,1,ลำเลียงขวด PET ใช้อะไรดี,
+SNAP-WEAK2,1,ไลน์ชำแหละไก่ ใช้สายพานอะไรดี,
+SNAP-OFF,1,อากาศวันนี้เป็นยังไง,
+SNAP-SMALL,1,ขอบคุณครับ,
+SNAP-MOD-TEMP,1,HC508 C ทนอุณหภูมิได้กี่องศา,
+SNAP-MOD-TEMP,2,ไลน์เปียก,
+SNAP-MOD-SPROCKET,1,EC127SQZ24*PA ใช้กับสายพานรุ่นไหน,
+SNAP-MOD-EXPLORE,1,มีสายพานที่แรงดึงอย่างน้อย 20000 N/m ไหม,
+SNAP-MOD-MIXED,1,HC127 C ราคาเท่าไหร่ แล้วทำจากวัสดุอะไร,
+SNAP-IMG-THEN-MOD,1,,snap_bank_5_n0.02
+SNAP-IMG-THEN-MOD,2,แล้วสายพาน MP80 C ล่ะ,
+SNAP-IMG-EXACT,1,,snap_bank_3_n0
+SNAP-IMG-EXACT,2,ขอ datasheet,
+SNAP-IMG-EXACT2,1,ทำจากวัสดุอะไร,snap_bank_50_n0
+SNAP-IMG-EXACT3,1,,snap_bank_80_n0

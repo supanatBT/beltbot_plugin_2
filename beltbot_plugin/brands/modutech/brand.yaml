@@ -1,0 +1,35 @@
+# brands/modutech/brand.yaml — หนึ่งแบรนด์ = หนึ่งโฟลเดอร์ = หนึ่งไฟล์ตั้งค่า
+protocol: 1
+key: modutech
+enabled: true
+
+info:
+  name: Modutech
+  order: 2
+  kind_th: สายพานโมดูลาร์
+  menu_line_th: "สายพานโมดูลาร์ Modutech — งานอาหาร เช่น เนื้อสัตว์ สัตว์ปีก อาหารทะเล เบเกอรี่ ผักผลไม้"
+  offtopic_th: สายพานโมดูลาร์ Modutech
+  category_th: สายพาน
+  answer_patterns: ['modutech', 'โมดูเทค', 'โมดูลาร์', 'modular', 'สายพานโมดูล']
+
+# สถานะข้ามเทิร์น — ส่งออกเป็น modutech_<ช่อง> (ชื่อเดิมที่เบราว์เซอร์เก็บไว้)
+state:
+  codes: []           # รหัสสายพานที่อยู่ในความสนใจ
+  slots: {}           # wet_or_dry · material · line_shape · operating_temp_c
+  sprocket_codes: []  # รหัสสเตอร์ของเทิร์นนี้ ไม่สะสมข้ามเทิร์น
+
+data:
+  catalogue: ../../modutech_v30_1.json  # ผู้ใช้ยืนยัน 7 ต.ค.: ใช้ v30_1 (คำสั่งโปรเจกต์ที่เขียน v30.json ล้าสมัย)
+  graph_db: ../../modutech_kg.db
+  qdrant_path: ../../qdrant_modutech_db
+  text_collection: modutech_belt_chunks
+
+image:
+  enabled: auto                         # ยังไม่มีรูปจริงสักใบ → auto ปิดเอง ทำงานเหมือนเดิมทุกอย่าง
+  vit:
+    base: google/vit-base-patch16-224-in21k
+    adapter: null
+    revision: null
+  labels: null
+  thresholds: null
+  collection: modutech_images           # ที่เก็บ (Qdrant Cloud หรือ HF dataset) ยังไม่ตัดสิน — HANDOFF ข้อ 10

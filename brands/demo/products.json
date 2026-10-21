@@ -1,0 +1,11 @@
+{
+  "_note": "ข้อมูลสมมติสำหรับทดสอบระบบปลั๊กอิน — ไม่ใช่สินค้าจริง",
+  "products": [
+    {"code": "DMX-100", "name": "Demo Flat 100", "width_mm": 100, "strength_n_m": 8000,
+     "material": "PP", "temp_min_c": 5, "temp_max_c": 100},
+    {"code": "DMX-200", "name": "Demo Grid 200", "width_mm": 200, "strength_n_m": 12000,
+     "material": "POM", "temp_min_c": -40, "temp_max_c": 90},
+    {"code": "DMX-300", "name": "Demo Roller 300", "width_mm": 300, "strength_n_m": 20000,
+     "material": "PE", "temp_min_c": -60, "temp_max_c": 65}
+  ]
+}

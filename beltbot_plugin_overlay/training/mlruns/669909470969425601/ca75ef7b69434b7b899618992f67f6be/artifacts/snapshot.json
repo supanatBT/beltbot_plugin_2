@@ -1,0 +1,118 @@
+{
+  "label": "layer8-demo-brand",
+  "time": "2026-10-07 16:55:47",
+  "suites": {
+    "testsuite_120.py": {
+      "exit": 0,
+      "passed": 150,
+      "total": 150,
+      "seconds": 2.2,
+      "ok": true
+    },
+    "test_sprocket_flow.py": {
+      "exit": 0,
+      "passed": 41,
+      "total": 41,
+      "seconds": 1.3,
+      "ok": true
+    },
+    "testcases_graph.py": {
+      "exit": 0,
+      "passed": 33,
+      "total": 33,
+      "seconds": 0.8,
+      "ok": true
+    },
+    "test_resume.py": {
+      "exit": 0,
+      "passed": 22,
+      "total": 22,
+      "seconds": 0.1,
+      "ok": true
+    },
+    "test_api_resume.py": {
+      "exit": 0,
+      "passed": 17,
+      "total": 17,
+      "seconds": 0.8,
+      "ok": true
+    },
+    "test_modutech_kg.py": {
+      "exit": 0,
+      "passed": 36,
+      "total": 36,
+      "seconds": 0.3,
+      "ok": true
+    },
+    "test_increment_status.py": {
+      "exit": 0,
+      "passed": 1,
+      "total": 1,
+      "seconds": 0.3,
+      "ok": true
+    },
+    "test_core_registry.py": {
+      "exit": 0,
+      "passed": 43,
+      "total": 43,
+      "seconds": 0.8,
+      "ok": true
+    },
+    "test_core_dialogue.py": {
+      "exit": 0,
+      "passed": 22,
+      "total": 22,
+      "seconds": 0.2,
+      "ok": true
+    },
+    "test_core_router.py": {
+      "exit": 0,
+      "passed": 14,
+      "total": 14,
+      "seconds": 0.9,
+      "ok": true
+    },
+    "test_core_decide.py": {
+      "exit": 0,
+      "passed": 19,
+      "total": 19,
+      "seconds": 1.3,
+      "ok": true
+    },
+    "test_webapi_sanitize.py": {
+      "exit": 0,
+      "passed": 7,
+      "total": 7,
+      "seconds": 0.6,
+      "ok": true
+    },
+    "test_assistant_resume.py": {
+      "exit": 1,
+      "passed": null,
+      "total": null,
+      "seconds": 2.2,
+      "ok": false
+    },
+    "brands/demo/test_demo.py": {
+      "exit": 0,
+      "passed": 19,
+      "total": 19,
+      "seconds": 0.5,
+      "ok": true
+    }
+  },
+  "generated": {
+    "testcases_modutech_136.csv": "a1dd83e5d0aa8ea1",
+    "testcases_graph_relations.csv": "cc0eab16f762e09a"
+  },
+  "drift": [],
+  "core_grep_hits": 0,
+  "dockerignore_training": true,
+  "prompt_snapshot_ok": true,
+  "prompt_snapshot": [
+    "\u0e40\u0e17\u0e34\u0e23\u0e4c\u0e19 281 \u00b7 \u0e40\u0e23\u0e35\u0e22\u0e01 Gemini 194 \u00b7 tool 5 \u00b7 error 0",
+    "\u0e15\u0e23\u0e07\u0e01\u0e31\u0e1a snapshot \u0e17\u0e38\u0e01\u0e40\u0e17\u0e34\u0e23\u0e4c\u0e19",
+    "[\u0e17\u0e38\u0e01\u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c] \u0e40\u0e17\u0e34\u0e23\u0e4c\u0e19 281 \u00b7 \u0e40\u0e23\u0e35\u0e22\u0e01 Gemini 194 \u00b7 tool 5 \u00b7 error 0"
+  ],
+  "gates_ok": false
+}

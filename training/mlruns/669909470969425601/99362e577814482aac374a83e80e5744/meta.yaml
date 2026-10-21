@@ -1,0 +1,14 @@
+artifact_uri: file:///home/claude/beltbot_plugin/training/mlruns/669909470969425601/99362e577814482aac374a83e80e5744/artifacts
+end_time: 1791365301842
+entry_point_name: ''
+experiment_id: '669909470969425601'
+lifecycle_stage: active
+run_id: 99362e577814482aac374a83e80e5744
+run_name: layer2-dialogue-state
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1791365301795
+status: 3
+tags: []
+user_id: root

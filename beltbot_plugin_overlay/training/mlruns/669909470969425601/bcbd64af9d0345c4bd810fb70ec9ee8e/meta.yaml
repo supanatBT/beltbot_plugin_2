@@ -1,0 +1,14 @@
+artifact_uri: file:///home/claude/beltbot_plugin/training/mlruns/669909470969425601/bcbd64af9d0345c4bd810fb70ec9ee8e/artifacts
+end_time: 1791361171355
+entry_point_name: ''
+experiment_id: '669909470969425601'
+lifecycle_stage: active
+run_id: bcbd64af9d0345c4bd810fb70ec9ee8e
+run_name: baseline-with-prompt
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1791361171310
+status: 3
+tags: []
+user_id: root

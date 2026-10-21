@@ -1,0 +1,11 @@
+{
+  "turns_with_leak": 3,
+  "per_word": {
+    "\u0e25\u0e39\u0e01\u0e04\u0e49\u0e32": 3
+  },
+  "turns": [
+    "SER-01 t1",
+    "SER-02 t1",
+    "SER-04 t1"
+  ]
+}

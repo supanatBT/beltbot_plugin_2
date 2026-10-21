@@ -1,0 +1,126 @@
+{
+  "label": "phase2f",
+  "time": "2026-10-11 22:56:44",
+  "suites": {
+    "testsuite_120.py": {
+      "exit": 0,
+      "passed": 150,
+      "total": 150,
+      "seconds": 1.2,
+      "ok": true
+    },
+    "test_sprocket_flow.py": {
+      "exit": 0,
+      "passed": 45,
+      "total": 45,
+      "seconds": 1.4,
+      "ok": true
+    },
+    "test_context_voice.py": {
+      "exit": 0,
+      "passed": 15,
+      "total": 15,
+      "seconds": 2.4,
+      "ok": true
+    },
+    "testcases_graph.py": {
+      "exit": 0,
+      "passed": 33,
+      "total": 33,
+      "seconds": 0.5,
+      "ok": true
+    },
+    "test_resume.py": {
+      "exit": 0,
+      "passed": 22,
+      "total": 22,
+      "seconds": 0.1,
+      "ok": true
+    },
+    "test_api_resume.py": {
+      "exit": 0,
+      "passed": 17,
+      "total": 17,
+      "seconds": 0.7,
+      "ok": true
+    },
+    "test_modutech_kg.py": {
+      "exit": 0,
+      "passed": 36,
+      "total": 36,
+      "seconds": 0.2,
+      "ok": true
+    },
+    "test_increment_status.py": {
+      "exit": 0,
+      "passed": 1,
+      "total": 1,
+      "seconds": 0.2,
+      "ok": true
+    },
+    "test_core_registry.py": {
+      "exit": 0,
+      "passed": 44,
+      "total": 44,
+      "seconds": 0.4,
+      "ok": true
+    },
+    "test_core_dialogue.py": {
+      "exit": 0,
+      "passed": 22,
+      "total": 22,
+      "seconds": 0.1,
+      "ok": true
+    },
+    "test_core_router.py": {
+      "exit": 0,
+      "passed": 14,
+      "total": 14,
+      "seconds": 0.4,
+      "ok": true
+    },
+    "test_core_decide.py": {
+      "exit": 0,
+      "passed": 20,
+      "total": 20,
+      "seconds": 0.8,
+      "ok": true
+    },
+    "test_webapi_sanitize.py": {
+      "exit": 0,
+      "passed": 7,
+      "total": 7,
+      "seconds": 0.4,
+      "ok": true
+    },
+    "test_assistant_resume.py": {
+      "exit": 0,
+      "passed": 10,
+      "total": 10,
+      "seconds": 1.8,
+      "ok": true
+    },
+    "brands/demo/test_demo.py": {
+      "exit": 0,
+      "passed": 19,
+      "total": 19,
+      "seconds": 0.3,
+      "ok": true
+    }
+  },
+  "generated": {
+    "testcases_modutech_136.csv": "bb264a72ca969308",
+    "testcases_graph_relations.csv": "cc0eab16f762e09a"
+  },
+  "drift": [],
+  "core_grep_hits": 0,
+  "dockerignore_training": true,
+  "prompt_snapshot_ok": true,
+  "prompt_snapshot": [
+    "เทิร์น 279 · เรียก Gemini 194 · tool 5 · error 0",
+    "ตรงกับ snapshot ทุกเทิร์น",
+    "[ทุกแบรนด์] เทิร์น 279 · เรียก Gemini 194 · tool 5 · error 0",
+    "[ทุกแบรนด์] ตรงกับ snapshot ทุกเทิร์น"
+  ],
+  "gates_ok": true
+}

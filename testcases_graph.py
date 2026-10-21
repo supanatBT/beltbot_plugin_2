@@ -17,7 +17,7 @@ relation ที่ครอบ
 ทุกเคสที่เกี่ยวกับสเตอร์มี must_not_contain เป็นตัวเลขขนาดจริงจากไฟล์
 เพราะกราฟเป็นทางเดียวที่เลี่ยง sprocket_gate ได้ — ถ้าวันไหนรั่ว ชุดนี้จับได้
 
-รัน: python testcases_graph.py [modutech_v30_1.json] [-o testcases_graph_relations.csv]
+รัน: python testcases_graph.py [modutech_v30_3.json] [-o testcases_graph_relations.csv]
 """
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ def row(**kw) -> dict:
 
 def main() -> None:
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
-    path = args[0] if args else "modutech_v30_1.json"
+    path = args[0] if args else "modutech_v30_3.json"
     out_path = "testcases_graph_relations.csv"
     if "-o" in sys.argv:
         out_path = sys.argv[sys.argv.index("-o") + 1]

@@ -1,0 +1,92 @@
+{
+ "module": "fakebot",
+ "testcases": "testcases_graph_relations.csv",
+ "total_turns": 3,
+ "graded": 3,
+ "passed": 0,
+ "failed": 3,
+ "skipped_no_image": 0,
+ "turns_with_image": 0,
+ "errors": 0,
+ "seconds": 0.0,
+ "by_category": {
+  "graph_compatible": "0/3"
+ },
+ "by_check": {
+  "answer_has_required": 3,
+  "answer_has_any": 3
+ },
+ "leaks": {
+  "turns_with_leak": 0,
+  "per_word": {},
+  "turns": []
+ },
+ "results": [
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": false,
+    "answer_has_any": false,
+    "answer_avoids_forbidden": true
+   },
+   "passed": false,
+   "reply": "[เห็นประวัติ 0 ข้อความ · รุ่นในบริบท []]",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "SPK-F01",
+   "turn": "1",
+   "category": "graph_compatible",
+   "query": "EC127 C ใช้สเตอร์ตัวไหน",
+   "metrics": [],
+   "seconds": 0.0
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": false,
+    "answer_has_any": false,
+    "answer_avoids_forbidden": true
+   },
+   "passed": false,
+   "reply": "[เห็นประวัติ 0 ข้อความ · รุ่นในบริบท ['HC127 C']]",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "SPK-F02",
+   "turn": "1",
+   "category": "graph_compatible",
+   "query": "EC254 C ใช้สเตอร์ตัวไหน",
+   "metrics": [],
+   "seconds": 0.0
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": false,
+    "answer_has_any": false,
+    "answer_avoids_forbidden": true
+   },
+   "passed": false,
+   "reply": "[เห็นประวัติ 0 ข้อความ · รุ่นในบริบท ['HC127 C']]",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "SPK-F03",
+   "turn": "1",
+   "category": "graph_compatible",
+   "query": "EC254 R ใช้สเตอร์ตัวไหน",
+   "metrics": [],
+   "seconds": 0.0
+  }
+ ]
+}

@@ -1,0 +1,14 @@
+artifact_uri: file:///home/claude/beltbot_plugin/training/mlruns/669909470969425601/ccc3980f7bb943fbbb4337e76144b481/artifacts
+end_time: 1791717417491
+entry_point_name: ''
+experiment_id: '669909470969425601'
+lifecycle_stage: active
+run_id: ccc3980f7bb943fbbb4337e76144b481
+run_name: phase2e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1791717417217
+status: 3
+tags: []
+user_id: Personol

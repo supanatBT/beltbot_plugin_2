@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """เทสต์กราฟ Modutech — ยืนยันสามอย่าง
 
-  1. ความสัมพันธ์ตรงกับ modutech_v30_1.json ทุกเส้น (ไม่ขาด ไม่เกิน)
+  1. ความสัมพันธ์ตรงกับ modutech_v30_3.json ทุกเส้น (ไม่ขาด ไม่เกิน)
   2. กราฟไม่มีตัวเลขสเปกอยู่ในตัวมันเอง — Di/Do/Bore/teeth รั่วออกจากกราฟไม่ได้
   3. ถ้าข้อมูลขาด กราฟหยุด ไม่เดินต่อแบบเงียบ ๆ
 
-รัน: python test_modutech_kg.py [modutech_v30_1.json]
+รัน: python test_modutech_kg.py [modutech_v30_3.json]
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ import sys
 
 from modutech_kg import BELT, COMPATIBLE_WITH, MATERIAL, SPROCKET, ModutechGraph
 
-PATH = sys.argv[1] if len(sys.argv) > 1 else "modutech_v30_1.json"
+PATH = sys.argv[1] if len(sys.argv) > 1 else "modutech_v30_3.json"
 with open(PATH, encoding="utf-8") as f:
     DATA = json.load(f)
 

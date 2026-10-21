@@ -1,0 +1,9 @@
+artifact_location: file:///home/claude/beltbot_plugin/training/mlruns/736524897408369111
+creation_time: 1791367103734
+effective_trace_archival_retention: null
+experiment_id: '736524897408369111'
+last_update_time: 1791367103734
+lifecycle_stage: active
+name: answer_eval
+trace_location: null
+workspace: default

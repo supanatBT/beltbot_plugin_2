@@ -14,7 +14,7 @@
   3. วัสดุที่ต่อท้ายรหัสสเตอร์ต้องไม่ถูกอ่านเป็นความต้องการของลูกค้า
      EC127SQZ24*PA เคยทำให้ slots material = "PA" แล้วไปกรองสายพานผิด
 
-รัน: python test_sprocket_flow.py [modutech_v30_1.json]
+รัน: python test_sprocket_flow.py [modutech_v30_3.json]
 """
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ import modutech_turn as mt
 from dialogue_state import DialogueManager
 from modutech_kg import ModutechGraph, load_modutech_kg
 
-PATH = sys.argv[1] if len(sys.argv) > 1 else "modutech_v30_1.json"
+PATH = sys.argv[1] if len(sys.argv) > 1 else "modutech_v30_3.json"
 cat = mg.Catalogue(PATH)
 search = mr.CatalogueSearch(cat)
 kg = ModutechGraph.from_catalogue(cat)
@@ -143,8 +143,12 @@ check("ไม่มีตัวเองอยู่ในรายการ", "
 check("ทุกรุ่นในรายการอยู่ในซีรีส์เดียวกันจริง",
       all(cat.by_code[c].get("belt_series") == cat.by_code["HC508 C"].get("belt_series")
           for c in ss.get("belt_codes") or []))
-check("มีคำกำกับห้ามสรุปว่าใช้แทนกันได้",
-      "ห้ามสรุปว่าใช้แทนกันได้" in (ss.get("note_th") or ""))
+# เฟส 2 (10 ต.ค.): หมายเหตุใน Context เป็นข้อเท็จจริง · คำสั่ง "ห้ามสรุป…" อยู่ในส่วนกฎของ prompt
+check("หมายเหตุบอกว่ายังสรุปไม่ได้ว่าใช้แทนกันได้",
+      "ยังสรุปไม่ได้ว่าใช้แทนกันได้" in (ss.get("note_th") or ""))
+check("หมายเหตุไม่มีคำสั่ง (ห้าม…)", "ห้าม" not in (ss.get("note_th") or ""))
+check("กฎห้ามสรุปว่าใช้แทนกันได้ยังอยู่ในส่วนกฎ",
+      "ห้ามสรุปว่าใช้แทนกันได้" in turn("HC508 C มีรุ่นไหนในซีรีส์เดียวกันบ้าง").system_prompt.split("กฎ\n", 1)[1])
 check("คำถามที่ไม่ได้ถามซีรีส์ ไม่แนบ same_series มาให้เปลือง",
       "same_series" not in turn("HC508 C กว้างเท่าไหร่").context)
 check("ไม่ส่ง kg มา ก็ไม่มีคีย์นี้ ไม่ใช่พัง",
@@ -193,8 +197,14 @@ check("คำกำกับบอกว่าเล่มพิมพ์ค่�
       str(notes[:1]))
 check("คำกำกับบอกเหตุผลว่าไม่มีนิยามสัญลักษณ์",
       any("ไม่ได้นิยามว่า Di Do A B" in n for n in notes))
-check("คำกำกับห้าม LLM อ้างว่าแคตตาล็อกไม่มีข้อมูล",
-      any("ห้ามบอกว่าแคตตาล็อกไม่มีข้อมูลขนาด" in n for n in notes))
+t9 = turn("HC508 C ใช้สเตอร์ตัวไหน")
+check("กฎห้าม LLM อ้างว่าแคตตาล็อกไม่มีข้อมูล อยู่ในส่วนกฎเฉพาะรุ่น",
+      "ห้ามบอกว่าแคตตาล็อกไม่มีข้อมูลขนาด" in t9.system_prompt.split("กฎเฉพาะรุ่น", 1)[-1])
+check("คำกำกับใน Context ไม่มีคำสั่ง (ห้าม… · ระบบจึง…)",
+      not any("ห้าม" in n or "ระบบจึง" in n for n in notes), str(notes[:1]))
+check("ไม่มีกุญแจกฎค้างใน Context",
+      not any(k in json.dumps(t9.context, ensure_ascii=False)
+              for k in ('"forbidden_th"', '"gate_rules_th"', '"_gate_rules_th"')))
 check("ยังไม่มีตัวเลขขนาดหลุดมาพร้อมคำกำกับ",
       not any(k in json.dumps(turn("HC508 C ใช้สเตอร์ตัวไหน").context, ensure_ascii=False)
               for k in ("141,6", "158,2", "1.5 & 2.5")))
