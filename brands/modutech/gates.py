@@ -365,16 +365,19 @@ def material_gate(products: list[dict], slots: Slots) -> GateResult:
                                             if m not in not_made]
             rc = p.get("retrieval_card", {})
             rc["materials"] = [m for m in rc.get("materials") or [] if m not in not_made]
-            _note(p, f"รุ่นนี้ไม่ได้ผลิตเกรด {', '.join(sorted(not_made))} "
-                     f"(โบรชัวร์แนะนำไว้แต่ไม่มีในสายผลิต)",
-                  rule=f"ห้ามเสนอเกรด {', '.join(sorted(not_made))} กับรุ่นนี้")
+            # 22 ต.ค.: ข้อมูลบอกแค่ว่าแคตตาล็อก 2026 ไม่มีเกรดนี้ (gaps = not_listed · status = unresolved)
+            # อาจเป็นเกรดสั่งพิเศษหรือเลิกผลิตแล้ว — เดิมเขียน "ไม่มีในสายผลิต" ซึ่งยืนยันเกินข้อมูล
+            mats = ', '.join(sorted(not_made))
+            _note(p, f"แคตตาล็อก 2026 ไม่มีเกรด {mats} สำหรับรุ่นนี้ (โบรชัวร์แนะนำไว้) "
+                     f"อาจเป็นเกรดสั่งพิเศษหรือเลิกผลิตแล้ว ต้องยืนยันกับพนักงานฝ่ายขาย",
+                  rule=f"ห้ามเสนอเกรด {mats} กับรุ่นนี้ และห้ามบอกว่าผลิตหรือไม่ผลิต ให้บอกว่าแคตตาล็อก 2026 ไม่มี")
             res.decisions.append(Decision("material", code, None, "strip",
                                           f"ลบ {sorted(not_made)} ออกจากรายการแนะนำ"))
 
         if slots.material:
             want = slots.material.upper()
             if want in not_made:
-                _note(p, f"ลูกค้าถามเกรด {want} ซึ่งรุ่นนี้ไม่ได้ผลิต ต้องเสนอเกรดอื่นหรือส่งฝ่ายขาย")
+                _note(p, f"ลูกค้าถามเกรด {want} ซึ่งแคตตาล็อก 2026 ไม่มีสำหรับรุ่นนี้ ต้องเสนอเกรดอื่นหรือส่งฝ่ายขาย")
             vs = [v for v in _variants(p) if (v.get("belt_material") or "").upper() == want]
             if vs:
                 p["specifications"]["variants"] = vs
