@@ -291,6 +291,8 @@ def run(module_name: str, testcases: str, only: set[str] | None,
             t0 = time.perf_counter()
             if llm is not None and hasattr(llm, "last_usage"):
                 llm.last_usage = None
+            if llm is not None and hasattr(llm, "last_model_version"):
+                llm.last_model_version = None
             try:
                 out = bot.chat_interaction(
                     query, image, history, last_pids, session_id, vit_signal, graph_result)
@@ -310,6 +312,7 @@ def run(module_name: str, testcases: str, only: set[str] | None,
                 "metrics": split_tokens(case.get("metrics", "")),
                 "seconds": round(time.perf_counter() - t0, 1),
                 "llm_usage": getattr(llm, "last_usage", None),
+                "model_version": getattr(llm, "last_model_version", None),
             })
             results.append(outcome)
 
@@ -328,6 +331,7 @@ def run(module_name: str, testcases: str, only: set[str] | None,
     return {
         "module": module_name,
         "llm": llm_desc,
+        "model_versions": dict(Counter(r.get("model_version") for r in results if r.get("model_version"))),
         "testcases": testcases,
         "total_turns": len(results),
         "graded": len(graded),

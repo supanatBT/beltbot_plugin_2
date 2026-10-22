@@ -186,5 +186,18 @@ if real is not None:
     ok("budget 0", budget.thinking_budget == 0 and budget.thinking_level is None)
     srv.shutdown()
 
+# ── 22 ต.ค.: บันทึกชื่อรุ่นจริงที่ Google ตอบ (alias -latest ย้ายรุ่นได้เอง) ──
+from core.llm import GeminiClient, model_version_of  # noqa: E402
+
+
+class _R:
+    def __init__(self, **kw):
+        self.__dict__.update(kw)
+
+
+ok("model_version อ่านจาก response", model_version_of(_R(model_version="gemini-3.6-flash")) == "gemini-3.6-flash")
+ok("ไม่มี model_version → None", model_version_of(_R()) is None and model_version_of(_R(model_version="")) is None)
+ok("client เริ่มต้นไม่มีชื่อรุ่นค้าง", GeminiClient(None, "m").last_model_version is None)
+
 print(f"\nรวม {passed}/{passed + failed}")
 sys.exit(1 if failed else 0)

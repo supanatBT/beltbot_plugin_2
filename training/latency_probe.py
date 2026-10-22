@@ -39,7 +39,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 SNAP = HERE / "prompt_snapshot" / "baseline.json"
-MODEL = "gemini-flash-latest"
+MODEL = os.getenv("GEMINI_MODEL") or "gemini-flash-latest"   # ใช้ชื่อเดียวกับบอต (22 ต.ค.)
 LITE = "gemini-flash-lite-latest"
 SHORT_RULE = ("\n- รายการความกว้างหรือรายการตัวเลขยาว ให้เขียนเป็นบรรทัดเดียวคั่นด้วยจุลภาค "
               "ไม่ต้องแยกบรรทัดละค่า")
