@@ -73,10 +73,16 @@ for ind, kws in INDUSTRY_KEYWORDS.items():
     check(f"{ind}: {len(want)} รุ่น", got == want, f"ขาด {sorted(want - got)} เกิน {sorted(got - want)}")
 
 print("4) ถามสองขั้น")
-spr = g.sprockets_for_application("Box Handling", "Corrugated")
-check("Box Handling × Corrugated → 3 รุ่น", sorted(spr) == ["HC152 FG-GT", "MD254 C", "MD508 C"], str(sorted(spr)))
+# 23 ต.ค.: เดิมใช้ Box Handling × Corrugated → 3 รุ่น ซึ่งผิด — เล่มไม่มี Box Handling ในหมวด Corrugated
+# เลย ค่าเดิมเกิดจากกรองอุตสาหกรรมด้วย USED_IN แยกจาก USED_FOR (ดู _triples ใน kg.py)
+check("Box Handling × Corrugated → ว่าง (เล่มไม่มีงานนี้ในหมวดนี้)",
+      g.belts_for_application("Box Handling", "Corrugated") == [],
+      str(g.belts_for_application("Box Handling", "Corrugated")))
+spr = g.sprockets_for_application("Palletizer", "Corrugated")
+check("Palletizer × Corrugated → 8 รุ่น", sorted(spr) == ["HD254 C", "MD254 C", "MD508 C", "MD508 NS", "XP254 C",
+                                                       "XP254 EVO CR", "XP254 EVO FLT", "XP254 PR22%"], str(sorted(spr)))
 check("MD508 C เล่มไม่ผูกเฟือง → [] ไม่เดา", spr.get("MD508 C") == [], str(spr.get("MD508 C")))
-check("HC152 FG-GT ได้รหัสเฟือง", len(spr.get("HC152 FG-GT") or []) > 0)
+check("MD254 C ได้รหัสเฟือง", len(spr.get("MD254 C") or []) > 0)
 check("ค้นด้วยชื่อไทยได้", g.belts_for_application("เครื่องตรวจจับโลหะ") == g.belts_for_application("Metal Detection"))
 
 print("5) ตัวกัน")

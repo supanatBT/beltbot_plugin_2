@@ -267,6 +267,10 @@ class ModutechGraph:
         th = {v.get("application"): v.get("application_th") or "" for v in data.get("application_vocabulary") or []}
         self._app_alias: dict[str, str] = {}
         self._industry_alias: dict[str, str] = {}
+        # (สายพาน, อุตสาหกรรม, งานใช้) ที่เล่มระบุจริง — USED_IN กับ USED_FOR แยกกันจะเสียบริบทนี้
+        # เช่น EC254 R ทำงานจับกล่องในอุตสาหกรรมอื่น และอยู่ในอุตสาหกรรมเนื้อสัตว์ด้วยงานอื่น
+        # ถ้ากรองด้วยสองเส้นแยกกันจะได้ "EC254 R ใช้จับกล่องในโรงงานเนื้อสัตว์" ซึ่งเล่มไม่ได้บอก
+        self._triples: set[tuple[str, str, str]] = set()
         for p in data.get("products") or []:
             b = self._belt_by_code[p["belt_code"]]
             made = {v.get("belt_material") for v in (p.get("specifications") or {}).get("variants") or []}
@@ -295,6 +299,7 @@ class ModutechGraph:
                              for m in rec)
                     if ok:
                         self._edge(b, USED_FOR, anid)
+                        self._triples.add((b, inid, anid))
 
     def _verify(self, data: dict) -> None:
         """นับให้ตรงกับไฟล์ ไม่ตรง = หยุด ดีกว่าเดินต่อด้วยกราฟที่ขาด"""
@@ -455,16 +460,32 @@ class ModutechGraph:
         belts = self._sources_of(USED_FOR, an)
         if industry:
             inid = self._find(self._industry_alias, industry)
-            belts = [b for b in belts if inid and inid in self._out[b][USED_IN]]
+            belts = [b for b in belts if inid and (b, inid, an) in self._triples]
         return sorted(self.nodes[b].label for b in belts)
 
     def belts_in_industry(self, industry: str) -> list[str]:
         inid = self._find(self._industry_alias, industry)
         return sorted(self.nodes[b].label for b in self._sources_of(USED_IN, inid)) if inid else []
 
-    def applications_for_belt(self, belt: str) -> list[str]:
+    def applications_for_belt(self, belt: str, industry: Optional[str] = None) -> list[str]:
         n = self._resolve(belt)
-        return sorted(self.nodes[a].label for a in self._out[n][USED_FOR]) if n else []
+        if not n:
+            return []
+        apps = self._out[n][USED_FOR]
+        if industry:
+            inid = self._find(self._industry_alias, industry)
+            apps = [a for a in apps if inid and (n, inid, a) in self._triples]
+        return sorted(self.nodes[a].label for a in apps)
+
+    def industries_for_belt(self, belt: str) -> list[str]:
+        """สายพานรุ่นนี้เล่มจัดไว้ในอุตสาหกรรมไหน (USED_IN ไม่กรองเกรด เหมือนหน้าอุตสาหกรรมในเล่ม)"""
+        n = self._resolve(belt)
+        return sorted(self.nodes[i].label for i in self._out[n][USED_IN]) if n else []
+
+    def applications_in_industry(self, industry: str) -> list[str]:
+        """อุตสาหกรรมนี้มีงานอะไรบ้าง (HAS_APPLICATION)"""
+        inid = self._find(self._industry_alias, industry)
+        return sorted(self.nodes[a].label for a in self._out[inid][HAS_APPLICATION]) if inid else []
 
     def sprockets_for_application(self, application: str, industry: Optional[str] = None) -> dict[str, list[str]]:
         """ถามสองขั้น: งานนี้ → สายพาน → เฟือง · สายพานที่เล่มไม่ผูกเฟืองคืนรายการว่าง (ไม่เดา)"""
