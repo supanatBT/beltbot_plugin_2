@@ -9,6 +9,7 @@ chatbot_v5.py เรียก build_modutech_turn() แล้วส่ง prompt
 from __future__ import annotations
 
 import json
+import os
 import re
 from dataclasses import dataclass, field
 from typing import Callable, Optional
@@ -124,6 +125,26 @@ class ModutechTurn:
     ask_back: list = field(default_factory=list)
     belt_codes: list = field(default_factory=list)
     debug: list = field(default_factory=list)
+
+
+def graph_apps_enabled() -> bool:
+    """สวิตช์ชั้นงานใช้ของกราฟ — MODUTECH_GRAPH_APPS=0 ปิด เพื่อวัดก่อน/หลังด้วยโค้ดชุดเดียวกัน
+
+    ปิดแล้วบอตทำงานเหมือนก่อน 722b7fd ทุกจุด: ค้นงานด้วย router · การ์ดไม่ตัดงาน · ไม่แนบเฟืองสองขั้น ·
+    ไม่มีกฎ prompt 4 ข้อของชั้นนี้ (กราฟสายพาน–เฟือง–ซีรีส์ยังใช้เหมือนเดิม)
+    """
+    return os.getenv("MODUTECH_GRAPH_APPS", "1").strip() != "0"
+
+
+GRAPH_APP_RULES = """
+- ถ้ามี application_pair_absent ให้บอกก่อนว่าแคตตาล็อกไม่ได้ระบุงานนั้นในอุตสาหกรรมที่ถาม ตาม note_th
+  บอกงานที่เล่มมีในอุตสาหกรรมนั้นได้จาก industry_applications_th ห้ามเอารุ่นใน other_industries มาตอบเป็นรุ่นของอุตสาหกรรมที่ถาม
+  ถ้าจะพูดถึงรุ่นใน other_industries ต้องบอกชื่ออุตสาหกรรมกำกับทุกครั้ง
+- ถ้ามี sprockets_by_belt ให้ตอบทีละชุดใน sets: รุ่นสายพานในชุด แล้วตามด้วยรหัสเฟืองเต็มทุกตัวตามที่ให้มา
+  ห้ามย่อรหัสเป็นตระกูล ห้ามเขียนแค่จำนวนฟัน (เซลล์ใช้รหัสเต็มสั่งของ) รุ่นใน no_sprocket_in_catalogue ให้บอกว่าเล่มไม่ได้ระบุเฟือง
+  ต้องสอบถามฝ่ายขาย ห้ามเดารหัสจากซีรีส์ ห้ามบอกขนาดเฟืองหรือรูเพลา
+- ถ้าการ์ดสินค้ามี applications_excluded_th ห้ามเสนอรุ่นนั้นสำหรับงานในรายการ ถ้าลูกค้าถามถึงงานนั้นตรง ๆ
+  ให้บอกว่าแคตตาล็อก 2026 ไม่มีเกรดที่เล่มแนะนำสำหรับงานนี้ ต้องยืนยันกับพนักงานฝ่ายขาย"""
 
 
 def _industry_in(text: str) -> Optional[str]:
@@ -291,7 +312,8 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
                         "เล่มไม่ได้ผูกรหัสสเตอร์นี้กับสายพานรุ่นใด ต้องสอบถามฝ่ายขาย"),
         }
 
-    gm = graph_application_match(decision.effective_text, cat, search, kg) if not codes else None
+    gm = graph_application_match(decision.effective_text, cat, search, kg) \
+        if not codes and graph_apps_enabled() else None
     skip_vector = False
     if gm and "absent" in gm:
         context["application_pair_absent"] = gm["absent"]
@@ -381,7 +403,8 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
     records = cat.records(codes)
 
     gated = run_gates(records, slots)
-    filter_card_applications(gated.products, kg)
+    if graph_apps_enabled():
+        filter_card_applications(gated.products, kg)
     context["products"] = gated.products
     context["slots_known"] = {k: v for k, v in (md.get("slots") or {}).items() if v is not None}
     if decision.sales_topics:
@@ -464,6 +487,7 @@ def _system_prompt(context: dict, rules: dict[str, list[str]]) -> str:
     per_belt = "".join(f"\n- {code}: {r}" for code, rs in rules.items() for r in rs)
     rules_block = (f"\n\nกฎเฉพาะรุ่นในคำถามนี้ (ใช้ตัดสินใจ ไม่ต้องยกข้อความในส่วนนี้ไปเขียนในคำตอบ){per_belt}"
                    if per_belt else "")
+    graph_rules = GRAPH_APP_RULES if graph_apps_enabled() else ""
     return f"""
 คุณคือ 'Modutech Assistant' วิศวกรฝ่ายขายสายพานโมดูลาร์ Modutech
 ตอบภาษาไทย เป็นธรรมชาติ มีหางเสียง (ครับ)
@@ -493,15 +517,7 @@ def _system_prompt(context: dict, rules: dict[str, list[str]]) -> str:
   รุ่นอื่นแคตตาล็อก 2026 ไม่ได้ระบุเกรดนั้น ห้ามจัดรุ่นอื่นไว้ใต้หัวข้อหรือประโยคที่พูดถึงเกรดนั้น ให้แยกเป็นหัวข้อรุ่นอื่นในอุตสาหกรรมเดียวกัน
   ถ้า grade_match.belts ว่าง ให้บอกตาม note_th ห้ามสรุปเองว่ารุ่นใดเหมาะกับงานที่ถามเกินกว่าที่เล่มระบุ
   ตอบกระชับ: รุ่นที่เกี่ยวข้องที่สุดไม่เกิน 5 รุ่นพร้อมงานใช้ ที่เหลือบอกเป็นรายชื่อบรรทัดเดียว
-- ถ้ามี application_match หรือ industry_match และลูกค้าไม่ได้ถามเรื่องอุณหภูมิ ไม่ต้องถามกลับเรื่องไลน์เปียกหรือแห้ง
-- ถ้ามี application_pair_absent ให้บอกก่อนว่าแคตตาล็อกไม่ได้ระบุงานนั้นในอุตสาหกรรมที่ถาม ตาม note_th
-  บอกงานที่เล่มมีในอุตสาหกรรมนั้นได้จาก industry_applications_th ห้ามเอารุ่นใน other_industries มาตอบเป็นรุ่นของอุตสาหกรรมที่ถาม
-  ถ้าจะพูดถึงรุ่นใน other_industries ต้องบอกชื่ออุตสาหกรรมกำกับทุกครั้ง
-- ถ้ามี sprockets_by_belt ให้ตอบทีละชุดใน sets: รุ่นสายพานในชุด แล้วตามด้วยรหัสเฟืองเต็มทุกตัวตามที่ให้มา
-  ห้ามย่อรหัสเป็นตระกูล ห้ามเขียนแค่จำนวนฟัน (เซลล์ใช้รหัสเต็มสั่งของ) รุ่นใน no_sprocket_in_catalogue ให้บอกว่าเล่มไม่ได้ระบุเฟือง
-  ต้องสอบถามฝ่ายขาย ห้ามเดารหัสจากซีรีส์ ห้ามบอกขนาดเฟืองหรือรูเพลา
-- ถ้าการ์ดสินค้ามี applications_excluded_th ห้ามเสนอรุ่นนั้นสำหรับงานในรายการ ถ้าลูกค้าถามถึงงานนั้นตรง ๆ
-  ให้บอกว่าแคตตาล็อก 2026 ไม่มีเกรดที่เล่มแนะนำสำหรับงานนี้ ต้องยืนยันกับพนักงานฝ่ายขาย
+- ถ้ามี application_match หรือ industry_match และลูกค้าไม่ได้ถามเรื่องอุณหภูมิ ไม่ต้องถามกลับเรื่องไลน์เปียกหรือแห้ง{graph_rules}
 - search_result คือผลค้นครบทั้งฐาน รายงานทุกรุ่นที่ตรง ถ้า matched = 0 บอกได้ว่าไม่มีรุ่นที่ตรงเงื่อนไข
   บอกชื่อแบรนด์ตาม scope_th ในคำตอบด้วยเสมอ (เช่น "สายพาน Modutech …")
 - รหัสสเตอร์เป็นการอนุมานจากซีรีส์ ต้องบอกให้ยืนยันกับฝ่ายขาย ขนาดสเตอร์/รูเพลาให้ส่งฝ่ายขาย

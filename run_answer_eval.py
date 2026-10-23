@@ -47,6 +47,7 @@ metric ที่ชั้นนี้ตรวจ
 from __future__ import annotations
 
 import argparse
+import os
 import csv
 import importlib
 import json
@@ -342,6 +343,8 @@ def run(module_name: str, testcases: str, only: set[str] | None,
     return {
         "module": module_name,
         "llm": llm_desc,
+        # สวิตช์ชั้นงานใช้ของกราฟ (brands/modutech/turn.py) — ไว้แยกผลก่อน/หลังต่อกราฟ
+        "graph_apps": os.getenv("MODUTECH_GRAPH_APPS", "1").strip() != "0",
         "model_versions": dict(Counter(r.get("model_version") for r in results if r.get("model_version"))),
         "testcases": testcases,
         "total_turns": len(results),
