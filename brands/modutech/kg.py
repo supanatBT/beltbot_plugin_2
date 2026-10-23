@@ -106,7 +106,7 @@ def stamp_db(db_path: str, data: dict) -> str:
 BELT, SPROCKET, SERIES, MATERIAL = "Belt", "Sprocket", "Series", "Material"
 BELONGS_TO, MADE_OF, COMPATIBLE_WITH = "BELONGS_TO", "MADE_OF", "COMPATIBLE_WITH"
 # 22 ต.ค.: ชั้นงานใช้/อุตสาหกรรม — เดิมอยู่ใน JSON อย่างเดียว ย้ายเข้ากราฟเพื่อถามหลายขั้นได้
-# (งานนี้ → สายพาน → เฟือง) · ยังไม่ต่อเข้าบอต: บอตโหลดกราฟจาก modutech_kg.db ซึ่งยังเป็นแบบเดิม
+# (งานนี้ → สายพาน → เฟือง) · 23 ต.ค. ต่อเข้าบอตแล้ว: load_modutech_kg สร้างจาก JSON เสมอ · ใช้ใน turn.py
 INDUSTRY, APPLICATION = "Industry", "Application"
 USED_IN, USED_FOR, HAS_APPLICATION = "USED_IN", "USED_FOR", "HAS_APPLICATION"
 
@@ -487,6 +487,46 @@ class ModutechGraph:
         inid = self._find(self._industry_alias, industry)
         return sorted(self.nodes[a].label for a in self._out[inid][HAS_APPLICATION]) if inid else []
 
+    def find_applications(self, text: str) -> list[str]:
+        """ชื่องานใช้ที่ปรากฏในข้อความแบบตรงตัว (ชื่อไทย · อังกฤษ · ชื่อที่พิมพ์ในเล่ม) — ยาวสุดก่อน ไม่ซ้อนกัน
+
+        ต่างจาก router.match_application ซึ่งจับด้วย tag กว้าง ๆ ("เครื่องชั่งน้ำหนักตรวจสอบ" ได้ทั้ง
+        Checkweighers และ Metal Detection · graph_apps_r2 GA-R03) ตรงนี้จับเฉพาะชื่องานที่พิมพ์มาครบ
+        ถ้าไม่เจอ ผู้เรียกต้องถอยไปใช้ router แบบเดิม
+        """
+        low = (text or "").lower()
+        found: list[str] = []
+        for alias in sorted(self._app_alias, key=len, reverse=True):
+            if len(alias) < 4 or alias not in low:
+                continue
+            label = self.nodes[self._app_alias[alias]].label
+            if label not in found:
+                found.append(label)
+            low = low.replace(alias, " " * len(alias))      # กันชื่อสั้นที่ซ้อนอยู่ในชื่อยาวถูกนับซ้ำ
+        return sorted(found)
+
+    def find_industry(self, key: str) -> Optional[str]:
+        n = self._find(self._industry_alias, key)
+        return self.nodes[n].label if n else None
+
+    def used_for(self, belt: str, application: str, industry: Optional[str] = None) -> bool:
+        """เล่มผูกรุ่นนี้กับงานนี้ (ในอุตสาหกรรมนี้) และรุ่นนี้มีเกรดที่เล่มแนะนำ"""
+        b, a = self._resolve(belt), self._find(self._app_alias, application)
+        if not b or not a:
+            return False
+        if industry is None:
+            return a in self._out[b][USED_FOR]
+        i = self._find(self._industry_alias, industry)
+        return bool(i) and (b, i, a) in self._triples
+
+    def application_th(self, application: str) -> str:
+        a = self._find(self._app_alias, application)
+        return dict(self.nodes[a].attrs).get("application_th", "") if a else ""
+
+    def industry_th(self, industry: str) -> str:
+        i = self._find(self._industry_alias, industry)
+        return dict(self.nodes[i].attrs).get("industry_th", "") if i else ""
+
     def sprockets_for_application(self, application: str, industry: Optional[str] = None) -> dict[str, list[str]]:
         """ถามสองขั้น: งานนี้ → สายพาน → เฟือง · สายพานที่เล่มไม่ผูกเฟืองคืนรายการว่าง (ไม่เดา)"""
         return {b: self.sprockets_for_belt(b) for b in self.belts_for_application(application, industry)}
@@ -609,11 +649,14 @@ def load_modutech_kg(cat, db_path: str = "./modutech_kg.db", quiet: bool = False
             f"   ยังไม่มีทางที่พิมพ์ออกไปถึงลูกค้า แต่กราฟเป็นทางที่เลี่ยงเกตได้\n"
             f"   สร้างใหม่ด้วย builder รุ่นที่ตัดฟิลด์พวกนี้ออก")
 
-    from knowledge_graph import KnowledgeGraph
-    kg = KnowledgeGraph.load_from_db(db_path)
-    say(f"✅ โหลดกราฟจาก {db_path} · {kg.graph.number_of_nodes()} โหนด "
-        f"{kg.graph.number_of_edges()} เส้น")
-    return kg
+    # 23 ต.ค.: ตรวจไฟล์ครบแล้วก็ยังสร้างกราฟจาก JSON เสมอ — ไฟล์ .db (KnowledgeGraph แบบ Movex)
+    # ไม่มีชั้นอุตสาหกรรม/งานใช้ และลายนิ้วมือไม่ได้ครอบชั้นนี้ ไฟล์ที่ "ตรง" จึงยังขาดของอยู่
+    # สร้างจาก JSON ใช้ไม่กี่มิลลิวินาที ไฟล์ .db เหลือไว้ตรวจหรือแนบภาคผนวก (to_sqlite)
+    g = ModutechGraph.from_catalogue(cat)
+    st = g.stats()
+    say(f"✅ กราฟ Modutech จาก JSON · {sum(st['nodes'].values())} โหนด {sum(st['edges'].values())} เส้น "
+        f"(ตรวจ {db_path} แล้ว ไม่ได้โหลดจากไฟล์)")
+    return g
 
 
 if __name__ == "__main__":

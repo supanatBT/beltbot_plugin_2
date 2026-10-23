@@ -85,6 +85,9 @@ def main() -> None:
 
     def ctx_of(text: str) -> str:
         c = mt.build_modutech_turn(decide(text), cat, search, vector_search=None, kg=kg).context
+        # งานใน applications_excluded_th ถูกยื่นให้ LLM ในฐานะ "ห้ามเสนอ" ไม่ใช่คำตอบ — ไม่นับเป็นคำห้ามที่ยื่นให้
+        for p in c.get("products") or []:
+            p.pop("applications_excluded_th", None)
         return json.dumps(c, ensure_ascii=False)
 
     # ข้อความถามกลับสำเร็จรูปของบอต — คำใน must_contain_any ต้องไม่อยู่ในนี้
@@ -244,7 +247,13 @@ def main() -> None:
         blob = ctx_of(r["user_text"])
         need_all = [w for w in r["must_contain"].split("|") if w]
         need_any = [w for w in r["must_contain_any"].split("|") if w]
-        bad = [w for w in r["must_not_contain"].split("|") if w and w in blob]
+        # คำห้ามดูเฉพาะข้อมูลที่เป็นคำตอบ ไม่นับข้อความขาย (sales_knowledge_th) ซึ่งพูดถึงรุ่นพี่น้องบนแพลตฟอร์ม
+        # เดียวกันเป็นพื้นหลัง เช่น "EC254 PR16 เจาะรูบนผิว flat top" (GA-I04)
+        ans = json.loads(blob)
+        for p in ans.get("products") or []:
+            p.pop("sales_knowledge_th", None)
+        ans_blob = json.dumps(ans, ensure_ascii=False)
+        bad = [w for w in r["must_not_contain"].split("|") if w and w in ans_blob]
         miss = [w for w in need_all if w not in blob]
         any_ok = not need_any or any(w in blob for w in need_any)
         ok = not bad and not miss and any_ok
@@ -266,7 +275,13 @@ def main() -> None:
         ok = r["description"].startswith("[พร้อม] ")
         r = dict(r, description=r["description"].split("] ", 1)[1])
         groups[out_path if ok else pending_path].append(r)
+    import os
     for path_, rs in groups.items():
+        if not rs and path_ == pending_path:
+            # 23 ต.ค.: ต่อกราฟเข้าบอตแล้ว ทุกเคสวัดได้ — ไม่เขียนไฟล์ว่างทิ้งไว้ให้สับสน
+            if os.path.exists(path_):
+                os.remove(path_)
+            continue
         with open(path_, "w", newline="", encoding="utf-8-sig") as f:
             w = csv.DictWriter(f, fieldnames=FIELDS, lineterminator="\n")
             w.writeheader()
@@ -281,7 +296,8 @@ def main() -> None:
             print(f"  {k:<26} {cnt[k]}")
     print(f"\nรันกับบอต (เกณฑ์ผ่าน: ไฟล์หลักครบทุกข้อ):")
     print(f"  python run_answer_eval.py --module assistant --testcases {out_path} -o graph_apps_r1.json")
-    print(f"หลังต่อกราฟเข้า turn.py แล้ว ให้รันไฟล์ {pending_path} ด้วย")
+    if groups[pending_path]:
+        print(f"เคสที่ context ยังไม่พร้อมอยู่ใน {pending_path}")
 
 
 if __name__ == "__main__":
