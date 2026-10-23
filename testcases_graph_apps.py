@@ -151,7 +151,10 @@ def main() -> None:
         # รุ่นที่ตัวค้นของบอตปนมาจากงานอื่น — router จับคำกว้างเกิน เช่น "เครื่องชั่งน้ำหนักตรวจสอบ"
         # ได้ทั้ง Checkweighers และ Metal Detection (graph_apps_r2: GA-R03 ตอบ 17 รุ่นแทน 6)
         q_text = f"สายพานสำหรับงาน{app_th[a]} ใช้รุ่นไหนได้บ้าง"
-        routed = (json.loads(ctx_of(q_text)).get("application_match") or {}).get("belt_codes_complete") or []
+        # ถามตัวค้นเดิม (router) ตรง ๆ — หลังต่อกราฟ context มาจากกราฟแล้ว ถ้าอ่านจาก context รุ่นที่ router
+        # ดึงเกินจะหายจากรายการห้าม แล้วผลก่อนต่อกราฟ (MODUTECH_GRAPH_APPS=0) จะผ่านง่ายเกินจริง
+        am = search.match_application(q_text)
+        routed = am.belt_codes if am else []
         banned |= {b for b in routed if b not in belts and prefix_safe(b)}
         banned = sorted(banned)
         rows.append(row(
