@@ -52,12 +52,25 @@ def _grade_hint(text: str):
 _RULE_KEYS = ("forbidden_th", "gate_rules_th", "_gate_rules_th")
 
 
+# 23 ต.ค.: answering.forbidden_th ใน modutech_v30_3.json (9 รุ่น) ยังเขียน "โบรชัวร์แนะนำไว้แต่สายผลิตไม่มี"
+# ซึ่งยืนยันเกินข้อมูล (gaps = not_listed) และขัดกับกฎของ material_gate ที่ห้ามบอกว่าผลิตหรือไม่ผลิต
+# (2c2d0f4) — fix10_r1 MT-001 ตอบ "ไม่มีในสายการผลิตมาตรฐาน" · ไม่แก้ไฟล์ฐานข้อมูล แก้ถ้อยคำตอนดึงเข้า prompt
+_RULE_WORDING = [("สายผลิตไม่มี", "แคตตาล็อก 2026 ไม่มี")]
+
+
+def _reword(rule: str) -> str:
+    for old, new in _RULE_WORDING:
+        rule = rule.replace(old, new)
+    return rule
+
+
 def _pull_rules(items: list, key: str) -> dict[str, list[str]]:
     out: dict[str, list[str]] = {}
     for it in items or []:
         bucket = out.setdefault(str(it.get(key) or "?"), [])
         for k in _RULE_KEYS:
             for r in it.pop(k, None) or []:
+                r = _reword(r)
                 if r not in bucket:
                     bucket.append(r)
     return {k: v for k, v in out.items() if v}
