@@ -45,9 +45,10 @@ if not GEMINI_API_KEY:
 
 JINA_MODEL_ID   = "jinaai/jina-embeddings-v3"
 SIGLIP_MODEL_ID = "google/siglip-base-patch16-224"
-# ล็อกโมเดล (22 ต.ค.): ตั้ง GEMINI_MODEL ใน .env เป็นชื่อรุ่นตายตัว เช่น gemini-3.6-flash
+# ล็อกโมเดล (22 ต.ค.): ตั้ง GEMINI_MODEL ใน .env เป็นชื่อรุ่นตายตัว
 # gemini-flash-latest เป็น alias ที่ Google ย้ายไปรุ่นใหม่ได้เอง ผลทดสอบคนละวันจึงอาจมาจากคนละโมเดล
-GEMINI_MODEL    = (os.getenv("GEMINI_MODEL") or "gemini-flash-latest").strip()
+# 23 ต.ค.: ค่าตั้งต้น = gemini-3.8-flash (รุ่นที่ -latest ชี้อยู่ตอนรัน fix8–fix10 · probe_model.py ยืนยัน)
+GEMINI_MODEL    = (os.getenv("GEMINI_MODEL") or "gemini-3.8-flash").strip()
 if GEMINI_MODEL.endswith("-latest"):
     print(f"⚠️ GEMINI_MODEL={GEMINI_MODEL} เป็นชื่อลอย ไม่ได้ล็อกรุ่น — ตั้ง GEMINI_MODEL ใน .env ก่อนทดสอบหรือ deploy")
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
