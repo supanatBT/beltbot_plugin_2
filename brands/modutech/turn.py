@@ -417,13 +417,20 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
     if asks_sprocket and full_list and context.get("application_match", {}).get("source") == "graph":
         by_belt = {b: sorted((cat.links.get(b) or {}).get("sprocket_codes") or []) for b in full_list}
         missing = [b for b, v in by_belt.items() if not v]
+        # รวมรุ่นที่ใช้เฟืองชุดเดียวกัน — graph_apps_r4 (GH-02 · GH-04) แนบแยกทีละรุ่น 5 รุ่นซ้ำชุด MD-TR254 14 รหัส
+        # LLM เลยย่อเองเป็น "MD-TR254SQZ... ฟัน 8, 10 …" ซึ่งถูกแต่เซลล์เอาไปสั่งของไม่ได้ทันที
+        sets: dict[tuple, list[str]] = {}
+        for b, v in by_belt.items():
+            if v:
+                sets.setdefault(tuple(v), []).append(b)
         context["sprockets_by_belt"] = {
-            "belts": {b: v for b, v in by_belt.items() if v},
+            "sets": [{"belt_codes": bs, "sprocket_codes": list(v)} for v, bs in sets.items()],
             **({"no_sprocket_in_catalogue": missing} if missing else {}),
-            "note_th": ("รหัสเฟืองตามตารางความเข้ากันได้ในเล่ม แยกตามรุ่นสายพาน · ขนาดเฟืองและรูเพลาต้องสอบถามฝ่ายขาย"
+            "note_th": ("รหัสเฟืองตามตารางความเข้ากันได้ในเล่ม รุ่นใน belt_codes ของชุดเดียวกันใช้เฟืองชุดเดียวกัน"
+                        " · ขนาดเฟืองและรูเพลาต้องสอบถามฝ่ายขาย"
                         + (" · รุ่นใน no_sprocket_in_catalogue เล่มไม่ได้ระบุเฟือง ต้องสอบถามฝ่ายขาย" if missing else "")),
         }
-        debug.append(f"two-hop sprockets: {len(by_belt) - len(missing)} รุ่นมีเฟือง · {len(missing)} ไม่มี")
+        debug.append(f"two-hop sprockets: {len(by_belt) - len(missing)} รุ่นมีเฟือง ({len(sets)} ชุด) · {len(missing)} ไม่มี")
 
     # ── รุ่นอื่นในซีรีส์เดียวกัน — แนบเฉพาะเมื่อถาม ──
     # ไม่แนบทุกครั้งเพราะซีรีส์ใหญ่สุดมี 21 รุ่น จะกิน context ไปเปล่า ๆ
@@ -490,7 +497,8 @@ def _system_prompt(context: dict, rules: dict[str, list[str]]) -> str:
 - ถ้ามี application_pair_absent ให้บอกก่อนว่าแคตตาล็อกไม่ได้ระบุงานนั้นในอุตสาหกรรมที่ถาม ตาม note_th
   บอกงานที่เล่มมีในอุตสาหกรรมนั้นได้จาก industry_applications_th ห้ามเอารุ่นใน other_industries มาตอบเป็นรุ่นของอุตสาหกรรมที่ถาม
   ถ้าจะพูดถึงรุ่นใน other_industries ต้องบอกชื่ออุตสาหกรรมกำกับทุกครั้ง
-- ถ้ามี sprockets_by_belt ให้บอกรหัสเฟืองแยกตามรุ่นสายพาน รุ่นใน no_sprocket_in_catalogue ให้บอกว่าเล่มไม่ได้ระบุเฟือง
+- ถ้ามี sprockets_by_belt ให้ตอบทีละชุดใน sets: รุ่นสายพานในชุด แล้วตามด้วยรหัสเฟืองเต็มทุกตัวตามที่ให้มา
+  ห้ามย่อรหัสเป็นตระกูล ห้ามเขียนแค่จำนวนฟัน (เซลล์ใช้รหัสเต็มสั่งของ) รุ่นใน no_sprocket_in_catalogue ให้บอกว่าเล่มไม่ได้ระบุเฟือง
   ต้องสอบถามฝ่ายขาย ห้ามเดารหัสจากซีรีส์ ห้ามบอกขนาดเฟืองหรือรูเพลา
 - ถ้าการ์ดสินค้ามี applications_excluded_th ห้ามเสนอรุ่นนั้นสำหรับงานในรายการ ถ้าลูกค้าถามถึงงานนั้นตรง ๆ
   ให้บอกว่าแคตตาล็อก 2026 ไม่มีเกรดที่เล่มแนะนำสำหรับงานนี้ ต้องยืนยันกับพนักงานฝ่ายขาย

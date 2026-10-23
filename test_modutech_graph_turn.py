@@ -63,11 +63,14 @@ check("ไม่มีรุ่นปนเป็นคำตอบ", not c.get(
 print("4) สองขั้นถึงเฟือง")
 c = ctx("งานเครื่องจัดเรียงพาเลทในอุตสาหกรรมกล่องลูกฟูก ใช้สายพานกับเฟืองตัวไหน")
 sb = c.get("sprockets_by_belt") or {}
-check("มีรหัสเฟือง 6 รุ่น", len(sb.get("belts") or {}) == 6, list(sb.get("belts") or {}))
+belts_with = {b: st["sprocket_codes"] for st in sb.get("sets") or [] for b in st["belt_codes"]}
+check("มีรหัสเฟือง 6 รุ่น", len(belts_with) == 6, list(belts_with))
+check("รุ่นที่ใช้ชุดเดียวกันรวมเป็นชุดเดียว (XP254 4 รุ่น)",
+      any(len(st["belt_codes"]) == 4 for st in sb.get("sets") or []), [st["belt_codes"] for st in sb.get("sets") or []])
 check("MD508 C · MD508 NS ไม่มีเฟือง แยกไว้", sb.get("no_sprocket_in_catalogue") == ["MD508 C", "MD508 NS"],
       sb.get("no_sprocket_in_catalogue"))
-check("รหัสตรง belt_sprocket_links", all(v == sorted(cat.links[b]["sprocket_codes"]) for b, v in (sb.get("belts") or {}).items()))
-check("ไม่มีขนาดเฟือง", not any(isinstance(x, (int, float)) for v in (sb.get("belts") or {}).values() for x in v)
+check("รหัสตรง belt_sprocket_links", all(v == sorted(cat.links[b]["sprocket_codes"]) for b, v in belts_with.items()))
+check("ไม่มีขนาดเฟือง", not any(isinstance(x, (int, float)) for v in belts_with.values() for x in v)
       and "dimensions" not in json.dumps(sb))
 
 print("5) การ์ดสินค้า")
