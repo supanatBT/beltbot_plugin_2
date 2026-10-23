@@ -91,6 +91,19 @@ class ModutechPlugin:
     def domain_terms(self) -> list[str]:
         return ["modutech", "โมดูล"] + list(self.detector.weak_terms)
 
+    def _names_industry(self, text: str) -> bool:
+        """ข้อความระบุอุตสาหกรรมแล้ว (ตามคีย์เวิร์ดของตัวค้น) — นับว่าบอกงานมาแล้ว ไม่ต้องถามกลับ
+
+        "บรรจุภัณฑ์" ถูกตัดออกจาก weak_terms โดยตั้งใจ (GENERIC_TERMS) เพราะ Movex ก็ใช้คำนี้
+        จึงห้ามใช้เป็นสัญญาณเลือกแบรนด์ แต่เมื่อเลือก Modutech แล้ว คำนี้บอกงานได้ชัดพอ
+        เดิม "อุตสาหกรรมบรรจุภัณฑ์มีงานอะไรบ้าง" ถูกถามกลับว่าอุตสาหกรรมอะไร
+        ทั้งที่ match_industry จับ Packaging ได้ (GI-A06 · graph_apps_r1/r2 · 23 ต.ค.)
+        """
+        try:
+            return bool(self.search.match_industry(text))
+        except Exception:                                    # noqa: BLE001
+            return False
+
     @property
     def weak_terms(self) -> list[str]:
         return self.detector.weak_terms
@@ -198,7 +211,7 @@ class ModutechPlugin:
         # slot ของลูกค้า ทำให้ has_need เป็นจริง พอแก้บั๊กนั้นอาการนี้จึงโผล่
         # กล่าวคือมันเคย "ทำงานได้ด้วยเหตุผลที่ผิด" ไม่ใช่เคยถูกแล้วเพิ่งเสีย
         has_need = bool(any_word(self.detector.weak_terms, text)) or bool(slots) \
-            or bool(codes.sprocket_codes)
+            or bool(codes.sprocket_codes) or self._names_industry(text)
         if not focus and not has_need and has(MOD_RECOMMEND + r"|สายพาน", text):
             return Decision("ask", key, ASK_MODUTECH_NEED_TH, "ยังไม่รู้งานของลูกค้า",
                             topic="recommend", effective_text=text,
