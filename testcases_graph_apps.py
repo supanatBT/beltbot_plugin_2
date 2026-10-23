@@ -39,7 +39,8 @@ FIELDS = ["id", "category", "subcategory", "turn_type", "turn_number", "user_tex
           "must_ask_back", "expected_value", "expected_unit", "reply_max_length",
           "metrics", "description"]
 SALES_WORDS = "ฝ่ายขาย|ติดต่อ|สอบถาม|ยืนยัน"
-NOT_FOUND_WORDS = "ไม่มีข้อมูล|ไม่พบ|ไม่ได้ระบุ|ไม่มีในแคตตาล็อก|ไม่มีรุ่น|ฝ่ายขาย"
+# ไม่ใส่ "ฝ่ายขาย" — รอบแรก (graph_apps_r1) GN-01 ผ่านเพราะคำนี้โผล่ในหมายเหตุอื่น ทั้งที่ตอบผิด
+NOT_FOUND_WORDS = "ไม่มีข้อมูล|ไม่พบ|ไม่ได้ระบุ|ไม่ระบุ|ไม่มีในแคตตาล็อก"
 
 
 def join_limit(tokens, limit: int = 600) -> str:
@@ -79,10 +80,17 @@ def main() -> None:
         """"EC508 C" เป็นสตริงย่อยของ "EC508 C-RT" — ใช้เป็นคำห้าม/คำต้องมีไม่ได้"""
         return not any(o != code and code in o for o in codes_all)
 
+    def decide(text: str):
+        return DialogueManager({}, cat, movex_materials={}).decide(text)
+
     def ctx_of(text: str) -> str:
-        dm = DialogueManager({}, cat, movex_materials={})
-        c = mt.build_modutech_turn(dm.decide(text), cat, search, vector_search=None, kg=kg).context
+        c = mt.build_modutech_turn(decide(text), cat, search, vector_search=None, kg=kg).context
         return json.dumps(c, ensure_ascii=False)
+
+    # ข้อความถามกลับสำเร็จรูปของบอต — คำใน must_contain_any ต้องไม่อยู่ในนี้
+    # รอบแรก GI-A06 ผ่านทั้งที่บอตถามกลับ เพราะข้อความถามกลับมีคำว่า "เครื่องตรวจจับโลหะ"
+    import brands.modutech.plugin as _plugin
+    ask_texts = " ".join(v for k, v in vars(_plugin).items() if k.startswith("ASK_") and isinstance(v, str))
 
     # ชื่อไทยจาก JSON
     app_th = {v["application"]: v.get("application_th") or "" for v in data.get("application_vocabulary") or []}
@@ -127,8 +135,12 @@ def main() -> None:
                         + (f" · ห้ามเสนอ {', '.join(cut)} เพราะรุ่นนี้ไม่มีเกรดที่เล่มแนะนำ" if cut else "")))
 
     # ── GA-R งานใช้ → สายพาน ──────────────────────────────────
-    want_apps = ["Metal Detection", "Box Handling", "Freezing Lines", "Spiral Conveyors", "Washing Lines"]
-    want_apps = [a for a in want_apps if a in app_th] or sorted(app_th)[:5]
+    # ข้ามงานที่บอตต้องถามเปียก/แห้งก่อนตามออกแบบ (เช่น ไลน์แช่แข็ง → GA-R03 รอบแรก)
+    # คำถามแบบนั้นต้องทดสอบเป็นสองเทิร์น ไม่ใช่คำถามเดี่ยว
+    cand = ["Metal Detection", "Box Handling", "Freezing Lines", "Spiral Conveyors", "Washing Lines",
+            "Checkweighers", "Raw Dough Handling", "Inspection Tables"]
+    want_apps = [a for a in cand if a in app_th
+                 and decide(f"สายพานสำหรับงาน{app_th[a]} ใช้รุ่นไหนได้บ้าง").reason != "ต้องรู้เปียก/แห้งก่อนตอบอุณหภูมิ"][:5]
     for n, a in enumerate(want_apps, 1):
         belts = kg.belts_for_application(a)
         banned = sorted({b for b, lst in dropped.items() for _, aa in lst if aa == a
@@ -215,15 +227,21 @@ def main() -> None:
                         f"(เสนอรุ่นจากหมวดอื่นได้ถ้าบอกชัดว่ามาจากหมวดไหน) · รุ่นที่ล่อให้ตอบ: {', '.join(tempting)}"))
 
     # ── จัดสถานะ: วัดได้เลย หรือรอต่อกราฟ ───────────────────────
+    for r in rows:
+        r["must_contain_any"] = "|".join(w for w in r["must_contain_any"].split("|") if w and w not in ask_texts)
     ready = 0
     for r in rows:
+        d = decide(r["user_text"])
         blob = ctx_of(r["user_text"])
         need_all = [w for w in r["must_contain"].split("|") if w]
         need_any = [w for w in r["must_contain_any"].split("|") if w]
         bad = [w for w in r["must_not_contain"].split("|") if w and w in blob]
         miss = [w for w in need_all if w not in blob]
-        any_ok = not need_any or any(w in blob for w in need_any) or r["must_contain_any"] in (SALES_WORDS, NOT_FOUND_WORDS)
+        any_ok = not need_any or any(w in blob for w in need_any)
         ok = not bad and not miss and any_ok
+        if d.action == "ask":
+            # บอตถามกลับทั้งที่คำถามระบุพอแล้ว = บั๊กของบอต ไม่ใช่ของเคส — เก็บไว้ในไฟล์หลักให้ตก
+            r["description"] += f" · บอตตอนนี้ถามกลับก่อน ({d.reason}) คาดว่าข้อนี้ตกจนกว่าจะแก้"
         ready += ok
         why = "" if ok else " (" + "; ".join(filter(None, [
             f"context ยื่นคำห้าม {bad[:3]}" if bad else "",
