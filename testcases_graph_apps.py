@@ -12,11 +12,12 @@
   GH    งาน × อุตสาหกรรม → เฟือง    ถามสองขั้น · ห้ามบอกขนาดเฟือง · รุ่นไม่มีเฟืองต้องส่งฝ่ายขาย
   GN    คู่งาน×อุตสาหกรรมที่เล่มไม่มี ต้องบอกว่าไม่มีข้อมูล ห้ามแต่งรายชื่อ
 
-สถานะของแต่ละเคส (ขึ้นต้นช่อง description)
-  [พร้อม]      context ของบอตตอนนี้มีคำที่ต้องตอบ และไม่มีคำที่ห้ามตอบ — วัดได้ทันที
-  [รอต่อกราฟ]  context ตอนนี้ยังขาดคำที่ต้องตอบ หรือยื่นคำที่ห้ามตอบให้ LLM เอง
-               เคสนี้จะผ่านได้ต่อเมื่อต่อชั้นงานใช้ของกราฟเข้า brands/modutech/turn.py แล้ว
-               ใช้เป็นเกณฑ์รับงานต่อกราฟ ไม่ใช่ตัววัดบอตรุ่นที่ส่ง
+ไฟล์ที่ได้ (สคีมาเดียวกับ testcases_graph_relations.csv · รันด้วย run_answer_eval.py ได้เลย)
+  testcases_graph_apps.csv          context ของบอตตอนนี้มีคำที่ต้องตอบ และไม่มีคำที่ห้ามตอบ — วัดได้ทันที
+  testcases_graph_apps_pending.csv  context ตอนนี้ยังขาดคำที่ต้องตอบ หรือยื่นคำที่ห้ามตอบให้ LLM เอง
+                                    ผ่านได้ต่อเมื่อต่อชั้นงานใช้ของกราฟเข้า brands/modutech/turn.py แล้ว
+                                    ใช้เป็นเกณฑ์รับงานต่อกราฟ ไม่ใช่ตัววัดบอตรุ่นที่ส่ง
+                                    (ช่อง description บอกว่าขาดอะไร)
 
 รัน: python testcases_graph_apps.py [modutech_v30_3.json] [-o testcases_graph_apps.csv]
 """
@@ -39,6 +40,17 @@ FIELDS = ["id", "category", "subcategory", "turn_type", "turn_number", "user_tex
           "metrics", "description"]
 SALES_WORDS = "ฝ่ายขาย|ติดต่อ|สอบถาม|ยืนยัน"
 NOT_FOUND_WORDS = "ไม่มีข้อมูล|ไม่พบ|ไม่ได้ระบุ|ไม่มีในแคตตาล็อก|ไม่มีรุ่น|ฝ่ายขาย"
+
+
+def join_limit(tokens, limit: int = 600) -> str:
+    """ต่อคำด้วย | ไม่เกิน limit ตัวอักษร โดยไม่ตัดกลางคำ"""
+    out, n = [], 0
+    for t in tokens:
+        if out and n + len(t) + 1 > limit:
+            break
+        out.append(t)
+        n += len(t) + 1
+    return "|".join(out)
 
 
 def row(**kw) -> dict:
@@ -109,7 +121,7 @@ def main() -> None:
             id=f"GA-F{n:02d}", category="graph_application", subcategory="belt_to_application",
             user_text=f"{b} ใช้กับงานอะไรได้บ้าง",
             must_contain=b,
-            must_contain_any="|".join(app_th[a] for a in apps if app_th.get(a))[:600],
+            must_contain_any=join_limit(app_th[a] for a in apps if app_th.get(a)),
             must_not_contain="|".join(cut),
             description=f"USED_FOR ขาไป — เล่มให้ {len(apps)} งาน"
                         + (f" · ห้ามเสนอ {', '.join(cut)} เพราะรุ่นนี้ไม่มีเกรดที่เล่มแนะนำ" if cut else "")))
@@ -124,7 +136,7 @@ def main() -> None:
         rows.append(row(
             id=f"GA-R{n:02d}", category="graph_application", subcategory="application_to_belt",
             user_text=f"สายพานสำหรับงาน{app_th[a]} ใช้รุ่นไหนได้บ้าง",
-            must_contain_any="|".join(b for b in belts if prefix_safe(b))[:600],
+            must_contain_any=join_limit(b for b in belts if prefix_safe(b)),
             must_not_contain="|".join(banned),
             description=f"USED_FOR ขากลับ — {a} มี {len(belts)} รุ่น"
                         + (f" · ห้ามเสนอ {', '.join(banned)} (เกรดไม่ตรง)" if banned else "")))
@@ -219,19 +231,30 @@ def main() -> None:
             "context ไม่มีคำตอบที่ต้องการ" if not any_ok else ""])) + ")"
         r["description"] = ("[พร้อม] " if ok else "[รอต่อกราฟ] ") + r["description"] + why
 
-    with open(out_path, "w", newline="", encoding="utf-8-sig") as f:
-        w = csv.DictWriter(f, fieldnames=FIELDS, lineterminator="\n")
-        w.writeheader()
-        w.writerows(rows)
-
-    cnt: dict[str, list] = defaultdict(lambda: [0, 0])
+    # ไฟล์หลักเก็บเฉพาะเคสที่วัดบอตตอนนี้ได้ — รันได้แบบเดียวกับ testcases_graph_relations.csv
+    # เคสที่รอต่อกราฟแยกไฟล์ ไม่ให้ไปกดคะแนนบอตรุ่นที่ส่งด้วยงานที่ยังไม่ได้ทำ
+    pending_path = out_path.replace(".csv", "_pending.csv")
+    groups = {out_path: [], pending_path: []}
     for r in rows:
-        cnt[r["id"].split("-")[0] + "-" + "".join(ch for ch in r["id"].split("-")[1] if ch.isalpha())][
-            0 if r["description"].startswith("[พร้อม]") else 1] += 1
-    print(f"เขียน {out_path} — {len(rows)} เคส · พร้อมวัด {ready} · รอต่อกราฟ {len(rows) - ready}")
-    for k in sorted(cnt):
-        print(f"  {k:<6} พร้อม {cnt[k][0]:>2} · รอต่อกราฟ {cnt[k][1]:>2}")
-    print(f"\nรันกับบอต: python run_answer_eval.py --module assistant --testcases {out_path} -o graph_apps_r1.json")
+        ok = r["description"].startswith("[พร้อม] ")
+        r = dict(r, description=r["description"].split("] ", 1)[1])
+        groups[out_path if ok else pending_path].append(r)
+    for path_, rs in groups.items():
+        with open(path_, "w", newline="", encoding="utf-8-sig") as f:
+            w = csv.DictWriter(f, fieldnames=FIELDS, lineterminator="\n")
+            w.writeheader()
+            w.writerows(rs)
+
+    for path_, rs in groups.items():
+        cnt: dict[str, int] = defaultdict(int)
+        for r in rs:
+            cnt[r["subcategory"]] += 1
+        print(f"เขียน {path_} — {len(rs)} เคส")
+        for k in sorted(cnt):
+            print(f"  {k:<26} {cnt[k]}")
+    print(f"\nรันกับบอต (เกณฑ์ผ่าน: ไฟล์หลักครบทุกข้อ):")
+    print(f"  python run_answer_eval.py --module assistant --testcases {out_path} -o graph_apps_r1.json")
+    print(f"หลังต่อกราฟเข้า turn.py แล้ว ให้รันไฟล์ {pending_path} ด้วย")
 
 
 if __name__ == "__main__":
