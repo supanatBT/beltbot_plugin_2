@@ -127,6 +127,9 @@ def split_tokens(raw: str) -> list[str]:
 def norm_text(text: str) -> str:
     """ตัดตัวคั่นหลักพันและช่องว่างซ้ำ เพื่อให้ 1,000 กับ 1000 เทียบกันได้"""
     text = (text or "").lower()
+    # 23 ต.ค. (graph_fix8 SPK-F03): gemini-3.8-flash เขียนรหัสสเตอร์นอก backtick เป็น MD-TR254SQZ10\*POM
+    # (escape ของ markdown — หน้าเว็บแสดงเป็น *) ตัด \ หน้าอักขระ markdown ก่อนเทียบ ไม่งั้นรหัสถูกแต่ตรวจไม่เจอ
+    text = re.sub(r"\\([*_~`])", r"\1", text)
     text = re.sub(r"(?<=\d),(?=\d{3}\b)", "", text)
     return re.sub(r"\s+", " ", text)
 
