@@ -143,8 +143,14 @@ def main() -> None:
                  and decide(f"สายพานสำหรับงาน{app_th[a]} ใช้รุ่นไหนได้บ้าง").reason != "ต้องรู้เปียก/แห้งก่อนตอบอุณหภูมิ"][:5]
     for n, a in enumerate(want_apps, 1):
         belts = kg.belts_for_application(a)
-        banned = sorted({b for b, lst in dropped.items() for _, aa in lst if aa == a
-                         and b not in belts and prefix_safe(b)})
+        banned = {b for b, lst in dropped.items() for _, aa in lst if aa == a
+                  and b not in belts and prefix_safe(b)}
+        # รุ่นที่ตัวค้นของบอตปนมาจากงานอื่น — router จับคำกว้างเกิน เช่น "เครื่องชั่งน้ำหนักตรวจสอบ"
+        # ได้ทั้ง Checkweighers และ Metal Detection (graph_apps_r2: GA-R03 ตอบ 17 รุ่นแทน 6)
+        q_text = f"สายพานสำหรับงาน{app_th[a]} ใช้รุ่นไหนได้บ้าง"
+        routed = (json.loads(ctx_of(q_text)).get("application_match") or {}).get("belt_codes_complete") or []
+        banned |= {b for b in routed if b not in belts and prefix_safe(b)}
+        banned = sorted(banned)
         rows.append(row(
             id=f"GA-R{n:02d}", category="graph_application", subcategory="application_to_belt",
             user_text=f"สายพานสำหรับงาน{app_th[a]} ใช้รุ่นไหนได้บ้าง",
@@ -229,6 +235,9 @@ def main() -> None:
     # ── จัดสถานะ: วัดได้เลย หรือรอต่อกราฟ ───────────────────────
     for r in rows:
         r["must_contain_any"] = "|".join(w for w in r["must_contain_any"].split("|") if w and w not in ask_texts)
+        if r["must_not_contain"]:
+            # คำตอบของชุดนี้เป็นรายการ — ตรวจคำต้องห้ามทั้งคำตอบ ไม่ใช่แค่ย่อหน้าแรก (graph_apps_r2 GA-R03)
+            r["metrics"] = "forbid_anywhere"
     ready = 0
     for r in rows:
         d = decide(r["user_text"])
