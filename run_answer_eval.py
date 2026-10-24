@@ -47,6 +47,7 @@ metric ที่ชั้นนี้ตรวจ
 from __future__ import annotations
 
 import argparse
+import os
 import csv
 import importlib
 import json
@@ -73,7 +74,11 @@ SENTENCE_SPLIT = re.compile(r"(?<=ครับ)|(?<=ค่ะ)|(?<=คะ)|[\n�
 
 
 def _sentences(text: str) -> list[str]:
-    return [s for s in SENTENCE_SPLIT.split(norm_text(text) or "") if s and s.strip()]
+    # ตัดประโยคก่อน แล้วค่อย norm ทีละประโยค — norm_text ยุบ \n เป็นช่องว่าง ถ้า norm ก่อน
+    # การตัดที่ขึ้นบรรทัดใหม่จะไม่เกิด คำตอบแบบรายการทั้งก้อนกลายเป็นประโยคเดียว แล้วคำว่า "ไม่"
+    # ในหมายเหตุบรรทัดไหนก็ได้จะลบล้างคำต้องห้ามทั้งรายการ (พบ 23 ต.ค. · graph_apps_r2 GA-R03)
+    # ให้คะแนน fix6_r1 · fix7_r1 · graph_run2 ใหม่แล้วผลเท่าเดิม
+    return [n for n in (norm_text(s) for s in SENTENCE_SPLIT.split(text or "")) if n and n.strip()]
 
 
 def mentions_positively(token: str, text: str) -> bool:
@@ -123,6 +128,9 @@ def split_tokens(raw: str) -> list[str]:
 def norm_text(text: str) -> str:
     """ตัดตัวคั่นหลักพันและช่องว่างซ้ำ เพื่อให้ 1,000 กับ 1000 เทียบกันได้"""
     text = (text or "").lower()
+    # 23 ต.ค. (graph_fix8 SPK-F03): gemini-3.8-flash เขียนรหัสสเตอร์นอก backtick เป็น MD-TR254SQZ10\*POM
+    # (escape ของ markdown — หน้าเว็บแสดงเป็น *) ตัด \ หน้าอักขระ markdown ก่อนเทียบ ไม่งั้นรหัสถูกแต่ตรวจไม่เจอ
+    text = re.sub(r"\\([*_~`])", r"\1", text)
     text = re.sub(r"(?<=\d),(?=\d{3}\b)", "", text)
     return re.sub(r"\s+", " ", text)
 
@@ -180,6 +188,10 @@ def check_reply(case: dict, reply: str, error: str | None) -> dict:
         # เก็บผลแบบตรวจทั้งคำตอบไว้เป็นข้อมูล ไม่ใช้ตัดสิน
         info_forbidden_anywhere = not any(
             mentions_positively(t, reply) for t in forbidden)
+        # เคสที่คำตอบเป็นรายการ (เช่น "งานนี้ใช้รุ่นไหน") คำต้องห้ามอยู่ในย่อหน้าหลัง ๆ ไม่ใช่ย่อหน้าแรก
+        # เคสแบบนี้ใส่ metrics = forbid_anywhere เพื่อตัดสินจากทั้งคำตอบ (23 ต.ค. · testcases_graph_apps)
+        if "forbid_anywhere" in split_tokens(case.get("metrics", "")):
+            checks["answer_avoids_forbidden"] = info_forbidden_anywhere
     else:
         info_forbidden_anywhere = None
 
@@ -291,6 +303,8 @@ def run(module_name: str, testcases: str, only: set[str] | None,
             t0 = time.perf_counter()
             if llm is not None and hasattr(llm, "last_usage"):
                 llm.last_usage = None
+            if llm is not None and hasattr(llm, "last_model_version"):
+                llm.last_model_version = None
             try:
                 out = bot.chat_interaction(
                     query, image, history, last_pids, session_id, vit_signal, graph_result)
@@ -310,6 +324,7 @@ def run(module_name: str, testcases: str, only: set[str] | None,
                 "metrics": split_tokens(case.get("metrics", "")),
                 "seconds": round(time.perf_counter() - t0, 1),
                 "llm_usage": getattr(llm, "last_usage", None),
+                "model_version": getattr(llm, "last_model_version", None),
             })
             results.append(outcome)
 
@@ -328,6 +343,9 @@ def run(module_name: str, testcases: str, only: set[str] | None,
     return {
         "module": module_name,
         "llm": llm_desc,
+        # สวิตช์ชั้นงานใช้ของกราฟ (brands/modutech/turn.py) — ไว้แยกผลก่อน/หลังต่อกราฟ
+        "graph_apps": os.getenv("MODUTECH_GRAPH_APPS", "1").strip() != "0",
+        "model_versions": dict(Counter(r.get("model_version") for r in results if r.get("model_version"))),
         "testcases": testcases,
         "total_turns": len(results),
         "graded": len(graded),

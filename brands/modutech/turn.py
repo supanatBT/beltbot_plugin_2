@@ -9,13 +9,15 @@ chatbot_v5.py เรียก build_modutech_turn() แล้วส่ง prompt
 from __future__ import annotations
 
 import json
+import os
 import re
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
 from core.protocol import Decision   # ชนิดเท่านั้น — รับทั้ง Decision ของแกนกลางและรูปเดิม
 from brands.modutech.gates import Catalogue, Slots, run_gates, sprocket_gate
-from brands.modutech.router import CatalogueSearch, ExploratoryQuery, NO_ABSENCE_NOTE_TH
+from brands.modutech.router import (INDUSTRY_KEYWORDS, CatalogueSearch, ExploratoryQuery, NO_ABSENCE_NOTE_TH,
+                                     belt_grade_note_th)
 
 SPROCKET_TOPIC = r"สเตอร์|เฟือง|sprocket|จำนวนฟัน"
 
@@ -50,12 +52,25 @@ def _grade_hint(text: str):
 _RULE_KEYS = ("forbidden_th", "gate_rules_th", "_gate_rules_th")
 
 
+# 23 ต.ค.: answering.forbidden_th ใน modutech_v30_3.json (9 รุ่น) ยังเขียน "โบรชัวร์แนะนำไว้แต่สายผลิตไม่มี"
+# ซึ่งยืนยันเกินข้อมูล (gaps = not_listed) และขัดกับกฎของ material_gate ที่ห้ามบอกว่าผลิตหรือไม่ผลิต
+# (2c2d0f4) — fix10_r1 MT-001 ตอบ "ไม่มีในสายการผลิตมาตรฐาน" · ไม่แก้ไฟล์ฐานข้อมูล แก้ถ้อยคำตอนดึงเข้า prompt
+_RULE_WORDING = [("สายผลิตไม่มี", "แคตตาล็อก 2026 ไม่มี")]
+
+
+def _reword(rule: str) -> str:
+    for old, new in _RULE_WORDING:
+        rule = rule.replace(old, new)
+    return rule
+
+
 def _pull_rules(items: list, key: str) -> dict[str, list[str]]:
     out: dict[str, list[str]] = {}
     for it in items or []:
         bucket = out.setdefault(str(it.get(key) or "?"), [])
         for k in _RULE_KEYS:
             for r in it.pop(k, None) or []:
+                r = _reword(r)
                 if r not in bucket:
                     bucket.append(r)
     return {k: v for k, v in out.items() if v}
@@ -125,6 +140,140 @@ class ModutechTurn:
     debug: list = field(default_factory=list)
 
 
+def graph_apps_enabled() -> bool:
+    """สวิตช์ชั้นงานใช้ของกราฟ — MODUTECH_GRAPH_APPS=0 ปิด เพื่อวัดก่อน/หลังด้วยโค้ดชุดเดียวกัน
+
+    ปิดแล้วบอตทำงานเหมือนก่อน 722b7fd ทุกจุด: ค้นงานด้วย router · การ์ดไม่ตัดงาน · ไม่แนบเฟืองสองขั้น ·
+    ไม่มีกฎ prompt 4 ข้อของชั้นนี้ (กราฟสายพาน–เฟือง–ซีรีส์ยังใช้เหมือนเดิม)
+    """
+    return os.getenv("MODUTECH_GRAPH_APPS", "1").strip() != "0"
+
+
+GRAPH_APP_RULES = """
+- ถ้ามี application_pair_absent ให้บอกก่อนว่าแคตตาล็อกไม่ได้ระบุงานนั้นในอุตสาหกรรมที่ถาม ตาม note_th
+  บอกงานที่เล่มมีในอุตสาหกรรมนั้นได้จาก industry_applications_th ห้ามเอารุ่นใน other_industries มาตอบเป็นรุ่นของอุตสาหกรรมที่ถาม
+  ถ้าจะพูดถึงรุ่นใน other_industries ต้องบอกชื่ออุตสาหกรรมกำกับทุกครั้ง
+- ถ้ามี sprockets_by_belt ให้ตอบทีละชุดใน sets: รุ่นสายพานในชุด แล้วตามด้วยรหัสเฟืองเต็มทุกตัวตามที่ให้มา
+  ห้ามย่อรหัสเป็นตระกูล ห้ามเขียนแค่จำนวนฟัน (เซลล์ใช้รหัสเต็มสั่งของ) รุ่นใน no_sprocket_in_catalogue ให้บอกว่าเล่มไม่ได้ระบุเฟือง
+  ต้องสอบถามฝ่ายขาย ห้ามเดารหัสจากซีรีส์ ห้ามบอกขนาดเฟืองหรือรูเพลา
+- ถ้าการ์ดสินค้ามี applications_excluded_th ห้ามเสนอรุ่นนั้นสำหรับงานในรายการ ถ้าลูกค้าถามถึงงานนั้นตรง ๆ
+  ให้บอกว่าแคตตาล็อก 2026 ไม่มีเกรดที่เล่มแนะนำสำหรับงานนี้ ต้องยืนยันกับพนักงานฝ่ายขาย"""
+
+
+def _industry_in(text: str) -> Optional[str]:
+    """อุตสาหกรรมที่ถาม — คีย์เวิร์ดชุดเดียวกับ router.match_application"""
+    low = (text or "").lower()
+    return next((ind for ind, kws in INDUSTRY_KEYWORDS.items() if any(k.lower() in low for k in kws)), None)
+
+
+def _grades_for(cat: Catalogue, search: CatalogueSearch, belt: str, apps: list, industry: Optional[str]):
+    """เกรดที่รุ่นนี้ผลิตจริง ตามที่เล่มแนะนำสำหรับงานเหล่านี้ · หมายเหตุเมื่อเล่มเขียนชื่อตระกูล (PA → PA6)"""
+    registry = {m["material_code"]: m for m in cat.data.get("material_registry", [])}
+    made = search._made(belt)
+    grades: set = set()
+    note = ""
+    for i in (cat.by_code[belt].get("industries") or []):
+        if industry and i.get("industry") != industry:
+            continue
+        for a in i.get("applications") or []:
+            if a.get("application") not in apps:
+                continue
+            for m in a.get("materials") or []:
+                if m in made:
+                    grades.add(m)
+                else:
+                    sub = search._belt_grade_for(belt, m, registry)
+                    if sub:
+                        grades.update(sub)
+                        note = belt_grade_note_th(m, sub, registry)
+    return sorted(grades), note
+
+
+def graph_application_match(text: str, cat: Catalogue, search: CatalogueSearch, kg) -> Optional[dict]:
+    """งานใช้ที่ถามด้วยชื่อตรงตัว → รายชื่อรุ่นจากกราฟ (23 ต.ค.)
+
+    ใช้ก่อน router.match_application เพราะกราฟ (1) จับเฉพาะชื่องานที่พิมพ์มา ไม่จับ tag กว้าง ๆ
+    (2) กรองงาน×อุตสาหกรรมด้วยคู่ที่เล่มระบุจริง (3) กรองเกรดแบบเดียวกับ router
+    คืน None เมื่อไม่เจอชื่องานตรงตัว — ผู้เรียกถอยไปใช้ router แบบเดิม
+    คืน {"absent": ...} เมื่อถามงาน×อุตสาหกรรมที่เล่มไม่มีคู่นั้น
+    """
+    if kg is None or not hasattr(kg, "find_applications"):
+        return None
+    apps = kg.find_applications(text)
+    if not apps:
+        return None
+    industry = _industry_in(text)
+    belts = sorted({b for a in apps for b in kg.belts_for_application(a, industry)})
+    if industry and not belts:
+        elsewhere: dict[str, list[str]] = {}
+        for a in apps:
+            for b in kg.belts_for_application(a):
+                for ind in kg.industries_for_belt(b):
+                    if kg.used_for(b, a, ind):
+                        elsewhere.setdefault(kg.industry_th(ind) or ind, []).append(b)
+        return {"absent": {
+            "applications": apps,
+            "applications_th": [kg.application_th(a) for a in apps],
+            "industry": industry,
+            "industry_th": kg.industry_th(industry),
+            "industry_applications_th": [kg.application_th(a) for a in kg.applications_in_industry(industry)],
+            "other_industries": {k: sorted(set(v)) for k, v in sorted(elsewhere.items())},
+            "note_th": (f"แคตตาล็อกไม่ได้ระบุงาน {' / '.join(kg.application_th(a) for a in apps)} "
+                        f"ในอุตสาหกรรม{kg.industry_th(industry)} รายชื่อใน other_industries เป็นของอุตสาหกรรมอื่น"),
+        }}
+    if not belts:
+        return None
+    mats, notes = {}, {}
+    for b in belts:
+        mats[b], n = _grades_for(cat, search, b, apps, industry)
+        if n:
+            notes[b] = n
+    return {"match": {
+        "applications": apps,
+        "applications_th": [kg.application_th(a) for a in apps],
+        "industry": industry,
+        "belt_codes_complete": belts,
+        "materials_by_belt": mats,
+        **({"grade_notes_th": notes} if notes else {}),
+        "source": "graph",
+        "note_th": (f"รายชื่อนี้ครบทุกรุ่น ({len(belts)} รุ่น) ที่แคตตาล็อกระบุว่าใช้กับงานนี้"
+                    + (f" ในอุตสาหกรรม{kg.industry_th(industry)}" if industry else "")
+                    + " และแคตตาล็อก 2026 ระบุเกรดที่เล่มแนะนำสำหรับงานนี้ เกรดวัสดุของแต่ละรุ่นคือเกรดที่แคตตาล็อก 2026 ระบุ"
+                    + " ถ้าลูกค้าถามว่ามีรุ่นไหนบ้าง ให้ตอบครบทุกรุ่นพร้อมเกรดวัสดุ"
+                    + (f" (รายละเอียดเต็มแนบมา {MAX_FULL_RECORDS} รุ่นแรก)" if len(belts) > MAX_FULL_RECORDS else "")),
+    }}
+
+
+def filter_card_applications(products: list, kg) -> None:
+    """ตัดงานที่รุ่นนั้นไม่มีเกรดที่เล่มแนะนำออกจากการ์ดสินค้า (แก้ในที่)
+
+    การ์ดเดิมแนบงานทุกงานที่เล่มผูกกับรุ่น รวมงานที่ materials ว่างเพราะรุ่นไม่ผลิตเกรดที่แนะนำ
+    LLM จึงเสนอ MD254 GT (PP) กับ "การลำเลียงกล่อง" หมวดปลา ซึ่งเล่มแนะนำ POM (graph_apps r1 · r2)
+    ไม่ลบทิ้งเงียบ ๆ — ย้ายไปไว้ applications_excluded_th พร้อมเหตุผล ตามหลัก "ไม่เดา เตือนแทน"
+    """
+    import copy
+    for p in products or []:
+        code = p.get("belt_code")
+        excluded = []
+        # คัดลอกก่อนแก้ — การ์ดอาจอ้างถึง dict เดียวกับแคตตาล็อก ถ้าแก้ในที่ เทิร์นถัดไปจะเห็นของที่ถูกตัดแล้ว
+        if "industries" not in p:
+            continue
+        p["industries"] = copy.deepcopy(p["industries"])
+        for ind in p["industries"]:
+            keep = []
+            for a in ind.get("applications") or []:
+                ok = (kg.used_for(code, a.get("application_th", ""), ind.get("industry_th", ""))
+                      if kg is not None and hasattr(kg, "used_for") else bool(a.get("materials")))
+                (keep if ok else excluded).append(a if ok else f"{a.get('application_th')} ({ind.get('industry_th')})")
+            ind["applications"] = keep
+        if excluded:
+            p["applications_excluded_th"] = {
+                "applications": excluded,
+                # ข้อเท็จจริงล้วน — คำสั่ง "ห้ามเสนอ" อยู่ในกฎของ prompt (test_context_voice)
+                "note_th": "งานเหล่านี้เล่มแนะนำเกรดที่รุ่นนี้ไม่มีในตารางสเปก 2026",
+            }
+
+
 def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSearch,
                         vector_search: Optional[Callable[[str], list[str]]] = None,
                         kg=None) -> ModutechTurn:
@@ -176,7 +325,19 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
                         "เล่มไม่ได้ผูกรหัสสเตอร์นี้กับสายพานรุ่นใด ต้องสอบถามฝ่ายขาย"),
         }
 
-    if not codes:
+    gm = graph_application_match(decision.effective_text, cat, search, kg) \
+        if not codes and graph_apps_enabled() else None
+    skip_vector = False
+    if gm and "absent" in gm:
+        context["application_pair_absent"] = gm["absent"]
+        skip_vector = True                  # ไม่เอารุ่นจากเวกเตอร์มาปน ทั้งที่เล่มไม่มีคู่นี้
+        debug.append(f"application (graph): ไม่มีคู่ {gm['absent']['applications']} × {gm['absent']['industry']}")
+    elif gm:
+        full_list = gm["match"]["belt_codes_complete"]
+        codes = full_list[:MAX_FULL_RECORDS]
+        context["application_match"] = gm["match"]
+        debug.append(f"application (graph): {gm['match']['applications']} → {len(full_list)} รุ่น")
+    if not codes and not skip_vector:
         am = search.match_application(decision.effective_text)
         if am is not None:
             full_list = am.belt_codes
@@ -189,7 +350,8 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
                 **({"grade_notes_th": am.grade_notes_th} if am.grade_notes_th else {}),
                 "note_th": (f"รายชื่อนี้ครบทุกรุ่น ({len(am.belt_codes)} รุ่น) ที่แคตตาล็อกระบุว่าใช้กับงานนี้"
                             + (f" ในอุตสาหกรรม {am.industry}" if am.industry_filter_applied else "")
-                            + " และผลิตจริง ถ้าลูกค้าถามว่ามีรุ่นไหนบ้าง ให้ตอบครบทุกรุ่นพร้อมเกรดวัสดุ"
+                            + " เกรดวัสดุของแต่ละรุ่นคือเกรดที่แคตตาล็อก 2026 ระบุ"
+                            + " ถ้าลูกค้าถามว่ามีรุ่นไหนบ้าง ให้ตอบครบทุกรุ่นพร้อมเกรดวัสดุ"
                             + (f" (รายละเอียดเต็มแนบมา {MAX_FULL_RECORDS} รุ่นแรก)" if len(am.belt_codes) > MAX_FULL_RECORDS else "")),
             }
             debug.append(f"application: {am.applications} → {len(am.belt_codes)} รุ่น")
@@ -246,7 +408,7 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
                                 f"(รายละเอียดเต็มแนบมา {len(codes)} รุ่น)"),
                 }
                 debug.append(f"industry: {industry} → {len(full_list)} รุ่น")
-    if not codes and vector_search is not None:
+    if not codes and vector_search is not None and not skip_vector:
         ids = vector_search(decision.effective_text)
         codes = [cat.by_id[i]["belt_code"] for i in ids if i in cat.by_id]
         from_vector = True
@@ -254,6 +416,8 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
     records = cat.records(codes)
 
     gated = run_gates(records, slots)
+    if graph_apps_enabled():
+        filter_card_applications(gated.products, kg)
     context["products"] = gated.products
     context["slots_known"] = {k: v for k, v in (md.get("slots") or {}).items() if v is not None}
     if decision.sales_topics:
@@ -282,6 +446,27 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
         context["sprockets"] = sprocket_gate(sp, links).products
         if not links:
             context["sprocket_note_th"] = "เล่มไม่ได้ระบุสเตอร์ของรุ่นนี้ ต้องสอบถามฝ่ายขาย"
+
+    # ── ถามสองขั้น: งานนี้ → สายพาน → เฟือง (23 ต.ค.) ──
+    # เดิม asks_sprocket ทำงานเฉพาะเมื่อมีรหัสสายพาน (not full_list) คำถาม "งานนี้ใช้เฟืองอะไร" จึงได้แต่รายชื่อสายพาน
+    # แนบแค่รหัสเฟืองจากตารางความเข้ากันได้ ไม่แนบขนาด — ขนาดยังต้องผ่าน sprocket_gate (ส่งฝ่ายขาย)
+    if asks_sprocket and full_list and context.get("application_match", {}).get("source") == "graph":
+        by_belt = {b: sorted((cat.links.get(b) or {}).get("sprocket_codes") or []) for b in full_list}
+        missing = [b for b, v in by_belt.items() if not v]
+        # รวมรุ่นที่ใช้เฟืองชุดเดียวกัน — graph_apps_r4 (GH-02 · GH-04) แนบแยกทีละรุ่น 5 รุ่นซ้ำชุด MD-TR254 14 รหัส
+        # LLM เลยย่อเองเป็น "MD-TR254SQZ... ฟัน 8, 10 …" ซึ่งถูกแต่เซลล์เอาไปสั่งของไม่ได้ทันที
+        sets: dict[tuple, list[str]] = {}
+        for b, v in by_belt.items():
+            if v:
+                sets.setdefault(tuple(v), []).append(b)
+        context["sprockets_by_belt"] = {
+            "sets": [{"belt_codes": bs, "sprocket_codes": list(v)} for v, bs in sets.items()],
+            **({"no_sprocket_in_catalogue": missing} if missing else {}),
+            "note_th": ("รหัสเฟืองตามตารางความเข้ากันได้ในเล่ม รุ่นใน belt_codes ของชุดเดียวกันใช้เฟืองชุดเดียวกัน"
+                        " · ขนาดเฟืองและรูเพลาต้องสอบถามฝ่ายขาย"
+                        + (" · รุ่นใน no_sprocket_in_catalogue เล่มไม่ได้ระบุเฟือง ต้องสอบถามฝ่ายขาย" if missing else "")),
+        }
+        debug.append(f"two-hop sprockets: {len(by_belt) - len(missing)} รุ่นมีเฟือง ({len(sets)} ชุด) · {len(missing)} ไม่มี")
 
     # ── รุ่นอื่นในซีรีส์เดียวกัน — แนบเฉพาะเมื่อถาม ──
     # ไม่แนบทุกครั้งเพราะซีรีส์ใหญ่สุดมี 21 รุ่น จะกิน context ไปเปล่า ๆ
@@ -315,6 +500,7 @@ def _system_prompt(context: dict, rules: dict[str, list[str]]) -> str:
     per_belt = "".join(f"\n- {code}: {r}" for code, rs in rules.items() for r in rs)
     rules_block = (f"\n\nกฎเฉพาะรุ่นในคำถามนี้ (ใช้ตัดสินใจ ไม่ต้องยกข้อความในส่วนนี้ไปเขียนในคำตอบ){per_belt}"
                    if per_belt else "")
+    graph_rules = GRAPH_APP_RULES if graph_apps_enabled() else ""
     return f"""
 คุณคือ 'Modutech Assistant' วิศวกรฝ่ายขายสายพานโมดูลาร์ Modutech
 ตอบภาษาไทย เป็นธรรมชาติ มีหางเสียง (ครับ)
@@ -341,10 +527,10 @@ def _system_prompt(context: dict, rules: dict[str, list[str]]) -> str:
   ห้ามบอกว่าแคตตาล็อกไม่มีข้อมูลเรื่องนั้น เพราะ Context เป็นเพียงบางส่วนของแคตตาล็อก
 - ถ้ามี industry_match ให้บอกลูกค้าก่อนว่าแคตตาล็อกไม่มีงานนี้โดยตรง แล้วตอบจากรายชื่อของอุตสาหกรรมนั้น
   พร้อมงานใช้และเกรดที่เล่มระบุ (applications_by_belt) ถ้ามี grade_match ให้บอกรุ่นใน grade_match.belts พร้อมเกรดนั้นก่อน
-  รุ่นอื่นไม่ได้ผลิตเกรดนั้น ห้ามจัดรุ่นอื่นไว้ใต้หัวข้อหรือประโยคที่พูดถึงเกรดนั้น ให้แยกเป็นหัวข้อรุ่นอื่นในอุตสาหกรรมเดียวกัน
+  รุ่นอื่นแคตตาล็อก 2026 ไม่ได้ระบุเกรดนั้น ห้ามจัดรุ่นอื่นไว้ใต้หัวข้อหรือประโยคที่พูดถึงเกรดนั้น ให้แยกเป็นหัวข้อรุ่นอื่นในอุตสาหกรรมเดียวกัน
   ถ้า grade_match.belts ว่าง ให้บอกตาม note_th ห้ามสรุปเองว่ารุ่นใดเหมาะกับงานที่ถามเกินกว่าที่เล่มระบุ
   ตอบกระชับ: รุ่นที่เกี่ยวข้องที่สุดไม่เกิน 5 รุ่นพร้อมงานใช้ ที่เหลือบอกเป็นรายชื่อบรรทัดเดียว
-- ถ้ามี application_match หรือ industry_match และลูกค้าไม่ได้ถามเรื่องอุณหภูมิ ไม่ต้องถามกลับเรื่องไลน์เปียกหรือแห้ง
+- ถ้ามี application_match หรือ industry_match และลูกค้าไม่ได้ถามเรื่องอุณหภูมิ ไม่ต้องถามกลับเรื่องไลน์เปียกหรือแห้ง{graph_rules}
 - search_result คือผลค้นครบทั้งฐาน รายงานทุกรุ่นที่ตรง ถ้า matched = 0 บอกได้ว่าไม่มีรุ่นที่ตรงเงื่อนไข
   บอกชื่อแบรนด์ตาม scope_th ในคำตอบด้วยเสมอ (เช่น "สายพาน Modutech …")
 - รหัสสเตอร์เป็นการอนุมานจากซีรีส์ ต้องบอกให้ยืนยันกับฝ่ายขาย ขนาดสเตอร์/รูเพลาให้ส่งฝ่ายขาย

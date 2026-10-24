@@ -35,6 +35,11 @@ sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)                                   # บอตอ้างพาธแบบ ./qdrant_db
 os.environ["GEMINI_API_KEY"] = "fake-key-for-snapshot"   # Gemini เป็นของปลอม ไม่มีการเรียกออกเน็ต
+# 23 ต.ค.: ตรึงค่าที่ไม่ใช่ prompt ให้เท่าตอนวัด baseline — load_dotenv ไม่เขียนทับตัวแปรที่ตั้งไว้แล้ว
+#   GEMINI_THINKING ใน .env (13 ต.ค.) ทำให้บอตใช้ google-genai ซึ่ง fakes.py ไม่ได้ปลอม → บันทึก Gemini 0 ครั้ง
+#   GEMINI_MODEL (22 ต.ค.) ถูกบันทึกในทุกการเรียก → ล็อกรุ่นแล้วจะต่างทั้ง 194 จุดทั้งที่ prompt เท่าเดิม
+os.environ["GEMINI_THINKING"] = ""
+os.environ["GEMINI_MODEL"] = "gemini-flash-latest"
 
 import fakes  # noqa: E402
 

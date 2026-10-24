@@ -105,6 +105,10 @@ def stamp_db(db_path: str, data: dict) -> str:
 # ชนิดปม — เก็บเป็นสตริงคงที่ เทียบกับ .db รุ่น 7 ก.ย. ได้ตรง ๆ
 BELT, SPROCKET, SERIES, MATERIAL = "Belt", "Sprocket", "Series", "Material"
 BELONGS_TO, MADE_OF, COMPATIBLE_WITH = "BELONGS_TO", "MADE_OF", "COMPATIBLE_WITH"
+# 22 ต.ค.: ชั้นงานใช้/อุตสาหกรรม — เดิมอยู่ใน JSON อย่างเดียว ย้ายเข้ากราฟเพื่อถามหลายขั้นได้
+# (งานนี้ → สายพาน → เฟือง) · 23 ต.ค. ต่อเข้าบอตแล้ว: load_modutech_kg สร้างจาก JSON เสมอ · ใช้ใน turn.py
+INDUSTRY, APPLICATION = "Industry", "Application"
+USED_IN, USED_FOR, HAS_APPLICATION = "USED_IN", "USED_FOR", "HAS_APPLICATION"
 
 
 def _node_id(kind: str, key: str) -> str:
@@ -156,9 +160,11 @@ class GraphContext:
 class ModutechGraph:
     """ความสัมพันธ์สินค้า Modutech เป็นกฎตายตัว — ไม่ผ่านการค้นเชิงความหมาย
 
-    ปม     Belt 68 · Sprocket 142 · Series 7 · Material (จาก material_registry)
+    ปม     Belt 68 · Sprocket 142 · Series 7 · Material (จาก material_registry) ·
+           Industry · Application (22 ต.ค.)
     เส้น   BELONGS_TO (สายพาน→ซีรีส์) · MADE_OF (สายพาน/สเตอร์→วัสดุ) ·
-           COMPATIBLE_WITH (สายพาน↔สเตอร์ สองทาง)
+           COMPATIBLE_WITH (สายพาน↔สเตอร์ สองทาง) ·
+           USED_IN (สายพาน→อุตสาหกรรม) · USED_FOR (สายพาน→งานใช้) · HAS_APPLICATION (อุตสาหกรรม→งานใช้)
     """
 
     # ธงบอกว่ากราฟตัวนี้รับและคืน "รหัสสายพาน" (HC508 C) ไม่ใช่ belt_code_id (hc508-c)
@@ -240,12 +246,60 @@ class ModutechGraph:
                 if sn in self.nodes:
                     self._edge(b, COMPATIBLE_WITH, sn, both=True)
 
+        self._build_applications(data)
+
         # material_registry มี 22 เกรด แต่สินค้าอ้างถึงจริงแค่ 11 — ตัดปมที่ไม่มีเส้นออก
         # ปมลอยไม่ผิด แต่ทำให้ตัวเลขในเล่มอธิบายยากว่าทำไมนับวัสดุได้ 22 ทั้งที่ใช้ 11
         used = {d for rels in self._out.values() for d in rels.get(MADE_OF, ())}
         for nid in [n for n, v in self.nodes.items()
                     if v.node_type == MATERIAL and n not in used]:
             del self.nodes[nid]
+
+    def _build_applications(self, data: dict) -> None:
+        """สายพาน → อุตสาหกรรม (USED_IN) · สายพาน → งานใช้ (USED_FOR) · อุตสาหกรรม → งานใช้
+
+        กฎเดียวกับ router.match_industry / match_application: ผูกงานใช้กับรุ่นเฉพาะเมื่อเกรดที่เล่ม
+        แนะนำสำหรับงานนั้นมีในตารางสเปกของรุ่น (หรือเป็นชนิดย่อยตาม base_polymer เช่น PA → PA6)
+        ไม่เช่นนั้นกราฟจะกลายเป็นทางที่เลี่ยงตัวกรองเกรดได้ (MD254 GT การลำเลียงกล่อง · AP-006)
+        ไม่เก็บเกรดหรือตัวเลขไว้บนเส้น — เกรดต้องอ่านจาก JSON ผ่านเกตเหมือนเดิม
+        """
+        registry = {m.get("material_code"): m for m in data.get("material_registry") or []}
+        th = {v.get("application"): v.get("application_th") or "" for v in data.get("application_vocabulary") or []}
+        self._app_alias: dict[str, str] = {}
+        self._industry_alias: dict[str, str] = {}
+        # (สายพาน, อุตสาหกรรม, งานใช้) ที่เล่มระบุจริง — USED_IN กับ USED_FOR แยกกันจะเสียบริบทนี้
+        # เช่น EC254 R ทำงานจับกล่องในอุตสาหกรรมอื่น และอยู่ในอุตสาหกรรมเนื้อสัตว์ด้วยงานอื่น
+        # ถ้ากรองด้วยสองเส้นแยกกันจะได้ "EC254 R ใช้จับกล่องในโรงงานเนื้อสัตว์" ซึ่งเล่มไม่ได้บอก
+        self._triples: set[tuple[str, str, str]] = set()
+        for p in data.get("products") or []:
+            b = self._belt_by_code[p["belt_code"]]
+            made = {v.get("belt_material") for v in (p.get("specifications") or {}).get("variants") or []}
+            for ind in p.get("industries") or []:
+                name = ind.get("industry")
+                if not name:
+                    continue
+                inid = self._add(Node(_node_id(INDUSTRY, name), INDUSTRY, name,
+                                      (("industry_th", ind.get("industry_th") or ""),)))
+                for k in (name, ind.get("industry_th")):
+                    if k:
+                        self._industry_alias[k.lower()] = inid
+                self._edge(b, USED_IN, inid)
+                for a in ind.get("applications") or []:
+                    app = a.get("application")
+                    if not app:
+                        continue
+                    anid = self._add(Node(_node_id(APPLICATION, app), APPLICATION, app,
+                                          (("application_th", a.get("application_th") or th.get(app, "")),)))
+                    for k in (app, a.get("application_th"), th.get(app)):
+                        if k:
+                            self._app_alias[k.lower()] = anid
+                    self._edge(inid, HAS_APPLICATION, anid)
+                    rec = a.get("materials") or []
+                    ok = any(m in made or any((registry.get(x) or {}).get("base_polymer") == m for x in made)
+                             for m in rec)
+                    if ok:
+                        self._edge(b, USED_FOR, anid)
+                        self._triples.add((b, inid, anid))
 
     def _verify(self, data: dict) -> None:
         """นับให้ตรงกับไฟล์ ไม่ตรง = หยุด ดีกว่าเดินต่อด้วยกราฟที่ขาด"""
@@ -390,6 +444,93 @@ class ModutechGraph:
                     out.append(b)
         return out
 
+    # ── งานใช้ / อุตสาหกรรม (22 ต.ค.) ───────────────────────────
+    def _find(self, alias: dict, key: str) -> Optional[str]:
+        k = (key or "").strip().lower()
+        return alias.get(k) or next((v for a, v in alias.items() if k and k in a), None)
+
+    def _sources_of(self, rel: str, dst: str) -> list[str]:
+        return [s for s, rels in self._out.items() if dst in rels.get(rel, ())]
+
+    def belts_for_application(self, application: str, industry: Optional[str] = None) -> list[str]:
+        """งานนี้ใช้สายพานรุ่นไหนได้บ้าง (เฉพาะรุ่นที่มีเกรดตามที่เล่มแนะนำ) · ระบุอุตสาหกรรมเพื่อกรองได้"""
+        an = self._find(self._app_alias, application)
+        if not an:
+            return []
+        belts = self._sources_of(USED_FOR, an)
+        if industry:
+            inid = self._find(self._industry_alias, industry)
+            belts = [b for b in belts if inid and (b, inid, an) in self._triples]
+        return sorted(self.nodes[b].label for b in belts)
+
+    def belts_in_industry(self, industry: str) -> list[str]:
+        inid = self._find(self._industry_alias, industry)
+        return sorted(self.nodes[b].label for b in self._sources_of(USED_IN, inid)) if inid else []
+
+    def applications_for_belt(self, belt: str, industry: Optional[str] = None) -> list[str]:
+        n = self._resolve(belt)
+        if not n:
+            return []
+        apps = self._out[n][USED_FOR]
+        if industry:
+            inid = self._find(self._industry_alias, industry)
+            apps = [a for a in apps if inid and (n, inid, a) in self._triples]
+        return sorted(self.nodes[a].label for a in apps)
+
+    def industries_for_belt(self, belt: str) -> list[str]:
+        """สายพานรุ่นนี้เล่มจัดไว้ในอุตสาหกรรมไหน (USED_IN ไม่กรองเกรด เหมือนหน้าอุตสาหกรรมในเล่ม)"""
+        n = self._resolve(belt)
+        return sorted(self.nodes[i].label for i in self._out[n][USED_IN]) if n else []
+
+    def applications_in_industry(self, industry: str) -> list[str]:
+        """อุตสาหกรรมนี้มีงานอะไรบ้าง (HAS_APPLICATION)"""
+        inid = self._find(self._industry_alias, industry)
+        return sorted(self.nodes[a].label for a in self._out[inid][HAS_APPLICATION]) if inid else []
+
+    def find_applications(self, text: str) -> list[str]:
+        """ชื่องานใช้ที่ปรากฏในข้อความแบบตรงตัว (ชื่อไทย · อังกฤษ · ชื่อที่พิมพ์ในเล่ม) — ยาวสุดก่อน ไม่ซ้อนกัน
+
+        ต่างจาก router.match_application ซึ่งจับด้วย tag กว้าง ๆ ("เครื่องชั่งน้ำหนักตรวจสอบ" ได้ทั้ง
+        Checkweighers และ Metal Detection · graph_apps_r2 GA-R03) ตรงนี้จับเฉพาะชื่องานที่พิมพ์มาครบ
+        ถ้าไม่เจอ ผู้เรียกต้องถอยไปใช้ router แบบเดิม
+        """
+        low = (text or "").lower()
+        found: list[str] = []
+        for alias in sorted(self._app_alias, key=len, reverse=True):
+            if len(alias) < 4 or alias not in low:
+                continue
+            label = self.nodes[self._app_alias[alias]].label
+            if label not in found:
+                found.append(label)
+            low = low.replace(alias, " " * len(alias))      # กันชื่อสั้นที่ซ้อนอยู่ในชื่อยาวถูกนับซ้ำ
+        return sorted(found)
+
+    def find_industry(self, key: str) -> Optional[str]:
+        n = self._find(self._industry_alias, key)
+        return self.nodes[n].label if n else None
+
+    def used_for(self, belt: str, application: str, industry: Optional[str] = None) -> bool:
+        """เล่มผูกรุ่นนี้กับงานนี้ (ในอุตสาหกรรมนี้) และรุ่นนี้มีเกรดที่เล่มแนะนำ"""
+        b, a = self._resolve(belt), self._find(self._app_alias, application)
+        if not b or not a:
+            return False
+        if industry is None:
+            return a in self._out[b][USED_FOR]
+        i = self._find(self._industry_alias, industry)
+        return bool(i) and (b, i, a) in self._triples
+
+    def application_th(self, application: str) -> str:
+        a = self._find(self._app_alias, application)
+        return dict(self.nodes[a].attrs).get("application_th", "") if a else ""
+
+    def industry_th(self, industry: str) -> str:
+        i = self._find(self._industry_alias, industry)
+        return dict(self.nodes[i].attrs).get("industry_th", "") if i else ""
+
+    def sprockets_for_application(self, application: str, industry: Optional[str] = None) -> dict[str, list[str]]:
+        """ถามสองขั้น: งานนี้ → สายพาน → เฟือง · สายพานที่เล่มไม่ผูกเฟืองคืนรายการว่าง (ไม่เดา)"""
+        return {b: self.sprockets_for_belt(b) for b in self.belts_for_application(application, industry)}
+
     # ── รายงาน ───────────────────────────────────────────────
     def stats(self) -> dict:
         nt: dict[str, int] = defaultdict(int)
@@ -508,11 +649,14 @@ def load_modutech_kg(cat, db_path: str = "./modutech_kg.db", quiet: bool = False
             f"   ยังไม่มีทางที่พิมพ์ออกไปถึงลูกค้า แต่กราฟเป็นทางที่เลี่ยงเกตได้\n"
             f"   สร้างใหม่ด้วย builder รุ่นที่ตัดฟิลด์พวกนี้ออก")
 
-    from knowledge_graph import KnowledgeGraph
-    kg = KnowledgeGraph.load_from_db(db_path)
-    say(f"✅ โหลดกราฟจาก {db_path} · {kg.graph.number_of_nodes()} โหนด "
-        f"{kg.graph.number_of_edges()} เส้น")
-    return kg
+    # 23 ต.ค.: ตรวจไฟล์ครบแล้วก็ยังสร้างกราฟจาก JSON เสมอ — ไฟล์ .db (KnowledgeGraph แบบ Movex)
+    # ไม่มีชั้นอุตสาหกรรม/งานใช้ และลายนิ้วมือไม่ได้ครอบชั้นนี้ ไฟล์ที่ "ตรง" จึงยังขาดของอยู่
+    # สร้างจาก JSON ใช้ไม่กี่มิลลิวินาที ไฟล์ .db เหลือไว้ตรวจหรือแนบภาคผนวก (to_sqlite)
+    g = ModutechGraph.from_catalogue(cat)
+    st = g.stats()
+    say(f"✅ กราฟ Modutech จาก JSON · {sum(st['nodes'].values())} โหนด {sum(st['edges'].values())} เส้น "
+        f"(ตรวจ {db_path} แล้ว ไม่ได้โหลดจากไฟล์)")
+    return g
 
 
 if __name__ == "__main__":

@@ -359,9 +359,9 @@ case("ST-004", "strength", ["HD635 C รับแรงดึงเท่าไ�
 
 # ── F. วัสดุ / ปฏิเสธ (8) ─────────────────────────────────────
 case("MT-001", "material", ["SM127 FG มีเกรด PE ไหม"],
-     gate_note_has(0, "ไม่ได้ผลิตเกรด PE"), "แนะนำไว้แต่ไม่ผลิต")
+     gate_note_has(0, "แคตตาล็อก 2026 ไม่มีเกรด PE"), "แนะนำไว้แต่ไม่ผลิต")
 case("MT-002", "material", ["HC127 C มีเกรด PP ไหม"],
-     gate_note_has(0, "ไม่ได้ผลิตเกรด PP"), "HC127 C ไม่มี PP")
+     gate_note_has(0, "แคตตาล็อก 2026 ไม่มีเกรด PP"), "HC127 C ไม่มี PP")
 case("MT-003", "material", ["MP80 C ทำจากวัสดุอะไร"],
      lambda r: None if {v["belt_material"] for v in r[0]["payload"][0]["variants"]} == {"POM"}
      else "วัสดุไม่ตรง", "MP80 C มี POM อย่างเดียว")
@@ -657,7 +657,7 @@ def _assertions(cat_, res: dict) -> dict:
                         break
         if cat_ == "material":
             for n in (p.get("gate_notes_th") or []):
-                if "ไม่ได้ผลิตเกรด" in n:
+                if "แคตตาล็อก 2026 ไม่มีเกรด" in n:
                     any_once("ไม่มี", "ไม่ได้ผลิต")
     # ห้ามซ้ำ และจำกัดจำนวน — บังคับให้ LLM พูดครบทุกค่าของทุกเกรดคือเกณฑ์ที่เปราะเกินไป
     # เอาแค่ 4 ค่าแรกก็พอชี้ได้แล้วว่าหยิบข้อมูลถูกชุด

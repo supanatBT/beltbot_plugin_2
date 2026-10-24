@@ -456,7 +456,7 @@ class ApplicationMatch:
 
 def belt_grade_note_th(recommended: str, made: list[str], registry: dict) -> str:
     grades = ", ".join(made)
-    note = (f"หน้างานในเล่มแนะนำเกรด {recommended} แต่ตารางสเปกของรุ่นนี้ผลิตเฉพาะ {grades} "
+    note = (f"หน้างานในเล่มแนะนำเกรด {recommended} แต่ตารางสเปกของรุ่นนี้ในแคตตาล็อก 2026 ระบุเฉพาะ {grades} "
             f"({recommended} เป็นชื่อตระกูล {grades} เป็นชนิดย่อย) ให้ระบุเกรด {grades} เสมอ")
     wet = {(registry.get(m) or {}).get("temperature", {}).get("wet") for m in made}
     if "not recommended" in wet:

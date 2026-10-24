@@ -1,0 +1,960 @@
+{
+ "module": "assistant",
+ "llm": "google-genai · gemini-flash-latest · thinking {'level': 'low'}",
+ "graph_apps": false,
+ "model_versions": {
+  "gemini-3.8-flash": 33
+ },
+ "testcases": "testcases_graph_apps.csv",
+ "total_turns": 33,
+ "graded": 33,
+ "passed": 15,
+ "failed": 18,
+ "skipped_no_image": 0,
+ "turns_with_image": 0,
+ "errors": 0,
+ "seconds": 252.3,
+ "by_category": {
+  "graph_application": "4/17",
+  "graph_industry": "11/11",
+  "graph_two_hop": "0/5"
+ },
+ "by_check": {
+  "answer_avoids_forbidden": 12,
+  "answer_has_any": 6
+ },
+ "leaks": {
+  "turns_with_leak": 0,
+  "per_word": {},
+  "turns": []
+ },
+ "results": [
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true,
+    "answer_avoids_forbidden": false
+   },
+   "passed": false,
+   "reply": "สายพาน Modutech รุ่น **MD254 GT** (ผิว Grip Top) มีการระบุการใช้งานในแคตตาล็อกตามกลุ่มอุตสาหกรรม ดังนี้ครับ:\n\n1. **อุตสาหกรรมปลาและอาหารทะเล**\n   - ไลน์แปรรูป (วัสดุ PP)\n   - การลำเลียงกล่อง\n\n2. **อุตสาหกรรมเบเกอรี่**\n   - ลำเลียงขึ้น-ลงลาดเอียง (วัสดุ PP)\n   - การลำเลียงถาดอบ (วัสดุ PP)\n\n3. **อุตสาหกรรมบรรจุภัณฑ์**\n   - ลำเลียงกล่องขึ้น-ลงลาดเอียง (วัสดุ PP)\n   - ลำเลียงกล่องแนวราบ (วัสดุ PP)\n\n4. **อุตสาหกรรมผักและผลไม้**\n   - ลำเลียงภาชนะและคอนเทนเนอร์ (วัสดุ PP)\n\n---\n*หมายเหตุ:* \n- แคตตาล็อกปี 2026 ไม่มีวัสดุสายพานเกรด POM สำหรับรุ่นนี้ (มีเฉพาะวัสดุ PP) แม้ว่าในโบรชัวร์อาจมีระบุแนะนำไว้ครับ\n- หากมีข้อสงสัยหรือต้องการสอบถามเพิ่มเติมเกี่ยวกับลักษณะงาน สามารถสอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": false
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GA-F01",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "MD254 GT ใช้กับงานอะไรได้บ้าง",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 4.6,
+   "llm_usage": {
+    "prompt_token_count": 3000,
+    "candidates_token_count": 293,
+    "total_token_count": 3293
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true,
+    "answer_avoids_forbidden": false
+   },
+   "passed": false,
+   "reply": "สายพาน Modutech รุ่น **SM127 CRV** ในแคตตาล็อกมีระบุการใช้งานไว้ใน 2 กลุ่มอุตสาหกรรมหลัก ดังนี้ครับ:\n\n**1. อุตสาหกรรมปลาและอาหารทะเล (Seafood Processing)**\n*   ไลน์แปรรูป (Processing lines) — ระบุวัสดุ POM\n*   เครื่องชุบเกล็ดขนมปัง (Breading machines) — ระบุวัสดุ POM\n*   การเคลือบน้ำแข็ง (Glazing) — ระบุวัสดุ POM\n*   เครื่องตรวจจับโลหะ (Metal detection)\n*   ไลน์แช่แข็งและสไปรัลฟรีซเซอร์ (Freezing lines and spirals) — ระบุวัสดุ POM\n\n**2. อุตสาหกรรมเบเกอรี่ (Bakery)**\n*   การลำเลียงแป้งดิบ (Raw dough handling) — ระบุวัสดุ POM\n*   เครื่องแบ่งก้อนแป้ง (Dividers) — ระบุวัสดุ POM\n*   ไลน์พักและหมักแป้ง (Proofing lines) — ระบุวัสดุ POM\n\n---\n\n**ข้อสังเกตและข้อจำกัดสำคัญของรุ่น SM127 CRV:**\n*   **เป็นสายพานวิ่งทางตรงเท่านั้น (Straight-running):** แม้จะมีการระบุการใช้งานในไลน์สไปรัล (Spirals) ซึ่งหมายถึงลักษณะงานของระบบ แต่ตัวสายพานวิ่งทางตรง ไม่สามารถเลี้ยวได้ครับ (หากเป็นระบบ Spiral ที่ต้องเลี้ยวโค้งจะต้องใช้สายพาน Sideflexing)\n*   **วัสดุตามแคตตาล็อกปี 2026:** รุ่นนี้มีมาตรฐานเป็นวัสดุ **POM** และ **PP** เท่านั้น ในแคตตาล็อกปี 2026 ไม่มีเกรด PE สำหรับรุ่นนี้ (แม้ในโบรชัวร์เดิมอาจเคยมีแนะนำไว้) หากต้องการใช้เกรด PE อาจเป็นเกรดสั่งพิเศษ แนะนำให้ยืนยันกับฝ่ายขายก่อนครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": false
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GA-F02",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "SM127 CRV ใช้กับงานอะไรได้บ้าง",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 5.2,
+   "llm_usage": {
+    "prompt_token_count": 3149,
+    "candidates_token_count": 441,
+    "total_token_count": 3590
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true,
+    "answer_avoids_forbidden": false
+   },
+   "passed": false,
+   "reply": "สายพาน Modutech รุ่น **XP254 EVO FLT** (หน้าเรียบทึบ Flat Top, Pitch 25.4 มม. / 1 นิ้ว) เป็นสายพานวิ่งตรงที่ระบุการใช้งานในแคตตาล็อกดังนี้ครับ:\n\n**1. อุตสาหกรรมบรรจุภัณฑ์ (Packaging)**\n* ลำเลียงเข้าเครื่องติดฉลาก (Labeling conveyors)\n* เครื่องบรรจุลงลัง (Case packers)\n* เครื่องบรรจุถาด (Traypackers)\n* การจัดเรียงและรื้อพาเลท (Palletizing & Depalletizing)\n\n**2. อุตสาหกรรมกล่องลูกฟูก (Corrugated)** *(ระบุการใช้วัสดุ POM)*\n* เครื่องเรียงกล่องลง (Downstacker)\n* รถลำเลียงถ่ายโอน (Transfer car)\n* การจัดการกองกล่อง (Stack handling)\n* ป้อนสายรัด (Strapping line feed)\n* เครื่องจัดเรียงพาเลท (Palletizer)\n* ชุดป้อนชิ้นงาน (Infeed)\n\n**หมายเหตุเพิ่มเติมเกี่ยวกับวัสดุ:**\n* ในแคตตาล็อกปี 2026 รุ่นนี้มีเฉพาะวัสดุ **POM** (พิน PA) เท่านั้น ไม่มีเกรด PE หรือ PP ระบุไว้ในเล่ม (หากต้องการเกรดอื่นอาจเป็นเกรดสั่งพิเศษ แนะนำให้ยืนยันกับพนักงานฝ่ายขายครับ)\n* เนื่องจากเป็นผิวหน้าเรียบทึบ จึงเหมาะกับงานลำเลียงแนวตรงที่ไม่ต้องการการระบายน้ำหรือการระบายอากาศครับ\n\nหากต้องการทราบข้อมูลสเปกด้านอื่นเพิ่มเติม สอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": false
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GA-F03",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "XP254 EVO FLT ใช้กับงานอะไรได้บ้าง",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 5.1,
+   "llm_usage": {
+    "prompt_token_count": 2932,
+    "candidates_token_count": 369,
+    "total_token_count": 3301
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **EC127 C** เป็นสายพานผิวเรียบทึบ (Flat Top) วิ่งทางตรง ระยะพิทช์ 12.7 มม. (0.5 นิ้ว) เหมาะสำหรับงานลำเลียงและถ่ายโอนสินค้าระหว่างสถานีในจุดที่ต้องการผิวรองรับสินค้าแบบต่อเนื่อง โดยระบุการใช้งานในอุตสาหกรรมต่าง ๆ ดังนี้ครับ:\n\n* **อุตสาหกรรมเบเกอรี่:** ไลน์ลำเลียงแป้งดิบ (POM), ไลน์พักและหมักแป้ง (PP, POM), ไลน์รีดแผ่นแป้ง (PP, PE) และจุดเครื่องตรวจจับโลหะ (PP, PE)\n* **อุตสาหกรรมบรรจุภัณฑ์:** สายพานลำเลียงกล่องแนวราบ (PP, POM), เครื่องชั่งน้ำหนักตรวจสอบ (PP, POM), ลำเลียงเข้าเครื่องบรรจุ/ปิดฝา/ติดฉลาก (PP, POM), เครื่องตรวจจับโลหะ (PP, PE) รวมถึงงานจัดเรียงและรื้อพาเลท (POM)\n* **อุตสาหกรรมกล่องลูกฟูก:** เครื่องเรียงกล่องลง, รถลำเลียงถ่ายโอน, การจัดการกองกล่อง, จุดถ่ายโอน 90 องศา, ป้อนสายรัด และชุดป้อนชิ้นงาน (เกรด POM)\n* **แปรรูปเนื้อสัตว์ สัตว์ปีก และอาหารทะเล:** จุดถ่ายโอนสินค้า (PP), เครื่องตรวจจับโลหะ (PE), งานบรรจุภัณฑ์และติดฉลาก (POM), คลังสินค้าและการจัดส่ง (POM)\n* **ผักและผลไม้:** โต๊ะตรวจสอบและคัดแยก (PP, POM), เครื่องตรวจจับโลหะ (PE)\n\n**ข้อสังเกตและข้อจำกัด:**\n* ด้วยระยะพิทช์ที่สั้นทำให้วิ่งผ่านจุดถ่ายโอนแบบปลายแคบ (Nosebar / Knife edge) ได้ดี \n* หน้าสายพานเป็นแบบทึบ (Closed Top / 0% Open Area) จึงเหมาะกับช่วงงานแห้งของไลน์ ไม่เหมาะกับงานที่ต้องสะเด็ดน้ำ ล้าง หรือเป่าลมระบายความร้อนครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GA-F04",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "EC127 C ใช้กับงานอะไรได้บ้าง",
+   "metrics": [],
+   "seconds": 5.9,
+   "llm_usage": {
+    "prompt_token_count": 3753,
+    "candidates_token_count": 488,
+    "total_token_count": 4241
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MP80 C** (พื้นผิวแบบ Flat Top ทึบ, ระยะพิทช์ micropitch 8 มม., วัสดุ POM) เหมาะอย่างยิ่งสำหรับจุดถ่ายโอนแคบ (tight transfer) งาน nosebar หรือ knife edge เพื่อป้องกันสินค้าตกหล่นหรือล้มระหว่างรอยต่อสายพานครับ\n\nในแคตตาล็อกระบุการใช้งานตามกลุ่มอุตสาหกรรมไว้ดังนี้ครับ:\n\n1. **อุตสาหกรรมแปรรูปเนื้อสัตว์ (Meat Processing)**\n   - ไลน์ตัดและเลาะกระดูก (Cutting and Deboning)\n   - ลำเลียงจุดถ่ายโอน (Transfer conveyors)\n   - ไลน์เครื่องตรวจจับโลหะ (Metal detection)\n   - ไลน์เนื้อบด (Minced meat lines)\n   - การลำเลียงกล่อง (Box transport)\n\n2. **อุตสาหกรรมสัตว์ปีก (Poultry)**\n   - ไลน์ตัดแบ่ง เลาะกระดูก และตัดแต่ง (Cut-up, Deboning and Trim lines)\n   - การคัดเกรดและคัดขนาด (Grading)\n   - ไลน์เครื่องตรวจจับโลหะ (Metal detection)\n   - การบรรจุและติดฉลาก (Packing and Labelling)\n\n3. **อุตสาหกรรมปลาและอาหารทะเล (Seafood)**\n   - โต๊ะตรวจสอบ (Control tables)\n   - การเคลือบน้ำแข็ง (Glazing)\n\n4. **อุตสาหกรรมเบเกอรี่ (Bakery)**\n   - การลำเลียงแป้งดิบ (Raw dough handling)\n   - ทางเข้า-ออกเตาอบ (Oven infeed and outfeed)\n   - ทางเข้า-ออกสไปรัล (Spiral infeed and outfeed)\n\n5. **อุตสาหกรรมบรรจุภัณฑ์ (Packaging)**\n   - เครื่องชั่งน้ำหนักตรวจสอบ (Checkweighers)\n   - ลำเลียงเข้าเครื่องติดฉลาก (Labelling conveyors)\n   - ลำเลียงกล่องแนวราบ\n\n*ข้อแนะนำเพิ่มเติม:* เนื่องจากรุ่นนี้เป็นผิวทึบ (Flat Top) จึงไม่เหมาะกับงานที่ต้องการระบายน้ำหรือระบายอากาศ (ซึ่งควรใช้รุ่น Flush Grid เช่น MP80 FG แทน) และออกแบบมาสำหรับจุดเชื่อมต่อถ่ายโอนสินค้าชิ้นเล็ก/เบา ไม่เหมาะกับงานรับแรงกระแทกหนักหรือการพักสะสมกล่องจำนวนมากครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GA-F05",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "MP80 C ใช้กับงานอะไรได้บ้าง",
+   "metrics": [],
+   "seconds": 6.3,
+   "llm_usage": {
+    "prompt_token_count": 3328,
+    "candidates_token_count": 534,
+    "total_token_count": 3862
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **HD254 C** (ผิวหน้าแบบ Flat Top / ทึบ, ระยะพิทช์ 25.4 มม. / 1 นิ้ว) มีการระบุการใช้งานในแคตตาล็อกตามอุตสาหกรรมดังนี้ครับ:\n\n1. **อุตสาหกรรมบรรจุภัณฑ์ (Packaging)**\n   * **การใช้งาน:** ลำเลียงกล่องแนวราบ (Horizontal box transport)\n   * **วัสดุ:** POM\n\n2. **อุตสาหกรรมกล่องลูกฟูก (Corrugated)**\n   * **การใช้งาน:** เครื่องจัดเรียงพาเลท (Palletizer)\n   * **วัสดุ:** POM\n   * **จุดเด่น:** โครงสร้างสายพานแข็งแรงและหนา (12.7 มม.) ด้านล่างเสริมความแข็งแรงช่วยให้ทำไลน์ลำเลียงได้ยาวขึ้น และรองรับน้ำหนักได้สูงโดยไม่แตกหัก\n\n**ข้อจำกัดเบื้องต้น:**\n* วิ่งทางตรงได้อย่างเดียว (ไม่สามารถเลี้ยวโค้งได้)\n* ผิวหน้าทึบ ไม่มีพื้นที่เปิด (Open Area 0%) จึงไม่เหมาะกับงานที่ต้องการระบายน้ำ ระบายอากาศ หรือสถานีงานล้าง\n* มีเฉพาะวัสดุ POM ซึ่งเป็นเกรดแข็งและทนการสึกหรอ จึงไม่มีคุณสมบัติทนสารเคมีแบบ PP หรือความเหนียวที่อุณหภูมิต่ำแบบ PE ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GA-F06",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "HD254 C ใช้กับงานอะไรได้บ้าง",
+   "metrics": [],
+   "seconds": 4.7,
+   "llm_usage": {
+    "prompt_token_count": 2624,
+    "candidates_token_count": 322,
+    "total_token_count": 2946
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "answer_avoids_forbidden": true
+   },
+   "passed": true,
+   "reply": "สำหรับงานเครื่องตรวจจับโลหะ (Metal Detection) ในแคตตาล็อก Modutech มีระบุรุ่นที่ใช้งานได้ทั้งหมด 17 รุ่น พร้อมเกรดวัสดุที่ระบุไว้ดังนี้ครับ:\n\n1. **EC127 C** — วัสดุ: PE, PP\n2. **EC127 FG** — วัสดุ: PE, PP\n3. **EC254 C** — วัสดุ: PE, PP\n4. **EC254 NT** — วัสดุ: PE\n5. **EC508 C** — วัสดุ: PE\n6. **EC508 PR11** — วัสดุ: PE *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด POM สำหรับรุ่นนี้)*\n7. **EC508 PR22%** — วัสดุ: PE\n8. **HC127 C** — วัสดุ: POM *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด PP สำหรับรุ่นนี้)*\n9. **HC152 C** — วัสดุ: PE, POM, PP\n10. **HC152 FG** — วัสดุ: PE, PP\n11. **HC508 C** — วัสดุ: PE\n12. **HC508 C-MTW** — วัสดุ: PE\n13. **MD127 GAP50%** — วัสดุ: POM, PP\n14. **MD254 C** — วัสดุ: PE, PP\n15. **MD254 FG** — วัสดุ: PE, PP\n16. **MP80 C** — วัสดุ: POM\n17. **SM127 C** — วัสดุ: PP\n\nหากต้องการดูรายละเอียดสเปก ขนาด หรือต้องการให้แนะนำรุ่นที่เหมาะกับประเภทสินค้าเพิ่มเติม สามารถสอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GA-R01",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "สายพานสำหรับงานเครื่องตรวจจับโลหะ ใช้รุ่นไหนได้บ้าง",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 5.4,
+   "llm_usage": {
+    "prompt_token_count": 19778,
+    "candidates_token_count": 425,
+    "total_token_count": 20203
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "answer_avoids_forbidden": false
+   },
+   "passed": false,
+   "reply": "สำหรับงานการลำเลียงกล่อง (Box Handling / Box Transport) ในแคตตาล็อก Modutech มีระบุรองรับไว้ทั้งหมด 43 รุ่น พร้อมเกรดวัสดุที่ระบุไว้ดังนี้ครับ:\n\n1. **EC127 C** (POM, PP)\n2. **EC127 FG** (POM, PP)\n3. **EC127 GT** (PP)\n4. **EC254 GT** (PP)\n5. **EC254 R** (POM, PP)\n6. **EC254 R-GT** (PP)\n7. **EC254 R-TABE** (POM, PP)\n8. **EC254 R-TABM** (POM, PP)\n9. **EC254 TR** (POM, PP)\n10. **EC254 TR-TAB** (POM, PP)\n11. **EC381 R** (POM, PP)\n12. **EC508 C** (POM, PP)\n13. **EC508 C-RT** (POM)\n14. **EC508 FG** (POM, PP)\n15. **EC508 GT** (PP)\n16. **EC508 R** (POM, PP)\n17. **EC508 TR** (POM, PP)\n18. **HC152 C** (POM, PP)\n19. **HC152 FG** (POM, PP)\n20. **HC152 FG-GT** (PP)\n21. **HC508 C** (POM, PP)\n22. **HC508 C-MTW** (POM, PP)\n23. **HD254 C** (POM)\n24. **HD635 C** (POM-NL)* *(หมายเหตุ: หน้างานในเล่มระบุ POM แต่ตารางสเปกแคตตาล็อก 2026 ระบุเฉพาะเกรด POM-NL)*\n25. **HP508 RR** (POM, PPH)\n26. **MD254 C** (POM, PP)\n27. **MD254 C-RT** (POM)\n28. **MD254 FG** (POM, PP)\n29. **MD254 FG-RT** (POM)\n30. **MD254 GAP48%** (POM, PP)\n31. **MD254 GT** (PP)\n32. **MD254 RR** (POM, PP)\n33. **MD508 C** (POM, PP)\n34. **MD508 C-RT** (POM)\n35. **MD508 FG** (POM, PP)\n36. **MD508 FG-RT** (POM)\n37. **MP80 C** (POM)\n38. **MP80 FG** (POM)\n39. **MP80 NS** (POM)\n40. **SM127 FG-GT** (PP)\n41. **XP254 BT** (POM)\n42. **XP254 C** (POM, PP)\n43. **XP254 GT** (PP)\n\nเพื่อให้แนะนำรุ่นที่เหมาะสมกับการใช้งานได้แม่นยำยิ่งขึ้น ไม่ทราบว่าลักษณะไลน์ลำเลียงเป็น**ทางตรงอย่างเดียว หรือมีช่วงเลี้ยวโค้ง**ด้วยครับ?",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": false
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GA-R02",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "สายพานสำหรับงานการลำเลียงกล่อง ใช้รุ่นไหนได้บ้าง",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 7.5,
+   "llm_usage": {
+    "prompt_token_count": 17147,
+    "candidates_token_count": 797,
+    "total_token_count": 17944
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "answer_avoids_forbidden": false
+   },
+   "passed": false,
+   "reply": "สำหรับงานเครื่องชั่งน้ำหนักตรวจสอบ (Checkweighers) แคตตาล็อก Modutech ระบุรุ่นสายพานที่รองรับไว้ดังนี้ครับ:\n\n1. **EC127 C** (วัสดุ PP, POM, PE) — พิทช์ 12.7 มม. ผิวเรียบทึบ (Flat Top)\n2. **EC127 FG** (วัสดุ PP, POM, PE) — พิทช์ 12.7 มม. ผิวตะแกรง (Flush Grid พื้นที่เปิด 20%)\n\nนอกจากนี้ ในกลุ่มงานตรวจสอบและตรวจจับ (รวมถึง Metal Detection) แคตตาล็อกยังมีระบุรุ่นอื่นๆ ที่รองรับอีก 15 รุ่น พร้อมเกรดวัสดุตามแคตตาล็อกปี 2026 ดังนี้ครับ:\n- **EC254 C** (วัสดุ PE, PP)\n- **EC254 NT** (วัสดุ PE)\n- **EC508 C** (วัสดุ PE)\n- **EC508 PR11** (วัสดุ PE) *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด POM)*\n- **EC508 PR22%** (วัสดุ PE)\n- **HC127 C** (วัสดุ POM) *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด PP)*\n- **HC152 C** (วัสดุ PE, POM, PP)\n- **HC152 FG** (วัสดุ PE, POM, PP)\n- **HC508 C** (วัสดุ PE)\n- **HC508 C-MTW** (วัสดุ PE)\n- **MD127 GAP50%** (วัสดุ POM, PP)\n- **MD254 C** (วัสดุ PE, PP)\n- **MD254 FG** (วัสดุ PE, PP)\n- **MP80 C** (วัสดุ POM)\n- **SM127 C** (วัสดุ PP)\n\nหากต้องการดูขนาดความกว้าง สภาพแวดล้อมใช้งาน (อุณหภูมิ/สภาวะเปียก-แห้ง) หรือสเปกอย่างละเอียดของรุ่นใด สามารถแจ้งเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": false
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GA-R03",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "สายพานสำหรับงานเครื่องชั่งน้ำหนักตรวจสอบ ใช้รุ่นไหนได้บ้าง",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 6.0,
+   "llm_usage": {
+    "prompt_token_count": 23661,
+    "candidates_token_count": 517,
+    "total_token_count": 24178
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "answer_avoids_forbidden": false
+   },
+   "passed": false,
+   "reply": "สำหรับงาน**การลำเลียงแป้งดิบ (Raw Dough Handling)** ในอุตสาหกรรมเบเกอรี่ แคตตาล็อก Modutech ระบุรุ่นที่รองรับทั้งหมด **14 รุ่น** พร้อมเกรดวัสดุที่ระบุไว้ ดังนี้ครับ:\n\n1. **EC127 C** — วัสดุ: PE, POM, PP\n2. **EC127 FG** — วัสดุ: PP\n3. **EC254 C** — วัสดุ: PE, POM, PP\n4. **EC508 C** — วัสดุ: PE, POM, PP\n5. **HC152 C** — วัสดุ: POM, PP\n6. **HC152 FG** — วัสดุ: POM, PP\n7. **HC508 C** — วัสดุ: PE, POM, PP\n8. **MD254 GAP48%** — วัสดุ: POM, PP *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด PE สำหรับรุ่นนี้)*\n9. **MP80 C** — วัสดุ: POM\n10. **MP80 NP** — วัสดุ: POM\n11. **MP80 NS** — วัสดุ: POM\n12. **SM127 C** — วัสดุ: POM\n13. **SM127 CRV** — วัสดุ: POM\n14. **SM127 FG** — วัสดุ: POM\n\nโดยทั่วไปสำหรับงานแป้งดิบ หากต้องการผิวหน้าเรียบต่อเนื่องเพื่อป้องกันรอยกดทับ จะนิยมพิจารณากลุ่มผิวทึบ (Flat Top / Closed Top) เช่น **EC127 C, EC254 C, HC152 C** หรือ **HC508 C** เป็นต้นครับ\n\nหากต้องการข้อมูลสเปกเพิ่มเติม เช่น ระยะพิทช์ หน้ากว้าง หรือลักษณะผิวสัมผัส สามารถสอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": false
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GA-R04",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "สายพานสำหรับงานการลำเลียงแป้งดิบ ใช้รุ่นไหนได้บ้าง",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 6.5,
+   "llm_usage": {
+    "prompt_token_count": 21313,
+    "candidates_token_count": 436,
+    "total_token_count": 21749
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "answer_avoids_forbidden": false
+   },
+   "passed": false,
+   "reply": "สำหรับงานเครื่องตรวจจับโลหะ (Metal Detection) ในอุตสาหกรรมเบเกอรี่ แคตตาล็อก Modutech 2026 ระบุรุ่นสายพานพร้อมเกรดวัสดุไว้ทั้งหมด 15 รุ่น ดังนี้ครับ:\n\n1. **EC127 C** — วัสดุ: PE, PP\n2. **EC127 FG** — วัสดุ: PE, PP\n3. **EC254 C** — วัสดุ: PE, PP\n4. **EC254 NT** — วัสดุ: PE\n5. **EC508 C** — วัสดุ: PE\n6. **EC508 PR11** — วัสดุ: PE *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด POM สำหรับรุ่นนี้)*\n7. **EC508 PR22%** — วัสดุ: PE\n8. **HC152 C** — วัสดุ: PE, PP\n9. **HC152 FG** — วัสดุ: PE, PP\n10. **HC508 C** — วัสดุ: PE\n11. **HC508 C-MTW** — วัสดุ: PE\n12. **MD127 GAP50%** — วัสดุ: PP\n13. **MD254 C** — วัสดุ: PE, PP\n14. **MD254 FG** — วัสดุ: PE, PP\n15. **SM127 C** — วัสดุ: PP\n\nหากต้องการดูสเปกอย่างละเอียดของรุ่นใด เช่น ขนาดหน้ากว้าง พื้นที่เปิด หรือแรงดึง สามารถสอบถามเพิ่มเติมได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": false
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GA-I01",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "สายพานสำหรับงานเครื่องตรวจจับโลหะในอุตสาหกรรมเบเกอรี่ ใช้รุ่นไหน",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 4.8,
+   "llm_usage": {
+    "prompt_token_count": 20327,
+    "candidates_token_count": 380,
+    "total_token_count": 20707
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "answer_avoids_forbidden": false
+   },
+   "passed": false,
+   "reply": "สำหรับงานการลำเลียงกล่อง (Box Handling) ในอุตสาหกรรมปลาและอาหารทะเล (Fish & Seafood) ในแคตตาล็อก Modutech 2026 มีระบุรุ่นที่ใช้งานได้ครบทั้ง 19 รุ่น พร้อมเกรดวัสดุ ดังนี้ครับ:\n\n1. **EC254 GT** — วัสดุ PP\n2. **EC254 R** — วัสดุ POM\n3. **EC254 R-GT** — วัสดุ PP\n4. **EC254 TR** — วัสดุ POM\n5. **EC381 R** — วัสดุ POM\n6. **EC508 C** — วัสดุ POM, PP\n7. **EC508 GT** — วัสดุ PP\n8. **EC508 R** — วัสดุ POM\n9. **EC508 TR** — วัสดุ POM\n10. **HC152 FG-GT** — วัสดุ PP\n11. **HC508 C** — วัสดุ POM, PP\n12. **HC508 C-MTW** — วัสดุ POM, PP\n13. **MD254 C** — วัสดุ POM\n14. **MD254 FG** — วัสดุ POM, PP\n15. **MD508 C** — วัสดุ POM\n16. **MD508 FG** — วัสดุ POM\n17. **MP80 C** — วัสดุ POM\n18. **MP80 FG** — วัสดุ POM\n19. **MP80 NS** — วัสดุ POM\n\n---\n\n**ข้อสังเกตและคำแนะนำในการเลือกใช้งานเบื้องต้น:**\n* **ไลน์วิ่งทางตรงทั่วไป:** สามารถเลือกรุ่นผิวเรียบหรือตะแกรง เช่น **EC508 C**, **MD254 C**, **MD508 C** หรือ **MP80 C**\n* **ไลน์ที่มีทางลาดชัน (Incline/Decline):** แนะนำรุ่นผิวยึดเกาะ (Grip Top) เพื่อกันกล่องลื่นไถล เช่น **EC254 GT**, **EC508 GT** หรือ **HC152 FG-GT**\n* **ไลน์ที่มีทางเลี้ยวโค้ง (Radius / Sideflexing):** เช่น **EC254 R**, **EC254 TR**, **EC254 R-GT**, **EC381 R**, **EC508 R**, **EC508 TR** \n  *(หมายเหตุ: สายพานรุ่นที่วิ่งโค้งได้ ค่าความแข็งแรงในการดึงขณะเข้าโค้งจะต่ำกว่าการวิ่งทางตรงอย่างมาก จำเป็นต้องพิจารณาการรับโหลดตามแนวโค้งของไลน์ลำเลียงครับ)*\n\nหากต้องการทราบข้อมูลสเปก ขนาดความกว้าง หรือต้องการให้คำนวณการรับน้ำหนักเพิ่มเติม สามารถแจ้งลักษณะไลน์ (เช่น ทางตรง/ทางโค้ง หรือไลน์ลาดชัน) เพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": false
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GA-I02",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "สายพานสำหรับงานการลำเลียงกล่องในอุตสาหกรรมปลาและอาหารทะเล ใช้รุ่นไหน",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 8.0,
+   "llm_usage": {
+    "prompt_token_count": 17007,
+    "candidates_token_count": 670,
+    "total_token_count": 17677
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "answer_avoids_forbidden": false
+   },
+   "passed": false,
+   "reply": "สำหรับงานเครื่องชุบเกล็ดขนมปัง (Breading Machines) รวมถึงงานเคลือบ/ชุบ (Coating / Glazing Lines) ในอุตสาหกรรมปลาและอาหารทะเล (Fish & Seafood) แคตตาล็อก Modutech 2026 ระบุรุ่นที่ใช้งานได้ทั้งหมด 9 รุ่น พร้อมเกรดวัสดุ ดังนี้ครับ:\n\n1. **HC127 C** — วัสดุ: POM *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด PP สำหรับรุ่นนี้)*\n2. **HC152 C** — วัสดุ: POM, PP\n3. **HC152 FG** — วัสดุ: POM, PP\n4. **MD127 GAP50%** — วัสดุ: POM, PP\n5. **MD254 FG** — วัสดุ: POM, PP\n6. **MD254 GAP48%** — วัสดุ: POM *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด PE สำหรับรุ่นนี้)*\n7. **MP80 FG** — วัสดุ: POM\n8. **SM127 CRV** — วัสดุ: POM *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด PE สำหรับรุ่นนี้)*\n9. **SM127 FG** — วัสดุ: POM\n\nสำหรับการเลือกใช้งานจริง หากต้องการให้เศษแป้งหรือเกล็ดขนมปังส่วนเกินตกลงด้านล่างได้ดี นิยมพิจารณารุ่นที่มีพื้นผิวเปิด (Flush Grid / GAP) เช่น **MD127 GAP50%**, **MD254 GAP48%** หรือ **HC152 FG** ครับ หากต้องการสอบถามสเปกขนาดความกว้างหรือรายละเอียดเพิ่มเติม แจ้งได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": false
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GA-I03",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "สายพานสำหรับงานเครื่องชุบเกล็ดขนมปังในอุตสาหกรรมปลาและอาหารทะเล ใช้รุ่นไหน",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 5.8,
+   "llm_usage": {
+    "prompt_token_count": 18650,
+    "candidates_token_count": 403,
+    "total_token_count": 19053
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "answer_avoids_forbidden": false
+   },
+   "passed": false,
+   "reply": "สำหรับงานลำเลียงยกระดับแนวชัน (Elevators) ในอุตสาหกรรมปลาและอาหารทะเล (Fish & Seafood) แคตตาล็อก Modutech 2026 มีระบุไว้ทั้งหมด **23 รุ่น** พร้อมเกรดวัสดุที่ระบุไว้สำหรับงานนี้ ดังนี้ครับ:\n\n1. **EC254 C** (วัสดุ: PE)\n2. **EC254 GT** (วัสดุ: PP)\n3. **EC254 NT** (วัสดุ: PE)\n4. **EC254 PR16** (วัสดุ: PE, PP)\n5. **EC254 R-GT** (วัสดุ: PP) *(หมายเหตุ: เป็นรุ่นเลี้ยวโค้งได้ ค่าความแข็งแรงขณะเข้าโค้งจะต่างจากวิ่งทางตรง)*\n6. **EC508 C** (วัสดุ: PE, PP)\n7. **EC508 DT** (วัสดุ: PE)\n8. **EC508 FG** (วัสดุ: PE, PP, POM)\n9. **EC508 FG-NT** (วัสดุ: PE, POM, PP)\n10. **EC508 GT** (วัสดุ: PP)\n11. **EC508 NT** (วัสดุ: PE)\n12. **EC508 PR11** (วัสดุ: PE, PP)\n13. **EC508 PR13** (วัสดุ: PE, PP)\n14. **EC508 PR22%** (วัสดุ: PE, POM, PP)\n15. **HC152 FG** (วัสดุ: POM, PP)\n16. **HC152 FG-GT** (วัสดุ: PP)\n17. **HC508 C** (วัสดุ: PE, POM, PP)\n18. **HC508 C-MTW** (วัสดุ: POM, PP)\n19. **HC508 MR** (วัสดุ: POM, PP)\n20. **HC508 NT** (วัสดุ: PE)\n21. **HC508 PR22** (วัสดุ: PE, PP)\n22. **MD254 FG** (วัสดุ: PE)\n23. **MD508 FG** (วัสดุ: PE, PP)\n\nการเลือกใช้งานขึ้นอยู่กับรูปแบบของไลน์ เช่น ต้องการผิวแบบยึดเกาะ (Grip Top / Nub Top / Diamond Top), ผิวเปิดเพื่อระบายน้ำ (Flush Grid / Perforated) หรือผิวเรียบ (Flat Top) \n\nไม่ทราบว่าลักษณะไลน์ลำเลียงของลูกค้าเป็นไลน์ตรงหรือมีช่วงเลี้ยวโค้งด้วยครับ เพื่อที่จะได้ช่วยดูรุ่นที่เหมาะสมกับโครงสร้างไลน์ให้ชัดเจนขึ้นครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": false
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GA-I04",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "สายพานสำหรับงานลำเลียงยกระดับแนวชันในอุตสาหกรรมปลาและอาหารทะเล ใช้รุ่นไหน",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 9.4,
+   "llm_usage": {
+    "prompt_token_count": 18030,
+    "candidates_token_count": 649,
+    "total_token_count": 18679
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "answer_avoids_forbidden": false
+   },
+   "passed": false,
+   "reply": "สำหรับงานเครื่องตรวจจับโลหะ (Metal Detection) ในอุตสาหกรรมปลาและอาหารทะเล (Fish & Seafood) ในแคตตาล็อก Modutech 2026 มีระบุไว้ทั้งหมด 17 รุ่น พร้อมเกรดวัสดุที่แนะนำสำหรับงานนี้ ดังนี้ครับ:\n\n1. **EC127 C** — วัสดุ PE, PP\n2. **EC127 FG** — วัสดุ PE, PP\n3. **EC254 C** — วัสดุ PE, PP\n4. **EC254 NT** — วัสดุ PE\n5. **EC508 C** — วัสดุ PE\n6. **EC508 PR11** — วัสดุ PE *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด POM สำหรับรุ่นนี้)*\n7. **EC508 PR22%** — วัสดุ PE\n8. **HC127 C** — วัสดุ POM *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด PP สำหรับรุ่นนี้)*\n9. **HC152 C** — วัสดุ PE, POM, PP\n10. **HC152 FG** — วัสดุ PE, PP\n11. **HC508 C** — วัสดุ PE\n12. **HC508 C-MTW** — วัสดุ PE\n13. **MD127 GAP50%** — วัสดุ POM, PP\n14. **MD254 C** — วัสดุ PE, PP\n15. **MD254 FG** — วัสดุ PE, PP\n16. **MP80 C** — วัสดุ POM\n17. **SM127 C** — วัสดุ PP\n\nหากต้องการดูสเปกอย่างละเอียดของรุ่นใด เช่น ลักษณะพื้นผิว (ผิวทึบ Flat Top หรือผิวเปิด Flush Grid/Perforated เพื่อการระบายน้ำ) หรือขนาดความกว้าง สามารถแจ้งรุ่นที่สนใจเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": false
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GA-I05",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "สายพานสำหรับงานเครื่องตรวจจับโลหะในอุตสาหกรรมปลาและอาหารทะเล ใช้รุ่นไหน",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 5.5,
+   "llm_usage": {
+    "prompt_token_count": 19798,
+    "candidates_token_count": 453,
+    "total_token_count": 20251
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "answer_avoids_forbidden": false
+   },
+   "passed": false,
+   "reply": "สำหรับงานลำเลียงเข้าเครื่องบรรจุ (Filling Conveyors) ในอุตสาหกรรมผักและผลไม้ (Fruit & Vegetable) ตามแคตตาล็อก Modutech 2026 มีรุ่นที่ระบุการใช้งานนี้ครบทั้ง 11 รุ่น พร้อมเกรดวัสดุดังนี้ครับ:\n\n1. **EC127 C** — วัสดุ: POM, PP\n2. **EC127 FG** — วัสดุ: POM, PP\n3. **EC508 C** — วัสดุ: POM, PP\n4. **EC508 FG** — วัสดุ: POM, PP\n5. **HC152 C** — วัสดุ: POM, PP\n6. **HC152 FG** — วัสดุ: POM, PP\n7. **HC508 C** — วัสดุ: PE, PP\n8. **MD254 C** — วัสดุ: POM, PP\n9. **MD254 FG** — วัสดุ: POM, PP\n10. **MD254 GAP48%** — วัสดุ: POM, PP\n11. **SM127 C** — วัสดุ: PP\n\nการเลือกรุ่นขึ้นอยู่กับลักษณะของสินค้าและระบบลำเลียง เช่น หากต้องการผิวทึบเรียบเพื่อรองรับภาชนะอย่างต่อเนื่องมักพิจารณารุ่น Flat Top (รหัส C) หรือหากต้องการระบายน้ำ/ของเหลวจะพิจารณารุ่นผิวเปิด (Flush Grid / GAP) ครับ หากต้องการทราบรายละเอียดขนาดหรือสเปกเชิงลึกของรุ่นใดเพิ่มเติม สอบถามได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": false
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GA-I06",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "สายพานสำหรับงานลำเลียงเข้าเครื่องบรรจุในอุตสาหกรรมผักและผลไม้ ใช้รุ่นไหน",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 5.9,
+   "llm_usage": {
+    "prompt_token_count": 20833,
+    "candidates_token_count": 364,
+    "total_token_count": 21197
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **EC127 C** (ผิวหน้าเรียบทึบ Flat Top, ระยะพิทช์ 12.7 มม.) มีระบุการใช้งานในอุตสาหกรรมต่าง ๆ ตามแคตตาล็อก ดังนี้ครับ:\n\n1. **อุตสาหกรรมแปรรูปเนื้อสัตว์ (Meat Processing)**\n   * งานลำเลียงจุดถ่ายโอน (Transfer conveyors) — วัสดุ PP\n   * ไลน์เครื่องตรวจจับโลหะ (Metal detection) — วัสดุ PE\n\n2. **อุตสาหกรรมสัตว์ปีก (Poultry)**\n   * ไลน์เครื่องตรวจจับโลหะ — วัสดุ PE\n   * งานบรรจุและติดฉลาก (Packaging & Labelling) — วัสดุ POM\n   * คลังสินค้าและการจัดส่ง (Warehousing & Dispatch) — วัสดุ POM\n\n3. **อุตสาหกรรมปลาและอาหารทะเล (Fish & Seafood)**\n   * ไลน์เครื่องตรวจจับโลหะ — วัสดุ PE\n\n4. **อุตสาหกรรมผักและผลไม้ (Fruit & Vegetable)**\n   * โต๊ะตรวจสอบและคัดแยก (Inspection & Sorting tables) — วัสดุ PP, POM\n   * ไลน์เครื่องตรวจจับโลหะ — วัสดุ PE\n\n5. **อุตสาหกรรมเบเกอรี่ (Bakery)**\n   * การลำเลียงแป้งดิบ (Raw dough handling) — วัสดุ POM\n   * ไลน์พักและหมักแป้ง (Proofing lines) — วัสดุ PP, POM\n   * ไลน์รีดแผ่นแป้ง (Laminating lines) — วัสดุ PP, PE\n   * ไลน์เครื่องตรวจจับโลหะ — วัสดุ PP, PE\n\n6. **อุตสาหกรรมบรรจุภัณฑ์ (Packaging)**\n   * เครื่องชั่งน้ำหนักตรวจสอบ (Checkweighers) — วัสดุ PP, POM\n   * ลำเลียงเข้าเครื่องบรรจุ, เครื่องปิดฝา, เครื่องติดฉลาก — วัสดุ PP, POM\n   * ลำเลียงกล่องแนวราบ (Horizontal box transport) — วัสดุ PP, POM\n   * การจัดเรียงและรื้อพาเลท (Palletizing & Depalletizing) — วัสดุ POM\n   * ไลน์เครื่องตรวจจับโลหะ — วัสดุ PP, PE\n\n7. **อุตสาหกรรมกล่องลูกฟูก (Corrugated)**\n   * ไลน์ลำเลียงและจัดการกองกล่อง, เครื่องเรียงกล่องลง, รถลำเลียงถ่ายโอน, จุดถ่ายโอน 90 องศา, ชุดป้อนชิ้นงาน และป้อนสายรัด — วัสดุ POM\n\nหากต้องการข้อมูลการเลือกใช้วัสดุสายพานให้เหมาะกับสภาพแวดล้อมการทำงานเพิ่มเติม สอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GI-B01",
+   "turn": "1",
+   "category": "graph_industry",
+   "query": "EC127 C ใช้ในอุตสาหกรรมไหนได้บ้าง",
+   "metrics": [],
+   "seconds": 8.3,
+   "llm_usage": {
+    "prompt_token_count": 3757,
+    "candidates_token_count": 628,
+    "total_token_count": 4385
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_avoids_forbidden": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MP80 C** มีการระบุการใช้งานในอุตสาหกรรมและลักษณะงานต่าง ๆ ดังนี้ครับ:\n\n1. **อุตสาหกรรมแปรรูปเนื้อสัตว์ (Meat Processing)**\n   - ไลน์ตัดและเลาะกระดูก\n   - การลำเลียงจุดถ่ายโอน (Transfer conveyors)\n   - เครื่องตรวจจับโลหะ\n   - ไลน์เนื้อบด\n   - การลำเลียงกล่อง\n\n2. **อุตสาหกรรมสัตว์ปีก (Poultry)**\n   - ไลน์ตัดแบ่ง เลาะกระดูก และตัดแต่ง\n   - การคัดเกรดและคัดขนาด\n   - เครื่องตรวจจับโลหะ\n   - การบรรจุและติดฉลาก\n\n3. **อุตสาหกรรมปลาและอาหารทะเล (Seafood)**\n   - โต๊ะตรวจสอบ\n   - การเคลือบน้ำแข็ง (Glazing)\n\n4. **อุตสาหกรรมเบเกอรี่ (Bakery)**\n   - การลำเลียงแป้งดิบ\n   - ทางเข้า-ออกเตาอบ\n   - ทางเข้า-ออกสไปรัล\n\n5. **อุตสาหกรรมบรรจุภัณฑ์ (Packaging)**\n   - เครื่องชั่งน้ำหนักตรวจสอบ (Checkweighers)\n   - ลำเลียงเข้าเครื่องติดฉลาก\n   - ลำเลียงกล่องแนวราบ\n\n*(หมายเหตุ: ในแคตตาล็อก รุ่น MP80 C ระบุการใช้งานในงานข้างต้นด้วยวัสดุ **POM** ครับ)*\n\nหากต้องการข้อมูลสเปกเพิ่มเติม เช่น ขนาดความกว้าง หรือการใช้งานเฉพาะจุด สามารถสอบถามเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GI-B02",
+   "turn": "1",
+   "category": "graph_industry",
+   "query": "MP80 C ใช้ในอุตสาหกรรมไหนได้บ้าง",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 4.3,
+   "llm_usage": {
+    "prompt_token_count": 3332,
+    "candidates_token_count": 363,
+    "total_token_count": 3695
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_avoids_forbidden": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **HC508 C** มีการระบุการใช้งานในอุตสาหกรรมต่างๆ ตามแคตตาล็อก ดังนี้ครับ:\n\n1. **แปรรูปเนื้อสัตว์ (Meat Processing)**\n   * งานเชือด, ไลน์ตัดและเลาะกระดูก, ลำเลียงกระดูกออกจากไลน์, ไลน์ตกแต่งชิ้นเนื้อ, การตัดแต่ง, การสไลซ์, ไลน์ลำเลียงไขมัน, ไลน์เครื่องในและปอด, ลำเลียงกระดูกขึ้น-ลงลาดเอียง, ลำเลียงยกระดับแนวชัน, เครื่องตรวจจับโลหะ, ไลน์เนื้อบด และการลำเลียงกล่อง\n\n2. **สัตว์ปีก (Poultry)**\n   * การลำเลียงไก่เป็น, การเชือดและควักเครื่องใน, การลอกหนัง, ไลน์ตัดแบ่ง เลาะกระดูก และตัดแต่ง, ทางออกเครื่องแช่เย็น, ไลน์เครื่องในและขน, จุดแขวนซ้ำและพักสะสมไก่, การคัดเกรดและคัดขนาด, ไลน์แช่แข็ง, เครื่องตรวจจับโลหะ และลำเลียงยกระดับแนวชัน\n\n3. **ปลาและอาหารทะเล (Seafood)**\n   * ไลน์แปรรูป, โต๊ะตรวจสอบ, การเคลือบน้ำแข็ง, ลำเลียงยกระดับแนวชัน และการแปรรูปกุ้ง\n\n4. **ผักและผลไม้ (Fruit & Vegetables)**\n   * การป้อนวัตถุดิบแบบเทกอง, ลำเลียงยกระดับแนวชัน, โต๊ะตรวจสอบและคัดแยก และลำเลียงเข้าเครื่องบรรจุ\n\n5. **เบเกอรี่ (Bakery)**\n   * การลำเลียงแป้งดิบ และไลน์รีดแผ่นแป้ง\n\n6. **บรรจุภัณฑ์ (Packaging)**\n   * ลำเลียงเทกองขึ้นลาดเอียง และลำเลียงกล่องแนวราบ\n\nหากมีไลน์การผลิตหรือกระบวนการทำงานเฉพาะจุดที่ต้องการสอบถามเพิ่มเติม สามารถแจ้งรายละเอียดได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GI-B03",
+   "turn": "1",
+   "category": "graph_industry",
+   "query": "HC508 C ใช้ในอุตสาหกรรมไหนได้บ้าง",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 6.0,
+   "llm_usage": {
+    "prompt_token_count": 4204,
+    "candidates_token_count": 446,
+    "total_token_count": 4650
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_avoids_forbidden": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **XP254 C** มีระบุการใช้งานในแคตตาล็อกสำหรับ 2 กลุ่มอุตสาหกรรมหลัก ดังนี้ครับ:\n\n1. **อุตสาหกรรมบรรจุภัณฑ์ (Packaging)**\n   - ลำเลียงเข้าเครื่องติดฉลาก (Labeling conveyors) — วัสดุ PP, POM\n   - เครื่องบรรจุลงลัง (Case packers) — วัสดุ PP, POM\n   - เครื่องบรรจุถาด (Traypackers) — วัสดุ PP, POM\n   - การจัดเรียงและรื้อพาเลท (Palletizing & Depalletizing) — วัสดุ PP, POM\n   - ลำเลียงกล่องแนวราบ (Horizontal box transport) — วัสดุ PP, POM\n\n2. **อุตสาหกรรมกล่องลูกฟูก (Corrugated)**\n   - เครื่องเรียงกล่องลง (Downstackers) — วัสดุ POM\n   - รถลำเลียงถ่ายโอน (Transfer cars) — วัสดุ POM\n   - การจัดการกองกล่อง (Stack handling) — วัสดุ POM\n   - ป้อนสายรัด (Strapping feeds) — วัสดุ POM\n   - เครื่องจัดเรียงพาเลท (Palletizers) — วัสดุ POM\n   - ชุดป้อนชิ้นงาน (Infeed units) — วัสดุ POM\n\nสายพานรุ่นนี้เป็นแบบหน้าทึบ (Flat Top) ผิวเรียบ วิ่งแนวตรง เหมาะสำหรับการรองรับบรรจุภัณฑ์ กล่อง หรือถาดได้อย่างต่อเนื่องครับ หากต้องการข้อมูลการใช้งานเพิ่มเติมสามารถสอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GI-B04",
+   "turn": "1",
+   "category": "graph_industry",
+   "query": "XP254 C ใช้ในอุตสาหกรรมไหนได้บ้าง",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 5.2,
+   "llm_usage": {
+    "prompt_token_count": 3085,
+    "candidates_token_count": 351,
+    "total_token_count": 3436
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "ในแคตตาล็อก Modutech สำหรับอุตสาหกรรมเบเกอรี่ (Bakery Processing) มีการระบุลักษณะงานและรุ่นสายพานที่รองรับไว้ดังนี้ครับ (ในแคตตาล็อกไม่มีการระบุเจาะจงเฉพาะงานใดงานหนึ่งโดยตรงจากคำถาม แต่มีระบุครอบคลุมหลายขั้นตอนในกระบวนการผลิต)\n\nตัวอย่างรุ่นที่ระบุการใช้งานในอุตสาหกรรมเบเกอรี่เด่นๆ 5 รุ่น ได้แก่:\n\n1. **MD254 C** (วัสดุ PP, POM) \n   - งานลำเลียงถาดอบ (Pan handling)\n2. **MD254 GT** (วัสดุ PP) \n   - งานลำเลียงขึ้น-ลงลาดเอียง (Incline/Decline) และการลำเลียงถาดอบ\n3. **MD254 C-RT** (วัสดุ POM) \n   - งานลำเลียงถาดอบ และงานสะสมชิ้นงาน (Accumulation)\n4. **MD254 FG-RT** (วัสดุ POM) \n   - งานลำเลียงถาดอบในจุดที่ต้องการการระบายหรือถ่ายเท\n5. **MP80 FG** (วัสดุ POM) \n   - งานทางเข้า-ออกเตาอบ, ไลน์ทำความเย็นและพักเย็น (Cooling), ไลน์เคลือบและเคลือบน้ำแข็ง (Coating & Glazing)\n\n---\n\n**งานอื่นๆ ในอุตสาหกรรมเบเกอรี่ตามที่แคตตาล็อกระบุไว้:**\n- **การลำเลียงแป้งดิบ (Dough handling):** MP80 C, MP80 NS, SM127 C, SM127 CRV, EC127 C, HC152 C, EC254 C, EC508 C, HC508 C\n- **เครื่องแบ่งก้อนแป้ง (Dough divider):** SM127 C, SM127 CRV, SM127 FG, EC127 FG, HC152 C, HC152 FG\n- **ไลน์พักและหมักแป้ง (Proofing lines):** MP80 NP, SM127 C, SM127 CRV, SM127 FG, EC127 C, HC152 C, EC254 C, MD254 GAP48%\n- **ทางเข้า-ออกเตาอบ (Oven infeed/outfeed):** MP80 C, MP80 FG, MP80 NS, EC127 FG, MD127 GAP50%, MD254 GAP48%\n- **ไลน์ทำความเย็นและพักเย็น (Cooling lines):** MP80 FG, EC127 FG, MD127 GAP50%, HC152 FG, MD254 FG, MD508 FG\n- **ไลน์เคลือบและเคลือบน้ำแข็ง (Coating & Glazing):** MP80 FG, EC127 FG, MD127 GAP50%, HC152 FG, MD254 FG\n- **สไปรัล พักแป้ง ทำความเย็น และแช่แข็ง (Spiral systems):** EC254 R, EC254 TR, EC381 R, EC508 TR (รวมถึงทางเข้า-ออกสไปรัล: MP80 C, MP80 NS, EC127 FG, MD254 FG)\n- **ไลน์แช่แข็ง (Freezing lines):** EC127 FG, HC152 FG, EC254 C, MD254 FG\n- **ไลน์รีดแผ่นแป้ง (Dough sheeter):** EC127 C, EC254 C, EC508 C, HC508 C\n- **เครื่องตรวจจับโลหะ (Metal detector):** EC127 C, EC127 FG, EC254 C, MD254 FG\n- **ลำเลียงขึ้น-ลงลาดเอียง และลำเลียงถาดอบ:** EC127 GT, HC152 FG-GT, EC254 GT, EC254 R-GT, MD508 FG-RT, EC508 C-RT\n\n**รายชื่อรุ่นทั้งหมด 32 รุ่นในกลุ่มเบเกอรี่:**\nMP80 C, MP80 FG, MP80 NP, MP80 NS, SM127 C, SM127 CRV, SM127 FG, EC127 C, EC127 FG, EC127 GT, MD127 GAP50%, HC152 C, HC152 FG, HC152 FG-GT, EC254 C, EC254 GT, EC254 R, EC254 R-GT, EC254 TR, MD254 C, MD254 C-RT, MD254 FG, MD254 FG-RT, MD254 GAP48%, MD254 GT, EC381 R, EC508 C, EC508 C-RT, EC508 TR, HC508 C, MD508 FG, MD508 FG-RT\n\nหากต้องการทราบรายละเอียดของขั้นตอนหรือรุ่นใดเป็นพิเศษ สามารถสอบถามเพิ่มเติมได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GI-A01",
+   "turn": "1",
+   "category": "graph_industry",
+   "query": "อุตสาหกรรมเบเกอรี่มีงานอะไรบ้างที่ใช้สายพาน Modutech",
+   "metrics": [],
+   "seconds": 9.6,
+   "llm_usage": {
+    "prompt_token_count": 10965,
+    "candidates_token_count": 1186,
+    "total_token_count": 12151
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับอุตสาหกรรมกล่องลูกฟูก (Corrugated) ในแคตตาล็อกระบุงานที่มีการใช้งานสายพาน Modutech ไว้ดังนี้ครับ:\n\n1. **จุดถ่ายโอน 90 องศา (90° Transfer)**\n2. **เครื่องเรียงกล่องลง (Down Stacker)**\n3. **ชุดป้อนชิ้นงาน (Feeder)**\n4. **เครื่องจัดเรียงพาเลท (Palletizer)**\n5. **การจัดการกองกล่อง (Stack Handling)**\n6. **ป้อนสายรัด (Strap Feed)**\n7. **รถลำเลียงถ่ายโอน (Transfer Car)**\n\n---\n\nทั้งนี้ สายพาน Modutech ที่แคตตาล็อก 2026 ระบุว่ารองรับงานในอุตสาหกรรมกล่องลูกฟูก มีทั้งหมด 16 รุ่น พร้อมเกรดวัสดุดังนี้ครับ:\n\n* **EC127 C** (วัสดุ POM)\n* **EC127 FG** (วัสดุ POM)\n* **EC127 GT** (วัสดุ PP)\n* **HC152 C** (วัสดุ POM)\n* **HC152 FG-GT** (วัสดุ PP)\n* **HD254 C** (วัสดุ POM)\n* **MD254 C** (วัสดุ POM)\n* **MD508 C** (วัสดุ POM)\n* **MD508 NS** (วัสดุ POM)\n* **SM127 C** (วัสดุ POM)\n* **SM127 FG** (วัสดุ POM)\n* **XP254 BT** (วัสดุ POM)\n* **XP254 C** (วัสดุ POM)\n* **XP254 EVO CR** (วัสดุ POM)\n* **XP254 EVO FLT** (วัสดุ POM)\n* **XP254 PR22%** (วัสดุ POM)\n\nหากสนใจรายละเอียดสเปกของรุ่นใด หรือต้องการเลือกรุ่นให้เหมาะกับตำแหน่งงานเฉพาะจุด สอบถามเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GI-A02",
+   "turn": "1",
+   "category": "graph_industry",
+   "query": "อุตสาหกรรมกล่องลูกฟูกมีงานอะไรบ้างที่ใช้สายพาน Modutech",
+   "metrics": [],
+   "seconds": 5.6,
+   "llm_usage": {
+    "prompt_token_count": 17041,
+    "candidates_token_count": 477,
+    "total_token_count": 17518
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "ในแคตตาล็อก Modutech สำหรับอุตสาหกรรมปลาและอาหารทะเล (Fish & Seafood) มีการระบุลักษณะการใช้งานไว้หลากหลายขั้นตอน โดยแคตตาล็อกไม่มีการระบุงานตรงตามคำถามแบบเฉพาะเจาะจงลงไปทั้งหมด แต่ได้ระบุประเภทงานและรุ่นสายพานที่รองรับไว้ดังนี้ครับ\n\n**ตัวอย่างงานหลักและรุ่นที่ระบุในแคตตาล็อก (5 รุ่นตัวอย่าง):**\n1. **MP80 NP** (Negative Pyramid) — ไลน์แปรรูป (POM), โต๊ะตรวจสอบ (POM), การเคลือบน้ำแข็ง (POM)\n2. **MD254 GT** (Grip Top) — ไลน์แปรรูป (PP), การลำเลียงกล่อง *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด POM สำหรับรุ่นนี้)*\n3. **MD508 FG** (Flush Grid) — การสะเด็ดน้ำ (PE, PP), การเคลือบน้ำแข็ง (POM), ลำเลียงยกระดับแนวชัน (PE, PP), การลำเลียงกล่อง (POM)\n4. **MD254 C** (Flat Top) — ไลน์แปรรูป (POM), การลำเลียงกล่อง (POM)\n5. **MD254 GAP48%** (Flush Grid) — การสะเด็ดน้ำ (PP, POM), เครื่องชุบเกล็ดขนมปัง (POM) *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด PE สำหรับรุ่นนี้)*\n\n**งานอื่น ๆ ที่ระบุในกลุ่มนี้ ได้แก่:**\n- โต๊ะตรวจสอบ (Control tables)\n- การสะเด็ดน้ำ (Draining)\n- ไลน์แช่แข็งและสไปรัลฟรีซเซอร์ (Freezing & spiral lines)\n- เครื่องตรวจจับโลหะ (Metal detector lines)\n- เครื่องชุบเกล็ดขนมปัง (Breading machines)\n- การแปรรูปกุ้ง (Shrimp processing)\n- ลำเลียงยกระดับแนวชัน (Elevators / Inclines)\n\n**รุ่นอื่น ๆ ทั้งหมดที่แคตตาล็อกระบุไว้สำหรับอุตสาหกรรมนี้ (รวม 34 รุ่น):**\nMP80 C, MP80 FG, MP80 NS, SM127 CRV, SM127 FG, EC127 C, EC127 FG, HC127 C, MD127 GAP50%, HC152 C, HC152 FG, EC254 C, EC254 NT, EC254 PR16, EC254 R, EC254 R-GT, EC254 TR, MD254 FG, EC381 R, EC508 C, EC508 FG, EC508 FG-NT, EC508 NT, EC508 PR11, EC508 R, EC508 TR, HC508 C, HC508 C-MTW, MD508 C ครับ\n\nหากสนใจรายละเอียดของขั้นตอนการทำงานหรือรุ่นใดเป็นพิเศษ สามารถสอบถามเพิ่มเติมได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GI-A03",
+   "turn": "1",
+   "category": "graph_industry",
+   "query": "อุตสาหกรรมปลาและอาหารทะเลมีงานอะไรบ้างที่ใช้สายพาน Modutech",
+   "metrics": [],
+   "seconds": 7.1,
+   "llm_usage": {
+    "prompt_token_count": 12083,
+    "candidates_token_count": 696,
+    "total_token_count": 12779
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "ในแคตตาล็อก Modutech สำหรับ**อุตสาหกรรมผักและผลไม้ (Fruit & Vegetable)** มีการระบุลักษณะงานและการใช้งานสายพานไว้หลากหลายกระบวนการ โดยมีตัวอย่างงานหลักและรุ่นที่ระบุในเล่ม ดังนี้ครับ:\n\n1. **การล้างเบื้องต้นและล้างน้ำ (Prewashing & Rinsing) / การสะเด็ดน้ำ (Draining)**\n   * นิยมใช้สายพานผิวเปิดหรือเจาะรู เช่น **EC508 PR22%** (วัสดุ PE, PP), **MD254 FG** (วัสดุ PP), **MD508 FG** (วัสดุ PE, PP), **EC254 PR16** (วัสดุ PE, PP) และ **EC127 FG** (วัสดุ PP, POM)\n2. **เครื่องล้าง (Washing Machine)**\n   * ใช้งานกับรุ่น เช่น **MD254 FG** (วัสดุ PP), **MD508 FG** (วัสดุ PP, POM), **EC508 FG** (วัสดุ PE, PP)\n3. **การปอกเปลือก (Peeling)**\n   * มีระบุใช้งานกับรุ่น เช่น **EC508 PR22%** (วัสดุ PP), **MD508 FG** (วัสดุ PP), **EC508 FG** (วัสดุ PP)\n4. **โต๊ะตรวจสอบและคัดแยก (Inspection & Sorting Tables)**\n   * นิยมใช้ผิวเรียบ เช่น **EC127 C** (วัสดุ PP, POM), **HC152 C** (วัสดุ PP, POM), **EC254 C** (วัสดุ PE, PP), **HC508 C** (วัสดุ PE, PP)\n5. **การลำเลียงยกระดับแนวชัน / ทางลาด (Elevators & Incline)**\n   * ใช้รุ่นที่มีการยึดเกาะหรือผิวเปิด/ผิวเรียบ เช่น **EC508 PR22%** (วัสดุ PE, PP), **HC152 FG** (วัสดุ PP, POM), **HC152 FG-GT** (วัสดุ PP), **EC254 NT** (วัสดุ PE, PP)\n6. **การลำเลียงภาชนะ คอนเทนเนอร์ และกล่อง (Container Conveyance)**\n   * ใช้งานกับรุ่น เช่น **MD254 C** (วัสดุ PP, POM), **MD254 GT** (วัสดุ PP — *หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด POM สำหรับรุ่นนี้*), **EC254 R** (วัสดุ PP, POM)\n7. **การจัดเรียงและรื้อพาเลท (Palletizing & Depalletizing)**\n   * ใช้งานกับรุ่น เช่น **MD254 C** (วัสดุ PP, POM), **MD508 FG** (วัสดุ PP, POM), **HP508 RR** (วัสดุ PPH: Hot Water Resistant Polypropylene)\n8. **กระบวนการฆ่าเชื้อ (Sterilization Conveyance)**\n   * ใช้งานกับรุ่น เช่น **MD508 FG** (วัสดุ PP), **HP508 RR** (วัสดุ PPH), **EC127 FG** (วัสดุ PP)\n9. **ไลน์แช่แข็ง (Freezing Lines) และเครื่องตรวจจับโลหะ (Metal Detection)**\n   * เช่น **MD254 FG** (แช่แข็ง: PE, PP / โลหะ: PE), **EC127 C** (โลหะ: PE)\n\n---\n\n**สรุปรายชื่อสายพาน Modutech ทั้งหมด 31 รุ่นที่ระบุสำหรับอุตสาหกรรมนี้:**\nEC127 C, EC127 FG, MD127 GAP50%, HC152 C, HC152 FG, HC152 FG-GT, EC254 C, EC254 NT, EC254 PR16, EC254 R, EC254 R-GT, EC254 TR, MD254 C, MD254 FG, MD254 GT, MD254 RR, EC381 R, EC508 C, EC508 FG, EC508 FG-NT, EC508 NT, EC508 PR11, EC508 PR13, EC508 PR22%, EC508 R, EC508 TR, HC508 C, HC508 PR22, MD508 FG, MD508 PR25 และ HP508 RR ครับ\n\nหากมีขั้นตอนหรือกระบวนการใดที่สนใจเป็นพิเศษ สามารถสอบถามรายละเอียดสเปกเพิ่มเติมได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GI-A04",
+   "turn": "1",
+   "category": "graph_industry",
+   "query": "อุตสาหกรรมผักและผลไม้มีงานอะไรบ้างที่ใช้สายพาน Modutech",
+   "metrics": [],
+   "seconds": 10.2,
+   "llm_usage": {
+    "prompt_token_count": 13387,
+    "candidates_token_count": 1080,
+    "total_token_count": 14467
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "ในแคตตาล็อก Modutech ไม่ได้มีระบุหัวข้องานแปรรูปเนื้อสัตว์ไว้โดยตรงแบบเจาะจงขั้นตอนเดียว แต่มีการระบุการใช้งานในอุตสาหกรรมแปรรูปเนื้อสัตว์ (Meat Processing) ไว้หลากหลายขั้นตอน โดยมีสายพานที่ระบุในกลุ่มนี้ทั้งหมด 27 รุ่นครับ\n\nตัวอย่างรุ่นเด่นและลักษณะงานที่ระบุในเล่ม มีดังนี้ครับ:\n\n1. **HC508 C-MTW**\n   * **งานที่ระบุ:** การเชือด (POM, CR), ไลน์ตัดและเลาะกระดูก (POM, CR), ลำเลียงกระดูกออกจากไลน์ (POM, CR), ไลน์ตกแต่งชิ้นเนื้อ (POM), การตัดแต่ง (POM), การสไลซ์ (PE), ไลน์ลำเลียงไขมัน (PP, POM), ไลน์เครื่องในและปอด (POM), ลำเลียงกระดูกขึ้น-ลงลาดเอียง (POM, CR), จุดปล่อยจากรางที่มีแรงกระแทกสูง (POM, CR), ลำเลียงยกระดับแนวชัน (PP, POM), เครื่องตรวจจับโลหะ (PE), ไลน์เนื้อบด (PE, POM), การลำเลียงกล่อง (PP, POM)\n   *(หมายเหตุ: เกรด CR คือ Cut Resistant)*\n\n2. **EC508 C**\n   * **งานที่ระบุ:** การเชือด (PE, POM), ไลน์ตัดและเลาะกระดูก (POM), ลำเลียงกระดูกออกจากไลน์ (PE), ไลน์ตกแต่งชิ้นเนื้อ (PP, POM), การตัดแต่ง (PP, POM), การสไลซ์ (PE), ไลน์ลำเลียงไขมัน (PP, POM), ไลน์เครื่องในและปอด (POM), ลำเลียงกระดูกขึ้น-ลงลาดเอียง (POM), ลำเลียงยกระดับแนวชัน (PP, POM), เครื่องตรวจจับโลหะ (PE), ไลน์เนื้อบด (PE, POM), การลำเลียงกล่อง (PP, POM)\n\n3. **EC254 C**\n   * **งานที่ระบุ:** การตัดแต่ง (PE, POM), การสไลซ์ (PE), ไลน์ลำเลียงไขมัน (PE, POM), ไลน์เครื่องในและปอด (PP, POM), ลำเลียงยกระดับแนวชัน (PE, POM), เครื่องตรวจจับโลหะ (PE), ไลน์เนื้อบด (PE, POM)\n\n4. **MP80 C**\n   * **งานที่ระบุ:** ไลน์ตัดและเลาะกระดูก (POM), ลำเลียงจุดถ่ายโอน (POM), เครื่องตรวจจับโลหะ (POM), ไลน์เนื้อบด (POM), การลำเลียงกล่อง (POM)\n\n5. **MD254 FG**\n   * **งานที่ระบุ:** ไลน์หมัก (PP, POM), เครื่องชุบเกล็ดขนมปัง (PP, POM), ไลน์แช่แข็ง (PE, POM), ลำเลียงยกระดับแนวชัน (PE), การลำเลียงกล่อง (PP, POM)\n\n---\n\n**รุ่นอื่นๆ ที่ระบุในอุตสาหกรรมแปรรูปเนื้อสัตว์:**\nMP80 FG, MP80 NS, EC127 C, EC127 FG, HC127 C, MD127 GAP50%, HC152 C, HC152 FG, HC152 FG-GT, EC254 GT, EC254 NT, EC254 R, EC254 R-GT, EC254 TR, MD254 GAP48%, EC381 R, EC508 GT, EC508 NT, EC508 PR22%, EC508 R, EC508 TR และ HC508 C ครับ\n\nหากสนใจนำไปใช้กับตำแหน่งหรือขั้นตอนการผลิตใดเป็นพิเศษ สามารถแจ้งรายละเอียดเพื่อตรวจสอบสเปกเพิ่มเติมได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GI-A05",
+   "turn": "1",
+   "category": "graph_industry",
+   "query": "อุตสาหกรรมแปรรูปเนื้อสัตว์มีงานอะไรบ้างที่ใช้สายพาน Modutech",
+   "metrics": [],
+   "seconds": 8.6,
+   "llm_usage": {
+    "prompt_token_count": 13397,
+    "candidates_token_count": 864,
+    "total_token_count": 14261
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "ในแคตตาล็อก Modutech สำหรับ**อุตสาหกรรมบรรจุภัณฑ์ (Packaging)** มีการระบุลักษณะงานและรุ่นสายพานที่รองรับไว้ดังนี้ครับ\n\n*(หมายเหตุ: แคตตาล็อกไม่ได้ระบุการจับคู่งานเฉพาะเจาะจงกับทุกแอปพลิเคชันโดยตรง แต่ระบุตามกลุ่มงานหลักของอุตสาหกรรมนี้ไว้ครับ)*\n\n---\n\n### **กลุ่มงานหลักในอุตสาหกรรมบรรจุภัณฑ์และรุ่นตัวอย่าง**\n\n1. **ลำเลียงกล่องแนวราบ (Horizontal Box Transport / Box Handling)**\n   - **MD254 C** (วัสดุ PP, POM) – ผิวเรียบทึบ (Flat Top) แข็งแรง หนา รับน้ำหนักได้ดี\n   - **MD508 C** (วัสดุ PP, POM) – ผิวเรียบทึบ พิทช์ใหญ่ 2 นิ้ว สำหรับงานลำเลียงกล่องทั่วไปและงานรับน้ำหนักสูง\n   - **MD254 FG** (วัสดุ PP, POM) – ผิวตะแกรง (Flush Grid) มีช่องเปิดระบายอากาศและของเหลว\n\n2. **ลำเลียงกล่องขึ้น-ลงลาดเอียง (Box Inclines & Declines)**\n   - **MD254 GT** (วัสดุ PP) – ผิวยางกันลื่น (Grip Top) พิทช์ 1 นิ้ว ช่วยยึดเกาะชิ้นงานไม่ให้ลื่นไถลบนทางลาด *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด POM สำหรับรุ่นนี้ ต้องยืนยันกับฝ่ายขายหากต้องการเกรดพิเศษ)*\n\n3. **ลำเลียงสะสมชิ้นงาน / พักคอย (Accumulation Conveyors)**\n   - **MD254 FG-RT** (วัสดุ POM) – ผิวลูกกลิ้งบนฐานตะแกรง (Roller Top) ช่วยลดแรงดันย้อนกลับแถวคอย พร้อมระบายเศษวัสดุหรือของเหลวได้\n\n4. **งานเข้าเครื่องบรรจุ, เครื่องปิดฝา, เครื่องติดฉลาก และเครื่องตรวจจับโลหะ**\n   - มีรุ่นรองรับ เช่น **MD254 C**, **MD254 FG** (วัสดุ PP, POM, PE ตามข้อกำหนดของแต่ละเครื่องจักร)\n\n---\n\n**รุ่นอื่นๆ ทั้งหมดในอุตสาหกรรมบรรจุภัณฑ์ (Packaging):**\nนอกจากรุ่นตัวอย่างข้างต้นแล้ว ในแคตตาล็อกยังมีรุ่นที่ระบุสำหรับอุตสาหกรรมนี้ ได้แก่:\nMP80 C, MP80 NS, SM127 C, SM127 FG-GT, EC127 C, EC127 FG, EC127 GT, HC152 C, HC152 FG, HC152 FG-GT, EC254 GT, EC254 R, EC254 R-GT, EC254 R-TABE, EC254 R-TABM, EC254 TR, EC254 TR-TAB, MD254 C-RT, MD254 GAP48%, MD254 GAP48%-EHT, MD254 RR, HD254 C, XP254 BT, XP254 C, XP254 GT, EC381 R, EC508 C, EC508 C-RT, EC508 GT, EC508 R, EC508 TR, HC508 C, MD508 C-RT, MD508 FG, MD508 FG-RT และ HP508 RR ครับ\n\nหากมีรูปแบบงานหรือลักษณะสินค้าเฉพาะเจาะจง สามารถสอบถามรายละเอียดสเปกเพิ่มเติมได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GI-A06",
+   "turn": "1",
+   "category": "graph_industry",
+   "query": "อุตสาหกรรมบรรจุภัณฑ์มีงานอะไรบ้างที่ใช้สายพาน Modutech",
+   "metrics": [],
+   "seconds": 8.6,
+   "llm_usage": {
+    "prompt_token_count": 12884,
+    "candidates_token_count": 834,
+    "total_token_count": 13718
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "ในแคตตาล็อก Modutech สำหรับ**อุตสาหกรรมสัตว์ปีก (Poultry)** มีการระบุลักษณะงานและรุ่นสายพานที่แนะนำไว้ โดยมีตัวอย่างรุ่นและงานหลักๆ ดังนี้ครับ:\n\n1. **EC508 C**\n   - การลำเลียงไก่เป็น (PE, POM)\n   - การเชือดและควักเครื่องใน (PE, POM)\n   - ไลน์ตัดแบ่ง เลาะกระดูก และตัดแต่ง (PE)\n   - ทางออกเครื่องแช่เย็น (PP, POM)\n   - การลอกหนัง (POM), ไลน์เครื่องในและขน (POM)\n   - จุดแขวนซ้ำและพักสะสมไก่ (PP), การคัดเกรดและคัดขนาด (PP)\n   - ไลน์แช่แข็ง (PE), เครื่องตรวจจับโลหะ (PE), ลำเลียงยกระดับแนวชัน (PP, POM)\n2. **HC508 C**\n   - งานส่วนใหญ่ครอบคลุมคล้ายกับ EC508 C เช่น ลำเลียงไก่เป็น (PE, POM), การเชือดและควักเครื่องใน (PE, POM), ไลน์ตัดแบ่งและเลาะกระดูก (PE), ทางออกเครื่องแช่เย็น (PP, POM), ไลน์แช่แข็ง (PE) ฯลฯ\n3. **MD254 FG**\n   - การลอกหนัง (POM)\n   - เครื่องชุบเกล็ดขนมปัง (PP, POM)\n   - การคัดเกรดและคัดขนาด (PP)\n   - เครื่องตรวจจับโลหะ (PE)\n   - คลังสินค้าและการจัดส่ง (POM)\n4. **MP80 C**\n   - ไลน์ตัดแบ่ง เลาะกระดูก และตัดแต่ง (POM)\n   - การคัดเกรดและคัดขนาด (POM)\n   - เครื่องตรวจจับโลหะ (POM)\n   - การบรรจุและติดฉลาก (POM)\n5. **EC254 C**\n   - ไลน์ตัดแบ่ง เลาะกระดูก และตัดแต่ง (PE)\n   - ไลน์แช่แข็ง (POM), การลอกหนัง (POM), ไลน์เครื่องในและขน (POM)\n   - เครื่องตรวจจับโลหะ (PE), ลำเลียงยกระดับแนวชัน (PE)\n\n**รุ่นอื่นๆ ในอุตสาหกรรมสัตว์ปีกที่แคตตาล็อกระบุไว้ (รวมทั้งหมด 27 รุ่น):**\nMP80 FG, MP80 NS, EC127 C, EC127 FG, HC127 C, MD127 GAP50%, HC152 C, HC152 FG, EC254 NT, EC254 R, EC254 R-GT, EC254 TR, MD254 GAP48%, EC381 R, EC508 DT, EC508 FG, EC508 NT, EC508 PR11, EC508 R, EC508 TR, HC508 MR และ HC508 NT ครับ\n\n*(หมายเหตุ: แคตตาล็อกไม่ได้ระบุเจาะจงขั้นตอนทั้งหมดในกระบวนการผลิตโดยตรง การเลือกใช้รุ่นและเกรดวัสดุจะขึ้นอยู่กับสภาวะหน้างาน เช่น อุณหภูมิ และการสัมผัสสารเคมีหรือความเปียกชื้นครับ)* หากมีจุดติดตั้งหรือไลน์การผลิตที่สนใจเป็นพิเศษ สามารถสอบถามรายละเอียดเพิ่มเติมได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GI-A07",
+   "turn": "1",
+   "category": "graph_industry",
+   "query": "อุตสาหกรรมสัตว์ปีกมีงานอะไรบ้างที่ใช้สายพาน Modutech",
+   "metrics": [],
+   "seconds": 8.4,
+   "llm_usage": {
+    "prompt_token_count": 12812,
+    "candidates_token_count": 778,
+    "total_token_count": 13590
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": false,
+    "answer_avoids_forbidden": true
+   },
+   "passed": false,
+   "reply": "สำหรับงาน**เครื่องจัดเรียงพาเลท (Palletizer)** ในอุตสาหกรรมกล่องลูกฟูก (Corrugated) แคตตาล็อก Modutech 2026 ระบุรุ่นสายพานที่รองรับการใช้งาน มีดังนี้ครับ:\n\n### รุ่นสายพานที่ระบุตรงกับงานเครื่องจัดเรียงพาเลท (Palletizer)\n1. **HD254 C** — วัสดุ **POM** (พิทช์ 25.4 มม., ผิว Flat Top ทึบ รับน้ำหนักได้สูง)\n2. **MD254 C** — วัสดุ **POM** (พิทช์ 25.4 มม., ผิว Flat Top ทึบ แข็งแรงและหนา)\n3. **MD508 C** — วัสดุ **POM** (พิทช์ 50.8 มม., ผิว Flat Top ทึบ สำหรับงานรับน้ำหนักมาก)\n\n*(หมายเหตุ: ในกลุ่มงานอุตสาหกรรมกล่องลูกฟูกยังมีรุ่นอื่น ๆ ตามมาตรฐานแคตตาล็อกที่รองรับ เช่น EC127 C, EC127 FG, EC127 GT, HC152 C, HC152 FG-GT, MD508 NS, SM127 C, SM127 FG, XP254 BT, XP254 C, XP254 EVO CR, XP254 EVO FLT และ XP254 PR22% ซึ่งใช้ในกระบวนการลำเลียงหรือจุดถ่ายโอนอื่น ๆ ของไลน์)*\n\n---\n\n### เรื่องเฟืองขับ (Sprocket)\nรหัสและขนาดของเฟืองขับจะขึ้นอยู่กับซีรีส์ของสายพาน ขนาดรูเพลา (เพลากลม/เพลาเหลี่ยม) และจำนวนฟันเฟืองที่ใช้งานจริงในระบบลำเลียง:\n- สายพานซีรีส์ **25.4 มม.** (HD254, MD254) จะใช้เฟืองในตระกูลซีรีส์ 254\n- สายพานซีรีส์ **50.8 มม.** (MD508) จะใช้เฟืองในตระกูลซีรีส์ 508\n\nเนื่องจากรหัสเฟือง ขนาดเส้นผ่านศูนย์กลาง และขนาดรูเพลาจำเป็นต้องระบุให้ตรงกับโครงสร้างเครื่องจักร แนะนำให้ตรวจสอบและยืนยันสเปกเฟืองกับทางฝ่ายขายโดยตรงครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GH-01",
+   "turn": "1",
+   "category": "graph_two_hop",
+   "query": "งานเครื่องจัดเรียงพาเลทในอุตสาหกรรมกล่องลูกฟูก ใช้สายพานกับเฟืองตัวไหน",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 8.3,
+   "llm_usage": {
+    "prompt_token_count": 17047,
+    "candidates_token_count": 542,
+    "total_token_count": 17589
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": false,
+    "answer_avoids_forbidden": true
+   },
+   "passed": false,
+   "reply": "สำหรับงานการลำเลียงกล่อง (Box Handling) ในอุตสาหกรรมปลาและอาหารทะเล แคตตาล็อก Modutech 2026 มีสายพานที่ระบุการใช้งานนี้ครบทั้ง 19 รุ่น พร้อมเกรดวัสดุ ดังนี้ครับ:\n\n1. **EC254 GT** – วัสดุ PP\n2. **EC254 R** – วัสดุ POM *(สายพานเลี้ยวโค้ง)*\n3. **EC254 R-GT** – วัสดุ PP *(สายพานเลี้ยวโค้ง)*\n4. **EC254 TR** – วัสดุ POM *(สายพานเลี้ยวโค้ง)*\n5. **EC381 R** – วัสดุ POM *(สายพานเลี้ยวโค้ง)*\n6. **EC508 C** – วัสดุ POM, PP\n7. **EC508 GT** – วัสดุ PP\n8. **EC508 R** – วัสดุ POM *(สายพานเลี้ยวโค้ง)*\n9. **EC508 TR** – วัสดุ POM *(สายพานเลี้ยวโค้ง)*\n10. **HC152 FG-GT** – วัสดุ PP\n11. **HC508 C** – วัสดุ POM, PP\n12. **HC508 C-MTW** – วัสดุ POM, PP\n13. **MD254 C** – วัสดุ POM\n14. **MD254 FG** – วัสดุ POM, PP\n15. **MD508 C** – วัสดุ POM\n16. **MD508 FG** – วัสดุ POM\n17. **MP80 C** – วัสดุ POM\n18. **MP80 FG** – วัสดุ POM\n19. **MP80 NS** – วัสดุ POM\n\n*(หมายเหตุ: สำหรับรุ่นที่เป็นสายพานเลี้ยวโค้ง เช่น ตระกูล R และ TR ค่าความแข็งแรงขณะวิ่งโค้งจะต่ำกว่าขณะวิ่งตรงมาก การเลือกรุ่นจึงขึ้นอยู่กับว่าไลน์ลำเลียงของท่านเป็นทางตรงหรือมีช่วงโค้งด้วยครับ)*\n\n---\n\n### เรื่องเฟืองขับ (Sprockets)\nการเลือกใช้เฟืองขับจะขึ้นอยู่กับ **ซีรีส์ของสายพานรุ่นที่ท่านเลือกใช้** เช่น:\n- ซีรีส์ **EC254 / MD254** ใช้เฟืองสำหรับสายพานพิทช์ 25.4 มม.\n- ซีรีส์ **EC381** ใช้เฟืองสำหรับสายพานพิทช์ 38.1 มม.\n- ซีรีส์ **EC508 / HC508 / MD508** ใช้เฟืองสำหรับสายพานพิทช์ 50.8 มม.\n- ซีรีส์ **HC152** ใช้เฟืองสำหรับสายพานพิทช์ 15.2 มม.\n- ซีรีส์ **MP80** ใช้เฟืองสำหรับสายพานพิทช์ 8 มม.\n\nเนื่องจากรหัสและขนาดของเฟืองขับ (จำนวนฟัน, ขนาดรูเพลากลม/เหลี่ยม) เป็นการเทียบตามซีรีส์และโครงสร้างเครื่องจักร แนะนำให้ตรวจสอบและยืนยันสเปกเฟืองกับทางฝ่ายขายโดยตรงครับ หากท่านมีแบบไลน์ลำเลียง (ทางตรง/ทางโค้ง หรือทางลาดชัน) แจ้งเพิ่มเติมเพื่อให้แคบลงได้นะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GH-02",
+   "turn": "1",
+   "category": "graph_two_hop",
+   "query": "งานการลำเลียงกล่องในอุตสาหกรรมปลาและอาหารทะเล ใช้สายพานกับเฟืองตัวไหน",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 7.4,
+   "llm_usage": {
+    "prompt_token_count": 17009,
+    "candidates_token_count": 782,
+    "total_token_count": 17791
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": false,
+    "answer_avoids_forbidden": true
+   },
+   "passed": false,
+   "reply": "สำหรับงาน**เครื่องตรวจจับโลหะ (Metal Detection)** ในอุตสาหกรรมสัตว์ปีก (Poultry) ตามข้อมูลแคตตาล็อก Modutech 2026 มีสายพานที่ระบุการใช้งานไว้ทั้งหมด 17 รุ่น พร้อมเกรดวัสดุ ดังนี้ครับ:\n\n1. **EC127 C** — วัสดุ PE, PP\n2. **EC127 FG** — วัสดุ PE, PP\n3. **EC254 C** — วัสดุ PE, PP\n4. **EC254 NT** — วัสดุ PE\n5. **EC508 C** — วัสดุ PE\n6. **EC508 PR11** — วัสดุ PE *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด POM)*\n7. **EC508 PR22%** — วัสดุ PE\n8. **HC127 C** — วัสดุ POM *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด PP)*\n9. **HC152 C** — วัสดุ PE, POM, PP\n10. **HC152 FG** — วัสดุ PE, PP\n11. **HC508 C** — วัสดุ PE\n12. **HC508 C-MTW** — วัสดุ PE\n13. **MD127 GAP50%** — วัสดุ POM, PP\n14. **MD254 C** — วัสดุ PE, PP\n15. **MD254 FG** — วัสดุ PE, PP\n16. **MP80 C** — วัสดุ POM\n17. **SM127 C** — วัสดุ PP\n\n---\n\n### เรื่องเฟืองขับ (Sprocket)\nเนื่องจากรุ่นและขนาดของเฟืองขับจะขึ้นอยู่กับรุ่นสายพานที่เลือกใช้ รวมถึงขนาดรูเพลา (Bore size) และจำนวนฟันของแต่ละโครงสร้างลำเลียง รหัสเฟืองขับจึงเป็นการอนุมานตามซีรีส์สายพาน แนะนำให้ยืนยันสเปก ขนาดรูเพลา และรหัสเฟืองที่แน่นอนกับฝ่ายขายโดยตรงครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GH-03",
+   "turn": "1",
+   "category": "graph_two_hop",
+   "query": "งานเครื่องตรวจจับโลหะในอุตสาหกรรมสัตว์ปีก ใช้สายพานกับเฟืองตัวไหน",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 5.8,
+   "llm_usage": {
+    "prompt_token_count": 19795,
+    "candidates_token_count": 493,
+    "total_token_count": 20288
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": false,
+    "answer_avoids_forbidden": true
+   },
+   "passed": false,
+   "reply": "สำหรับการใช้งาน **การลำเลียงกล่อง (Box Handling)** ในอุตสาหกรรมแปรรูปเนื้อสัตว์ (Meat Processing) ในแคตตาล็อก Modutech 2026 มีสายพานที่ระบุการใช้งานครอบคลุมทั้งหมด **19 รุ่น** พร้อมเกรดวัสดุที่ระบุดังนี้ครับ:\n\n1. **EC254 GT** – วัสดุ PP (ผิว Grip Top สำหรับทางชัน/ยึดเกาะ)\n2. **EC254 R** – วัสดุ POM (สายพานเลี้ยวโค้ง ผิว Flush Grid)*\n3. **EC254 R-GT** – วัสดุ PP (สายพานเลี้ยวโค้ง ผิว Grip Top)*\n4. **EC254 TR** – วัสดุ POM (สายพานเลี้ยวโค้งรัศมีแคบ ผิว Flush Grid)*\n5. **EC381 R** – วัสดุ POM (สายพานเลี้ยวโค้ง ผิว Flush Grid)*\n6. **EC508 C** – วัสดุ POM, PP (ผิว Flat Top เรียบทึบ รับภาระหนัก)\n7. **EC508 GT** – วัสดุ PP (ผิว Grip Top รับภาระหนัก)\n8. **EC508 R** – วัสดุ POM (สายพานเลี้ยวโค้ง ผิว Flush Grid)*\n9. **EC508 TR** – วัสดุ POM (สายพานเลี้ยวโค้งรัศมีแคบ)*\n10. **HC152 FG-GT** – วัสดุ PP\n11. **HC508 C** – วัสดุ POM, PP\n12. **HC508 C-MTW** – วัสดุ POM, PP\n13. **MD254 C** – วัสดุ POM\n14. **MD254 FG** – วัสดุ POM, PP\n15. **MD508 C** – วัสดุ POM\n16. **MD508 FG** – วัสดุ POM\n17. **MP80 C** – วัสดุ POM\n18. **MP80 FG** – วัสดุ POM\n19. **MP80 NS** – วัสดุ POM\n\n*(หมายเหตุ: สำหรับรุ่นที่มีฟังก์ชันวิ่งโค้งได้ เช่น ตระกูล R และ TR ความแข็งแรงขณะเข้าโค้งจะต่ำกว่าการวิ่งตรงอย่างมาก จึงจำเป็นต้องพิจารณาว่าไลน์ลำเลียงของลูกค้าเป็นแนวตรงล้วนหรือมีช่วงโค้งด้วยครับ)*\n\n---\n\n### เรื่องเฟืองขับ (Sprockets)\nเนื่องจากรุ่นสายพานที่ใช้งานได้มีหลายซีรีส์ตามระยะพิทช์ (เช่น ซีรีส์ EC254 พิทช์ 1 นิ้ว, ซีรีส์ EC508 พิทช์ 2 นิ้ว ฯลฯ) ซึ่งต้องใช้เฟืองขับเฉพาะรุ่นและซีรีส์นั้นๆ:\n- การเลือกรหัสสเตอร์ ขนาดเส้นผ่านศูนย์กลาง จำนวนฟัน และขนาดรูเพลา (แกนกลม/แกนเหลี่ยม) จะขึ้นอยู่กับรุ่นสายพานที่เลือกใช้ ความกว้างสายพาน และการออกแบบโครงสร้างลำเลียง\n- แนะนำให้สอบถามและยืนยันสเปกเฟืองขับร่วมกับเจ้าหน้าที่ฝ่ายขาย เพื่อให้ได้ขนาดและชนิดเพลาที่ถูกต้องตรงกับการใช้งานจริงครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GH-04",
+   "turn": "1",
+   "category": "graph_two_hop",
+   "query": "งานการลำเลียงกล่องในอุตสาหกรรมแปรรูปเนื้อสัตว์ ใช้สายพานกับเฟืองตัวไหน",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 7.4,
+   "llm_usage": {
+    "prompt_token_count": 17007,
+    "candidates_token_count": 749,
+    "total_token_count": 17756
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": false,
+    "answer_avoids_forbidden": true
+   },
+   "passed": false,
+   "reply": "สำหรับงาน**เครื่องเรียงกล่องลง (Down Stacker)** ในอุตสาหกรรมกล่องลูกฟูก (Corrugated) แคตตาล็อก Modutech 2026 ระบุรุ่นสายพานที่รองรับการใช้งานไว้ครบทั้ง 13 รุ่น โดยทุกรุ่นระบุการใช้งานด้วยเกรดวัสดุ **POM** ดังนี้ครับ:\n\n1. **EC127 C** (POM)\n2. **EC127 FG** (POM)\n3. **HC152 C** (POM)\n4. **MD254 C** (POM)\n5. **MD508 C** (POM)\n6. **MD508 NS** (POM)\n7. **SM127 C** (POM)\n8. **SM127 FG** (POM)\n9. **XP254 BT** (POM)\n10. **XP254 C** (POM)\n11. **XP254 EVO CR** (POM)\n12. **XP254 EVO FLT** (POM)\n13. **XP254 PR22%** (POM)\n\n---\n\n### ข้อมูลเฟือง (Sprocket)\nเนื่องจากรุ่นของเฟืองจะขึ้นอยู่กับซีรีส์ของสายพานที่เลือกใช้ (เช่น ซีรีส์ EC127, HC152, MD254, MD508, SM127 หรือ XP254) และจำเป็นต้องระบุจำนวนฟัน ขนาดรูเพลา (แกนกลม/แกนเหลี่ยม) ให้สัมพันธ์กับการออกแบบเครื่องจักร \n\nรหัสสเตอร์เป็นการอนุมานจากซีรีส์ จึงต้องยืนยันความถูกต้องกับทางพนักงานฝ่ายขายอีกครั้งครับ รวมถึงขนาดสเตอร์และรูเพลาที่แน่นอน แนะนำให้สอบถามและยืนยันกับฝ่ายขายโดยตรงครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GH-05",
+   "turn": "1",
+   "category": "graph_two_hop",
+   "query": "งานเครื่องเรียงกล่องลงในอุตสาหกรรมกล่องลูกฟูก ใช้สายพานกับเฟืองตัวไหน",
+   "metrics": [
+    "forbid_anywhere"
+   ],
+   "seconds": 5.4,
+   "llm_usage": {
+    "prompt_token_count": 18060,
+    "candidates_token_count": 411,
+    "total_token_count": 18471
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": false
+   },
+   "passed": false,
+   "reply": "สำหรับงานในอุตสาหกรรมกล่องลูกฟูก (Corrugated) เช่น งานลำเลียงกล่อง, จัดการกองกล่อง, เครื่องเรียงกล่องลง, รถลำเลียงถ่ายโอน, จุดถ่ายโอน 90 องศา, ป้อนสายรัด และเครื่องจัดเรียงพาเลท ในแคตตาล็อก Modutech ระบุรุ่นที่ใช้งานได้ครบทั้ง 16 รุ่น พร้อมเกรดวัสดุดังนี้ครับ\n\n1. **EC127 C** — วัสดุ POM\n2. **EC127 FG** — วัสดุ POM\n3. **EC127 GT** — วัสดุ PP\n4. **HC152 C** — วัสดุ POM\n5. **HC152 FG-GT** — วัสดุ PP\n6. **HD254 C** — วัสดุ POM *(หมายเหตุ: ความกว้างแคบสุดที่ยืนยันได้ตามสเปกคือ 170 มม.)*\n7. **MD254 C** — วัสดุ POM\n8. **MD508 C** — วัสดุ POM\n9. **MD508 NS** — วัสดุ POM\n10. **SM127 C** — วัสดุ POM\n11. **SM127 FG** — วัสดุ POM\n12. **XP254 BT** — วัสดุ POM\n13. **XP254 C** — วัสดุ POM\n14. **XP254 EVO CR** — วัสดุ POM\n15. **XP254 EVO FLT** — วัสดุ POM\n16. **XP254 PR22%** — วัสดุ POM\n\n*(เกรดวัสดุข้างต้นเป็นเกรดที่ระบุไว้ในแคตตาล็อกสำหรับการใช้งานในกลุ่มอุตสาหกรรมนี้ครับ)*\n\nหากต้องการเจาะจงรายละเอียดสเปก เช่น ระยะพิทช์ หน้ากว้าง หรือลักษณะผิวหน้าสัมผัสของรุ่นใด สามารถแจ้งสอบถามเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GN-01",
+   "turn": "1",
+   "category": "graph_application",
+   "query": "สายพานสำหรับงานการลำเลียงกล่องในอุตสาหกรรมกล่องลูกฟูก ใช้รุ่นไหน",
+   "metrics": [],
+   "seconds": 6.3,
+   "llm_usage": {
+    "prompt_token_count": 17044,
+    "candidates_token_count": 457,
+    "total_token_count": 17501
+   },
+   "model_version": "gemini-3.8-flash"
+  }
+ ]
+}

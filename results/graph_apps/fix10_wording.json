@@ -1,0 +1,143 @@
+{
+ "module": "assistant",
+ "llm": "google-genai · gemini-flash-latest · thinking {'level': 'low'}",
+ "graph_apps": true,
+ "model_versions": {
+  "gemini-3.8-flash": 4
+ },
+ "testcases": "testcases_modutech_136.csv",
+ "total_turns": 4,
+ "graded": 4,
+ "passed": 4,
+ "failed": 0,
+ "skipped_no_image": 0,
+ "turns_with_image": 0,
+ "errors": 0,
+ "seconds": 22.1,
+ "by_category": {
+  "application": "2/2",
+  "material": "2/2"
+ },
+ "by_check": {},
+ "leaks": {
+  "turns_with_leak": 0,
+  "per_word": {},
+  "turns": []
+ },
+ "results": [
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **SM127 FG** ในแคตตาล็อก 2026 **ไม่มีเกรด PE** ระบุไว้ครับ (อาจเป็นเกรดสั่งพิเศษหรือเลิกผลิตแล้ว ซึ่งต้องยืนยันกับทางพนักงานฝ่ายขายโดยตรงครับ)\n\nในแคตตาล็อก 2026 รุ่นนี้มีวัสดุมาตรฐานให้เลือก 2 ชนิด คือ:\n1. **POM (พอลิอะซีทัล)** \n2. **PP (โพลิโพรพิลีน)**\n\nหากลูกค้าสนใจใช้งานเป็นเกรด POM หรือ PP หรือต้องการตรวจสอบความเป็นไปได้ในการสั่งผลิตเกรด PE พิเศษ สามารถสอบถามข้อมูลเพิ่มเติมกับทางฝ่ายขายได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-001",
+   "turn": "1",
+   "category": "material",
+   "query": "SM127 FG มีเกรด PE ไหม",
+   "metrics": [
+    "material"
+   ],
+   "seconds": 3.2,
+   "llm_usage": {
+    "prompt_token_count": 3763,
+    "candidates_token_count": 156,
+    "total_token_count": 3919
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **HC127 C** ในแคตตาล็อกปี 2026 **ไม่มีเกรด PP** ระบุไว้ครับ (แม้ว่าในเอกสารโบรชัวร์อาจมีการแนะนำไว้ก็ตาม) ซึ่งอาจเป็นเกรดสั่งพิเศษหรือไม่มีในแคตตาล็อกเล่มปัจจุบัน แนะนำให้ยืนยันกับทางพนักงานฝ่ายขายอีกครั้งครับ\n\nปัจจุบันตามแคตตาล็อก 2026 รุ่นนี้มีเฉพาะเกรดวัสดุ **POM (พิน POM)** ครับ \n\nหากต้องการใช้งานเป็นวัสดุ POM หรือต้องการดูสายพานรุ่นอื่นที่มีเกรด PP สามารถสอบถามเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-002",
+   "turn": "1",
+   "category": "material",
+   "query": "HC127 C มีเกรด PP ไหม",
+   "metrics": [
+    "material"
+   ],
+   "seconds": 3.4,
+   "llm_usage": {
+    "prompt_token_count": 3449,
+    "candidates_token_count": 147,
+    "total_token_count": 3596
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับอุตสาหกรรมกล่องลูกฟูก (Corrugated) ในแคตตาล็อก Modutech 2026 มีระบุรุ่นสายพานที่รองรับการใช้งานทั้งหมด 16 รุ่น พร้อมเกรดวัสดุที่ระบุดังนี้ครับ:\n\n1. **EC127 C** — วัสดุ POM\n2. **EC127 FG** — วัสดุ POM\n3. **EC127 GT** — วัสดุ PP\n4. **HC152 C** — วัสดุ POM\n5. **HC152 FG-GT** — วัสดุ PP\n6. **HD254 C** — วัสดุ POM\n7. **MD254 C** — วัสดุ POM\n8. **MD508 C** — วัสดุ POM\n9. **MD508 NS** — วัสดุ POM\n10. **SM127 C** — วัสดุ POM\n11. **SM127 FG** — วัสดุ POM\n12. **XP254 BT** — วัสดุ POM\n13. **XP254 C** — วัสดุ POM\n14. **XP254 EVO CR** — วัสดุ POM\n15. **XP254 EVO FLT** — วัสดุ POM\n16. **XP254 PR22%** — วัสดุ POM\n\n*(หมายเหตุ: สายพานกลุ่มนี้รองรับการใช้งานในจุดต่าง ๆ ของไลน์กล่องลูกฟูก เช่น Down Stacker, Transfer Car, Stack Handling, 90° Transfer, Strap Feed, Palletizer และ Feeder)*\n\nหากคุณลูกค้ามีตำแหน่งจุดติดตั้ง ลักษณะการลำเลียง (แนวราบ ทางลาด หรือจุดถ่ายโอน) หรือต้องการทราบสเปกและขนาดความกว้างของรุ่นใดเป็นพิเศษ สามารถแจ้งเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-006",
+   "turn": "1",
+   "category": "application",
+   "query": "สายพานสำหรับลำเลียงกล่องลูกฟูก",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 6.5,
+   "llm_usage": {
+    "prompt_token_count": 17314,
+    "candidates_token_count": 413,
+    "total_token_count": 17727
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับงานเข้า**เครื่องตรวจจับโลหะ (Metal Detection)** ในแคตตาล็อก Modutech 2026 มีระบุรุ่นสายพานที่แนะนำไว้ทั้งหมด 17 รุ่น พร้อมเกรดวัสดุที่แนะนำสำหรับงานนี้ ดังนี้ครับ:\n\n1. **EC127 C** — วัสดุ: PE, PP\n2. **EC127 FG** — วัสดุ: PE, PP\n3. **EC254 C** — วัสดุ: PE, PP\n4. **EC254 NT** — วัสดุ: PE\n5. **EC508 C** — วัสดุ: PE\n6. **EC508 PR11** — วัสดุ: PE\n7. **EC508 PR22%** — วัสดุ: PE\n8. **HC127 C** — วัสดุ: POM\n9. **HC152 C** — วัสดุ: PE, POM, PP\n10. **HC152 FG** — วัสดุ: PE, PP\n11. **HC508 C** — วัสดุ: PE\n12. **HC508 C-MTW** — วัสดุ: PE\n13. **MD127 GAP50%** — วัสดุ: POM, PP\n14. **MD254 C** — วัสดุ: PE, PP\n15. **MD254 FG** — วัสดุ: PE, PP\n16. **MP80 C** — วัสดุ: POM\n17. **SM127 C** — วัสดุ: PP\n\n*(หมายเหตุ: เกรดวัสดุข้างต้นเป็นเกรดที่แคตตาล็อกระบุแนะนำสำหรับการใช้งานกับเครื่องตรวจจับโลหะโดยเฉพาะครับ)*\n\nหากต้องการดูรายละเอียดสเปกเพิ่มเติม เช่น ระยะพิทช์ หน้ากว้าง รูปแบบผิว หรือความแข็งแรงของรุ่นใดเป็นพิเศษ สามารถแจ้งสอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-007",
+   "turn": "1",
+   "category": "application",
+   "query": "สายพานเข้าเครื่องตรวจจับโลหะ",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 5.0,
+   "llm_usage": {
+    "prompt_token_count": 20092,
+    "candidates_token_count": 441,
+    "total_token_count": 20533
+   },
+   "model_version": "gemini-3.8-flash"
+  }
+ ]
+}

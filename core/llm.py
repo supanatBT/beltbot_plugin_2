@@ -61,6 +61,13 @@ def usage_of(resp) -> dict | None:
     return {k: v for k, v in out.items() if isinstance(v, int)} or None
 
 
+def model_version_of(resp) -> str | None:
+    """ชื่อโมเดลจริงที่ Google ใช้ตอบ (เช่น gemini-3.6-flash) — ชื่อ alias อย่าง gemini-flash-latest
+    ชี้ไปโมเดลใหม่ได้โดยไม่บอก จึงต้องบันทึกค่านี้ทุกเทิร์นเพื่อให้ผลทดสอบเทียบกันได้ (22 ต.ค.)"""
+    v = getattr(resp, "model_version", None)
+    return v if isinstance(v, str) and v else None
+
+
 class _RetrySession:
     """session ของ SDK เดิม — send_message ต่อ (ขอให้ตอบซ้ำเมื่อคำตอบว่าง) ลองใหม่เมื่อ Google ไม่ว่างเหมือนกัน"""
     def __init__(self, session):
@@ -137,6 +144,7 @@ class GeminiClient:
         self.genai = genai_module
         self.model_name = model_name
         self.last_usage = None
+        self.last_model_version = None
 
     def describe(self) -> str:
         return f"google-generativeai · {self.model_name} · thinking ไม่จำกัด"
@@ -151,6 +159,7 @@ class GeminiClient:
             return session, session.send_message(list(turn.user_parts))
         session, response = with_retry(attempt, tool_calls)
         self.last_usage = usage_of(response)
+        self.last_model_version = model_version_of(response)
         return LLMResult(response, _RetrySession(session), tool_calls)
 
 
@@ -192,6 +201,7 @@ class GenAIClient:
         else:
             self.thinking_config = None
         self.last_usage = None
+        self.last_model_version = None
 
     def describe(self) -> str:
         return f"google-genai · {self.model_name} · thinking {self.thinking or 'ไม่จำกัด'}"
@@ -220,4 +230,5 @@ class GenAIClient:
             return chat, chat.send_message(self._parts(list(turn.user_parts)))
         chat, response = with_retry(attempt, tool_calls)
         self.last_usage = usage_of(response)
+        self.last_model_version = model_version_of(response)
         return LLMResult(response, _GenAISession(chat, self._parts), tool_calls)
