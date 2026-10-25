@@ -112,6 +112,28 @@ def ensure_focus_context(llm_context: list, focus: list, products: dict, compati
     return added
 
 
+def sprocket_spec_lines(compatible: list, products: dict) -> list[str]:
+    """บรรทัดสเปกสเตอร์สำเร็จรูป (รหัส · ฟัน · รูเพลา · ชนิด) — โค้ดเขียน ไม่ให้ LLM ไปหยิบตัวเลขจาก JSON เอง
+
+    25 ต.ค. (conv_movex CONV-17 รอบ 2): เพิ่มกฎใน prompt ให้บอก Bore_mm แล้ว LLM ยังตอบแค่รหัส + ฟัน
+    ค่าที่ไม่มีใน record ไม่ใส่ (ไม่เดา)"""
+    out = []
+    for c in compatible:
+        p = products.get(c) or {}
+        if "sprocket" not in c.lower() and "sprocket" not in str(p.get("product_type", "")).lower():
+            continue
+        parts = []
+        if p.get("Z_Teeth") is not None:
+            parts.append(f"{p['Z_Teeth']} ฟัน")
+        if p.get("Bore_mm") is not None:
+            parts.append(f"รูเพลา {p['Bore_mm']:g} มม.")
+        # PD/OD ไม่ใส่: กฎใน prompt ให้ตอบสั้น (รหัส · ฟัน · รูเพลา) · 54901 ในข้อมูล OD 122 < PD 123.3 (รายงานผู้ใช้ 25 ต.ค.)
+        if p.get("Sprocket_Type"):
+            parts.append(f"ชนิด {p['Sprocket_Type']}")
+        out.append(f"- {p.get('Art_Nr') or c}: " + (" · ".join(parts) if parts else "ไม่มีสเปกในข้อมูล"))
+    return out
+
+
 def _build_graph_summary(graph_result) -> str:
     """
     สร้าง graph summary สำหรับ LLM
@@ -780,6 +802,14 @@ class MovexRuntime:
                 print(f"[WARN] graph fallback failed: {_e}")
 
         graph_summary = _build_graph_summary(retrieval_result.graph_result)
+        _gr_final = retrieval_result.graph_result
+        if _gr_final is not None and getattr(_gr_final, "compatible", None) and \
+                (SPROCKET_TOPIC_RX.search(effective_text or "") or SPROCKET_TOPIC_RX.search(user_text or "")):
+            spec = sprocket_spec_lines(_gr_final.compatible, product_db)
+            if spec:
+                graph_summary += ("\n[สเปกสเตอร์ที่ใช้ร่วมกันได้ — ตอบตามบรรทัดนี้ครบทุกตัว ทั้งจำนวนฟันและรูเพลา]:\n"
+                                  + "\n".join(spec))
+                dbg.append(f"**Sprocket spec:** {len(spec)} ตัว\n")
         system_instruction = _build_system_prompt(json_context, graph_summary, vit_signal=vit_sig,
                                                   decision=decision)
         img_part = None
