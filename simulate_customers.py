@@ -19,6 +19,11 @@ simulate_customers.py — ลูกค้าจำลองด้วย LLM ค�
     ended        done (ลูกค้าพอใจ) · giveup · max_turns · error
     turns        จำนวนเทิร์นของลูกค้า
 
+เวลา (ผู้ใช้ขอ 25 ต.ค.: ข้อ 1 ทำให้ตอบช้าลงไหม) — วัดเฉพาะฝั่งบอท ไม่นับเวลาที่ลูกค้าจำลองคิด
+    ทุกเทิร์นของบอท: sec · ตีความ (LLM / กฎ / -) · interp_ms (เวลาเรียกตัวตีความในเทิร์นนั้น)
+    สรุป: เฉลี่ย · มัธยฐาน · p90 ทั้งหมด และแยก "เทิร์นที่ลูกค้าตอบคำถามค้าง" กับ "เทิร์นอื่น"
+    เทียบสองรอบ: python simulate_customers.py --compare sim_rules.json sim_llm.json
+
 รัน (ต้องมี .env แบบเดียวกับบอท · ใช้ Gemini ทั้งสองฝั่ง)
     python simulate_customers.py -o sim_r1.json                       # ทุกเป้าหมาย 1 รอบ
     python simulate_customers.py --repeats 3 -o sim_r1.json            # เป้าหมายละ 3 บท (ลูกค้าพูดต่างกันทุกรอบ)
@@ -126,7 +131,11 @@ def sim_message(complete, g: dict, transcript: list[dict], temperature: float) -
     return re.sub(r"^(ลูกค้า|customer)\s*:\s*", "", text, flags=re.IGNORECASE).strip()
 
 
-def run_goal(g: dict, chat_fn, complete, judge: Judge, max_turns: int, temperature: float) -> dict:
+_INTERP_RX = re.compile(r"ตีความ: (LLM|กฎ)")
+
+
+def run_goal(g: dict, chat_fn, complete, judge: Judge, max_turns: int, temperature: float,
+             interpreter=None) -> dict:
     transcript: list[dict] = []
     history, last_pids, session_id, vit, graph = [], [], "", None, None
     ended = "max_turns"
@@ -148,21 +157,47 @@ def run_goal(g: dict, chat_fn, complete, judge: Judge, max_turns: int, temperatu
                 break
         if not clean:
             continue
+        ms0 = getattr(interpreter, "total_ms", 0.0)
+        tb = time.perf_counter()
         try:
             out = chat_fn(clean, None, history, last_pids, session_id, vit, graph)
-            history, _s, _refs, last_pids, session_id, vit, graph = out
+            history, _s, refs, last_pids, session_id, vit, graph = out
             reply = next((m["content"] for m in reversed(history) if m["role"] == "assistant"
                           and not str(m.get("content", "")).startswith("<img")), "")
         except Exception as e:                           # noqa: BLE001
             transcript.append({"role": "bot", "text": f"[ERROR] {type(e).__name__}: {e}"})
             ended = "error"
             break
-        transcript.append({"role": "bot", "text": reply})
+        m = _INTERP_RX.search(str(refs or ""))
+        transcript.append({"role": "bot", "text": reply, "sec": round(time.perf_counter() - tb, 3),
+                           "interp": m.group(1) if m else "-",
+                           "interp_ms": round(getattr(interpreter, "total_ms", 0.0) - ms0, 1)})
         if ended in ("done", "giveup"):
             break
     res = score(g, transcript, judge, ended)
     return {"goal": g["id"], "brand": g.get("brand"), "application": g.get("application"),
             "seconds": round(time.time() - t0, 1), **res, "transcript": transcript}
+
+
+def _stats(xs: list[float]) -> dict:
+    if not xs:
+        return {"n": 0}
+    s = sorted(xs)
+    q = lambda p: s[min(len(s) - 1, int(round(p * (len(s) - 1))))]  # noqa: E731
+    return {"n": len(s), "mean": round(sum(s) / len(s), 2), "median": round(q(0.5), 2), "p90": round(q(0.9), 2),
+            "max": round(s[-1], 2)}
+
+
+def latency(results: list[dict]) -> dict:
+    """เวลาตอบของบอทต่อเทิร์น (วินาที) — แยกเทิร์นที่ลูกค้าตอบคำถามค้าง (มีการตีความ) กับเทิร์นอื่น"""
+    bot = [t for r in results for t in r["transcript"] if t["role"] == "bot" and "sec" in t]
+    ans = [t for t in bot if t.get("interp") in ("LLM", "กฎ")]
+    llm = [t for t in ans if t["interp"] == "LLM"]
+    return {"all_turns": _stats([t["sec"] for t in bot]),
+            "answer_turns": _stats([t["sec"] for t in ans]),
+            "other_turns": _stats([t["sec"] for t in bot if t not in ans]),
+            "interpreter_ms": _stats([t["interp_ms"] for t in llm]),
+            "answer_turns_by": dict(Counter(t["interp"] for t in ans))}
 
 
 def summarize(results: list[dict]) -> dict:
@@ -172,7 +207,24 @@ def summarize(results: list[dict]) -> dict:
     return {"conversations": n, "hit_pct": pct("hit"), "reached_pct": pct("reached"),
             "with_violation_pct": pct("violations"), "with_offtopic_pct": pct("offtopic"),
             "with_repeat_pct": pct("repeats"), "ended": dict(c),
-            "mean_turns": round(sum(r["turns"] for r in results) / n, 1) if n else 0.0}
+            "mean_turns": round(sum(r["turns"] for r in results) / n, 1) if n else 0.0,
+            "latency_sec": latency(results)}
+
+
+def compare(a_path: str, b_path: str) -> None:
+    """เทียบสองรอบ (เช่น กฎ vs LLM) — คุณภาพและเวลาต่อเทิร์น"""
+    A, B = (json.load(open(p, encoding="utf-8")) for p in (a_path, b_path))
+    sa, sb = A["summary"], B["summary"]
+    print(f"{'':28}{A.get('answer_interpreter', '?'):>14}{B.get('answer_interpreter', '?'):>14}")
+    for k in ("conversations", "hit_pct", "reached_pct", "with_violation_pct", "with_offtopic_pct",
+              "with_repeat_pct", "mean_turns"):
+        print(f"{k:28}{sa.get(k):>14}{sb.get(k):>14}")
+    for part in ("all_turns", "answer_turns", "other_turns"):
+        for st in ("mean", "median", "p90"):
+            va, vb = sa["latency_sec"][part].get(st), sb["latency_sec"][part].get(st)
+            d = f"{vb - va:+.2f}" if isinstance(va, (int, float)) and isinstance(vb, (int, float)) else ""
+            print(f"{'เวลา ' + part + ' ' + st + ' (วิ)':28}{str(va):>14}{str(vb):>14}  {d}")
+    print(f"{'เรียกตัวตีความ (มิลลิวินาที)':28}{'':>14}{str(sb['latency_sec']['interpreter_ms']):>14}")
 
 
 def write_txt(path: str, results: list[dict]) -> None:
@@ -196,8 +248,13 @@ def main():
     ap.add_argument("--repeats", type=int, default=1)
     ap.add_argument("--max-turns", type=int, default=10)
     ap.add_argument("--temperature", type=float, default=1.0)
-    ap.add_argument("-o", "--out", required=True)
+    ap.add_argument("-o", "--out", default="")
+    ap.add_argument("--compare", nargs=2, metavar=("A.json", "B.json"), help="เทียบสองรอบแล้วจบ")
     a = ap.parse_args()
+    if a.compare:
+        return compare(*a.compare)
+    if not a.out:
+        sys.exit("ต้องระบุ -o ไฟล์ผล")
 
     goals = load_goals(a.goals)
     only = {x.strip() for x in a.only.split(",") if x.strip()}
@@ -208,7 +265,8 @@ def main():
     results = []
     for g in goals:
         for k in range(a.repeats):
-            r = run_goal(g, bot.chat_interaction, complete, judge, a.max_turns, a.temperature)
+            r = run_goal(g, bot.chat_interaction, complete, judge, a.max_turns, a.temperature,
+                         interpreter=getattr(bot, "answer_interpreter", None))
             r["run"] = k + 1
             results.append(r)
             print(f"  {'✓' if r['hit'] else '✗'} {g['id']}#{k + 1} {g.get('application', '')[:20]:20} "

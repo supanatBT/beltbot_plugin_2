@@ -87,6 +87,48 @@ with tempfile.TemporaryDirectory() as d:
 ok("ไฟล์ .txt เป็นแชท ลูกค้า/บอท", "🧑 ลูกค้า: ไก่ ไลน์ตัดแต่ง" in txt and "🤖 บอท:" in txt)
 summ = SC.summarize([r])
 ok("สรุป: hit 100% · ไม่มีผิดเงื่อนไข", summ["hit_pct"] == 100.0 and summ["with_violation_pct"] == 0.0, summ)
+lat = summ["latency_sec"]
+ok("เวลา: ทุกเทิร์นของบอทมี sec · แยกเทิร์นตอบคำถามค้าง (กฎ) ออกจากเทิร์นอื่น",
+   lat["all_turns"]["n"] == len(bot) and lat["answer_turns"]["n"] >= 3 and lat["answer_turns_by"].get("กฎ", 0) >= 3
+   and lat["answer_turns"]["n"] + lat["other_turns"]["n"] == lat["all_turns"]["n"], lat)
+
+print("\n4) ตัวตีความ LLM (ปลอม · หน่วง 50 มิลลิวินาที) — วัดเวลาที่เพิ่ม")
+import time as _t  # noqa: E402
+from core.answer_interpreter import AnswerInterpreter  # noqa: E402
+
+
+def slow_llm(system, user, json_mode=False, temperature=None):
+    _t.sleep(0.05)
+    ans = user.split("คำตอบของลูกค้า: ")[-1]
+    if "มิล" in ans:
+        return '{"kind":"value","value":50,"unit":"mm"}'
+    if ans.strip() == "ใช่":
+        return '{"kind":"yes"}'
+    if "องศา" in ans:
+        return '{"kind":"value","value":5,"unit":"c"}'
+    return '{"kind":"value","wet_or_dry":"wet"}'
+
+
+interp = AnswerInterpreter(slow_llm)
+L.MOD._interpreter = interp
+rec2 = L.Recorder()
+eng = L.new_engine(rec2)
+calls["i"] = 0
+r2 = SC.run_goal(goals["G01"], chat_fn, fake_complete, judge, max_turns=10, temperature=1.0, interpreter=interp)
+lat2 = SC.summarize([r2])["latency_sec"]
+ok("เทิร์นตอบคำถามค้างใช้ LLM · interp_ms ≥ 50 ต่อเทิร์น", lat2["answer_turns_by"].get("LLM", 0) >= 3
+   and lat2["interpreter_ms"]["median"] >= 50, lat2)
+ok("ได้ผลเหมือนกฎ (hit · ไม่มีรุ่นผิดเงื่อนไข)", r2["hit"] and not r2["violations"], r2.get("violations"))
+with tempfile.TemporaryDirectory() as d:
+    pa, pb = os.path.join(d, "a.json"), os.path.join(d, "b.json")
+    json.dump({"answer_interpreter": "rules", "summary": summ}, open(pa, "w", encoding="utf-8"))
+    json.dump({"answer_interpreter": "llm", "summary": SC.summarize([r2])}, open(pb, "w", encoding="utf-8"))
+    import io, contextlib  # noqa: E401,E402
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        SC.compare(pa, pb)
+ok("--compare พิมพ์ตารางคุณภาพ + เวลา", "answer_turns" in buf.getvalue() and "hit_pct" in buf.getvalue(), buf.getvalue()[:200])
+L.MOD._interpreter = None
 L.MOD.runtime = None
 
 print(f"\nรวม {passed}/{passed + failed}")

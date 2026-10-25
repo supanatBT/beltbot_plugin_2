@@ -74,6 +74,7 @@ class AnswerInterpreter:
         self.complete = complete
         self.log = log or (lambda m: None)
         self.calls = self.failures = 0
+        self.total_ms = 0.0          # เวลารวมที่ใช้เรียก LLM (simulate_customers วัดเวลาต่อเทิร์น)
 
     def interpret(self, question_th: str, answer: str, expect: str) -> Optional[AnswerReading]:
         if expect not in EXPECT or not (answer or "").strip():
@@ -87,9 +88,11 @@ class AnswerInterpreter:
             text = self.complete(SYSTEM_TH, user, json_mode=True, temperature=0)
             reading = parse_reading(text, expect)
         except Exception as e:                       # noqa: BLE001 — เรียกไม่ได้ = ใช้กฎเดิม
+            self.total_ms += (time.perf_counter() - t0) * 1000
             self.failures += 1
             self.log(f"⚠️ ตัวตีความคำตอบ: {type(e).__name__}: {e} — ใช้กฎเดิม")
             return None
+        self.total_ms += (time.perf_counter() - t0) * 1000
         if reading is None:
             self.failures += 1
             self.log(f"⚠️ ตัวตีความคำตอบ: ผลไม่ผ่านการตรวจ ({(text or '')[:120]!r}) — ใช้กฎเดิม")
