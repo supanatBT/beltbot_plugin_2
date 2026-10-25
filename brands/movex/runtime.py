@@ -54,6 +54,64 @@ def _enrich_product(p: dict) -> dict:
     return p
 
 
+SPROCKET_TOPIC_RX = re.compile(r"สเตอร์|สเตอ|เฟือง|sprocket|ฟันเฟือง|ล้อโซ่", re.IGNORECASE)
+MAX_COMPAT_RECORDS = 4
+
+
+def products_of(pid: str) -> dict:
+    return product_db.get(pid) or {}
+
+
+def focus_graph(focus: list, graph) -> "GraphResult | None":
+    """กราฟจากรุ่นที่ระบบตัดสินแล้วว่าลูกค้าหมายถึง (decision.payload.pids)
+
+    25 ต.ค. (conv_r3 CONV-17): "ใช้สเตอร์อะไร" หลังเลือก LF 880 TAB K450 → LLM ตอบว่าไม่มีข้อมูล compatible
+    ทั้งที่กราฟมี 54901 · 55001 — กราฟเดิม seed จากผลค้นข้อความ "ใช้สเตอร์อะไร" ซึ่งไม่มีชื่อรุ่น
+    ได้รุ่นอื่น (หรือไม่ได้อะไร) ส่วนรุ่นที่ระบบรู้ว่าลูกค้าหมายถึงไม่ถูกใช้เลย"""
+    if not focus or graph is None:
+        return None
+    gr = GraphResult()
+    gr.seed_products = list(focus)
+    for f in focus:
+        for c in graph.get_compatible_products(f) or []:
+            if c not in gr.compatible:
+                gr.compatible.append(c)
+        for c in graph.get_same_series(f) or []:
+            if c not in gr.same_series and c not in focus:
+                gr.same_series.append(c)
+    # get_material_details คืน dict ฟิลด์ของวัสดุเดียว แต่ GraphResult ต้องการ {รหัส: ฟิลด์}
+    # (ทาง "Graph fallback" เดิมใส่ตรง ๆ แล้ว to_llm_context พัง — ถูกห่อ try ไว้ไม่ถึงจุดพัง จึงไม่เคยเห็น)
+    mat = graph.get_material_details(focus[0]) or {}
+    proc = graph.get_process_details(focus[0]) or {}
+    code = (products_of(focus[0]).get("Material") or mat.get("material_code") or "material")
+    gr.material_details = {code: mat} if mat else {}
+    pcode = (products_of(focus[0]).get("manufacturing_process") or proc.get("process_name") or "process")
+    gr.process_details = {pcode: proc} if proc else {}
+    gr.hop_trace = [f"focus:{f}" for f in focus]
+    return gr
+
+
+def ensure_focus_context(llm_context: list, focus: list, products: dict, compatible: list,
+                         asks_sprocket: bool) -> list[str]:
+    """ใส่ข้อมูลรุ่นที่ลูกค้าหมายถึงไว้บนสุด (ถ้าผลค้นไม่มี) · ถามเรื่องสเตอร์ = แนบสเปกสเตอร์ที่เข้ากันได้ด้วย
+    คืนรายการ pid ที่เพิ่ม (ลง debug)"""
+    have = {c.get("product_id") for c in llm_context}
+    added = []
+    for f in reversed([f for f in focus if f in products and f not in have]):
+        rec = _enrich_product(products[f])
+        rec.update({"_rank": 0, "_note": "รุ่นที่ลูกค้ากำลังถามถึง (ระบบตัดสินจากบทสนทนา)"})
+        llm_context.insert(0, rec)
+        added.append(f)
+    if asks_sprocket:
+        have = {c.get("product_id") for c in llm_context}
+        for c in [c for c in compatible if c in products and c not in have][:MAX_COMPAT_RECORDS]:
+            rec = _enrich_product(products[c])
+            rec.update({"_note": f"ใช้ร่วมกับ {', '.join(focus)} ตามกราฟความเข้ากันได้"})
+            llm_context.append(rec)
+            added.append(c)
+    return added
+
+
 def _build_graph_summary(graph_result) -> str:
     """
     สร้าง graph summary สำหรับ LLM
@@ -676,6 +734,20 @@ class MovexRuntime:
                     "_best_chunk": p.best_chunk_text,
                 })
                 llm_context.append(enriched)
+        # รุ่นที่ระบบตัดสินแล้วว่าลูกค้าหมายถึง → กราฟและข้อมูลมาจากรุ่นนั้น (ไม่ใช่จากผลค้นข้อความสั้น ๆ)
+        focus = [p for p in ((decision.payload or {}).get("pids") or []) if p in product_db]
+        fgr = focus_graph(focus, kg) if focus else None
+        _gr0 = retrieval_result.graph_result
+        if fgr is not None and not (_gr0 and set(focus) & set(_gr0.seed_products or [])):
+            retrieval_result.graph_result = fgr
+            dbg.append(f"**Graph (focus):** seeds={focus} compatible={fgr.compatible[:4]}\n")
+        if focus:
+            asks_spr = bool(SPROCKET_TOPIC_RX.search(effective_text or "") or SPROCKET_TOPIC_RX.search(user_text or ""))
+            added = ensure_focus_context(llm_context, focus, product_db,
+                                         (retrieval_result.graph_result.compatible
+                                          if retrieval_result.graph_result else []), asks_spr)
+            if added:
+                dbg.append(f"**Context (focus):** เพิ่ม {added}\n")
         if not llm_context:
             dbg.append("⚠️ ไม่พบข้อมูลสินค้าที่ตรงกัน")
 
@@ -696,8 +768,11 @@ class MovexRuntime:
                     _fallback_gr.seed_products    = [_top_pid]
                     _fallback_gr.compatible       = _compatible
                     _fallback_gr.same_series      = _same_series
-                    _fallback_gr.material_details = _mat_details
-                    _fallback_gr.process_details  = _proc_details
+                    # {รหัส: ฟิลด์} แบบเดียวกับ focus_graph — เดิมใส่ dict ฟิลด์ตรง ๆ แล้ว to_llm_context พัง
+                    _fallback_gr.material_details = ({products_of(_top_pid).get("Material") or "material": _mat_details}
+                                                     if _mat_details else {})
+                    _fallback_gr.process_details  = ({products_of(_top_pid).get("manufacturing_process") or "process":
+                                                      _proc_details} if _proc_details else {})
                     retrieval_result.graph_result = _fallback_gr
                     dbg.append(f"**Graph (fallback rank1):** seeds=[{_top_pid}] compatible={_compatible[:3]}\n")
             except Exception as _e:
