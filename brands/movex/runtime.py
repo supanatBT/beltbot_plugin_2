@@ -577,7 +577,8 @@ def _build_system_prompt(json_context: str, graph_summary: str,vit_signal=None, 
   product_type = "Sideflexing Chain"       → เลี้ยวได้ แล้วค่อยบอก Min_curve_radius_mm
 - "workload" → ดู Max_Working_Load_N
 - "ใช้สเตอร์ตัวไหน" → ตอบแค่รหัสสเตอร์ที่ compatible จาก GraphRAG Context
-  ห้ามอธิบาย spec ยาว ตอบแค่ชื่อรุ่น + จำนวนฟัน (ถ้ามี) เท่านั้น
+  ห้ามอธิบาย spec ยาว ตอบแค่ชื่อรุ่น + จำนวนฟัน (Z_Teeth) + ขนาดรูเพลา (Bore_mm) ของแต่ละตัว
+  เอาตัวเลขจาก record ของสเตอร์ใน RAG Context (JSON) ถ้า record ไม่มีค่านั้นให้เว้นไว้ ห้ามเดา
 - "สเตอร์นั้นผลิตยังไง" → ถ้า GraphRAG มีสเตอร์ compatible หลายตัว ต้องตอบให้ครบทุกตัว
   ห้ามตอบแค่ตัวเดียวถ้า context มีมากกว่า 1
 - ถ้า final_score < 0.2 ทุกรุ่น → แจ้งว่าข้อมูลไม่เพียงพอ

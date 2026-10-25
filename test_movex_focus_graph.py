@@ -109,6 +109,7 @@ ok("ข้อมูล K450 อยู่ใน context (เพิ่มเพร
 ok("ถามเรื่องสเตอร์ → แนบสเปกสเตอร์ (Z_Teeth · Bore_mm)", '"Z_Teeth": 10' in sysp and '"Z_Teeth": 12' in sysp
    and '"Bore_mm": 25.0' in sysp)
 ok("debug บอกว่าใช้กราฟจากโฟกัส", any("Graph (focus)" in x for x in lt.debug), lt.debug[-3:])
+ok("กฎใน prompt: ตอบสเตอร์พร้อมจำนวนฟันและรูเพลา (25 ต.ค.)", "Z_Teeth" in sysp and "ขนาดรูเพลา (Bore_mm)" in sysp)
 
 print("\n3) ไม่เปลี่ยนเมื่อไม่จำเป็น")
 lt = build("ใช้สเตอร์อะไร", [K450], [K450])
