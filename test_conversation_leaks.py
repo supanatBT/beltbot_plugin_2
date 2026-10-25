@@ -21,6 +21,7 @@ test_conversation_leaks.py — คุยหลายเทิร์นแบบ�
     python test_conversation_leaks.py            # ทุกบท
     python test_conversation_leaks.py -v         # พิมพ์ทุกเทิร์น
     python test_conversation_leaks.py --only C07
+    python test_conversation_leaks.py --export-csv testcases_conversation_leaks.csv   # บทเดียวกันสำหรับ Gemini จริง
 """
 from __future__ import annotations
 
@@ -317,6 +318,14 @@ SCENARIOS = {
         ("ไก่", dict(not_action="refuse_offtopic")),
         ("ไม่ทราบ", dict(not_action="refuse_offtopic")),
     ]),
+    "C31": ("ถามต่อสั้น ๆ หลังบอทเสนอรายการยาว (conv_r1/r2 CONV-30 กับ Gemini จริง)", [
+        ("สายพาน modutech สำหรับไก่ รุ่นไหนดี", dict(action="answer", bot=(
+            "อุตสาหกรรมสัตว์ปีกมี 27 รุ่น เช่น EC508 PR11, MP80 C, MP80 FG, EC508 C, HC508 C, "
+            "HC508 MR, HC508 NT, EC508 FG, EC508 TR ครับ"))),
+        ("ทำไม", dict(not_action="refuse_offtopic")),
+        ("แพงไหม", dict(not_action="refuse_offtopic")),
+        ("ตัวแรกพิทช์เท่าไหร่", dict(codes=["EC508 PR11"])),
+    ]),
     "C30": ("คำถามสั้นมากต่อจากการถามทีละข้อที่จบแล้ว", [
         ("สายพาน modutech รุ่นไหนดี", dict(reply_has="ลำเลียงอะไร")),
         ("ไก่", dict(reply_has="พิทช์")),
@@ -415,11 +424,48 @@ def run_scenario(cid, title, turns, verbose=False) -> list[tuple]:
     return failures
 
 
+OFFTOPIC_TH = "ผมตอบได้เฉพาะเรื่องสินค้า"
+
+
+def export_csv(path: str) -> int:
+    """บทเดียวกันในรูป testcases สำหรับ run_answer_eval.py (Gemini จริง)
+
+    ตรวจแค่สิ่งที่ไม่ขึ้นกับสำนวน LLM: เทิร์น 2 ขึ้นไปห้ามปฏิเสธนอกเรื่อง · คำถามที่โค้ดเขียนเอง (reply_has) ·
+    รหัสที่ลูกค้าพิมพ์ในเทิร์นนั้นต้องอยู่ในคำตอบ (รหัสจากเทิร์นก่อนไม่บังคับ — เทิร์นนั้นอาจเป็นคำถามกลับ
+    เช่น ถามเปียก/แห้ง ซึ่งไม่เอ่ยรหัส · conv_r1 CONV-04 t4 ตกเพราะกฎเดิม ไม่ใช่บอทรั่ว)"""
+    import csv
+    cols = ["id", "category", "subcategory", "turn_type", "turn_number", "user_text", "image", "must_contain",
+            "must_contain_any", "must_not_contain", "must_ask_back", "expected_value", "expected_unit",
+            "reply_max_length", "metrics", "description"]
+    rows = []
+    for cid, (title, turns) in SCENARIOS.items():
+        for i, (text, exp) in enumerate(turns, 1):
+            typed = [c for c in CAT.by_code if c.lower() in text.lower()]
+            must = [c for c in exp.get("codes", []) if c in typed]
+            rh = exp.get("reply_has")
+            rh = [rh] if isinstance(rh, str) else list(rh or [])
+            forbid = [] if (i == 1 or exp.get("offtopic_ok")) else [OFFTOPIC_TH]
+            rows.append(dict(id=f"CONV-{cid[1:]}", category="conversation", subcategory="leak", turn_type="multi",
+                             turn_number=str(i), user_text=text, image="", must_contain=" | ".join(must),
+                             must_contain_any=" | ".join(rh), must_not_contain=" | ".join(forbid),
+                             must_ask_back="", expected_value="", expected_unit="", reply_max_length="",
+                             metrics="conversation", description=title if i == 1 else ""))
+    with open(path, "w", newline="", encoding="utf-8-sig") as f:
+        w = csv.DictWriter(f, fieldnames=cols)
+        w.writeheader()
+        w.writerows(rows)
+    print(f"เขียน {path}: {len(SCENARIOS)} บท {len(rows)} เทิร์น")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-v", action="store_true")
     ap.add_argument("--only", default="")
+    ap.add_argument("--export-csv", default="", help="เขียนบทเป็น testcases CSV สำหรับ run_answer_eval.py แล้วจบ")
     a = ap.parse_args()
+    if a.export_csv:
+        return export_csv(a.export_csv)
     only = {x.strip() for x in a.only.split(",") if x.strip()}
     all_fail, n_turns = [], 0
     for cid, (title, turns) in SCENARIOS.items():

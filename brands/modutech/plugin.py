@@ -406,7 +406,10 @@ class ModutechPlugin:
         had_codes = bool((decision.payload or {}).get("codes"))
         if not had_codes and decision.action in ("answer", "search") and out.reply:
             mentioned = list(self.detector.detect(out.reply).parsed.belt_codes)
-            if 0 < len(mentioned) <= self.MAX_FOCUS_FROM_REPLY:
+            # เสนอยาวเกิน 6 รุ่น → จำ 6 รุ่นแรกที่เอ่ย (ลำดับเดียวกับในคำตอบ) — ไม่จำเลย = "ทำไม" / "แพงไหม"
+            # ถัดจากรายการยาวถูกตีว่านอกเรื่อง (conv_r1/r2 CONV-30 · Gemini จริง 25 ต.ค. ทั้งสองรอบ)
+            mentioned = mentioned[:self.MAX_FOCUS_FROM_REPLY]
+            if mentioned:
                 slots = {k: v for k, v in ((decision.payload or {}).get("slots") or {}).items() if k != EXCLUDE_KEY}
                 out.state_patch = {"slots": {**slots, self.OFFERED_KEY: mentioned}}
         return out
