@@ -110,12 +110,16 @@ ok("ถามเรื่องสเตอร์ → แนบสเปกส�
    and '"Bore_mm": 25.0' in sysp)
 ok("debug บอกว่าใช้กราฟจากโฟกัส", any("Graph (focus)" in x for x in lt.debug), lt.debug[-3:])
 ok("กฎใน prompt: ตอบสเตอร์พร้อมจำนวนฟันและรูเพลา (25 ต.ค.)", "Z_Teeth" in sysp and "ขนาดรูเพลา (Bore_mm)" in sysp)
+ok("บรรทัดสเปกสเตอร์สำเร็จรูปในกราฟ: 54901 10 ฟัน รูเพลา 25 · 55001 12 ฟัน รูเพลา 25",
+   "- 54901: 10 ฟัน · รูเพลา 25 มม." in sysp and "- 55001: 12 ฟัน · รูเพลา 25 มม." in sysp,
+   sysp[sysp.find("[สเปกสเตอร์"):][:250])
 
 print("\n3) ไม่เปลี่ยนเมื่อไม่จำเป็น")
 lt = build("ใช้สเตอร์อะไร", [K450], [K450])
 ok("ผลค้น seed ตรงกับโฟกัสอยู่แล้ว → ไม่แทนกราฟ", not any("Graph (focus)" in x for x in lt.debug))
 lt = build("กว้างเท่าไหร่", [K450], ["movex_sprocket_54201"])
-ok("ไม่ได้ถามเรื่องสเตอร์ → ไม่แนบสเปกสเตอร์", '"Z_Teeth": 10' not in lt.system_prompt)
+ok("ไม่ได้ถามเรื่องสเตอร์ → ไม่แนบสเปกสเตอร์", '"Z_Teeth": 10' not in lt.system_prompt
+   and "[สเปกสเตอร์" not in lt.system_prompt)
 lt = build("ใช้สเตอร์อะไร", [], ["movex_sprocket_54201"])
 ok("ไม่มีโฟกัส → พฤติกรรมเดิม (กราฟจากผลค้น)", "[Seed Products]: movex_sprocket_54201" in lt.system_prompt)
 
