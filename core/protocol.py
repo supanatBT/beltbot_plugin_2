@@ -96,6 +96,7 @@ class DecideInput:
     signal: BrandSignal           # ผล detect() ของแบรนด์นี้ในเทิร์นนี้
     has_image: bool = False
     image: Optional["ImageScore"] = None   # มีเมื่อ ImageRouter เลือกแบรนด์นี้จากรูป
+    answer: str = ""              # ข้อความดิบของเทิร์นนี้ เมื่อเป็นคำตอบของการถามกลับรอบก่อน ("" = ไม่ใช่)
 
 
 @dataclass

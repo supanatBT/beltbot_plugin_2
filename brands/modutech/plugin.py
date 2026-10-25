@@ -23,6 +23,7 @@ from brands.modutech.router import CatalogueSearch, ExploratoryQuery
 from core.protocol import BrandInfo, BrandSignal, DecideInput, Decision
 from core.sales import attach_handoff, escalation_gate
 from core.text import any_word, has
+from brands.modutech import need_flow as NF
 
 MOD_TEMP_TOPIC = r"อุณหภูมิ|องศา|°\s*[cC]|ร้อน|เย็น|แช่แข็ง|ฟรีซ|freez|temp|ทนความร้อน|ทนเย็น"
 MOD_STRENGTH_TOPIC = r"แรงดึง|ความแข็งแรง|รับแรง|strength|N\s*/\s*m|รับน้ำหนัก|โหลด"
@@ -121,7 +122,8 @@ class ModutechPlugin:
         return {**st, "codes": [], "slots": {}}
 
     # slot ที่ decide รู้จัก — ค่าอื่นทิ้ง (ย้ายมาจาก webapi/bot.py _SLOT_KEYS ชั้น 6)
-    SLOT_KEYS = ("wet_or_dry", "material", "line_shape", "operating_temp_c")
+    SLOT_KEYS = ("wet_or_dry", "material", "line_shape", "operating_temp_c",
+                 "pitch_mm", "temp_c", NF.FLOW_KEY)       # สามตัวท้าย: ถามทีละข้อ (need_flow.py)
 
     def sanitize_state(self, raw: dict) -> dict:
         """เก็บเฉพาะรหัสที่มีจริงในแคตตาล็อก · slot ที่รู้จักและเป็นค่าธรรมดา
@@ -160,7 +162,7 @@ class ModutechPlugin:
             return Decision("escalate", self.info.key, esc.reply_th, f"หัวข้อ {esc.topics}",
                             topic="escalate", effective_text=text,
                             payload=dict(codes=st["codes"], slots=dict(slots)))
-        d = self._decide_core(text, st, codes)
+        d = self._decide_core(text, st, codes, answer=inp.answer)
         if esc:
             attach_handoff(d, esc.handoff_th, esc.topics)
         # แนบรหัสสเตอร์ที่จุดเดียว แทนการแก้ทุก return ใน _decide_core
@@ -169,9 +171,17 @@ class ModutechPlugin:
             d.payload["sprocket_codes"] = list(codes.sprocket_codes)
         return d
 
-    def _decide_core(self, text: str, st: dict, codes) -> Decision:
+    def _decide_core(self, text: str, st: dict, codes, answer: str = "") -> Decision:
         slots = st["slots"]
         key = self.info.key
+
+        # ── ถามความต้องการทีละข้อ (need_flow.py) — ลูกค้าพิมพ์รหัสหรือเปลี่ยนเรื่อง = ออกจากการถาม ──
+        flow = slots.get(NF.FLOW_KEY)
+        if flow and (codes.belt_codes or codes.sprocket_codes or codes.candidates or st["codes"]):
+            slots.pop(NF.FLOW_KEY, None)
+            flow = None
+        if flow:
+            return self._need_flow(text, st, flow, answer)
 
         q = self.search.parse(text)
         if q is not None and not codes.belt_codes:
@@ -213,13 +223,60 @@ class ModutechPlugin:
         has_need = bool(any_word(self.detector.weak_terms, text)) or bool(slots) \
             or bool(codes.sprocket_codes) or self._names_industry(text)
         if not focus and not has_need and has(MOD_RECOMMEND + r"|สายพาน", text):
-            return Decision("ask", key, ASK_MODUTECH_NEED_TH, "ยังไม่รู้งานของลูกค้า",
+            # 25 ต.ค.: ถามทีละข้อ งาน → พิทช์ → อุณหภูมิ (เดิม ASK_MODUTECH_NEED_TH ถามสามเรื่องในข้อความเดียว)
+            slots[NF.FLOW_KEY] = "need"
+            return Decision("ask", key, NF.ASK_NEED_TH, "ยังไม่รู้งานของลูกค้า",
                             topic="recommend", effective_text=text,
                             payload=dict(codes=[], slots=dict(slots)), pending="modutech_need")
 
         return Decision("answer", key, reason="รหัสชัด" if focus else "ค้นตามการใช้งาน",
                         topic="temperature" if temp_topic else None, effective_text=text,
                         payload=dict(codes=st["codes"], slots=dict(slots)))
+
+    def _need_candidates(self, text: str) -> list[str]:
+        """รุ่นที่งานนี้น่าจะใช้ — ไว้ตัดสินว่าต้องถามเปียก/แห้งไหม (ไม่ใช่รายชื่อที่ตอบลูกค้า)"""
+        am = self.search.match_application(text)
+        if am is not None:
+            return list(am.belt_codes)
+        im = self.search.match_industry(text)
+        if im is not None:
+            return list(im[1])
+        return [p["belt_code"] for p in self.mod.products]
+
+    def _need_flow(self, text: str, st: dict, flow: str, answer: str) -> Decision:
+        """ขั้นต่อไปของการถามทีละข้อ · text = ข้อความรวมทุกคำตอบ · answer = คำตอบดิบของเทิร์นนี้"""
+        slots, key = st["slots"], self.info.key
+
+        def ask(step: str, reply: str, why: str, pending: str) -> Decision:
+            slots[NF.FLOW_KEY] = step
+            return Decision("ask", key, reply, why, topic="recommend", effective_text=text,
+                            payload=dict(codes=[], slots=dict(slots)), pending=pending)
+
+        ans = answer or ""
+        if flow == "pitch" and "pitch_mm" not in slots:
+            v = None if NF.is_unknown(ans) else NF.parse_pitch(ans, bare_number=True)
+            slots["pitch_mm"] = v if v is not None else NF.UNKNOWN
+        if flow == "temp" and "temp_c" not in slots:
+            v = None if NF.is_unknown(ans) else NF.parse_temp(ans, bare_number=True)
+            slots["temp_c"] = v if v is not None else NF.UNKNOWN
+
+        if "pitch_mm" not in slots:
+            v = NF.parse_pitch(text)                      # บอกมาแล้วพร้อมหน่วย/คำว่าพิทช์ → ไม่ถาม
+            if v is None:
+                return ask("pitch", NF.ASK_PITCH_TH, "ถามทีละข้อ: พิทช์", "modutech_pitch")
+            slots["pitch_mm"] = v
+        if "temp_c" not in slots:
+            v = slots.get("operating_temp_c")
+            if v is None:
+                return ask("temp", NF.ASK_TEMP_TH, "ถามทีละข้อ: อุณหภูมิ", "modutech_temp")
+            slots["temp_c"] = v
+        if flow != "wet" and not slots.get("wet_or_dry") and \
+                NF.wet_dry_matters(self.mod, self._need_candidates(text), slots.get("pitch_mm"), slots.get("temp_c")):
+            return ask("wet", NF.ASK_WET_TH, "ถามทีละข้อ: เปียก/แห้ง (ผลกรองอุณหภูมิต่างกัน)", "wet_or_dry")
+
+        slots.pop(NF.FLOW_KEY, None)
+        return Decision("answer", key, reason="ค้นตามการใช้งาน · กรองพิทช์/อุณหภูมิที่ลูกค้าบอก",
+                        effective_text=text, payload=dict(codes=[], slots=dict(slots)))
 
     # ─────────────────────────── ข้ามแบรนด์ ───────────────────────────
 

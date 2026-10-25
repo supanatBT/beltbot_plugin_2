@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 from typing import Callable, Optional
 
 from core.protocol import Decision   # ชนิดเท่านั้น — รับทั้ง Decision ของแกนกลางและรูปเดิม
+from brands.modutech import need_flow as NF
 from brands.modutech.gates import Catalogue, Slots, run_gates, sprocket_gate
 from brands.modutech.router import (INDUSTRY_KEYWORDS, CatalogueSearch, ExploratoryQuery, NO_ABSENCE_NOTE_TH,
                                      belt_grade_note_th)
@@ -413,13 +414,36 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
         codes = [cat.by_id[i]["belt_code"] for i in ids if i in cat.by_id]
         from_vector = True
         debug.append(f"vector: {codes}")
+
+    # ── พิทช์/อุณหภูมิที่ได้จากการถามทีละข้อ → กรองรุ่นจริง (need_flow.py · 25 ต.ค.) ──
+    raw_slots = md.get("slots") or {}
+    if any(isinstance(raw_slots.get(k), (int, float)) for k in ("pitch_mm", "temp_c")):
+        base = list(full_list or codes)
+        nf = NF.filter_by_need(cat, base, raw_slots.get("pitch_mm"), raw_slots.get("temp_c"),
+                               raw_slots.get("wet_or_dry"))
+        kept = nf["kept"]
+        codes = [c for c in codes if c in kept] if not full_list else kept[:MAX_FULL_RECORDS]
+        if full_list:
+            full_list = kept
+            for k in ("application_match", "industry_match"):
+                if k in context:
+                    context[k]["belt_codes_complete"] = kept
+        context["need_filter"] = {
+            "note_th": nf["note_th"],
+            "kept": kept,
+            "removed": nf["removed"],
+            **({"grades_passing_temperature": nf["grades"]} if nf["grades"] else {}),
+            **({"pitch_near": nf["near"]} if nf["near"] else {}),
+            **({"available_pitches_mm": NF.pitch_values(cat)} if not kept and nf["pitch_mm"] is not None else {}),
+        }
+        debug.append(f"need_filter: {len(base)} → {len(kept)} รุ่น ({nf['note_th'][:60]})")
     records = cat.records(codes)
 
     gated = run_gates(records, slots)
     if graph_apps_enabled():
         filter_card_applications(gated.products, kg)
     context["products"] = gated.products
-    context["slots_known"] = {k: v for k, v in (md.get("slots") or {}).items() if v is not None}
+    context["slots_known"] = NF.visible_slots(md.get("slots") or {})
     if decision.sales_topics:
         context["sales_topics"] = decision.sales_topics
     if gated.ask_back:

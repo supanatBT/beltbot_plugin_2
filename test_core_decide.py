@@ -145,7 +145,7 @@ def main() -> int:
     # เฟส 2: แปลงผลของเดิมด้วยความต่างที่ตั้งใจก่อนเทียบ (training/phase2_expected.py)
     # ข้อความที่ตั้งใจให้เลือกแบรนด์ต่าง (พื้นที่เปิด · kg/m²) ทั้งบทสนทนานั้นนับแยก ไม่เทียบ
     sys.path.insert(0, os.path.join(ROOT, "training"))
-    from phase2_expected import expected_reply, expected_search_query, routing_changed
+    from phase2_expected import expected_reply, expected_search_query, need_flow_changed, routing_changed
     texts = {}
     for k in a:
         if isinstance(a[k], dict) and "effective_text" in a[k]:
@@ -164,12 +164,19 @@ def main() -> int:
                 v["state"]["pending_question"] = expected_reply(v["state"]["pending_question"],
                                                                 v.get("effective_text", ""), "",
                                                                 {} if k.startswith("empty|") else _mx)
+    need_turns = [k for k, v in a.items() if isinstance(v, dict) and need_flow_changed(v.get("reply_th", ""))]
+    conv_need = {k.rsplit("|", 1)[0] for k in need_turns} - conv_changed
+    from brands.modutech.need_flow import ASK_NEED_TH
+    bad_need = [k for k in need_turns if not (isinstance(b.get(k), dict) and b[k].get("reply_th") == ASK_NEED_TH)]
+    conv_changed = conv_changed | conv_need
     skipped = [k for k in a if k.rsplit("|", 1)[0] in conv_changed]
     diff = [k for k in sorted(set(a) & set(b)) if a[k] != b[k] and k not in skipped]
     print(f"      เฟส 2: ข้ามบทสนทนาที่ตั้งใจเลือกแบรนด์ต่าง {len(conv_changed)} บท ({len(skipped)} เทิร์น)")
     bad_skip = [k for k in skipped if isinstance(b.get(k), dict) and routing_changed(b[k].get("effective_text", ""))
                 and b[k]["brand"] not in ("modutech", None)]
     ok("บทสนทนาที่ตั้งใจเปลี่ยน ได้ Modutech ทุกเทิร์นที่มีคำคุณสมบัติ", not bad_skip, bad_skip[:3])
+    print(f"      25 ต.ค.: ถามงานทีละข้อ {len(conv_need)} บท ({len(need_turns)} เทิร์นที่ของเดิมถามงาน)")
+    ok("เทิร์นที่ของเดิมถามงาน ของใหม่ได้คำถามข้อแรก (งาน) ทุกเทิร์น", not bad_need, bad_need[:3])
     for k in diff[:5]:
         fields = [f for f in a[k] if a[k].get(f) != b[k].get(f)] if isinstance(a[k], dict) else ["text"]
         print(f"      {k}: {fields}")

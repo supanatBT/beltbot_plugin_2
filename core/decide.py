@@ -189,7 +189,7 @@ class Dialogue:
         if carried is not None and carried.brand == brand:
             img, use_image = carried, True
         d = plugin.decide(DecideInput(text=effective, signal=signals[brand], has_image=use_image,
-                                      image=img), st.brands[brand])
+                                      image=img, answer=text if pending_before else ""), st.brands[brand])
         if d.pending:
             st.pending, st.pending_question = d.pending, effective
         if carried is not None and carried.brand == brand:
