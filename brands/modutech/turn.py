@@ -416,8 +416,11 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
         debug.append(f"vector: {codes}")
 
     # ── พิทช์/อุณหภูมิที่ได้จากการถามทีละข้อ → กรองรุ่นจริง (need_flow.py · 25 ต.ค.) ──
+    # กรองเฉพาะคำถามแนะนำรุ่น (ไม่มีรหัสในโฟกัส) — ลูกค้าถามรุ่นที่ระบุแล้ว ต้องได้ข้อมูลรุ่นนั้นเสมอ
+    # 25 ต.ค. เทสบนเว็บ: พิทช์ 50.6 ค้างใน slot → "ขอดูสเปคทั้งสองตัว" (MD508 C · EC508 PR11 พิทช์ 50.8)
+    # ถูกกรองทิ้งทั้งสองรุ่น LLM ได้ products ว่างแล้วตอบว่าไม่มีรายละเอียดสเปก
     raw_slots = md.get("slots") or {}
-    if any(isinstance(raw_slots.get(k), (int, float)) for k in ("pitch_mm", "temp_c")):
+    if not md.get("codes") and any(isinstance(raw_slots.get(k), (int, float)) for k in ("pitch_mm", "temp_c")):
         base = list(full_list or codes)
         nf = NF.filter_by_need(cat, base, raw_slots.get("pitch_mm"), raw_slots.get("temp_c"),
                                raw_slots.get("wet_or_dry"))

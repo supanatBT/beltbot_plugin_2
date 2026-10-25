@@ -184,6 +184,10 @@ h = eng.chat("ขอดูสเปคทั้งสองตัวเทีย
 ok("\"ขอดูสเปคทั้งสองตัวเทียบกัน\" → ตอบสองรุ่นนั้น ไม่ใช่นอกเรื่อง",
    h[0][-1]["content"] == "ตารางเทียบสเปก" and seen[-1].payload.get("codes") == ["MD508 C", "EC508 PR11"],
    (h[0][-1]["content"][:60], seen[-1].payload if seen else None))
+t = build_modutech_turn(seen[-1], cat, plugin.search)
+ok("รุ่นในโฟกัสไม่ถูกกรองด้วยพิทช์ที่ค้างใน slot (50.6) → products ครบสองรุ่น",
+   sorted(p["belt_code"] for p in t.context["products"]) == ["EC508 PR11", "MD508 C"]
+   and "need_filter" not in t.context, [p["belt_code"] for p in t.context["products"]])
 d = core.decide("ขอสเปคหน่อย", state=None)
 ok("สะกด \"สเปค\" นับเป็นเรื่องสินค้า", d.action != "refuse_offtopic", d.action)
 plugin.runtime = None
