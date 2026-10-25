@@ -85,6 +85,25 @@ def resolve_pitch_confirm(cat, said: float, answer: str):
     return UNKNOWN
 
 
+_QUESTION_RX = re.compile(r"อะไร|ยังไง|อย่างไร|หมายถึง|หมายความ|คืออะไร|ทำไม|ดูยังไง|วัดยังไง|\?", re.IGNORECASE)
+
+EXPLAIN_TH = {
+    "pitch": ("พิทช์คือระยะห่างระหว่างแกนพินของสายพานสองแถวที่ติดกัน วัดจากกึ่งกลางพินถึงกึ่งกลางพินถัดไปครับ "
+              "ถ้าใช้สเตอร์เดิมอยู่ ดูได้จากรหัสสเตอร์หรือสายพานเส้นเดิม"),
+    "pitch_confirm": "พิทช์คือระยะห่างระหว่างแกนพินของสายพานสองแถวที่ติดกันครับ",
+    "temp": "หมายถึงอุณหภูมิของบริเวณที่สายพานวิ่ง หรือของที่วางบนสายพาน เช่น ห้องเย็น เตาอบ หรืออุณหภูมิห้องครับ",
+    "wet": "ไลน์เปียกคือมีน้ำหรือของเหลวโดนสายพานระหว่างใช้งาน หรือฉีดน้ำล้างเป็นประจำครับ",
+}
+
+
+def is_question(answer: str) -> bool:
+    """ลูกค้าถามกลับแทนการตอบ ("พิทช์คืออะไร") — ต้องอธิบายแล้วถามข้อเดิมอีกรอบ ไม่ใช่นับเป็น "ไม่ทราบ"
+    (test_conversation_leaks C03 · 25 ต.ค.)"""
+    a = answer or ""
+    return bool(_QUESTION_RX.search(a)) and not is_unknown(a) and parse_pitch(a) is None \
+        and parse_temp(a) is None
+
+
 def is_unknown(answer: str) -> bool:
     return bool(_UNKNOWN_RX.search(answer or ""))
 
@@ -113,6 +132,8 @@ def parse_pitch(text: str, bare_number: bool = False) -> Optional[float]:
 
 def parse_temp(text: str, bare_number: bool = False) -> Optional[float]:
     t = (text or "").replace(",", ".")
+    # "ลบ 35" / "ติดลบ 35" / "minus 35" = -35 (test_conversation_leaks C13 · เดิมได้ +35)
+    t = re.sub(r"(?:ติด\s*)?ลบ\s*(?=\d)|minus\s*(?=\d)", "-", t, flags=re.IGNORECASE)
     m = re.search(_NUM + r"\s*(?:°\s*[cC]|องศา|℃|c\b)", t)
     if m:
         return float(m.group(1))

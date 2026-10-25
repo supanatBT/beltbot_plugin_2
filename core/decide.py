@@ -56,6 +56,8 @@ DOMAIN_WORDS = [
 # "ส่งของกี่วัน") กำลังถามถึงรุ่นนั้น การปฏิเสธว่านอกเรื่องทำให้เสียงานโดยไม่จำเป็น
 # ไม่กระทบเคสนอกเรื่องจริง (CLARIF-002 "อากาศวันนี้เป็นยังไง") เพราะเป็นเทิร์นแรก ยังไม่มีรุ่นในโฟกัส
 FOLLOWUP_MAX_CHARS = 40
+THANKS_WORDS = ["ขอบคุณ", "ขอบใจ", "thank"]
+THANKS_MAX_CHARS = 25
 SMALLTALK_WORDS = ["สวัสดี", "ขอบคุณ", "ขอบใจ", "hello", "hi ", "thank", "thanks", "ดีครับ", "ดีค่ะ"]
 GREETING_WORDS = ["สวัสดี", "hello", "hi ", "ดีครับ", "ดีค่ะ"]   # ทัก (ไม่ใช่ขอบคุณ) → ข้อความทักกลับ
 REFERENCE_WORDS = ["ตัวนั้น", "ตัวนี้", "อันนั้น", "อันนี้", "รุ่นนั้น", "รุ่นนี้", "ตัวที่", "อันที่",
@@ -100,6 +102,14 @@ class Dialogue:
                 self.image_brands[0] if len(self.image_brands) == 1 else None)
             reply = (self.plugins[key].image_reject_th if key in self.plugins else "") or GENERIC_REJECT_IMAGE_TH
             return Decision("reject_image", key, reply, "ViT/SigLIP ไม่พบสินค้า",
+                            effective_text=text, state=st)
+
+        # ── ขอบคุณ/ขอบใจล้วน ๆ ตอนบอทค้างคำถามไว้ = จบเรื่องนั้น ไม่ใช่คำตอบ (test_conversation_leaks C01 · 25 ต.ค.)
+        # เดิมรวมกับคำถามเดิมแล้วถามซ้ำ เช่น บอทถามเปียก/แห้ง → "ขอบคุณครับ" → ถามเปียก/แห้งอีกรอบ
+        if st.pending and any_word(THANKS_WORDS, text) and not any_word(DOMAIN_WORDS, text) \
+                and len(text) <= THANKS_MAX_CHARS:
+            st.pending, st.pending_question = None, ""
+            return Decision("smalltalk", st.brand, self.smalltalk_th, "ขอบคุณ (ปิดคำถามที่ค้าง)",
                             effective_text=text, state=st)
 
         # ── คำตอบของการถามกลับรอบก่อน: รวมกับคำถามเดิม ──
@@ -175,6 +185,9 @@ class Dialogue:
         if brand is None and has(STAINLESS_RX, effective):
             # คำถามเรื่องวัสดุสแตนเลสโดยไม่บอกแบรนด์ → ตอบจากข้อมูลทุกแบรนด์ (ผู้ใช้เลือก 2026-09-25)
             n = len(self.plugins)
+            # ค้างคำถามแบรนด์ไว้ — ลูกค้าเลือกแบรนด์ทีหลัง ("เอาของแบรนด์นี้") ต้องได้คำถามสแตนเลสต่อ
+            # (test_conversation_leaks C19 · 25 ต.ค. — เดิมเรื่องสแตนเลสหาย ได้คำแนะนำทั่วไป)
+            st.pending, st.pending_question = "brand", effective
             return Decision("cross_brand", None, self.cross_brand_th(CROSS_BRAND_STAINLESS),
                             f"SS ไม่ระบุแบรนด์ → ตอบ{T.all_brands_th(n)}",
                             topic="material", effective_text=effective, state=st)

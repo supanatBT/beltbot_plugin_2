@@ -199,8 +199,9 @@ dst.pending, dst.pending_question = "modutech_temp", "สายพานนี�
 eng.dialog_states["s1"] = dst.to_dict()
 h = eng.chat("ไม่แน่ใจ", None, [], session_id="s1")
 st1 = core.state_cls.from_dict(eng.dialog_states["s1"])
-ok("หลังคำตอบแนะนำ → โฟกัส = รุ่นที่เสนอ", st1.brands["modutech"]["codes"] == ["MD508 C", "EC508 PR11"],
-   st1.brands["modutech"]["codes"])
+ok("หลังคำตอบแนะนำ → จำรุ่นที่เสนอไว้ (_offered) ยังไม่ตั้งเป็นโฟกัสจนกว่าลูกค้าจะอ้างถึง",
+   st1.brands["modutech"]["slots"].get("_offered") == ["MD508 C", "EC508 PR11"]
+   and st1.brands["modutech"]["codes"] == [], st1.brands["modutech"])
 h = eng.chat("ขอดูสเปคทั้งสองตัวเทียบกัน", None, h[0], session_id="s1")
 ok("\"ขอดูสเปคทั้งสองตัวเทียบกัน\" → ตอบสองรุ่นนั้น ไม่ใช่นอกเรื่อง",
    h[0][-1]["content"] == "ตารางเทียบสเปก" and seen[-1].payload.get("codes") == ["MD508 C", "EC508 PR11"],

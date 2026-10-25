@@ -158,6 +158,15 @@ class MovexPlugin:
                 out.append(pid)
             elif not k and any(abs(float(p.get("Plate_Width_mm", 0)) - n) < 0.05 for n in nums):
                 out.append(pid)
+        if not out and not k and not nums:
+            # "ตัวที่กว้างกว่า" / "ตัวเล็ก" (test_conversation_leaks C17 · 25 ต.ค.) — เดิมถามความกว้างซ้ำไม่จบ
+            members = [pid for pid in self.mx_series_members.get(series, []) if pid in self.mx]
+            widths = {pid: float(self.mx[pid].get("Plate_Width_mm", 0) or 0) for pid in members}
+            if len(set(widths.values())) > 1:
+                if re.search(r"กว้าง(?:กว่า|สุด|ที่สุด)|ใหญ่(?:กว่า|สุด|ที่สุด)|ตัวใหญ่|wide", text or "", re.IGNORECASE):
+                    out = [max(widths, key=widths.get)]
+                elif re.search(r"แคบ(?:กว่า|สุด|ที่สุด)?|เล็ก(?:กว่า|สุด|ที่สุด)|ตัวเล็ก|narrow", text or "", re.IGNORECASE):
+                    out = [min(widths, key=widths.get)]
         return out
 
     # ─────────────────────────── 1 · รู้จักข้อความ ───────────────────────────
@@ -237,8 +246,13 @@ class MovexPlugin:
                                 f"ViT {vit.confidence:.2f} ต่ำกว่า {self.vit_series}",
                                 topic=topic, effective_text=text)
 
-        if not pids and not series and st["series"] and not st["pids"]:
-            picked = self.movex_pick_width(st["series"], text)
+        # เลือกความกว้างจากคำตอบดิบของเทิร์นนี้ (ไม่ใช่ข้อความรวม — เลขซีรีส์ในคำถามเดิมจะถูกอ่านเป็นความกว้าง)
+        # test_conversation_leaks 25 ต.ค.: "ตัวที่กว้างกว่า" หลังถามความกว้าง → ถามซ้ำ (C17)
+        #                                "แล้ว K400 ล่ะ" ต่อจาก LF820 K325 → ยังตอบ K325 (C18)
+        raw = inp.answer or text
+        cur = series or st["series"]
+        if not pids and cur and (not st["pids"] or re.search(r"(?<![A-Za-z])K\s?\d{3,4}", raw, re.IGNORECASE)):
+            picked = self.movex_pick_width(cur, raw)
             if picked:
                 pids, why = picked, "ลูกค้าเลือกความกว้าง"
         if pids:

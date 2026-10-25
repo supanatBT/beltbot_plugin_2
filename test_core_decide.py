@@ -164,6 +164,10 @@ def main() -> int:
                 v["state"]["pending_question"] = expected_reply(v["state"]["pending_question"],
                                                                 v.get("effective_text", ""), "",
                                                                 {} if k.startswith("empty|") else _mx)
+    cross_turns = [k for k, v in a.items() if isinstance(v, dict) and v.get("action") == "cross_brand"]
+    bad_cross = [k for k in cross_turns if not (isinstance(b.get(k), dict) and b[k].get("action") == "cross_brand"
+                                                and (b[k].get("state") or {}).get("pending") == "brand")]
+    conv_changed = conv_changed | {k.rsplit("|", 1)[0] for k in cross_turns}
     need_turns = [k for k, v in a.items() if isinstance(v, dict) and need_flow_changed(v.get("reply_th", ""))]
     conv_need = {k.rsplit("|", 1)[0] for k in need_turns} - conv_changed
     from brands.modutech.need_flow import ASK_NEED_TH
@@ -177,6 +181,8 @@ def main() -> int:
     ok("บทสนทนาที่ตั้งใจเปลี่ยน ได้ Modutech ทุกเทิร์นที่มีคำคุณสมบัติ", not bad_skip, bad_skip[:3])
     print(f"      25 ต.ค.: ถามงานทีละข้อ {len(conv_need)} บท ({len(need_turns)} เทิร์นที่ของเดิมถามงาน)")
     ok("เทิร์นที่ของเดิมถามงาน ของใหม่ได้คำถามข้อแรก (งาน) ทุกเทิร์น", not bad_need, bad_need[:3])
+    print(f"      25 ต.ค.: สแตนเลสข้ามแบรนด์ค้างคำถามแบรนด์ {len(cross_turns)} เทิร์น")
+    ok("cross_brand ของใหม่ค้าง pending=brand ทุกเทิร์น", not bad_cross, bad_cross[:3])
     for k in diff[:5]:
         fields = [f for f in a[k] if a[k].get(f) != b[k].get(f)] if isinstance(a[k], dict) else ["text"]
         print(f"      {k}: {fields}")

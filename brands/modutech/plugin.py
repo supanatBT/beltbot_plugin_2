@@ -27,6 +27,11 @@ from brands.modutech import need_flow as NF
 
 MOD_TEMP_TOPIC = r"อุณหภูมิ|องศา|°\s*[cC]|ร้อน|เย็น|แช่แข็ง|ฟรีซ|freez|temp|ทนความร้อน|ทนเย็น"
 MOD_STRENGTH_TOPIC = r"แรงดึง|ความแข็งแรง|รับแรง|strength|N\s*/\s*m|รับน้ำหนัก|โหลด"
+REFER_RX = (r"ตัวนี้|อันนี้|รุ่นนี้|ตัวนั้น|อันนั้น|รุ่นนั้น|ตัวแรก|อันแรก|ตัวหลัง|อันหลัง|ตัวที่|อันที่|รุ่นที่|"
+            r"สองตัว|2\s*ตัว|ทั้งสอง|ทั้ง\s*2|เทียบ|ต่างกัน|อันไหน|ตัวไหน|ที่แนะนำ|เมื่อกี้|ข้างบน")
+OTHER_RX = r"รุ่นอื่น|แบบอื่น|ตัวอื่น|อันอื่น|อีกไหม|อีกมั้ย|อีกบ้าง|นอกจากนี้"
+EXCLUDE_KEY = "_exclude"          # รุ่นที่ลูกค้าขอให้ตัดออก ("ขอรุ่นอื่น") — ส่งไป build_turn เทิร์นเดียว
+FOLLOWUP_CHARS = 40
 MOD_RECOMMEND = r"แนะนำ|ใช้รุ่นไหน|ใช้อะไรดี|ตัวไหนดี|รุ่นไหนดี|เหมาะกับ|มีอะไรบ้าง|สายพานอะไร"
 
 ASK_WET_DRY_TH = ("ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง "
@@ -115,7 +120,7 @@ class ModutechPlugin:
         return {k: (type(v)() if isinstance(v, (list, dict)) else v) for k, v in self._state_defaults.items()}
 
     def has_focus(self, st: dict) -> bool:
-        return bool(st.get("codes"))
+        return bool(st.get("codes")) or bool((st.get("slots") or {}).get(self.OFFERED_KEY))
 
     def on_brand_switch(self, st: dict) -> dict:
         # ล้างรุ่นกับ slot · sprocket_codes ไม่ล้าง (ของเดิมก็ไม่ล้าง — เทิร์นถัดไปเขียนทับเอง)
@@ -124,6 +129,7 @@ class ModutechPlugin:
     # slot ที่ decide รู้จัก — ค่าอื่นทิ้ง (ย้ายมาจาก webapi/bot.py _SLOT_KEYS ชั้น 6)
     SLOT_KEYS = ("wet_or_dry", "material", "line_shape", "operating_temp_c",
                  "pitch_mm", "temp_c", NF.FLOW_KEY, NF.PITCH_SAID_KEY)   # สี่ตัวท้าย: ถามทีละข้อ (need_flow.py)
+    OFFERED_KEY = "_offered"      # รุ่นที่คำตอบล่าสุดเสนอ (list) — ใช้เมื่อลูกค้าอ้างถึง ไม่ใช่โฟกัสทันที
 
     def sanitize_state(self, raw: dict) -> dict:
         """เก็บเฉพาะรหัสที่มีจริงในแคตตาล็อก · slot ที่รู้จักและเป็นค่าธรรมดา
@@ -135,6 +141,10 @@ class ModutechPlugin:
             for k, v in slots_in.items():
                 if k in self.SLOT_KEYS and isinstance(v, (str, int, float)) and not isinstance(v, bool):
                     slots[k] = v
+                elif k == self.OFFERED_KEY and isinstance(v, list):
+                    ok = [c for c in v if isinstance(c, str) and c in self.mod.by_code]
+                    if ok:
+                        slots[k] = ok
         return {"codes": [c for c in codes if c in self.mod.by_code] if isinstance(codes, list) else [],
                 "slots": slots, "sprocket_codes": []}
 
@@ -151,8 +161,12 @@ class ModutechPlugin:
             text, self.materials,
             mask_codes=tuple(codes.belt_codes) + tuple(codes.sprocket_codes)))
         slots = st["slots"]
+        slots.pop(EXCLUDE_KEY, None)                       # "ขอรุ่นอื่น" ใช้ได้เทิร์นเดียว
+        if not codes.belt_codes:
+            self._use_offered(inp.answer or text, st)
         if codes.belt_codes:
             st["codes"] = list(codes.belt_codes)
+            slots.pop(self.OFFERED_KEY, None)
         # รหัสสเตอร์ไม่เก็บลง state เพราะไม่ใช่ "รุ่นที่อยู่ในความสนใจ" แต่ต้องส่งต่อ
         # ให้ turn แปลงกลับเป็นสายพานด้วยกราฟ ไม่งั้นรหัสที่ลูกค้าพิมพ์หายทั้งตัว
         st["sprocket_codes"] = list(codes.sprocket_codes)
@@ -253,6 +267,16 @@ class ModutechPlugin:
                             payload=dict(codes=[], slots=dict(slots)), pending=pending)
 
         ans = answer or ""
+        asked = {"pitch": NF.ASK_PITCH_TH, "temp": NF.ASK_TEMP_TH, "wet": NF.ASK_WET_TH}
+        if flow in ("pitch", "temp", "wet", "pitch_confirm") and ans and NF.is_question(ans):
+            again = asked.get(flow, NF.ASK_PITCH_TH)
+            if flow == "pitch_confirm":
+                said = slots.get(NF.PITCH_SAID_KEY)
+                opts = NF.nearest_pitches(self.mod, said) if isinstance(said, (int, float)) else []
+                again = NF.ask_pitch_confirm_th(said, opts) if opts else NF.ASK_PITCH_TH
+            pend = {"pitch": "modutech_pitch", "pitch_confirm": "modutech_pitch", "temp": "modutech_temp",
+                    "wet": "wet_or_dry"}[flow]
+            return ask(flow, f"{NF.EXPLAIN_TH[flow]}\n\n{again}", f"ถามทีละข้อ: ลูกค้าถามกลับ ({flow}) → อธิบาย", pend)
 
         def take_pitch(v):
             """พิทช์ที่ไม่มีในแคตตาล็อกแต่ใกล้ค่าที่มี → ถามยืนยันก่อน (ผู้ใช้เลือก 25 ต.ค.: 50.6 → หมายถึง 50.8 ไหม)"""
@@ -328,6 +352,51 @@ class ModutechPlugin:
 
     MAX_FOCUS_FROM_REPLY = 6
 
+    def _new_request(self, raw: str) -> bool:
+        """ข้อความเทิร์นนี้ขอของใหม่ (งาน · อุตสาหกรรม · ผิว) — ไม่ใช่ถามต่อเรื่องรุ่นที่เพิ่งเสนอ"""
+        low = (raw or "").lower()
+        if any(th.lower() in low for th, _ in self.search.surfaces) or "กันลื่น" in low:
+            return True
+        try:
+            return bool(self.search.match_application(raw)) or bool(self.search.match_industry(raw))
+        except Exception:                                    # noqa: BLE001
+            return False
+
+    def _use_offered(self, raw: str, st: dict) -> None:
+        """รุ่นที่บอทเพิ่งเสนอ (_offered) → โฟกัส เฉพาะเมื่อลูกค้าอ้างถึง
+
+        test_conversation_leaks 25 ต.ค.: เดิมตั้งรุ่นที่เสนอเป็นโฟกัสทันที คำขอใหม่ ("แล้วถ้าเป็นขนมปังล่ะ"
+        "มีรุ่นอื่นอีกไหม" "ขอแบบผิวกันลื่น") จึงได้รุ่นเดิมซ้ำ (C07 · C23 · C19)
+            อ้างถึง (ตัวแรก · สองตัว · เทียบ …)         → รุ่นที่อ้าง
+            ขอรุ่นอื่น                                → ค้นใหม่ ตัดรุ่นที่เสนอไปแล้ว
+            ขอของใหม่ (งาน · อุตสาหกรรม · ผิว)          → ค้นใหม่
+            ถามต่อสั้น ๆ ("แพงไหม" "ทำไม")              → รุ่นที่เสนอทั้งหมด
+        """
+        slots = st["slots"]
+        offered = list(slots.get(self.OFFERED_KEY) or [])
+        if not offered:
+            return
+        from_offer = not st["codes"] or set(st["codes"]) <= set(offered)
+        if not from_offer:
+            return
+        r = raw or ""
+        if has(OTHER_RX, r):
+            st["codes"] = []
+            slots[EXCLUDE_KEY] = offered
+            slots.pop(self.OFFERED_KEY, None)
+            return
+        refers = has(REFER_RX, r)
+        if self._new_request(r) and not refers:
+            st["codes"] = []
+            slots.pop(self.OFFERED_KEY, None)
+            return
+        if has(r"ตัวแรก|อันแรก|รุ่นแรก|ตัวที่\s*1|อันที่\s*1", r):
+            st["codes"] = offered[:1]
+        elif has(r"ตัวหลัง|อันหลัง|ตัวที่สอง|ตัวที่\s*2|อันที่\s*2|รุ่นที่สอง", r) and len(offered) > 1:
+            st["codes"] = offered[1:2]
+        elif refers or len(r) <= FOLLOWUP_CHARS:
+            st["codes"] = offered
+
     def finish_turn(self, decision, turn, llm, result):
         out = self._rt().finish_turn(decision, turn, llm, result)
         # คำตอบแนะนำรุ่น (ยังไม่มีรหัสในโฟกัส) → รุ่นที่คำตอบเสนอกลายเป็นโฟกัสของเทิร์นหน้า
@@ -338,7 +407,8 @@ class ModutechPlugin:
         if not had_codes and decision.action in ("answer", "search") and out.reply:
             mentioned = list(self.detector.detect(out.reply).parsed.belt_codes)
             if 0 < len(mentioned) <= self.MAX_FOCUS_FROM_REPLY:
-                out.state_patch = {"codes": mentioned}
+                slots = {k: v for k, v in ((decision.payload or {}).get("slots") or {}).items() if k != EXCLUDE_KEY}
+                out.state_patch = {"slots": {**slots, self.OFFERED_KEY: mentioned}}
         return out
 
     def close(self) -> None:

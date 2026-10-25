@@ -416,6 +416,22 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
         debug.append(f"vector: {codes}")
 
     # ── พิทช์/อุณหภูมิที่ได้จากการถามทีละข้อ → กรองรุ่นจริง (need_flow.py · 25 ต.ค.) ──
+    # ── ลูกค้าขอ "รุ่นอื่น" → ตัดรุ่นที่เสนอไปแล้ว (plugin._use_offered) ──
+    excl = list((md.get("slots") or {}).get("_exclude") or [])
+    if excl and not md.get("codes"):
+        if full_list:
+            full_list = [c for c in full_list if c not in excl]
+            for k in ("application_match", "industry_match"):
+                if k in context:
+                    context[k]["belt_codes_complete"] = full_list
+            codes = full_list[:MAX_FULL_RECORDS]
+        else:
+            codes = [c for c in codes if c not in excl]
+        context["excluded_already_offered"] = {
+            "belt_codes": excl,
+            "note_th": "ลูกค้าขอรุ่นอื่นนอกจากรุ่นเหล่านี้ที่เสนอไปแล้ว ห้ามเสนอซ้ำ ถ้าไม่มีรุ่นอื่นเหลือให้บอกตรง ๆ"}
+        debug.append(f"exclude offered: {excl}")
+
     # กรองเฉพาะคำถามแนะนำรุ่น (ไม่มีรหัสในโฟกัส) — ลูกค้าถามรุ่นที่ระบุแล้ว ต้องได้ข้อมูลรุ่นนั้นเสมอ
     # 25 ต.ค. เทสบนเว็บ: พิทช์ 50.6 ค้างใน slot → "ขอดูสเปคทั้งสองตัว" (MD508 C · EC508 PR11 พิทช์ 50.8)
     # ถูกกรองทิ้งทั้งสองรุ่น LLM ได้ products ว่างแล้วตอบว่าไม่มีรายละเอียดสเปก
