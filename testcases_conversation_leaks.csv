@@ -2,11 +2,12 @@
 CONV-01,conversation,leak,multi,1,สายพาน modutech รุ่นไหนดี,,,ลำเลียงอะไร,,,,,,conversation,บทจากเว็บ 25 ต.ค. (ถามทีละข้อ → เสนอสองรุ่น → เทียบ)
 CONV-01,conversation,leak,multi,2,ใช้ในโรงงานบรรจุ,,,พิทช์,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-01,conversation,leak,multi,3,50.6,,,หมายถึง 50.8,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
-CONV-01,conversation,leak,multi,4,ไม่ใช่,,,อุณหภูมิ,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
-CONV-01,conversation,leak,multi,5,ไม่แน่ใจ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
-CONV-01,conversation,leak,multi,6,ขอดูสเปคทั้งสองตัวเทียบกัน,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
-CONV-01,conversation,leak,multi,7,ตัวไหนทนร้อนกว่ากัน,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
-CONV-01,conversation,leak,multi,8,ขอบคุณครับ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-01,conversation,leak,multi,4,ไม่ใช่,,,ถ้าไม่ใช่ 50.8,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-01,conversation,leak,multi,5,ไม่ทราบ,,,อุณหภูมิ,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-01,conversation,leak,multi,6,ไม่แน่ใจ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-01,conversation,leak,multi,7,ขอดูสเปคทั้งสองตัวเทียบกัน,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-01,conversation,leak,multi,8,ตัวไหนทนร้อนกว่ากัน,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-01,conversation,leak,multi,9,ขอบคุณครับ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-02,conversation,leak,multi,1,แนะนำสายพาน modutech หน่อย,,,ลำเลียงอะไร,,,,,,conversation,ตอบหลายข้อในประโยคเดียว
 CONV-02,conversation,leak,multi,2,ไก่ พิทช์ 2 นิ้ว 80 องศา ไลน์เปียก,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-02,conversation,leak,multi,3,ตัวแรกกว้างได้เท่าไหร่,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,

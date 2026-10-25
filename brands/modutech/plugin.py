@@ -268,13 +268,18 @@ class ModutechPlugin:
 
         ans = answer or ""
         asked = {"pitch": NF.ASK_PITCH_TH, "temp": NF.ASK_TEMP_TH, "wet": NF.ASK_WET_TH}
-        if flow in ("pitch", "temp", "wet", "pitch_confirm") and ans and NF.is_question(ans):
+        if flow in ("pitch", "temp", "wet", "pitch_confirm", "pitch_retry") and ans and NF.is_question(ans):
             again = asked.get(flow, NF.ASK_PITCH_TH)
+            if flow == "pitch_retry":
+                said = slots.get(NF.PITCH_SAID_KEY)
+                opts = NF.nearest_pitches(self.mod, said) if isinstance(said, (int, float)) else []
+                again = NF.ask_pitch_again_th(opts) if opts else NF.ASK_PITCH_TH
             if flow == "pitch_confirm":
                 said = slots.get(NF.PITCH_SAID_KEY)
                 opts = NF.nearest_pitches(self.mod, said) if isinstance(said, (int, float)) else []
                 again = NF.ask_pitch_confirm_th(said, opts) if opts else NF.ASK_PITCH_TH
-            pend = {"pitch": "modutech_pitch", "pitch_confirm": "modutech_pitch", "temp": "modutech_temp",
+            pend = {"pitch": "modutech_pitch", "pitch_confirm": "modutech_pitch", "pitch_retry": "modutech_pitch",
+                    "temp": "modutech_temp",
                     "wet": "wet_or_dry"}[flow]
             return ask(flow, f"{NF.EXPLAIN_TH[flow]}\n\n{again}", f"ถามทีละข้อ: ลูกค้าถามกลับ ({flow}) → อธิบาย", pend)
 
@@ -290,11 +295,20 @@ class ModutechPlugin:
             return None
 
         if flow == "pitch_confirm" and "pitch_mm" not in slots:
-            said = slots.pop(NF.PITCH_SAID_KEY, None)
-            if isinstance(said, (int, float)):
-                slots["pitch_mm"] = NF.resolve_pitch_confirm(self.mod, said, ans)
-            else:
-                slots["pitch_mm"] = NF.UNKNOWN
+            said = slots.get(NF.PITCH_SAID_KEY)
+            got = NF.resolve_pitch_confirm(self.mod, said, ans) if isinstance(said, (int, float)) else NF.UNKNOWN
+            if got == NF.REJECTED:
+                # "ไม่ใช่" → ถามค่าจริง (ผู้ใช้ 25 ต.ค.) · เก็บค่าที่พิมพ์ตอนแรกไว้ใช้ในคำถาม
+                opts = NF.nearest_pitches(self.mod, said)
+                return ask("pitch_retry", NF.ask_pitch_again_th(opts),
+                           f"ถามทีละข้อ: ลูกค้าบอกว่าไม่ใช่ {opts} → ถามพิทช์จริง", "modutech_pitch")
+            slots.pop(NF.PITCH_SAID_KEY, None)
+            slots["pitch_mm"] = got
+        if flow == "pitch_retry" and "pitch_mm" not in slots:
+            # ถามซ้ำได้รอบเดียว — ตอบเลขอะไรมาก็ใช้เลขนั้น (ไม่มีในแคตตาล็อก บอทจะบอกตรง ๆ ตอนตอบ) กันวนไม่จบ
+            slots.pop(NF.PITCH_SAID_KEY, None)
+            v = None if NF.is_unknown(ans) else NF.parse_pitch(ans, bare_number=True)
+            slots["pitch_mm"] = v if v is not None else NF.UNKNOWN
         if flow == "pitch" and "pitch_mm" not in slots:
             v = None if NF.is_unknown(ans) else NF.parse_pitch(ans, bare_number=True)
             d = take_pitch(v if v is not None else NF.UNKNOWN)
