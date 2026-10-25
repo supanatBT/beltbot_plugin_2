@@ -308,6 +308,27 @@ e = engine(_Scorer(mx(0.95)), g)
 out = e.chat("", img(), [], session_id="s1")
 ok("dominant → Movex ทันที", out[0][-1]["content"] == "ok:movex")
 
+e = engine(_Scorer(mx(0.70)), _Gate(GateReading("modutech", True, True, {"score": 0.84, "text": 0.05})))
+out = e.chat("", img(), [], session_id="s1")
+ok("direct → บอกว่าน่าจะเป็น Modutech แต่ยังระบุรุ่นจากรูปไม่ได้",
+   out[0][-1]["content"].startswith("จากรูปน่าจะเป็นสายพานโมดูลาร์ Modutech"), out[0][-1]["content"][:80])
+e = engine(_Scorer(mx(0.70)), g)
+out = e.chat("สายพาน modutech แบบนี้รับน้ำหนักได้เท่าไร", img(), [], session_id="s1")
+ok("ข้อความระบุ Modutech + รูป → บอกว่ายังระบุรุ่นจากรูปไม่ได้",
+   out[0][-1]["content"].startswith("ตอนนี้ระบบยังระบุรุ่นสายพานโมดูลาร์ Modutech จากรูปไม่ได้"),
+   out[0][-1]["content"][:80])
+e = engine(_Scorer(mx(0.70)), g)
+out = e.chat("", img(), [], session_id="s1")
+ok("เทิร์นถามแบรนด์ไม่มีข้อความเพิ่ม", out[0][-1]["content"].startswith("ขอยืนยันก่อน"))
+out = e.chat("2", None, out[0], session_id="s1")
+ok("ตอบ 2 หลังส่งรูป → บอกว่ายังระบุรุ่นจากรูปไม่ได้",
+   out[0][-1]["content"].startswith("ตอนนี้ระบบยังระบุรุ่น"), out[0][-1]["content"][:80])
+out = e.chat("ขอสเปก EC127 FG", None, out[0], session_id="s1")
+ok("เทิร์นถัดไปไม่มีรูป → ไม่มีข้อความเรื่องรูป", "จากรูป" not in out[0][-1]["content"])
+e = engine(_Scorer(mx(0.95)), g)
+out = e.chat("", img(), [], session_id="s1")
+ok("Movex dominant → ไม่มีข้อความเรื่องรูป Modutech", out[0][-1]["content"] == "ok:movex")
+
 e = engine(_Scorer(mx(0.13)), _Gate(GateReading("modutech", True, False, {})), all_scored=True)
 out = e.chat("", img(), [], session_id="s1")
 ok("ทุกแบรนด์มีตัวให้คะแนน → ไม่เรียก policy (ปฏิเสธแบบเดิม)", "s1" not in e.image_carry

@@ -23,6 +23,7 @@ from core.decide import Dialogue
 from core.image_policy import ImageCarry, resolve as resolve_image_policy
 from core.image_router import route_image
 from core.llm import GeminiClient, is_transient
+from core import templates as T
 from core.protocol import TurnInput
 from core.tools import ToolLog
 
@@ -130,6 +131,7 @@ class TurnEngine:
                 if policy is not None:
                     img_route = policy.route
                     raw_refs_html += f"**Image policy:** {policy.kind} · {policy.reason}\n"
+                    print(f"🖼️ Image policy: {policy.kind} · {policy.reason}")
                 self.dialogue.image_brands = tuple(img_route.image_brands)
             dstate = self.dialogue.state_cls.from_dict(self.dialog_states.get(session_id))
             decision = self.dialogue.decide(
@@ -147,9 +149,10 @@ class TurnEngine:
             carried = carry is not None and bool((decision.payload or {}).get("image_carried"))
             turn_image = carry.image if carried else img_input
             turn_score = carry.best if carried else (img_route.best if img_route else None)
+            image_note = self._image_note(decision, policy, carry)
 
             if not decision.needs_llm:
-                ai_reply = decision.reply_th
+                ai_reply = _prefix(image_note, decision.reply_th)
                 self._log_finish(turn_log, ai_reply, [], t_start, error=None)
                 chat_history += [{"role": "user", "content": display_content},
                                  {"role": "assistant", "content": ai_reply}]
@@ -166,7 +169,7 @@ class TurnEngine:
             raw_refs_html += "".join(llm_turn.debug)
 
             if llm_turn.direct_reply is not None:
-                ai_reply = llm_turn.direct_reply
+                ai_reply = _prefix(image_note, llm_turn.direct_reply)
                 self._log_finish(turn_log, ai_reply, [], t_start, error=None)
                 chat_history += [{"role": "user", "content": display_content},
                                  {"role": "assistant", "content": ai_reply}]
@@ -175,7 +178,7 @@ class TurnEngine:
 
             result = self.llm.run(llm_turn, chat_history, self.tool_log.calls)
             out = plugin.finish_turn(decision, turn, llm_turn, result)
-            ai_reply = out.reply
+            ai_reply = _prefix(image_note, out.reply)
             extra_messages = list(out.extra_messages)
             raw_refs_html += "".join(out.debug)
             new_carry = out.carry_fn
@@ -208,6 +211,21 @@ class TurnEngine:
         return (chat_history, chat_state_out, raw_refs_html,
                 new_last_pids, session_id, new_vit, new_graph)
 
+    def _image_note(self, decision, policy, carry) -> str:
+        """มีรูป (หรือรูปที่เก็บไว้) แต่ไปแบรนด์ที่ไม่มีตัวให้คะแนนรูป → บอกว่ายังระบุรุ่นจากรูปไม่ได้"""
+        b = decision.brand
+        if b is None or b in self.image_scorers or b not in self.plugins:
+            return ""
+        if decision.action in ("reject_image", "refuse_offtopic", "smalltalk", "escalate"):
+            return ""
+        if decision.action == "ask" and decision.topic == "brand":
+            return ""
+        if policy is not None and policy.kind in ("direct", "text_brand", "ask"):
+            return T.image_no_model(self.plugins[b].info, from_image=policy.kind == "direct")
+        if policy is None and carry is not None:
+            return T.image_no_model(self.plugins[b].info, from_image=False)
+        return ""
+
     def _image_policy(self, route, image, user_text: str):
         """core/image_policy — คืน None เมื่อทุกแบรนด์มีตัวให้คะแนนรูป (พฤติกรรมเดิม)"""
         brands = list(self.plugins)
@@ -233,3 +251,7 @@ def _already_has_contact(reply: str, handoff: str) -> bool:
     """
     tokens = _CONTACT_RX.findall(handoff or "")
     return bool(tokens) and all(t in (reply or "") for t in tokens)
+
+
+def _prefix(note: str, reply: str) -> str:
+    return f"{note}\n\n{reply}" if note and reply else (reply if reply is not None else reply)
