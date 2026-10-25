@@ -182,6 +182,11 @@ class TurnEngine:
             extra_messages = list(out.extra_messages)
             raw_refs_html += "".join(out.debug)
             new_carry = out.carry_fn
+            if out.state_patch:
+                st2 = self.dialogue.state_cls.from_dict(self.dialog_states.get(session_id))
+                st2.brands[decision.brand].update(out.state_patch)
+                self.dialog_states[session_id] = st2.to_dict()
+                raw_refs_html += f"**State patch:** {decision.brand} {out.state_patch}\n"
         except Exception as e:
             # 13 ต.ค.: Google ไม่ว่างแม้ลองใหม่แล้ว (core/llm.py with_retry) → ข้อความที่ลูกค้าเข้าใจ ไม่ใช่ JSON ดิบ
             ai_reply = (TRANSIENT_REPLY_TH if is_transient(e) else f"❌ เกิดข้อผิดพลาด: {str(e)}")

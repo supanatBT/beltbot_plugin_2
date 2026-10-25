@@ -304,8 +304,20 @@ class ModutechPlugin:
     def build_turn(self, decision, turn):
         return self._rt().build_turn(decision, turn)
 
+    MAX_FOCUS_FROM_REPLY = 6
+
     def finish_turn(self, decision, turn, llm, result):
-        return self._rt().finish_turn(decision, turn, llm, result)
+        out = self._rt().finish_turn(decision, turn, llm, result)
+        # คำตอบแนะนำรุ่น (ยังไม่มีรหัสในโฟกัส) → รุ่นที่คำตอบเสนอกลายเป็นโฟกัสของเทิร์นหน้า
+        # 25 ต.ค. เทสบนเว็บ: เสนอ MD508 C กับ EC508 PR11 แล้วลูกค้าถาม "ขอดูสเปคทั้งสองตัวเทียบกัน"
+        # บอทไม่รู้ว่า "สองตัว" คือตัวไหน เพราะสถานะไม่มีรหัสเลย (ชื่อรุ่นอยู่แค่ในข้อความของ LLM)
+        # เสนอเกิน 6 รุ่น = รายการยาว ไม่ตั้งโฟกัส (ลูกค้าต้องระบุเอง)
+        had_codes = bool((decision.payload or {}).get("codes"))
+        if not had_codes and decision.action in ("answer", "search") and out.reply:
+            mentioned = list(self.detector.detect(out.reply).parsed.belt_codes)
+            if 0 < len(mentioned) <= self.MAX_FOCUS_FROM_REPLY:
+                out.state_patch = {"codes": mentioned}
+        return out
 
     def close(self) -> None:
         """ปิด Qdrant แบบไฟล์ก่อนโปรแกรมจบ (ไม่บังคับในสัญญา — assistant.py เรียกผ่าน atexit)"""

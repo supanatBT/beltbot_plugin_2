@@ -120,7 +120,75 @@ nf = t.context.get("need_filter") or {}
 ok("ไม่มีรุ่นที่ตรง → kept ว่าง + แนบพิทช์ที่มีให้เลือก", nf.get("kept") == [] and nf.get("available_pitches_mm"),
    nf.get("kept"))
 
-print("\n4) สถานะ")
+print("\n4) รุ่นที่คำตอบเสนอ → โฟกัสเทิร์นหน้า (เว็บ 25 ต.ค.: \"ขอดูสเปคทั้งสองตัวเทียบกัน\" ถูกตีเป็นนอกเรื่อง)")
+from types import SimpleNamespace  # noqa: E402
+from core.protocol import LLMTurn, TurnOutput  # noqa: E402
+from core.turn import TurnEngine  # noqa: E402
+
+
+class _Log:
+    n = 0
+
+    def new_session(self):
+        return "s1"
+
+    def start_turn(self, **kw):
+        _Log.n += 1
+        return SimpleNamespace(turn_id=f"t{_Log.n}", summary_top1_pid="", summary_tool_calls=0)
+
+    def log_llm(self, *a, **k):
+        pass
+
+    def finish_turn(self, *a, **k):
+        pass
+
+
+class _Tools:
+    calls = []
+
+    def reset(self):
+        pass
+
+
+REPLY = ("จากข้อมูลพิทช์ 50.6 มม. ไม่มีรุ่นที่ตรง อย่างไรก็ตาม มีรุ่นพิทช์ใกล้เคียง 50.8 มม. ได้แก่\n"
+         "• MD508 C\n• EC508 PR11")
+seen = []
+
+
+class _RT:
+    def build_turn(self, decision, turn):
+        seen.append(decision)
+        return LLMTurn(system_prompt="", user_parts=[decision.effective_text])
+
+    def finish_turn(self, decision, turn, llm_turn, result):
+        return TurnOutput(REPLY if len(seen) == 1 else "ตารางเทียบสเปก")
+
+
+class _LLM:
+    def run(self, *a, **k):
+        return None
+
+
+plugin.runtime = _RT()
+eng = TurnEngine(core, llm=_LLM(), logger=_Log(), tool_log=_Tools())
+dst = core.state_cls()
+dst.brand = "modutech"
+dst.brands["modutech"]["slots"] = {"_flow": "temp", "pitch_mm": 50.6}
+dst.pending, dst.pending_question = "modutech_temp", "สายพานนี้รุ่นอะไร ใช้ในโรงงานบรรจุ 50.6"
+eng.dialog_states["s1"] = dst.to_dict()
+h = eng.chat("ไม่แน่ใจ", None, [], session_id="s1")
+st1 = core.state_cls.from_dict(eng.dialog_states["s1"])
+ok("หลังคำตอบแนะนำ → โฟกัส = รุ่นที่เสนอ", st1.brands["modutech"]["codes"] == ["MD508 C", "EC508 PR11"],
+   st1.brands["modutech"]["codes"])
+h = eng.chat("ขอดูสเปคทั้งสองตัวเทียบกัน", None, h[0], session_id="s1")
+ok("\"ขอดูสเปคทั้งสองตัวเทียบกัน\" → ตอบสองรุ่นนั้น ไม่ใช่นอกเรื่อง",
+   h[0][-1]["content"] == "ตารางเทียบสเปก" and seen[-1].payload.get("codes") == ["MD508 C", "EC508 PR11"],
+   (h[0][-1]["content"][:60], seen[-1].payload if seen else None))
+d = core.decide("ขอสเปคหน่อย", state=None)
+ok("สะกด \"สเปค\" นับเป็นเรื่องสินค้า", d.action != "refuse_offtopic", d.action)
+plugin.runtime = None
+
+print("\n5) สถานะ")
 raw = {"codes": [], "slots": {"_flow": "pitch", "pitch_mm": 25.4, "temp_c": "unknown", "junk": [1]}}
 san = plugin.sanitize_state(raw)
 ok("sanitize เก็บ _flow · pitch_mm · temp_c ทิ้งของแปลก", san["slots"] == {"_flow": "pitch", "pitch_mm": 25.4,
