@@ -123,7 +123,7 @@ class ModutechPlugin:
 
     # slot ที่ decide รู้จัก — ค่าอื่นทิ้ง (ย้ายมาจาก webapi/bot.py _SLOT_KEYS ชั้น 6)
     SLOT_KEYS = ("wet_or_dry", "material", "line_shape", "operating_temp_c",
-                 "pitch_mm", "temp_c", NF.FLOW_KEY)       # สามตัวท้าย: ถามทีละข้อ (need_flow.py)
+                 "pitch_mm", "temp_c", NF.FLOW_KEY, NF.PITCH_SAID_KEY)   # สี่ตัวท้าย: ถามทีละข้อ (need_flow.py)
 
     def sanitize_state(self, raw: dict) -> dict:
         """เก็บเฉพาะรหัสที่มีจริงในแคตตาล็อก · slot ที่รู้จักและเป็นค่าธรรมดา
@@ -253,9 +253,29 @@ class ModutechPlugin:
                             payload=dict(codes=[], slots=dict(slots)), pending=pending)
 
         ans = answer or ""
+
+        def take_pitch(v):
+            """พิทช์ที่ไม่มีในแคตตาล็อกแต่ใกล้ค่าที่มี → ถามยืนยันก่อน (ผู้ใช้เลือก 25 ต.ค.: 50.6 → หมายถึง 50.8 ไหม)"""
+            if isinstance(v, (int, float)):
+                opts = NF.nearest_pitches(self.mod, v)
+                if opts:
+                    slots[NF.PITCH_SAID_KEY] = v
+                    return ask("pitch_confirm", NF.ask_pitch_confirm_th(v, opts),
+                               f"ถามทีละข้อ: ยืนยันพิทช์ ({v:g} ไม่มีในแคตตาล็อก)", "modutech_pitch")
+            slots["pitch_mm"] = v
+            return None
+
+        if flow == "pitch_confirm" and "pitch_mm" not in slots:
+            said = slots.pop(NF.PITCH_SAID_KEY, None)
+            if isinstance(said, (int, float)):
+                slots["pitch_mm"] = NF.resolve_pitch_confirm(self.mod, said, ans)
+            else:
+                slots["pitch_mm"] = NF.UNKNOWN
         if flow == "pitch" and "pitch_mm" not in slots:
             v = None if NF.is_unknown(ans) else NF.parse_pitch(ans, bare_number=True)
-            slots["pitch_mm"] = v if v is not None else NF.UNKNOWN
+            d = take_pitch(v if v is not None else NF.UNKNOWN)
+            if d is not None:
+                return d
         if flow == "temp" and "temp_c" not in slots:
             v = None if NF.is_unknown(ans) else NF.parse_temp(ans, bare_number=True)
             slots["temp_c"] = v if v is not None else NF.UNKNOWN
@@ -264,7 +284,9 @@ class ModutechPlugin:
             v = NF.parse_pitch(text)                      # บอกมาแล้วพร้อมหน่วย/คำว่าพิทช์ → ไม่ถาม
             if v is None:
                 return ask("pitch", NF.ASK_PITCH_TH, "ถามทีละข้อ: พิทช์", "modutech_pitch")
-            slots["pitch_mm"] = v
+            d = take_pitch(v)
+            if d is not None:
+                return d
         if "temp_c" not in slots:
             v = slots.get("operating_temp_c")
             if v is None:

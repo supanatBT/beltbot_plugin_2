@@ -32,11 +32,57 @@ _UNKNOWN_RX = re.compile(r"ไม่ทราบ|ไม่รู้|ไม่แ
                          r"\bskip\b|don'?t\s*know|not\s*sure|n/?a\b", re.IGNORECASE)
 _NUM = r"(-?\d+(?:[.,]\d+)?)"
 _FRACTION_INCH = {"½": 0.5, "ครึ่ง": 0.5, "1/2": 0.5, "¼": 0.25, "1/4": 0.25, "3/4": 0.75, "¾": 0.75}
-PITCH_TOL_MM = 0.15           # ตรงพิทช์ (ปัดทศนิยม) · 25.4 ไม่นับ 25.7 / 25.8 / 26.0 ซึ่งเป็นคนละพิทช์ ใช้สเตอร์ร่วมกันไม่ได้
+PITCH_TOL_MM = 0.05           # ตรงพิทช์ (ปัดทศนิยม เช่น 15.2 = 15.24) · 25.4 ไม่นับ 25.7 / 25.8 / 26.0 ซึ่งเป็นคนละพิทช์ ใช้สเตอร์ร่วมกันไม่ได้
 PITCH_NEAR_MM = 1.0           # ใกล้เคียง — ไม่เสนอเป็นรุ่นที่ตรง แต่บอกลูกค้าว่ามี (เช่น ตระกูล 254 มีพิทช์ 25.4–26.0)
 # ข้อสังเกต (รายงาน ไม่ตัดสินแทน): ชื่อรุ่น "254" ไม่ได้แปลว่าพิทช์ 25.4 เสมอ — EC254 TR พิทช์ 26.0 ·
 # EC254 R พิทช์ 25.7 ตามตารางสเปกในเล่ม ลูกค้าที่บอก "1 นิ้ว" อาจหมายถึงตระกูลนี้ทั้งหมด จึงแนบรุ่นใกล้เคียงแยกไว้
 ROOM_TEMP_C = 30.0
+
+
+PITCH_SAID_KEY = "_pitch_said"     # พิทช์ที่ลูกค้าพิมพ์แต่ไม่มีในแคตตาล็อก — รอยืนยันค่าใกล้เคียง
+_NO_RX = re.compile(r"ไม่ใช่|ไม่ได้หมายถึง|ไม่เอา|^\s*ไม่\s*(?:ครับ|ค่ะ|คะ)?\s*$|\bno\b|\bnope\b", re.IGNORECASE)
+_YES_RX = re.compile(r"ใช่|ถูก|โอเค|ตามนั้น|เอา|ครับ|ค่ะ|คะ|\bok\b|\byes\b|👍", re.IGNORECASE)
+_INCH_TH = {12.7: "½ นิ้ว", 25.4: "1 นิ้ว", 38.1: "1½ นิ้ว", 50.8: "2 นิ้ว", 63.5: "2½ นิ้ว"}
+
+
+def nearest_pitches(cat, said: float, limit: int = 3) -> list[float]:
+    """พิทช์ในแคตตาล็อกที่ใกล้ค่าที่ลูกค้าพิมพ์ (≤ PITCH_NEAR_MM) — มีค่าตรงอยู่แล้ว = [] (ไม่ต้องถาม)"""
+    vals = pitch_values(cat)
+    if any(pitch_matches(v, said) for v in vals):
+        return []
+    near = sorted((v for v in vals if abs(v - said) <= PITCH_NEAR_MM), key=lambda v: (abs(v - said), v))
+    return near[:limit]
+
+
+def _pitch_label(v: float) -> str:
+    inch = _INCH_TH.get(v)
+    return f"{v:g} มม. ({inch})" if inch else f"{v:g} มม."
+
+
+def ask_pitch_confirm_th(said: float, options: list[float]) -> str:
+    if len(options) == 1:
+        return (f"สายพาน Modutech ไม่มีพิทช์ {said:g} มม. ครับ "
+                f"หมายถึง {_pitch_label(options[0])} ไหมครับ")
+    opts = ", ".join(_pitch_label(v) for v in options[:-1]) + f" หรือ {_pitch_label(options[-1])}"
+    return f"สายพาน Modutech ไม่มีพิทช์ {said:g} มม. ครับ ที่ใกล้ที่สุดคือ {opts} หมายถึงค่าไหนครับ"
+
+
+def resolve_pitch_confirm(cat, said: float, answer: str):
+    """คำตอบของคำถามยืนยันพิทช์ → ค่าพิทช์ที่ใช้กรอง (ตัวเลข หรือ UNKNOWN)
+    ตอบเลขใหม่ = ใช้เลขนั้น · ไม่ทราบ = UNKNOWN · ปฏิเสธ = ใช้ค่าที่พิมพ์ตอนแรก (กรองแล้วไม่มีรุ่น บอทจะบอกตรง ๆ)
+    ยืนยัน = ค่าใกล้เคียง (มีตัวเลือกเดียว) · หลายตัวเลือกแต่ไม่บอกเลข = UNKNOWN (ไม่เดาแทน)"""
+    a = answer or ""
+    if is_unknown(a):
+        return UNKNOWN
+    v = parse_pitch(a, bare_number=True)
+    if v is not None:
+        return v
+    if _NO_RX.search(a):
+        return said
+    opts = nearest_pitches(cat, said)
+    if _YES_RX.search(a) and len(opts) == 1:
+        return opts[0]
+    return UNKNOWN
 
 
 def is_unknown(answer: str) -> bool:
