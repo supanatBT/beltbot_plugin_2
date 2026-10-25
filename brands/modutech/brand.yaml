@@ -33,3 +33,13 @@ image:
   labels: null
   thresholds: null
   collection: modutech_images           # ที่เก็บ (Qdrant Cloud หรือ HF dataset) ยังไม่ตัดสิน — HANDOFF ข้อ 10
+
+# ประตูรูป (claude/PLAN_image_brand_ask.md) — ไม่บอกรุ่น · คัดรูปที่ไม่ใช่สินค้าทิ้ง + บอกว่าไป Modutech ได้เลยไหม
+# ไฟล์สร้างด้วย 21_image_eval/06_export_gate.py · ไม่มีไฟล์ = ปิดเอง (รูปไม่ระบุแบรนด์ → ถามแบรนด์)
+image_gate:
+  enabled: auto
+  file: image_gate.npz
+  model: google/siglip-base-patch16-384
+  not_product_score: 0.65      # คะแนนแกลเลอรีต่ำกว่านี้ = ไม่ใช่สินค้า (Modutech ต่ำสุด 0.719)
+  not_product_text: -0.02      # ใกล้ข้อความ "ของอื่น" มากกว่า "สายพาน/โซ่" เกินนี้ = ไม่ใช่สินค้า (ของจริงต่ำสุด −0.010 · ไม่ใช่สายพานสูงสุด −0.026)
+  direct_score: 0.8254         # คะแนนแกลเลอรีถึงนี้ = ไป Modutech ไม่ต้องถาม (Movex สูงสุดฝั่ง cal 0.8204 + 0.005)

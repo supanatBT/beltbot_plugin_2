@@ -7,6 +7,7 @@ core/decide.py
 ลำดับการตัดสินในหนึ่งเทิร์น (เท่าเดิม)
     รูปที่ระบบปฏิเสธ            → reject_image
     คำตอบของการถามกลับ          → รวมกับคำถามเดิม (ถ้าถามแบรนด์ไว้ ดูว่าตอบแบรนด์ไหน)
+                                   ถามแบรนด์เพราะรูป (core/image_policy) → ใช้ผลรูปที่เก็บไว้กับแบรนด์ที่ตอบ
     ทักทาย/ขอบคุณ               → smalltalk
     ไม่เกี่ยวกับสินค้า             → refuse_offtopic
     ขอช่องทางติดต่ออย่างเดียว     → escalate (ไม่ต้องรู้แบรนด์)
@@ -25,6 +26,7 @@ from typing import Optional, Sequence
 from core import router as _router
 from core import templates as T
 from core.protocol import BrandPlugin, DecideInput, Decision, ImageScore
+from core.image_policy import ImageCarry
 from core.sales import escalation_gate
 from core.text import any_word, has
 
@@ -87,7 +89,8 @@ class Dialogue:
     # ─────────────────────────── API หลัก ───────────────────────────
 
     def decide(self, text: str, has_image: bool = False, image: Optional[ImageScore] = None,
-               image_rejected: bool = False, state=None) -> Decision:
+               image_rejected: bool = False, state=None,
+               image_carry: Optional[ImageCarry] = None) -> Decision:
         st = copy.deepcopy(state) if state is not None else self.state_cls()
         text = (text or "").strip()
 
@@ -100,12 +103,25 @@ class Dialogue:
 
         # ── คำตอบของการถามกลับรอบก่อน: รวมกับคำถามเดิม ──
         effective = text
-        if st.pending and st.pending_question:
+        carried = None                    # ผลรูปของเทิร์นที่ถามแบรนด์ ใช้ได้เมื่อตอบแบรนด์เจ้าของคะแนนรูป
+        # ถามแบรนด์จากเทิร์นที่มีแต่รูป (ไม่มีข้อความ) — คำถามเดิมว่างได้ แต่ยังต้องอ่านคำตอบแบรนด์
+        if st.pending and (st.pending_question or st.pending == "brand"):
             if st.pending == "brand":
                 for key, p in self.plugins.items():
                     if any(has(pat, text) for pat in T.brand_answer_patterns(p.info)):
                         st.brand = key
                         break
+                if image_carry is not None and st.brand is not None and not has_image:
+                    sc = image_carry.best
+                    if sc is not None and sc.brand == st.brand:
+                        if image_carry.rejected:
+                            reply = self.plugins[st.brand].image_reject_th or GENERIC_REJECT_IMAGE_TH
+                            st.pending, st.pending_question = None, ""
+                            return Decision("reject_image", st.brand, reply,
+                                            f"ตอบ {st.brand} · รูปเทิร์นก่อนถูกปฏิเสธ",
+                                            effective_text=text, state=st,
+                                            payload={"image_carried": True})
+                        carried = sc
             effective = f"{st.pending_question} {text}".strip()
         st.pending, pending_before, st.pending_question = None, st.pending, ""
 
@@ -145,8 +161,10 @@ class Dialogue:
         if route.kind == "conflict_strong":
             st.pending, st.pending_question = "brand", effective
             conflict = [self.plugins[k].info for k in route.conflict]
-            return Decision("ask", None, T.clarify_conflict(conflict),
-                            f"เจอรหัสของ{T.all_brands_th(len(conflict))}",
+            only_image = all(v == _router.IMAGE_EVIDENCE for v in route.evidence.values())
+            why = ("รูปไม่ระบุแบรนด์ (บางแบรนด์ยังไม่มีตัวให้คะแนนรูป)" if only_image
+                   else f"เจอรหัสของ{T.all_brands_th(len(conflict))}")
+            return Decision("ask", None, T.clarify_conflict(conflict), why,
                             topic="brand", effective_text=effective, state=st)
         brand = route.brand if route.brand else st.brand
         if route.brand and st.brand and route.brand != st.brand:
@@ -167,10 +185,15 @@ class Dialogue:
 
         plugin = self.plugins[brand]
         img = image if (has_image and image is not None and image.brand == brand) else None
-        d = plugin.decide(DecideInput(text=effective, signal=signals[brand], has_image=has_image,
+        use_image = has_image
+        if carried is not None and carried.brand == brand:
+            img, use_image = carried, True
+        d = plugin.decide(DecideInput(text=effective, signal=signals[brand], has_image=use_image,
                                       image=img), st.brands[brand])
         if d.pending:
             st.pending, st.pending_question = d.pending, effective
+        if carried is not None and carried.brand == brand:
+            d.payload = {**(d.payload or {}), "image_carried": True}
         d.state = st
         return d
 

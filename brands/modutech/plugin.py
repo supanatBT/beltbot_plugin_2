@@ -261,6 +261,10 @@ class ModutechPlugin:
     def image_scorer(self):
         return None                      # ยังไม่มีรูปจริง — เปิดเมื่อ brand.yaml › image ผ่าน (enabled: auto)
 
+    def image_gate(self):
+        """ประตูรูป (brand.yaml › image_gate) — ไม่ใช่ตัวให้คะแนน · None = ปิด (core/image_policy ถามแบรนด์แทน)"""
+        return getattr(self, "_image_gate", None)
+
 
 def create(ctx):
     """registry เรียก — โหลดแคตตาล็อก (ตรวจ v30_3) กราฟ และ collection แยกของ Modutech"""
@@ -311,4 +315,9 @@ def create(ctx):
         else:
             print(f"⚠️ Modutech retriever ปิดอยู่ (ไม่พบ {qpath}) — ยังตอบจากรหัสและค้นทั้งฐานได้")
         plugin.runtime = ModutechRuntime(cat, plugin.search, kg, retriever, sh["tool_log"])
+        if sh.get("device") is not None:
+            from brands.modutech.image_gate import load_gate
+            plugin._image_gate, why = load_gate(cfg["key"], d, cfg.get("image_gate"), sh["device"])
+            print(f"{'✅' if plugin._image_gate else '⚠️'} Modutech ประตูรูป: "
+                  f"{'เปิด' if plugin._image_gate else 'ปิด'} — {why}")
     return plugin

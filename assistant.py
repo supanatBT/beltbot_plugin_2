@@ -164,8 +164,10 @@ plugins = load_plugins(_configs, shared=dict(
     vit=vit_models, logger=logger, tool_log=tool_log))
 DialogState = state_class(state_schema(_configs))
 _scorers = {k: s for k, s in ((k, p.image_scorer()) for k, p in plugins.items()) if s is not None}
+_gates = {k: g for k, g in ((k, getattr(p, "image_gate", lambda: None)()) for k, p in plugins.items())
+          if g is not None}
 dialogue = Dialogue(list(plugins.values()), DialogState, image_brands=tuple(_scorers))
-engine = TurnEngine(dialogue, llm_client, logger, tool_log, image_scorers=_scorers)
+engine = TurnEngine(dialogue, llm_client, logger, tool_log, image_scorers=_scorers, image_gates=_gates)
 _dialog_states = engine.dialog_states            # session_id → DialogState.to_dict() (webapi/bot.py ใช้ชื่อนี้)
 
 
@@ -175,7 +177,7 @@ def _close_plugins():
     for p in plugins.values():
         if hasattr(p, "close"):
             p.close()
-print(f"✅ แบรนด์: {', '.join(plugins)} · รับรูป: {', '.join(_scorers) or '-'}")
+print(f"✅ แบรนด์: {', '.join(plugins)} · รับรูป: {', '.join(_scorers) or '-'} · ประตูรูป: {', '.join(_gates) or '-'}")
 print("=" * 60)
 
 
