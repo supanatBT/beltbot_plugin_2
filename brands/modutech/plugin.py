@@ -195,7 +195,11 @@ class ModutechPlugin:
             slots.pop(NF.FLOW_KEY, None)
             flow = None
         if flow:
-            return self._need_flow(text, st, flow, answer)
+            d = self._need_flow(text, st, flow, answer)
+            if d is not None:
+                return d
+            # ลูกค้าเปลี่ยนเรื่อง → ตัดสินจากข้อความเทิร์นนี้อย่างเดียว (ไม่รวมคำถามเดิม)
+            text = answer or text
 
         q = self.search.parse(text)
         if q is not None and not codes.belt_codes:
@@ -257,31 +261,79 @@ class ModutechPlugin:
             return list(im[1])
         return [p["belt_code"] for p in self.mod.products]
 
-    def _need_flow(self, text: str, st: dict, flow: str, answer: str) -> Decision:
-        """ขั้นต่อไปของการถามทีละข้อ · text = ข้อความรวมทุกคำตอบ · answer = คำตอบดิบของเทิร์นนี้"""
+    # ── ตีความคำตอบของลูกค้าต่อคำถามที่ถามค้าง: LLM ก่อน (core/answer_interpreter) · ไม่ได้ = กฎเดิม ──
+    STEP_EXPECT = {"pitch": "number_mm", "pitch_confirm": "number_mm", "pitch_retry": "number_mm",
+                   "temp": "number_c", "wet": "wet_dry", "need": "free"}
+
+    def _step_question(self, flow: str, slots: dict) -> str:
+        said = slots.get(NF.PITCH_SAID_KEY)
+        opts = NF.nearest_pitches(self.mod, said) if isinstance(said, (int, float)) else []
+        if flow == "pitch_confirm" and opts:
+            return NF.ask_pitch_confirm_th(said, opts)
+        if flow == "pitch_retry" and opts:
+            return NF.ask_pitch_again_th(opts)
+        return {"pitch": NF.ASK_PITCH_TH, "pitch_confirm": NF.ASK_PITCH_TH, "pitch_retry": NF.ASK_PITCH_TH,
+                "temp": NF.ASK_TEMP_TH, "wet": NF.ASK_WET_TH, "need": NF.ASK_NEED_TH}[flow]
+
+    def _read_rules(self, flow: str, ans: str):
+        """กฎเดิม (regex) — ผลรูปเดียวกับตัวตีความ LLM"""
+        from core.answer_interpreter import AnswerReading
+        if flow in ("pitch", "temp", "wet", "pitch_confirm", "pitch_retry") and NF.is_question(ans):
+            return AnswerReading("question")
+        if NF.is_unknown(ans):
+            return AnswerReading("unknown")
+        if flow in ("pitch", "pitch_retry", "pitch_confirm"):
+            v = NF.parse_pitch(ans, bare_number=True)
+            if v is not None:
+                return AnswerReading("value", v, "mm")
+            if flow == "pitch_confirm":
+                if NF._NO_RX.search(ans):
+                    return AnswerReading("no")
+                if NF._YES_RX.search(ans):
+                    return AnswerReading("yes")
+            return AnswerReading("unknown")
+        if flow == "temp":
+            v = NF.parse_temp(ans, bare_number=True)
+            return AnswerReading("value", v, "c") if v is not None else AnswerReading("unknown")
+        return AnswerReading("other")
+
+    def _read_answer(self, flow: str, ans: str, slots: dict):
+        """คืน (reading, ที่มา) · ที่มา = "LLM" หรือ "กฎ" """
+        interp = getattr(self, "_interpreter", None)
+        expect = self.STEP_EXPECT.get(flow)
+        if interp is not None and expect and ans.strip():
+            r = interp.interpret(self._step_question(flow, slots), ans, expect)
+            if r is not None:
+                return r, "LLM"
+        return self._read_rules(flow, ans), "กฎ"
+
+    def _need_flow(self, text: str, st: dict, flow: str, answer: str) -> Optional[Decision]:
+        """ขั้นต่อไปของการถามทีละข้อ · text = ข้อความรวมทุกคำตอบ · answer = คำตอบดิบของเทิร์นนี้
+        คืน None = ลูกค้าเปลี่ยนเรื่อง (ตัวตีความ LLM บอก "other") → ออกจากการถาม ให้ทางปกติตัดสินต่อ"""
         slots, key = st["slots"], self.info.key
+        ans = answer or ""
+        reading, src = (None, "")
+        if ans and flow in self.STEP_EXPECT and flow != "need":
+            reading, src = self._read_answer(flow, ans, slots)
+        tag = f" · ตีความ: {src}" if src else ""
 
         def ask(step: str, reply: str, why: str, pending: str) -> Decision:
             slots[NF.FLOW_KEY] = step
-            return Decision("ask", key, reply, why, topic="recommend", effective_text=text,
+            return Decision("ask", key, reply, why + tag, topic="recommend", effective_text=text,
                             payload=dict(codes=[], slots=dict(slots)), pending=pending)
 
-        ans = answer or ""
-        asked = {"pitch": NF.ASK_PITCH_TH, "temp": NF.ASK_TEMP_TH, "wet": NF.ASK_WET_TH}
-        if flow in ("pitch", "temp", "wet", "pitch_confirm", "pitch_retry") and ans and NF.is_question(ans):
-            again = asked.get(flow, NF.ASK_PITCH_TH)
-            if flow == "pitch_retry":
-                said = slots.get(NF.PITCH_SAID_KEY)
-                opts = NF.nearest_pitches(self.mod, said) if isinstance(said, (int, float)) else []
-                again = NF.ask_pitch_again_th(opts) if opts else NF.ASK_PITCH_TH
-            if flow == "pitch_confirm":
-                said = slots.get(NF.PITCH_SAID_KEY)
-                opts = NF.nearest_pitches(self.mod, said) if isinstance(said, (int, float)) else []
-                again = NF.ask_pitch_confirm_th(said, opts) if opts else NF.ASK_PITCH_TH
-            pend = {"pitch": "modutech_pitch", "pitch_confirm": "modutech_pitch", "pitch_retry": "modutech_pitch",
-                    "temp": "modutech_temp",
-                    "wet": "wet_or_dry"}[flow]
-            return ask(flow, f"{NF.EXPLAIN_TH[flow]}\n\n{again}", f"ถามทีละข้อ: ลูกค้าถามกลับ ({flow}) → อธิบาย", pend)
+        pend = {"pitch": "modutech_pitch", "pitch_confirm": "modutech_pitch", "pitch_retry": "modutech_pitch",
+                "temp": "modutech_temp", "wet": "wet_or_dry"}
+        if reading is not None and reading.kind == "question":
+            return ask(flow, f"{NF.EXPLAIN_TH[flow]}\n\n{self._step_question(flow, slots)}",
+                       f"ถามทีละข้อ: ลูกค้าถามกลับ ({flow}) → อธิบาย", pend[flow])
+        if reading is not None and reading.kind == "other" and src == "LLM":
+            # ลูกค้าเปลี่ยนเรื่องกลางการถาม — เลิกถาม (ค่าที่ได้แล้วยังเก็บไว้)
+            slots.pop(NF.FLOW_KEY, None)
+            slots.pop(NF.PITCH_SAID_KEY, None)
+            return None
+        if reading is not None and reading.wet_or_dry and not slots.get("wet_or_dry"):
+            slots["wet_or_dry"] = reading.wet_or_dry
 
         def take_pitch(v):
             """พิทช์ที่ไม่มีในแคตตาล็อกแต่ใกล้ค่าที่มี → ถามยืนยันก่อน (ผู้ใช้เลือก 25 ต.ค.: 50.6 → หมายถึง 50.8 ไหม)"""
@@ -294,28 +346,36 @@ class ModutechPlugin:
             slots["pitch_mm"] = v
             return None
 
+        def number(expect):
+            return reading.number(expect) if (reading is not None and reading.kind == "value") else None
+
         if flow == "pitch_confirm" and "pitch_mm" not in slots:
             said = slots.get(NF.PITCH_SAID_KEY)
-            got = NF.resolve_pitch_confirm(self.mod, said, ans) if isinstance(said, (int, float)) else NF.UNKNOWN
-            if got == NF.REJECTED:
+            opts = NF.nearest_pitches(self.mod, said) if isinstance(said, (int, float)) else []
+            v = number("number_mm")
+            if reading is not None and reading.kind == "no":
                 # "ไม่ใช่" → ถามค่าจริง (ผู้ใช้ 25 ต.ค.) · เก็บค่าที่พิมพ์ตอนแรกไว้ใช้ในคำถาม
-                opts = NF.nearest_pitches(self.mod, said)
                 return ask("pitch_retry", NF.ask_pitch_again_th(opts),
                            f"ถามทีละข้อ: ลูกค้าบอกว่าไม่ใช่ {opts} → ถามพิทช์จริง", "modutech_pitch")
             slots.pop(NF.PITCH_SAID_KEY, None)
-            slots["pitch_mm"] = got
+            if v is not None:
+                slots["pitch_mm"] = v
+            elif reading is not None and reading.kind == "yes" and len(opts) == 1:
+                slots["pitch_mm"] = opts[0]
+            else:
+                slots["pitch_mm"] = NF.UNKNOWN            # หลายตัวเลือกแต่ไม่บอกเลข / ไม่ทราบ = ไม่เดาแทน
         if flow == "pitch_retry" and "pitch_mm" not in slots:
             # ถามซ้ำได้รอบเดียว — ตอบเลขอะไรมาก็ใช้เลขนั้น (ไม่มีในแคตตาล็อก บอทจะบอกตรง ๆ ตอนตอบ) กันวนไม่จบ
             slots.pop(NF.PITCH_SAID_KEY, None)
-            v = None if NF.is_unknown(ans) else NF.parse_pitch(ans, bare_number=True)
+            v = number("number_mm")
             slots["pitch_mm"] = v if v is not None else NF.UNKNOWN
         if flow == "pitch" and "pitch_mm" not in slots:
-            v = None if NF.is_unknown(ans) else NF.parse_pitch(ans, bare_number=True)
+            v = number("number_mm")
             d = take_pitch(v if v is not None else NF.UNKNOWN)
             if d is not None:
                 return d
         if flow == "temp" and "temp_c" not in slots:
-            v = None if NF.is_unknown(ans) else NF.parse_temp(ans, bare_number=True)
+            v = number("number_c")
             slots["temp_c"] = v if v is not None else NF.UNKNOWN
 
         if "pitch_mm" not in slots:
@@ -335,7 +395,7 @@ class ModutechPlugin:
             return ask("wet", NF.ASK_WET_TH, "ถามทีละข้อ: เปียก/แห้ง (ผลกรองอุณหภูมิต่างกัน)", "wet_or_dry")
 
         slots.pop(NF.FLOW_KEY, None)
-        return Decision("answer", key, reason="ค้นตามการใช้งาน · กรองพิทช์/อุณหภูมิที่ลูกค้าบอก",
+        return Decision("answer", key, reason="ค้นตามการใช้งาน · กรองพิทช์/อุณหภูมิที่ลูกค้าบอก" + tag,
                         effective_text=text, payload=dict(codes=[], slots=dict(slots)))
 
     # ─────────────────────────── ข้ามแบรนด์ ───────────────────────────
@@ -493,6 +553,7 @@ def create(ctx):
         else:
             print(f"⚠️ Modutech retriever ปิดอยู่ (ไม่พบ {qpath}) — ยังตอบจากรหัสและค้นทั้งฐานได้")
         plugin.runtime = ModutechRuntime(cat, plugin.search, kg, retriever, sh["tool_log"])
+        plugin._interpreter = sh.get("answer_interpreter")      # None = กฎเดิม (need_flow)
         if sh.get("device") is not None:
             from brands.modutech.image_gate import load_gate
             plugin._image_gate, why = load_gate(cfg["key"], d, cfg.get("image_gate"), sh["device"])

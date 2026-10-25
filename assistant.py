@@ -158,10 +158,18 @@ tool_log = ToolLog()
 # ================================================================
 # 3. ปลั๊กอิน + แกนกลาง
 # ================================================================
+# ตัวตีความคำตอบ (core/answer_interpreter · 25 ต.ค.): ANSWER_INTERPRETER=rules ปิด = ใช้กฎ regex เดิมทั้งหมด
+ANSWER_INTERPRETER = (os.getenv("ANSWER_INTERPRETER") or "llm").strip().lower()
+answer_interpreter = None
+if ANSWER_INTERPRETER == "llm":
+    from core.answer_interpreter import AnswerInterpreter    # noqa: E402
+    answer_interpreter = AnswerInterpreter(llm_client.complete, log=print)
+print(f"✅ ตีความคำตอบ: {'LLM (' + GEMINI_MODEL + ') · สำรองด้วยกฎ' if answer_interpreter else 'กฎ regex'}")
+
 plugins = load_plugins(_configs, shared=dict(
     device=DEVICE, jina_tokenizer=jina_tokenizer, jina_model=jina_model,
     siglip_processor=siglip_processor, siglip_model=siglip_model,
-    vit=vit_models, logger=logger, tool_log=tool_log))
+    vit=vit_models, logger=logger, tool_log=tool_log, answer_interpreter=answer_interpreter))
 DialogState = state_class(state_schema(_configs))
 _scorers = {k: s for k, s in ((k, p.image_scorer()) for k, p in plugins.items()) if s is not None}
 _gates = {k: g for k, g in ((k, getattr(p, "image_gate", lambda: None)()) for k, p in plugins.items())

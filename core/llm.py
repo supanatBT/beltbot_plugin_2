@@ -149,6 +149,17 @@ class GeminiClient:
     def describe(self) -> str:
         return f"google-generativeai · {self.model_name} · thinking ไม่จำกัด"
 
+    def complete(self, system: str, user: str, json_mode: bool = False, temperature: float | None = None) -> str:
+        """เรียกครั้งเดียว ไม่มี tool ไม่มีประวัติ — ใช้กับตัวตีความคำตอบ (core/answer_interpreter) และลูกค้าจำลอง"""
+        cfg = {}
+        if json_mode:
+            cfg["response_mime_type"] = "application/json"
+        if temperature is not None:
+            cfg["temperature"] = temperature
+        model = self.genai.GenerativeModel(model_name=self.model_name, system_instruction=system)
+        resp = with_retry(lambda: model.generate_content(user, generation_config=cfg or None))
+        return extract_text(resp)
+
     def run(self, turn: LLMTurn, chat_history: list, tool_calls: list) -> LLMResult:
         def attempt():
             model = self.genai.GenerativeModel(model_name=self.model_name,
@@ -217,6 +228,16 @@ class GenAIClient:
     def _parts(self, message):
         items = message if isinstance(message, (list, tuple)) else [message]
         return [self._part(p) for p in items]
+
+    def complete(self, system: str, user: str, json_mode: bool = False, temperature: float | None = None) -> str:
+        """เรียกครั้งเดียว ไม่มี tool ไม่มีประวัติ — ใช้กับตัวตีความคำตอบ (core/answer_interpreter) และลูกค้าจำลอง"""
+        t = self.types
+        cfg = t.GenerateContentConfig(system_instruction=system, thinking_config=self.thinking_config,
+                                      **({"response_mime_type": "application/json"} if json_mode else {}),
+                                      **({"temperature": temperature} if temperature is not None else {}))
+        resp = with_retry(lambda: self.client.models.generate_content(model=self.model_name, contents=user,
+                                                                      config=cfg))
+        return extract_text(resp)
 
     def run(self, turn: LLMTurn, chat_history: list, tool_calls: list) -> LLMResult:
         t = self.types
