@@ -197,7 +197,7 @@ SCENARIOS = {
         ("ใช้สเตอร์อะไร", dict(not_action="refuse_offtopic", codes=["MP80 C"])),
     ]),
     "C07": ("แนะนำงานใหม่หลังเพิ่งได้คำแนะนำ (โฟกัสเก่าไม่ควรค้าง)", [
-        ("สายพาน modutech สำหรับไก่ รุ่นไหนดี", dict(action="answer")),
+        ("สายพาน modutech สำหรับไก่ พิทช์ 2 นิ้ว ห้องเย็น 5 องศา ไลน์เปียก รุ่นไหนดี", dict(action="answer")),
         ("แล้วถ้าเป็นขนมปังเข้าเตาอบล่ะ", dict(action="answer", ctx_has="application_match")),
     ]),
     "C08": ("ไม่รู้อะไรเลย", [
@@ -222,7 +222,7 @@ SCENARIOS = {
         ("โอเคครับ จดเบอร์ไว้แล้ว ส่วนพิทช์ใช้ 2 นิ้วครับ", dict(reply_has="อุณหภูมิ", slot={"pitch_mm": 50.8})),
     ]),
     "C10": ("อ้างถึงรุ่นด้วยคำอ้างอิงหลายแบบ", [
-        ("สายพาน modutech สำหรับไก่ รุ่นไหนดี", dict(action="answer", bot="แนะนำ EC508 C และ HC508 C ครับ")),
+        ("สายพาน modutech สำหรับไก่ พิทช์ 2 นิ้ว ห้องเย็น 5 องศา ไลน์เปียก รุ่นไหนดี", dict(action="answer", bot="แนะนำ EC508 C และ HC508 C ครับ")),
         ("ตัวแรกพิทช์เท่าไหร่", dict(not_action="refuse_offtopic", codes=["EC508 C"])),
         ("แล้วตัวหลังล่ะ", dict(not_action="refuse_offtopic")),
         ("สองตัวนี้ต่างกันยังไง", dict(not_action="refuse_offtopic", codes=["EC508 C", "HC508 C"])),
@@ -253,6 +253,18 @@ SCENARIOS = {
     "C15": ("พูดถึงงานก่อน แล้วค่อยถามหาแบบ", [
         ("ทำโรงงานไก่ครับ", dict(not_action="refuse_offtopic")),
         ("มีสายพานแนะนำไหม", dict(not_action="refuse_offtopic")),
+    ]),
+    # 26 ต.ค. (ผู้ใช้เลือกข้อ 2 ก): บอกงาน + ขอให้ช่วยเลือก → ถามพิทช์/อุณหภูมิต่อ (บทอื่นที่ต้องการคำแนะนำทันที
+    # จึงบอกพิทช์ อุณหภูมิ และเปียก/แห้งมาในประโยคแรก)
+    "C33": ("บอกงานแล้วขอคำแนะนำ → ถามพิทช์ · เปลี่ยนงานกลางการถาม", [
+        ("สายพาน modutech สำหรับไก่ รุ่นไหนดี", dict(action="ask", reply_has="ระยะพิทช์")),
+        ("แล้วถ้าเป็นขนมปังเข้าเตาอบล่ะ", dict(action="ask", reply_has="ระยะพิทช์")),
+        ("1 นิ้ว", dict(action="ask", reply_has="อุณหภูมิ", slot={"pitch_mm": 25.4})),
+        ("110 องศา", dict(action="ask", reply_has="ไลน์เปียก")),       # PA6 ผ่านแห้ง ไม่ผ่านเปียก → ต้องถาม
+        ("แห้ง", dict(not_action="refuse_offtopic", ctx_has="application_match", ctx_codes=["SM254 FG50%"])),
+    ]),
+    "C34": ("ถามรายชื่อตามเล่ม ไม่ถามพิทช์", [
+        ("สายพาน modutech สำหรับงานเครื่องตรวจจับโลหะ ใช้รุ่นไหนได้บ้าง", dict(action="answer")),
     ]),
     "C16": ("หลังจบการถาม ลูกค้าเปลี่ยนพิทช์", [
         ("สายพาน modutech รุ่นไหนดี", dict(reply_has="ลำเลียงอะไร")),
@@ -294,13 +306,13 @@ SCENARIOS = {
         ("EC 508 C ทนร้อนกี่องศา", dict(not_action="refuse_offtopic", brand="modutech")),
     ]),
     "C23": ("หลังแนะนำ ขอรุ่นอื่นเพิ่ม", [
-        ("สายพาน modutech สำหรับไก่ รุ่นไหนดี", dict(action="answer")),
+        ("สายพาน modutech สำหรับไก่ พิทช์ 2 นิ้ว ห้องเย็น 5 องศา ไลน์เปียก รุ่นไหนดี", dict(action="answer")),
         ("มีรุ่นอื่นอีกไหม", dict(not_action="refuse_offtopic", ctx_has="excluded_already_offered",
                                   ctx_not_codes="__prev__")),
         ("ขอแบบผิวกันลื่น", dict(not_action="refuse_offtopic", no_codes=True)),
     ]),
     "C24": ("หลังแนะนำ ถามราคาทั้งสองตัว", [
-        ("สายพาน modutech สำหรับไก่ รุ่นไหนดี", dict(action="answer", bot="แนะนำ EC508 C และ HC508 C ครับ")),
+        ("สายพาน modutech สำหรับไก่ พิทช์ 2 นิ้ว ห้องเย็น 5 องศา ไลน์เปียก รุ่นไหนดี", dict(action="answer", bot="แนะนำ EC508 C และ HC508 C ครับ")),
         ("ราคาเท่าไหร่ทั้งสองตัว", dict(not_action=("refuse_offtopic", "ask"))),
     ]),
     "C25": ("รหัส → สเตอร์ → เพลา → แบบ", [
@@ -332,7 +344,7 @@ SCENARIOS = {
         ("ไม่ทราบ", dict(not_action="refuse_offtopic")),
     ]),
     "C31": ("ถามต่อสั้น ๆ หลังบอทเสนอรายการยาว (conv_r1/r2 CONV-30 กับ Gemini จริง)", [
-        ("สายพาน modutech สำหรับไก่ รุ่นไหนดี", dict(action="answer", bot=(
+        ("สายพาน modutech สำหรับไก่ พิทช์ 2 นิ้ว ห้องเย็น 5 องศา ไลน์เปียก รุ่นไหนดี", dict(action="answer", bot=(
             "อุตสาหกรรมสัตว์ปีกมี 27 รุ่น เช่น EC508 PR11, MP80 C, MP80 FG, EC508 C, HC508 C, "
             "HC508 MR, HC508 NT, EC508 FG, EC508 TR ครับ"))),
         ("ทำไม", dict(not_action="refuse_offtopic")),

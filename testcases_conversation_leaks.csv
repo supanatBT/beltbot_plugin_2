@@ -28,7 +28,7 @@ CONV-06,conversation,leak,multi,3,ส่งของกี่วัน,,,,ผม
 CONV-06,conversation,leak,multi,4,ขอเป็นนิ้ว,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-06,conversation,leak,multi,5,มีสีอะไรบ้าง,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-06,conversation,leak,multi,6,ใช้สเตอร์อะไร,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
-CONV-07,conversation,leak,multi,1,สายพาน modutech สำหรับไก่ รุ่นไหนดี,,,,,,,,,conversation,แนะนำงานใหม่หลังเพิ่งได้คำแนะนำ (โฟกัสเก่าไม่ควรค้าง)
+CONV-07,conversation,leak,multi,1,สายพาน modutech สำหรับไก่ พิทช์ 2 นิ้ว ห้องเย็น 5 องศา ไลน์เปียก รุ่นไหนดี,,,,,,,,,conversation,แนะนำงานใหม่หลังเพิ่งได้คำแนะนำ (โฟกัสเก่าไม่ควรค้าง)
 CONV-07,conversation,leak,multi,2,แล้วถ้าเป็นขนมปังเข้าเตาอบล่ะ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-08,conversation,leak,multi,1,อยากได้สายพาน modutech,,,ลำเลียงอะไร,,,,,,conversation,ไม่รู้อะไรเลย
 CONV-08,conversation,leak,multi,2,ไม่รู้ครับ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
@@ -43,7 +43,7 @@ CONV-09b,conversation,leak,multi,1,สายพาน modutech รุ่นไ�
 CONV-09b,conversation,leak,multi,2,ใช้กับไก่ครับ ไลน์ตัดแต่ง,,,พิทช์,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-09b,conversation,leak,multi,3,ขอเบอร์ฝ่ายขายก่อนได้ไหมครับ พอดีอยากคุยรายละเอียดเพิ่ม,,,086-3451403,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-09b,conversation,leak,multi,4,โอเคครับ จดเบอร์ไว้แล้ว ส่วนพิทช์ใช้ 2 นิ้วครับ,,,อุณหภูมิ,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
-CONV-10,conversation,leak,multi,1,สายพาน modutech สำหรับไก่ รุ่นไหนดี,,,,,,,,,conversation,อ้างถึงรุ่นด้วยคำอ้างอิงหลายแบบ
+CONV-10,conversation,leak,multi,1,สายพาน modutech สำหรับไก่ พิทช์ 2 นิ้ว ห้องเย็น 5 องศา ไลน์เปียก รุ่นไหนดี,,,,,,,,,conversation,อ้างถึงรุ่นด้วยคำอ้างอิงหลายแบบ
 CONV-10,conversation,leak,multi,2,ตัวแรกพิทช์เท่าไหร่,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-10,conversation,leak,multi,3,แล้วตัวหลังล่ะ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-10,conversation,leak,multi,4,สองตัวนี้ต่างกันยังไง,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
@@ -64,6 +64,12 @@ CONV-14,conversation,leak,multi,2,สายพานโมดูลาร์,,,,
 CONV-14,conversation,leak,multi,3,ไก่,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-15,conversation,leak,multi,1,ทำโรงงานไก่ครับ,,,,,,,,,conversation,พูดถึงงานก่อน แล้วค่อยถามหาแบบ
 CONV-15,conversation,leak,multi,2,มีสายพานแนะนำไหม,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-33,conversation,leak,multi,1,สายพาน modutech สำหรับไก่ รุ่นไหนดี,,,ระยะพิทช์,,,,,,conversation,บอกงานแล้วขอคำแนะนำ → ถามพิทช์ · เปลี่ยนงานกลางการถาม
+CONV-33,conversation,leak,multi,2,แล้วถ้าเป็นขนมปังเข้าเตาอบล่ะ,,,ระยะพิทช์,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-33,conversation,leak,multi,3,1 นิ้ว,,,อุณหภูมิ,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-33,conversation,leak,multi,4,110 องศา,,,ไลน์เปียก,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-33,conversation,leak,multi,5,แห้ง,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-34,conversation,leak,multi,1,สายพาน modutech สำหรับงานเครื่องตรวจจับโลหะ ใช้รุ่นไหนได้บ้าง,,,,,,,,,conversation,ถามรายชื่อตามเล่ม ไม่ถามพิทช์
 CONV-16,conversation,leak,multi,1,สายพาน modutech รุ่นไหนดี,,,ลำเลียงอะไร,,,,,,conversation,หลังจบการถาม ลูกค้าเปลี่ยนพิทช์
 CONV-16,conversation,leak,multi,2,ไก่,,,พิทช์,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-16,conversation,leak,multi,3,2 นิ้ว,,,อุณหภูมิ,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
@@ -87,10 +93,10 @@ CONV-21,conversation,leak,multi,3,วันนี้กินอะไรดี,
 CONV-21,conversation,leak,multi,4,แล้ว MP80 C กว้างสุดเท่าไหร่,,MP80 C,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-22,conversation,leak,multi,1,ec508c สเปก,,,,,,,,,conversation,พิมพ์รหัสแบบหลวม ๆ
 CONV-22,conversation,leak,multi,2,EC 508 C ทนร้อนกี่องศา,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
-CONV-23,conversation,leak,multi,1,สายพาน modutech สำหรับไก่ รุ่นไหนดี,,,,,,,,,conversation,หลังแนะนำ ขอรุ่นอื่นเพิ่ม
+CONV-23,conversation,leak,multi,1,สายพาน modutech สำหรับไก่ พิทช์ 2 นิ้ว ห้องเย็น 5 องศา ไลน์เปียก รุ่นไหนดี,,,,,,,,,conversation,หลังแนะนำ ขอรุ่นอื่นเพิ่ม
 CONV-23,conversation,leak,multi,2,มีรุ่นอื่นอีกไหม,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-23,conversation,leak,multi,3,ขอแบบผิวกันลื่น,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
-CONV-24,conversation,leak,multi,1,สายพาน modutech สำหรับไก่ รุ่นไหนดี,,,,,,,,,conversation,หลังแนะนำ ถามราคาทั้งสองตัว
+CONV-24,conversation,leak,multi,1,สายพาน modutech สำหรับไก่ พิทช์ 2 นิ้ว ห้องเย็น 5 องศา ไลน์เปียก รุ่นไหนดี,,,,,,,,,conversation,หลังแนะนำ ถามราคาทั้งสองตัว
 CONV-24,conversation,leak,multi,2,ราคาเท่าไหร่ทั้งสองตัว,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-25,conversation,leak,multi,1,EC508 C ใช้สเตอร์อะไร,,EC508 C,,,,,,,conversation,รหัส → สเตอร์ → เพลา → แบบ
 CONV-25,conversation,leak,multi,2,แล้วเพลาล่ะ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
@@ -110,7 +116,7 @@ CONV-29,conversation,leak,multi,1,แนะนำสายพานหน่อ�
 CONV-29,conversation,leak,multi,2,Modutech ครับ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-29,conversation,leak,multi,3,ไก่,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-29,conversation,leak,multi,4,ไม่ทราบ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
-CONV-31,conversation,leak,multi,1,สายพาน modutech สำหรับไก่ รุ่นไหนดี,,,,,,,,,conversation,ถามต่อสั้น ๆ หลังบอทเสนอรายการยาว (conv_r1/r2 CONV-30 กับ Gemini จริง)
+CONV-31,conversation,leak,multi,1,สายพาน modutech สำหรับไก่ พิทช์ 2 นิ้ว ห้องเย็น 5 องศา ไลน์เปียก รุ่นไหนดี,,,,,,,,,conversation,ถามต่อสั้น ๆ หลังบอทเสนอรายการยาว (conv_r1/r2 CONV-30 กับ Gemini จริง)
 CONV-31,conversation,leak,multi,2,ทำไม,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-31,conversation,leak,multi,3,แพงไหม,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-31,conversation,leak,multi,4,ตัวแรกพิทช์เท่าไหร่,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,

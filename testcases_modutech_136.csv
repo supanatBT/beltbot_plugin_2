@@ -161,7 +161,9 @@ EX-007,explore,explore,single,1,สายพานผิว Flush Grid มีร
 EX-008,explore,explore,single,1,มีสายพานรับแรงดึงเกิน 200000 N/m ไหม,,,ไม่มี | ไม่พบ,,,,,,explore,ไม่มีจริง ต้องตอบว่าไม่มี
 EX-009,explore,explore,single,1,สายพานผิวกันลื่นมีรุ่นไหนบ้าง,,MP80 NS | SM127 FG-GT | EC127 GT,,,,,,,explore,Non Slip
 EX-010,explore,explore,single,1,ต้องการสายพานรับแรงดึงอย่างน้อย 50000 N/m,,HD635 C | MD508 C | MD508 NS,,,,,,,explore,ต้องบอกว่าค้นครบทั้งฐาน
-AP-001,application,application,single,1,สายพานสำหรับไลน์ตัดแต่งเลาะกระดูกไก่ ใช้รุ่นไหนดี,,EC254 C | EC508 C | EC508 PR11,,,,,,,application,เลาะกระดูกไก่
+AP-001,application,application,multi,1,สายพานสำหรับไลน์ตัดแต่งเลาะกระดูกไก่ ใช้รุ่นไหนดี,,,พิทช์,,,,,,application,เลาะกระดูกไก่
+AP-001,application,application,multi,2,ไม่ทราบ,,,อุณหภูมิ,,,,,,application,
+AP-001,application,application,multi,3,ไม่ทราบ,,EC254 C | EC508 C | EC508 PR11,,,,,,,application,
 AP-002,application,application,single,1,สายพานทางเข้าเตาอบขนมปัง ใช้รุ่นไหนได้บ้าง,,EC127 FG | MD127 GAP50% | MD254 GAP48%,,,,,,,application,เตาอบเบเกอรี่
 AP-003,application,application,single,1,MP80 C ใช้กับอุตสาหกรรมอะไรบ้าง,,MP80 C,,,,,,,application,รุ่นเดียว หลายอุตสาหกรรม
 AP-004,application,application,single,1,สายพานสำหรับไลน์แล่ปลา,,,,,,,,,application,อาหารทะเล

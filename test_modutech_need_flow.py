@@ -74,8 +74,15 @@ ok("พิมพ์รหัสระหว่างถาม → ออกจ�
    and NF.FLOW_KEY not in slots_of(st))
 
 ds, st = run(["สายพาน modutech สำหรับไก่ รุ่นไหนดี"])
-ok("บอกงานมาตั้งแต่แรก → ตอบทันทีเหมือนเดิม (ไม่เข้าการถามทีละข้อ)", ds[0].action == "answer"
-   and NF.FLOW_KEY not in slots_of(st))
+# 26 ต.ค. ผู้ใช้เลือกข้อ 2 ก: บอกงาน + ขอให้ช่วยเลือก → ข้ามคำถามงาน ถามพิทช์ต่อ (เดิมตอบรายชื่อทันที)
+ok("บอกงานมาตั้งแต่แรก + ขอให้ช่วยเลือก → ถามพิทช์ต่อ (ข้ามคำถามงาน)", ds[0].action == "ask"
+   and ds[0].reply_th == NF.ASK_PITCH_TH and slots_of(st).get(NF.FLOW_KEY) == "pitch", ds[0].reply_th)
+ds, st = run(["สายพาน modutech สำหรับไก่ พิทช์ 2 นิ้ว รุ่นไหนดี"])
+ok("บอกพิทช์แล้วแต่ยังไม่บอกอุณหภูมิ → ถามอุณหภูมิ", ds[0].reply_th == NF.ASK_TEMP_TH, ds[0].reply_th)
+ds, st = run(["สายพาน modutech สำหรับไก่ พิทช์ 2 นิ้ว ห้องเย็น 5 องศา ไลน์เปียก รุ่นไหนดี"])
+ok("บอกครบ (งาน พิทช์ อุณหภูมิ เปียก/แห้ง) → ตอบทันที", ds[0].action == "answer", (ds[0].action, ds[0].reason))
+ds, st = run(["สายพานสำหรับงานเครื่องตรวจจับโลหะ ใช้รุ่นไหนได้บ้าง"])
+ok("ถามรายชื่อตามเล่ม (\"ใช้รุ่นไหนได้บ้าง\") → ตอบรายชื่อ ไม่ถามพิทช์", ds[0].action == "answer", ds[0].action)
 
 print("\n1b) พิทช์ที่ไม่มีในแคตตาล็อกแต่ใกล้ → ถามยืนยัน (ผู้ใช้เลือก 25 ต.ค.)")
 ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "50.6", "ใช่ครับ", "ไม่ทราบ"])
@@ -291,13 +298,14 @@ ok("ไม่มีสายพานเลี้ยว EC254 R ปน (ไม�
 d = core.decide("มีสายพาน modutech พิทช์ 50.8 ไหม", state=None)
 ok("ไม่มีงานก่อนหน้า → ค้นทั้งฐานเหมือนเดิม", d.action == "search", d.action)
 st = None
-for t in ["สายพาน modutech ไลน์ปลา รุ่นไหนดี", "ถ้าพิทช์ 2 นิ้วล่ะ"]:
+for t in ["สายพาน modutech ไลน์ปลา พิทช์ 1 นิ้ว ห้องเย็น 5 องศา ไลน์เปียก รุ่นไหนดี", "ถ้าพิทช์ 2 นิ้วล่ะ"]:
     d = core.decide(t, state=st)
     st = d.state
 nf = build_modutech_turn(d, cat, plugin.search).context.get("need_filter") or {}
 ok("ไลน์ปลา → \"ถ้าพิทช์ 2 นิ้วล่ะ\" กรองในงานปลา", nf.get("kept") and "MD508 C" in nf["kept"], nf.get("kept"))
 d = core.decide("EC508 C ถ้าพิทช์ 1 นิ้วล่ะ", state=st)
-ok("มีรหัสในประโยค → ไม่เอางานเดิมมาปน", "ไลน์ปลา" not in d.effective_text, d.effective_text)
+ok("มีรหัสในประโยค → ไม่เอางานเดิมมาปน", "ไลน์ปลา" not in d.effective_text and d.payload.get("codes") == ["EC508 C"],
+   d.effective_text)
 
 print("\n9) ตัดการ์ดเหลืออุตสาหกรรมที่ถาม (prompt 54k → ~46k ตัวอักษร · 26 ต.ค.)")
 card = next(p for p in t5.context["products"] if p["belt_code"] == "EC254 C")

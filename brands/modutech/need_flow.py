@@ -109,6 +109,9 @@ EXPLAIN_TH = {
 }
 
 
+REASK_TH = "ขอโทษครับ ยังไม่แน่ใจว่าหมายถึงอะไร "
+
+
 def is_question(answer: str) -> bool:
     """ลูกค้าถามกลับแทนการตอบ ("พิทช์คืออะไร") — ต้องอธิบายแล้วถามข้อเดิมอีกรอบ ไม่ใช่นับเป็น "ไม่ทราบ"
     (test_conversation_leaks C03 · 25 ต.ค.)"""
@@ -214,7 +217,7 @@ def filter_by_need(cat, belt_codes: Iterable[str], pitch_mm=None, temp_c=None,
     want_t = temp_c if isinstance(temp_c, (int, float)) else None
     cond = wet_or_dry if wet_or_dry in ("wet", "dry") else "wet"
     belt_codes_list = list(belt_codes)
-    kept, removed, grades, near, conflicts = [], {}, {}, {}, {}
+    kept, removed, grades, near, conflicts, near_grades = [], {}, {}, {}, {}, {}
     for code in belt_codes_list:
         p = cat.by_code.get(code)
         if p is None:
@@ -227,6 +230,9 @@ def filter_by_need(cat, belt_codes: Iterable[str], pitch_mm=None, temp_c=None,
             if bp is not None and abs(bp - want_p) <= PITCH_NEAR_MM and \
                     (want_t is None or any(variant_ok(v, want_t, cond) for v in sp["variants"])):
                 near[code] = bp
+                if want_t is not None:     # เกรดที่ผ่านอุณหภูมิ — turn.py เทียบกับเกรดที่เล่มแนะนำสำหรับงาน
+                    near_grades[code] = [f"{v['belt_material']}/{v['pin_material']}" for v in sp["variants"]
+                                         if variant_ok(v, want_t, cond)]
             continue
         if want_t is not None:
             ok = [f"{v['belt_material']}/{v['pin_material']}" for v in sp["variants"] if variant_ok(v, want_t, cond)]
@@ -271,7 +277,7 @@ def filter_by_need(cat, belt_codes: Iterable[str], pitch_mm=None, temp_c=None,
         note += (f" · รุ่นใน pitch_near มีพิทช์ใกล้เคียง (ต่างไม่เกิน {PITCH_NEAR_MM:g} มม.) แต่ไม่ตรง "
                  "บอกลูกค้าได้ว่ามี และต้องยืนยันพิทช์จริงก่อน เพราะใช้สเตอร์คนละชุด")
     return dict(kept=kept, removed=removed, grades=grades, cond=cond, note_th=note,
-                pitch_mm=want_p, temp_c=want_t, near=near, conflicts=conflicts)
+                pitch_mm=want_p, temp_c=want_t, near=near, conflicts=conflicts, near_grades=near_grades)
 
 
 def conflict_passing(variants: list, temp_c: float, cond: str) -> str:

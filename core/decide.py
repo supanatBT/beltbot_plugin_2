@@ -216,7 +216,10 @@ class Dialogue:
         d = plugin.decide(DecideInput(text=effective, signal=signals[brand], has_image=use_image,
                                       image=img, answer=text if pending_before else ""), st.brands[brand])
         if d.pending:
-            st.pending, st.pending_question = d.pending, effective
+            # ข้อความที่ปลั๊กอินใช้ตัดสินจริง (ปกติ = effective) — ปลั๊กอินเริ่มคำขอใหม่จากคำตอบได้
+            # 26 ต.ค. (C33): เปลี่ยนงานกลางการถาม ปลั๊กอินตัดคำขอเดิมทิ้ง แต่ที่นี่เคยเก็บข้อความรวมเดิมไว้
+            # เทิร์นหน้าจึงกลับไปเป็นงานเดิม
+            st.pending, st.pending_question = d.pending, (d.effective_text or effective)
         if carried is not None and carried.brand == brand:
             d.payload = {**(d.payload or {}), "image_carried": True}
         d.state = st

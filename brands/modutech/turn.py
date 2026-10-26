@@ -275,6 +275,26 @@ def filter_card_applications(products: list, kg) -> None:
             }
 
 
+def _near_grade_notes(nf: dict, context: dict, temp_c) -> dict:
+    """พิทช์ใกล้เคียงที่ผ่านอุณหภูมิด้วยเกรดที่เล่มไม่ได้ระบุสำหรับงานนี้ → หมายเหตุ (ผู้ใช้เลือก 26 ต.ค. ข้อ ข)
+
+    MD254 GAP48% งานเตาอบ: เล่มแนะนำ POM (ทนแห้ง 93 °C) · เกรด PA/PA ทน 120 °C แต่เล่มไม่ได้ระบุสำหรับงานเตาอบ
+    เสนอได้ แต่ต้องบอกว่าเกรดนั้นเล่มไม่ได้ระบุสำหรับงานนี้ ให้ยืนยันกับฝ่ายขาย (ไม่ซ่อน · ไม่รับรองเกิน)"""
+    recommended = (context.get("application_match") or {}).get("materials_by_belt") or {}
+    out = {}
+    for code, passing in (nf.get("near_grades") or {}).items():
+        rec = recommended.get(code)
+        if not rec or not passing:
+            continue
+        belt_ok = [g for g in passing if g.split("/")[0] in rec]
+        if belt_ok:
+            continue                                   # เกรดที่เล่มแนะนำผ่านอยู่แล้ว ไม่ต้องเตือน
+        out[code] = (f"แคตตาล็อกระบุเกรด {', '.join(rec)} สำหรับงานนี้ ซึ่งไม่ผ่าน {temp_c:g} °C "
+                     f"เกรดที่ผ่านคือ {', '.join(passing)} แต่เล่มไม่ได้ระบุเกรดนี้สำหรับงานนี้ "
+                     "ถ้าเสนอรุ่นนี้ต้องบอกลูกค้าทั้งสองข้อและให้ยืนยันกับพนักงานฝ่ายขาย")
+    return out
+
+
 def trim_card_industries(products: list, context: dict, cat: Catalogue) -> None:
     """คำถามแนะนำรุ่นตามงาน/อุตสาหกรรม: การ์ดแต่ละรุ่นเหลือเฉพาะอุตสาหกรรมที่ถาม (แก้ในที่)
 
@@ -500,6 +520,7 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
             **({"grades_passing_temperature": nf["grades"]} if nf["grades"] else {}),
             **({"pitch_near": nf["near"]} if nf["near"] else {}),
             **({"temperature_conflicts": nf["conflicts"]} if nf.get("conflicts") else {}),
+            **({"pitch_near_grade_notes_th": notes} if (notes := _near_grade_notes(nf, context, want_temp)) else {}),
             **({"available_pitches_mm": NF.pitch_values(cat)} if not kept and nf["pitch_mm"] is not None else {}),
         }
         debug.append(f"need_filter: {len(base)} → {len(kept)} รุ่น ({nf['note_th'][:60]})")

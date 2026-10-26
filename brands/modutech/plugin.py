@@ -33,6 +33,10 @@ OTHER_RX = r"รุ่นอื่น|แบบอื่น|ตัวอื่�
 EXCLUDE_KEY = "_exclude"          # รุ่นที่ลูกค้าขอให้ตัดออก ("ขอรุ่นอื่น") — ส่งไป build_turn เทิร์นเดียว
 FOLLOWUP_CHARS = 40
 MOD_RECOMMEND = r"แนะนำ|ใช้รุ่นไหน|ใช้อะไรดี|ตัวไหนดี|รุ่นไหนดี|เหมาะกับ|มีอะไรบ้าง|สายพานอะไร"
+# ขอให้ช่วยเลือก (ไม่ใช่ถามรายชื่อ) — บอกงานแล้วแต่ยังไม่รู้พิทช์ → ถามทีละข้อต่อ (ผู้ใช้เลือก 26 ต.ค. ข้อ 2 ก)
+# "ใช้รุ่นไหน(ได้)บ้าง" "มีงานอะไรบ้าง" = ถามรายชื่อตามเล่ม → ตอบรายชื่อเหมือนเดิม (graph_apps)
+MOD_PICK = r"แนะนำ|รุ่นไหนดี|ตัวไหนดี|อันไหนดี|ใช้อะไรดี|หาสายพาน|อยากได้สายพาน|ต้องการสายพาน|กำลังหา|ช่วยเลือก"
+MOD_LIST = r"บ้าง|ทั้งหมด|ทุกรุ่น"
 
 ASK_WET_DRY_TH = ("ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง "
                   "เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C")
@@ -138,7 +142,8 @@ class ModutechPlugin:
     # slot ที่ decide รู้จัก — ค่าอื่นทิ้ง (ย้ายมาจาก webapi/bot.py _SLOT_KEYS ชั้น 6)
     SLOT_KEYS = ("wet_or_dry", "material", "line_shape", "operating_temp_c",
                  "pitch_mm", "temp_c", NF.FLOW_KEY, NF.PITCH_SAID_KEY,   # สี่ตัวนี้: ถามทีละข้อ (need_flow.py)
-                 "_need_text")
+                 "_need_text", "_reask")
+    REASK_KEY = "_reask"          # ขั้นที่ถามซ้ำไปแล้วหนึ่งครั้งเพราะอ่านคำตอบไม่ออก (กันวน)
     NEED_TEXT_KEY = "_need_text"  # ข้อความที่บอกงาน/อุตสาหกรรมล่าสุด — ใช้กับคำถามต่อที่เปลี่ยนแค่พิทช์/อุณหภูมิ
     NEED_TEXT_MAX = 300
     OFFERED_KEY = "_offered"      # รุ่นที่คำตอบล่าสุดเสนอ (list) — ใช้เมื่อลูกค้าอ้างถึง ไม่ใช่โฟกัสทันที
@@ -219,6 +224,15 @@ class ModutechPlugin:
         if flow and (codes.belt_codes or codes.sprocket_codes or codes.candidates or st["codes"]):
             slots.pop(NF.FLOW_KEY, None)
             flow = None
+        # ลูกค้าบอกงานใหม่แทนการตอบ ("แล้วถ้าเป็นขนมปังเข้าเตาอบล่ะ" ตอนถามพิทช์) → เริ่มคำขอใหม่จากข้อความนี้
+        # 26 ต.ค. (C07): เดิมกฎอ่านไม่ออก = "ไม่ทราบพิทช์" แล้วถามอุณหภูมิต่อของงานเดิม
+        # ต้องไม่ใช่คำตอบของข้อที่ถาม — "ฉีดน้ำล้างทุกวัน" ตอบเปียก/แห้ง แม้คำว่า "ล้าง" จับเป็นงานได้ (CONV-26)
+        if flow and flow != "need" and answer and self._need_in(answer) and not re.search(r"\d", answer) \
+                and self._read_rules_sure(flow, answer) is None:
+            slots.pop(NF.FLOW_KEY, None)
+            slots.pop(NF.PITCH_SAID_KEY, None)
+            slots.pop(self.NEED_TEXT_KEY, None)
+            flow, text = "need", answer                # ยังอยู่ในการช่วยเลือก → ถามพิทช์ของงานใหม่ต่อ
         if flow:
             d = self._need_flow(text, st, flow, answer)
             if d is not None:
@@ -289,6 +303,16 @@ class ModutechPlugin:
             return Decision("ask", key, NF.ASK_NEED_TH, "ยังไม่รู้งานของลูกค้า",
                             topic="recommend", effective_text=text,
                             payload=dict(codes=[], slots=dict(slots)), pending="modutech_need")
+
+        # ── บอกงานมาแล้ว + ขอให้ช่วยเลือก แต่ยังไม่รู้พิทช์ → ถามทีละข้อต่อ (ข้ามคำถามงาน) ──
+        # ลูกค้าจำลอง 26 ต.ค.: ลูกค้าบอกงานตั้งแต่ข้อความแรกแทบทุกบท บอทส่งรายการ 27–41 รุ่นทันที
+        # ขั้นตอนถามพิทช์/อุณหภูมิจึงแทบไม่ได้ทำงาน (เรียกตัวตีความ 1 ครั้งใน 28 บท)
+        need_known = "pitch_mm" in slots and ("temp_c" in slots or "operating_temp_c" in slots)
+        if not focus and not codes.sprocket_codes and not need_known \
+                and has(MOD_PICK, text) and not has(MOD_LIST, text) and self._need_in(text):
+            d = self._need_flow(text, st, "need", "")
+            if d is not None:
+                return d
 
         self._remember_need(text, st)
         return Decision("answer", key, reason="รหัสชัด" if focus else "ค้นตามการใช้งาน",
@@ -363,7 +387,8 @@ class ModutechPlugin:
             return AnswerReading("question")
         if NF.is_unknown(a) and not nums:
             return AnswerReading("unknown")
-        if flow in ("pitch", "pitch_retry", "pitch_confirm") and len(nums) == 1:
+        # ตัวเลขเดียว หรือคำที่แปลงเป็นค่าได้เอง ("ครึ่งนิ้ว" "อุณหภูมิห้อง") — สองตัวขึ้นไปไม่แน่ใจ
+        if flow in ("pitch", "pitch_retry", "pitch_confirm") and len(nums) <= 1:
             v = NF.parse_pitch(a, bare_number=True)
             if v is not None and not (flow == "pitch_confirm" and NF._NO_RX.search(a)):
                 return AnswerReading("value", v, "mm")
@@ -376,7 +401,7 @@ class ModutechPlugin:
             yes = bool(NF._YES_RX.search(rest))
             if yes != no:
                 return AnswerReading("yes" if yes else "no")
-        if flow == "temp" and len(nums) == 1:
+        if flow == "temp" and len(nums) <= 1:
             v = NF.parse_temp(a, bare_number=True)
             if v is not None:
                 return AnswerReading("value", v, "c")
@@ -398,7 +423,7 @@ class ModutechPlugin:
             r = interp.interpret(self._step_question(flow, slots), ans, expect)
             if r is not None:
                 return r, "LLM"
-        return self._read_rules(flow, ans), "กฎ"
+        return self._read_rules(flow, ans), "กฎ (เดา)"
 
     def _need_flow(self, text: str, st: dict, flow: str, answer: str) -> Optional[Decision]:
         """ขั้นต่อไปของการถามทีละข้อ · text = ข้อความรวมทุกคำตอบ · answer = คำตอบดิบของเทิร์นนี้
@@ -412,6 +437,8 @@ class ModutechPlugin:
 
         def ask(step: str, reply: str, why: str, pending: str) -> Decision:
             slots[NF.FLOW_KEY] = step
+            if slots.get(self.REASK_KEY) not in (None, step):
+                slots.pop(self.REASK_KEY, None)
             return Decision("ask", key, reply, why + tag, topic="recommend", effective_text=text,
                             payload=dict(codes=[], slots=dict(slots)), pending=pending)
 
@@ -419,6 +446,12 @@ class ModutechPlugin:
         if reading is not None and reading.kind == "question":
             return ask(flow, f"{NF.EXPLAIN_TH[flow]}\n\n{self._step_question(flow, slots)}",
                        f"ถามทีละข้อ: ลูกค้าถามกลับ ({flow}) → อธิบาย", pend[flow])
+        # กฎอ่านไม่ออก (และไม่มี LLM หรือ LLM ล้ม) → ถามข้อเดิมซ้ำหนึ่งครั้ง ครั้งที่สองค่อยนับว่าไม่ทราบ
+        # 26 ต.ค. (CONV-20): ลูกค้าพิมพ์ "modutech" ตอนถามพิทช์ เดิมบันทึกว่า "ไม่ทราบพิทช์" ทันที
+        if src == "กฎ (เดา)" and flow in pend and slots.get(self.REASK_KEY) != flow:
+            slots[self.REASK_KEY] = flow
+            return ask(flow, f"{NF.REASK_TH}{self._step_question(flow, slots)}",
+                       f"ถามทีละข้อ: อ่านคำตอบไม่ออก ({flow}) → ถามซ้ำหนึ่งครั้ง", pend[flow])
         if reading is not None and reading.kind == "other" and src == "LLM":
             # ลูกค้าเปลี่ยนเรื่องกลางการถาม — เลิกถาม (ค่าที่ได้แล้วยังเก็บไว้)
             slots.pop(NF.FLOW_KEY, None)
@@ -487,6 +520,7 @@ class ModutechPlugin:
             return ask("wet", NF.ASK_WET_TH, "ถามทีละข้อ: เปียก/แห้ง (ผลกรองอุณหภูมิต่างกัน)", "wet_or_dry")
 
         slots.pop(NF.FLOW_KEY, None)
+        slots.pop(self.REASK_KEY, None)
         self._remember_need(text, st)
         return Decision("answer", key, reason="ค้นตามการใช้งาน · กรองพิทช์/อุณหภูมิที่ลูกค้าบอก" + tag,
                         effective_text=text, payload=dict(codes=[], slots=dict(slots)))
