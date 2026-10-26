@@ -202,6 +202,11 @@ class ModutechPlugin:
             text = answer or text
 
         q = self.search.parse(text)
+        if q is not None and q.op == "==" and not (q.surface or q.pin_material or q.belt_material) and \
+                (self.search.match_application(text) is not None or self._names_industry(text)):
+            # "เข้าเตาอบ … พิทช์ 1 นิ้ว" = บอกงานพร้อมพิทช์ → ทางงานใช้ แล้วกรองพิทช์/อุณหภูมิด้วยโค้ด (turn.py)
+            # ไม่ใช่ค้นพิทช์ทั้งฐานซึ่งไม่สนงานที่ลูกค้าบอก (26 ต.ค. · OVEN-01/02)
+            q = None
         if q is not None and not codes.belt_codes:
             return Decision("search", key, reason="คำถามเชิงสำรวจ → ค้นทั้งฐาน", topic="explore",
                             effective_text=text,

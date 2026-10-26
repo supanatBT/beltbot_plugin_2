@@ -143,6 +143,21 @@ def parse_pitch(text: str, bare_number: bool = False) -> Optional[float]:
     return None
 
 
+_PITCH_WORD = re.compile(r"พิทช์|พิทซ์|พิช|pitch", re.IGNORECASE)
+
+
+def stated_pitch(text: str) -> Optional[float]:
+    """พิทช์ที่ลูกค้าพิมพ์มาเองในข้อความอิสระ (ไม่ใช่คำตอบของคำถามพิทช์)
+    ต้องมีคำว่าพิทช์ แล้วอ่านเฉพาะช่วงหลังคำนั้น — กัน "กว้าง 24 นิ้ว" หรือ "120 องศา" ถูกอ่านเป็นพิทช์"""
+    m = _PITCH_WORD.search(text or "")
+    if not m:
+        return None
+    seg = (text or "")[m.start():m.start() + 30]
+    seg = re.sub(r"-?\d+(?:[.,]\d+)?\s*(?:°\s*C|องศา|℃)", " ", seg)
+    v = parse_pitch(seg)
+    return v if v is not None and 1.0 <= v <= 200.0 else None
+
+
 def parse_temp(text: str, bare_number: bool = False) -> Optional[float]:
     t = (text or "").replace(",", ".")
     # "ลบ 35" / "ติดลบ 35" / "minus 35" = -35 (test_conversation_leaks C13 · เดิมได้ +35)
@@ -194,7 +209,7 @@ def filter_by_need(cat, belt_codes: Iterable[str], pitch_mm=None, temp_c=None,
     want_t = temp_c if isinstance(temp_c, (int, float)) else None
     cond = wet_or_dry if wet_or_dry in ("wet", "dry") else "wet"
     belt_codes_list = list(belt_codes)
-    kept, removed, grades, near = [], {}, {}, {}
+    kept, removed, grades, near, conflicts = [], {}, {}, {}, {}
     for code in belt_codes_list:
         p = cat.by_code.get(code)
         if p is None:
@@ -203,7 +218,9 @@ def filter_by_need(cat, belt_codes: Iterable[str], pitch_mm=None, temp_c=None,
         bp = (sp.get("pitch") or {}).get("mm")
         if want_p is not None and not pitch_matches(bp, want_p):
             removed[code] = f"พิทช์ {bp:g} มม." if bp is not None else "ไม่มีข้อมูลพิทช์"
-            if bp is not None and abs(bp - want_p) <= PITCH_NEAR_MM:
+            # พิทช์ใกล้เคียงต้องผ่านอุณหภูมิด้วย ไม่งั้นบอทเสนอเป็นทางเลือกทั้งที่ทนไม่ได้ (OVEN-02 · MD254 GAP48%)
+            if bp is not None and abs(bp - want_p) <= PITCH_NEAR_MM and \
+                    (want_t is None or any(variant_ok(v, want_t, cond) for v in sp["variants"])):
                 near[code] = bp
             continue
         if want_t is not None:
@@ -214,6 +231,11 @@ def filter_by_need(cat, belt_codes: Iterable[str], pitch_mm=None, temp_c=None,
                 his, los = [h for h in his if h is not None], [lo for lo in los if lo is not None]
                 rng = f"{min(los):g} ถึง {max(his):g} °C" if his and los else "ไม่มีข้อมูล"
                 removed[code] = f"ทน{'เปียก' if cond == 'wet' else 'แห้ง'}ได้ {rng}"
+                # ตัดตามค่าที่เข้มกว่าไว้ก่อน (ไม่เดา) แต่ถ้าเล่มอีกหน้าให้ค่าที่ผ่าน ต้องรายงานข้อขัดแย้ง ไม่ใช่เงียบ
+                # (SM254 FG50% PA6: ตารางสเปก 116 °C · หน้า 347 120 °C — ลูกค้าถาม 120 แห้ง)
+                why = conflict_passing(sp["variants"], want_t, cond)
+                if why:
+                    conflicts[code] = why
                 continue
             grades[code] = ok
         kept.append(code)
@@ -237,11 +259,30 @@ def filter_by_need(cat, belt_codes: Iterable[str], pitch_mm=None, temp_c=None,
         note = (f"กรองตามที่ลูกค้าบอก: {' · '.join(parts)} — เหลือ {len(kept)} รุ่น ตัดออก {len(removed)} รุ่น "
                 "ห้ามเสนอรุ่นที่ถูกตัดออก ถ้าเหลือ 0 รุ่น ให้บอกตรง ๆ ว่าไม่มีรุ่นที่ตรงทุกเงื่อนไข "
                 "และบอกว่าติดเงื่อนไขไหน")
+    if conflicts:
+        note += (" · รุ่นใน temperature_conflicts ถูกตัดตามค่าที่เข้มกว่าในเล่ม แต่เล่มอีกหน้าระบุค่าที่ผ่าน "
+                 "ต้องบอกลูกค้าทั้งสองค่าตามข้อความนั้น ห้ามบอกว่าใช้ได้ ให้ยืนยันกับฝ่ายขายก่อน")
     if near:
         note += (f" · รุ่นใน pitch_near มีพิทช์ใกล้เคียง (ต่างไม่เกิน {PITCH_NEAR_MM:g} มม.) แต่ไม่ตรง "
                  "บอกลูกค้าได้ว่ามี และต้องยืนยันพิทช์จริงก่อน เพราะใช้สเตอร์คนละชุด")
     return dict(kept=kept, removed=removed, grades=grades, cond=cond, note_th=note,
-                pitch_mm=want_p, temp_c=want_t, near=near)
+                pitch_mm=want_p, temp_c=want_t, near=near, conflicts=conflicts)
+
+
+def conflict_passing(variants: list, temp_c: float, cond: str) -> str:
+    """ข้อความข้อขัดแย้งของเกรดที่ค่าในเล่มอีกแหล่งให้ผ่าน (ไม่งั้น "")
+    registry_dry_max_c / registry_conflict_th — ค่าสูงสุดแห้งจากหน้าวัสดุ ที่ไม่ตรงกับตารางสเปกรายรุ่น
+    temperature_unconfirmed_th — ค่าที่ระบบเลือกค่าเข้มไว้ก่อนเพราะเล่มพิมพ์ขัดกันเอง"""
+    out = []
+    for v in variants:
+        t = v.get("temperature") or {}
+        lo, _ = _temp_range(v, cond)
+        if cond == "dry" and t.get("registry_conflict_th") and isinstance(t.get("registry_dry_max_c"), (int, float)) \
+                and (lo is None or lo <= temp_c) and temp_c <= t["registry_dry_max_c"]:
+            out.append(f"{v.get('belt_material')}/{v.get('pin_material')}: {t['registry_conflict_th']}")
+        elif v.get("temperature_trust") == "unconfirmed" and v.get("temperature_unconfirmed_th"):
+            out.append(f"{v.get('belt_material')}/{v.get('pin_material')}: {v['temperature_unconfirmed_th']}")
+    return " · ".join(dict.fromkeys(out))
 
 
 def wet_dry_matters(cat, belt_codes: Iterable[str], pitch_mm, temp_c) -> bool:
