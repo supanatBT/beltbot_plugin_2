@@ -239,9 +239,16 @@ nf = t.context.get("need_filter") or {}
 ok("โค้ดกรอง: 120 °C แห้ง พิทช์ 25.4 → ไม่เหลือรุ่น · SM254 FG50% ถูกตัด (ทนแห้ง 116)",
    nf.get("kept") == [] and "116" in (nf.get("removed") or {}).get("SM254 FG50%", "")
    and t.context["products"] == [], nf.get("removed"))
-ok("รายงานข้อขัดแย้ง 116 (ตารางสเปก) กับ 120 (หน้า 347) ของ SM254 FG50%",
-   "116" in (nf.get("temperature_conflicts") or {}).get("SM254 FG50%", "")
-   and "120" in nf["temperature_conflicts"]["SM254 FG50%"], nf.get("temperature_conflicts"))
+ok("SM254 FG50% 116 < หน้า 347 120 ไม่นับเป็นข้อขัดแย้ง (v30_3 spec-exceeds-material-limit · ตรงกับ gates)",
+   "SM254 FG50%" not in (nf.get("temperature_conflicts") or {}), nf.get("temperature_conflicts"))
+r = NF.filter_by_need(cat, ["HC152 FG", "MP80 FG", "SM254 FG50%"], None, 130, "dry")
+ok("ข้อขัดแย้งจริง (ตารางสเปก 150 > เนื้อวัสดุ 120) ที่ 130 °C → ตัดตามค่าเข้ม + รายงาน",
+   r["kept"] == [] and "150" in r["conflicts"].get("HC152 FG", "") and "SM254 FG50%" not in r["conflicts"], r["conflicts"])
+r = NF.filter_by_need(cat, ["MD254 RR"], None, 110, "dry")
+ok("ค่ายังไม่ยืนยัน (MD254 RR PPH 93 · เนื้อวัสดุ 115) ที่ 110 °C → ตัดทั้งรุ่น + รายงาน",
+   r["kept"] == [] and "MD254 RR" in r["conflicts"], r)
+r = NF.filter_by_need(cat, ["MD254 RR"], None, 160, "dry")
+ok("160 °C เกินเนื้อวัสดุด้วย → ตัดเฉย ๆ ไม่เตือน", r["conflicts"] == {} and r["kept"] == [], r["conflicts"])
 ok("พิทช์ใกล้เคียงที่เสนอได้ต้องทน 120 °C ด้วย (MD254 GAP48% เกรด PA/PA 120)",
    nf.get("pitch_near") == {"MD254 GAP48%": 25.7}, nf.get("pitch_near"))
 d = core.decide(OVEN.replace("120", "110"), state=None)
