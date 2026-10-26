@@ -521,6 +521,10 @@ class ModutechPlugin:
         if "temp_c" not in slots:
             v = slots.get("operating_temp_c")
             if v is None:
+                # บอกอุณหภูมิเป็นคำมาก่อน ("อุณหภูมิ room temp ปกติ" ตอนตอบว่าลำเลียงอะไร) — ไม่ถามซ้ำ
+                # main_sim G07 (26 ต.ค.): ลูกค้า "ก็บอกไปแล้วว่า room temp ปกติครับ ถามซ้ำทำไม"
+                v = NF.parse_temp(text)
+            if v is None:
                 return ask("temp", NF.ASK_TEMP_TH, "ถามทีละข้อ: อุณหภูมิ", "modutech_temp")
             slots["temp_c"] = v
         if flow != "wet" and not slots.get("wet_or_dry") and \

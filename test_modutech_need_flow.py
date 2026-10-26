@@ -268,6 +268,12 @@ nf = t.context.get("need_filter") or {}
 ok("บอกแค่อุณหภูมิ (ไม่ผ่านการถามทีละข้อ) → โค้ดกรองรายชื่อครบ ไม่ปล่อยให้ LLM เลือกเอง",
    nf and all(c in nf["kept"] for c in t.context.get("application_match", t.context.get("industry_match", {}))
               .get("belt_codes_complete", [])) and nf["removed"], (d.action, list(t.context)))
+print("\n6b) บอกพิทช์/อุณหภูมิมาก่อนถูกถาม (main_sim G07 · 26 ต.ค.)")
+ds, st = run(["สายพาน modutech รุ่นไหนดี", "ใช้ลำเลียง dry food ครับ เป็น dry process อุณหภูมิ room temp ปกติ ใช้ pitch half inch"])
+ok("\"pitch half inch\" + \"room temp\" ในคำตอบเรื่องงาน → ไม่ถามพิทช์/อุณหภูมิซ้ำ",
+   ds[-1].reply_th not in (NF.ASK_PITCH_TH, NF.ASK_TEMP_TH) and slots_of(ds[-1].state).get("pitch_mm") == 12.7
+   and slots_of(ds[-1].state).get("temp_c") == NF.ROOM_TEMP_C, (ds[-1].reply_th[:40], slots_of(ds[-1].state)))
+
 print("\n7) ค้นพิทช์ทั้งฐาน")
 s = plugin.search
 q = s.parse("มีสายพาน modutech พิทช์ 50.8 ไหม")
