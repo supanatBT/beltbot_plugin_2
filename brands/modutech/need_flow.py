@@ -231,8 +231,8 @@ def filter_by_need(cat, belt_codes: Iterable[str], pitch_mm=None, temp_c=None,
                 his, los = [h for h in his if h is not None], [lo for lo in los if lo is not None]
                 rng = f"{min(los):g} ถึง {max(his):g} °C" if his and los else "ไม่มีข้อมูล"
                 removed[code] = f"ทน{'เปียก' if cond == 'wet' else 'แห้ง'}ได้ {rng}"
-                # ตัดตามค่าที่เข้มกว่าไว้ก่อน (ไม่เดา) แต่ถ้าเล่มอีกหน้าให้ค่าที่ผ่าน ต้องรายงานข้อขัดแย้ง ไม่ใช่เงียบ
-                # (SM254 FG50% PA6: ตารางสเปก 116 °C · หน้า 347 120 °C — ลูกค้าถาม 120 แห้ง)
+                # ตัดตามค่าที่เข้มกว่าไว้ก่อน (ไม่เดา) แต่ถ้าเป็นข้อขัดแย้งจริงที่อีกค่าให้ผ่าน ต้องรายงาน ไม่ใช่เงียบ
+                # (HC152 FG PA ที่ 130 °C: ตารางสเปก 150 · เนื้อวัสดุ 120) — SM254 FG50% 116 < 120 ไม่ใช่ข้อขัดแย้ง
                 why = conflict_passing(sp["variants"], want_t, cond)
                 if why:
                     conflicts[code] = why
@@ -270,17 +270,27 @@ def filter_by_need(cat, belt_codes: Iterable[str], pitch_mm=None, temp_c=None,
 
 
 def conflict_passing(variants: list, temp_c: float, cond: str) -> str:
-    """ข้อความข้อขัดแย้งของเกรดที่ค่าในเล่มอีกแหล่งให้ผ่าน (ไม่งั้น "")
-    registry_dry_max_c / registry_conflict_th — ค่าสูงสุดแห้งจากหน้าวัสดุ ที่ไม่ตรงกับตารางสเปกรายรุ่น
-    temperature_unconfirmed_th — ค่าที่ระบบเลือกค่าเข้มไว้ก่อนเพราะเล่มพิมพ์ขัดกันเอง"""
+    """ข้อความข้อขัดแย้งของเกรดที่ถูกตัดตามค่าเข้ม แต่ค่าอีกแหล่งในเล่มให้ผ่าน (ไม่งั้น "")
+
+    ใช้กฎเดียวกับ gates.real_temperature_conflict — v30_3 pending_vendor_confirmation
+    'spec-exceeds-material-limit': ข้อขัดแย้งจริงคือตารางสเปก *สูงกว่า* เนื้อวัสดุหน้า 347 เท่านั้น
+    ตารางสเปกต่ำกว่า (เช่น SM254 FG50% 116 กับ PA6 120) = ข้อจำกัดของพื้นผิว/การขึ้นรูป ไม่ใช่ข้อขัดแย้ง
+    ไม่อ่าน registry_conflict_th เพราะข้อความนั้นเขียนว่า "ยังไม่ยืนยัน" ทั้งสองทิศ (gates.py ก็ไม่ใช้)
+    temperature_unconfirmed_th — ค่าที่ระบบเลือกค่าเข้มไว้ก่อนเพราะเล่มพิมพ์ขัดกันเอง (MD254 RR)"""
+    from brands.modutech.gates import conflict_note, real_temperature_conflict
     out = []
     for v in variants:
-        t = v.get("temperature") or {}
-        lo, _ = _temp_range(v, cond)
-        if cond == "dry" and t.get("registry_conflict_th") and isinstance(t.get("registry_dry_max_c"), (int, float)) \
-                and (lo is None or lo <= temp_c) and temp_c <= t["registry_dry_max_c"]:
-            out.append(f"{v.get('belt_material')}/{v.get('pin_material')}: {t['registry_conflict_th']}")
-        elif v.get("temperature_trust") == "unconfirmed" and v.get("temperature_unconfirmed_th"):
+        lo, hi = _temp_range(v, cond)
+        spec = (((v.get("temperature_effective") or {}).get("source_layers") or {})
+                .get("spec_table") or {}).get("max_c")
+        if cond == "dry" and real_temperature_conflict(v) and isinstance(spec, (int, float)) \
+                and (lo is None or lo <= temp_c) and hi is not None and hi < temp_c <= spec:
+            out.append(conflict_note(v)[0])
+        elif v.get("temperature_trust") == "unconfirmed" and v.get("temperature_unconfirmed_th") \
+                and hi is not None and hi < temp_c <= (((((v.get("temperature_effective") or {})
+                                                          .get("source_layers") or {}).get("belt_material") or {})
+                                                        .get(cond) or [None, hi])[1] or hi):
+            # เกินค่าเข้มแต่ไม่เกินเนื้อวัสดุ = ค่าที่ยังไม่ยืนยันมีผล · เกินเนื้อวัสดุด้วย = ตัดแน่นอน ไม่ต้องเตือน
             out.append(f"{v.get('belt_material')}/{v.get('pin_material')}: {v['temperature_unconfirmed_th']}")
     return " · ".join(dict.fromkeys(out))
 
