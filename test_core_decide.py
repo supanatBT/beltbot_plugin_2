@@ -173,6 +173,19 @@ def main() -> int:
     from brands.modutech.need_flow import ASK_NEED_TH
     bad_need = [k for k in need_turns if not (isinstance(b.get(k), dict) and b[k].get("reply_th") == ASK_NEED_TH)]
     conv_changed = conv_changed | conv_need
+    # 26 ต.ค.: slot _need_text (ข้อความที่บอกงานล่าสุด · plugin._remember_need) เป็นสถานะภายในใหม่
+    # ไม่เปลี่ยน action · reply · reason — ตัดออกจากฝั่งใหม่ก่อนเทียบ (นับไว้ว่ามีกี่เทิร์น)
+    def _drop_need(o):
+        if isinstance(o, dict):
+            o.pop("_need_text", None)
+            for x in o.values():
+                _drop_need(x)
+        elif isinstance(o, list):
+            for x in o:
+                _drop_need(x)
+    n_need = sum(1 for v in b.values() if "_need_text" in json.dumps(v, ensure_ascii=False))
+    _drop_need(b)
+    print(f"      26 ต.ค.: slot _need_text ใหม่ {n_need} เทิร์น (ตัดออกก่อนเทียบ)")
     skipped = [k for k in a if k.rsplit("|", 1)[0] in conv_changed]
     diff = [k for k in sorted(set(a) & set(b)) if a[k] != b[k] and k not in skipped]
     print(f"      เฟส 2: ข้ามบทสนทนาที่ตั้งใจเลือกแบรนด์ต่าง {len(conv_changed)} บท ({len(skipped)} เทิร์น)")

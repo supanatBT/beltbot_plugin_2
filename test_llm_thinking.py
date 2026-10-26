@@ -119,7 +119,7 @@ if real is not None:
     from core.llm import GenAIClient
     from core.protocol import LLMTurn
     from core.tools import ToolLog
-    REQS, FAILED, FAIL_FIRST = [], [], True
+    REQS, FAILED, FAIL_FIRST, CLIENT_OPTS = [], [], True, []
     import core.llm as _llm
     _llm.RETRY_DELAYS = (0.01, 0.01)               # เทสต์ไม่ต้องรอจริง
 
@@ -154,8 +154,12 @@ if real is not None:
 
     class FakeModule:
         @staticmethod
-        def Client(api_key):
-            return real.Client(api_key=api_key, http_options={"base_url": base})
+        def Client(api_key, http_options=None):
+            opts = {"base_url": base}
+            if http_options is not None:          # 26 ต.ค.: GenAIClient ส่ง timeout มาด้วย
+                CLIENT_OPTS.append(http_options)
+                opts["timeout"] = http_options.timeout
+            return real.Client(api_key=api_key, http_options=opts)
 
     log = ToolLog()
 
@@ -184,6 +188,8 @@ if real is not None:
     budget = GenAIClient(FakeModule, "m", "k", {"budget": 0}).thinking_config
     ok("ได้ 503 ครั้งแรกแล้วลองใหม่เองจนผ่าน", FAILED == [1])
     ok("budget 0", budget.thinking_budget == 0 and budget.thinking_level is None)
+    ok("ส่ง timeout ให้ SDK เป็นมิลลิวินาที (ค่าเริ่มต้น 60 วิ)", CLIENT_OPTS and CLIENT_OPTS[0].timeout == 60000,
+       CLIENT_OPTS[:1])
     srv.shutdown()
 
 # ── 22 ต.ค.: บันทึกชื่อรุ่นจริงที่ Google ตอบ (alias -latest ย้ายรุ่นได้เอง) ──
@@ -198,6 +204,47 @@ class _R:
 ok("model_version อ่านจาก response", model_version_of(_R(model_version="gemini-3.6-flash")) == "gemini-3.6-flash")
 ok("ไม่มี model_version → None", model_version_of(_R()) is None and model_version_of(_R(model_version="")) is None)
 ok("client เริ่มต้นไม่มีชื่อรุ่นค้าง", GeminiClient(None, "m").last_model_version is None)
+
+print("\n5) จำกัดเวลา (26 ต.ค. · lat2_llm CONV-16 t4 ค้าง 627 วินาที)")
+import time as _time  # noqa: E402
+from core.llm import LLMTimeout, run_with_deadline  # noqa: E402
+
+t0 = _time.perf_counter()
+try:
+    run_with_deadline(lambda: _time.sleep(3) or "ช้า", 0.2)
+    got = "ไม่ตัด"
+except LLMTimeout:
+    got = "ตัด"
+ok("งานที่เกินเวลา → LLMTimeout ภายในเวลาที่กำหนด", got == "ตัด" and _time.perf_counter() - t0 < 1.0,
+   (got, _time.perf_counter() - t0))
+ok("ทันเวลา → ได้ผลตามปกติ", run_with_deadline(lambda: "เร็ว", 1.0) == "เร็ว")
+ok("0 / None = ไม่จำกัด", run_with_deadline(lambda: "x", 0) == "x" and run_with_deadline(lambda: "y", None) == "y")
+
+
+class _HangModule:
+    """SDK เดิมปลอม — send_message ค้าง"""
+    class GenerativeModel:
+        def __init__(self, **kw):
+            pass
+
+        def start_chat(self, **kw):
+            class S:
+                def send_message(self, m):
+                    _time.sleep(3)
+            return S()
+
+
+from core.protocol import LLMTurn as _Turn  # noqa: E402
+t0 = _time.perf_counter()
+try:
+    GeminiClient(_HangModule, "m", timeout_s=0.3).run(_Turn("SYS", ["q"], tools=[], debug=[]), [], [])
+    got = "ไม่ตัด"
+except LLMTimeout:
+    got = "ตัด"
+ok("GeminiClient ค้าง → LLMTimeout ใน ~0.3 วิ", got == "ตัด" and _time.perf_counter() - t0 < 1.5,
+   (got, _time.perf_counter() - t0))
+import core.turn as _ct  # noqa: E402
+ok("TurnEngine มีข้อความให้ลูกค้าส่งใหม่เมื่อเกินเวลา", "ส่งคำถามเดิมอีกครั้ง" in _ct.TIMEOUT_REPLY_TH)
 
 print(f"\nรวม {passed}/{passed + failed}")
 sys.exit(1 if failed else 0)

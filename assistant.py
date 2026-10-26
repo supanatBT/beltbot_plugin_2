@@ -32,7 +32,7 @@ from peft import PeftModel                                 # noqa: E402
 
 from core.decide import Dialogue                           # noqa: E402
 from core.dialogue import state_class                      # noqa: E402
-from core.llm import GeminiClient, GenAIClient, parse_thinking  # noqa: E402
+from core.llm import DEFAULT_TIMEOUT_S, GeminiClient, GenAIClient, parse_thinking  # noqa: E402
 from core.models import resolve_image                      # noqa: E402
 from core.registry import discover, load_plugins, state_schema  # noqa: E402
 from core.tools import ToolLog                             # noqa: E402
@@ -139,17 +139,20 @@ genai.configure(api_key=GEMINI_API_KEY)
 # GEMINI_THINKING (13 ต.ค.): จำกัด thinking เพื่อให้ตอบเร็วขึ้น — ต้องใช้แพ็กเกจ google-genai (core/llm.py หัวไฟล์)
 # ตั้งค่าผิดหรือ import ไม่ได้ = หยุดตอนสตาร์ต ไม่ถอยไปใช้ของเดิมเงียบ ๆ (จะวัดผิดว่าเร็วขึ้นแล้ว)
 GEMINI_THINKING = parse_thinking(os.getenv("GEMINI_THINKING"))
+# GEMINI_TIMEOUT_S (26 ต.ค.): เวลารวมสูงสุดต่อการเรียก Gemini (รวมลองใหม่) · 0 = ไม่จำกัด (พฤติกรรมเดิม)
+# เดิมไม่มี — lat2_llm CONV-16 t4 ค้าง 627 วินาที ทั้งที่ปกติ 7–11 วินาที
+GEMINI_TIMEOUT_S = float(os.getenv("GEMINI_TIMEOUT_S") or DEFAULT_TIMEOUT_S) or None
 if GEMINI_THINKING:
     try:
         from google import genai as genai_new
     except Exception as e:                       # noqa: BLE001 — ImportError หรือ pydantic ไม่เข้ากัน
         raise RuntimeError(f"ตั้ง GEMINI_THINKING={os.getenv('GEMINI_THINKING')} แต่ import google-genai ไม่ได้ "
                            f"({type(e).__name__}: {e}) — ติดตั้งตามหัวไฟล์ core/llm.py หรือลบบรรทัดนี้ใน .env") from e
-    llm_client = GenAIClient(genai_new, GEMINI_MODEL, GEMINI_API_KEY, GEMINI_THINKING)
-    print(f"✅ Gemini configured (google-genai · {GEMINI_MODEL} · thinking {GEMINI_THINKING})")
+    llm_client = GenAIClient(genai_new, GEMINI_MODEL, GEMINI_API_KEY, GEMINI_THINKING, timeout_s=GEMINI_TIMEOUT_S)
+    print(f"✅ Gemini configured (google-genai · {GEMINI_MODEL} · thinking {GEMINI_THINKING} · timeout {GEMINI_TIMEOUT_S} วิ)")
 else:
-    llm_client = GeminiClient(genai, GEMINI_MODEL)
-    print(f"✅ Gemini configured ({GEMINI_MODEL})")
+    llm_client = GeminiClient(genai, GEMINI_MODEL, timeout_s=GEMINI_TIMEOUT_S)
+    print(f"✅ Gemini configured ({GEMINI_MODEL} · timeout {GEMINI_TIMEOUT_S} วิ)")
 
 logger = PipelineLogger(log_dir="./logs")
 print(f"✅ PipelineLogger → {logger.log_paths()}")

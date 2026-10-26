@@ -16,6 +16,7 @@ core/llm.py — แกนกลางเป็นคนเดียวที่�
 """
 from __future__ import annotations
 
+import concurrent.futures
 import re
 import time
 from dataclasses import dataclass
@@ -70,11 +71,12 @@ def model_version_of(resp) -> str | None:
 
 class _RetrySession:
     """session ของ SDK เดิม — send_message ต่อ (ขอให้ตอบซ้ำเมื่อคำตอบว่าง) ลองใหม่เมื่อ Google ไม่ว่างเหมือนกัน"""
-    def __init__(self, session):
+    def __init__(self, session, timeout_s: float | None = None):
         self._s = session
+        self.timeout_s = timeout_s
 
     def send_message(self, message):
-        return with_retry(lambda: self._s.send_message(message))
+        return run_with_deadline(lambda: with_retry(lambda: self._s.send_message(message)), self.timeout_s)
 
     def __getattr__(self, name):
         return getattr(self._s, name)
@@ -124,6 +126,34 @@ def with_retry(fn, tool_calls: list | None = None, delays=None, sleep=time.sleep
             sleep(delays[i])
 
 
+# ── จำกัดเวลาทั้งเทิร์น (26 ต.ค.) ─────────────────────────────────────
+# lat2_llm CONV-16 t4: เรียก Gemini ค้าง 627 วินาที (รอบอื่นของเทิร์นเดียวกัน 7–11 วินาที · c16_*.json)
+# ไม่มีอะไรตัด ลูกค้ารอสิบนาที · ใส่สองชั้น
+#   1) SDK: google-genai HttpOptions(timeout) ตัด request ที่ค้างจริง (ปล่อย connection คืน)
+#   2) นาฬิกา: run_with_deadline ครอบทั้ง with_retry — เวลารวมรวมการลองใหม่ ไม่เกินค่านี้ (ใช้ได้ทั้งสอง SDK)
+# เกินเวลา = LLMTimeout → core/turn.py ตอบข้อความที่ลูกค้าเข้าใจ (ไม่ใช่ error ดิบ)
+DEFAULT_TIMEOUT_S = 60.0
+
+
+class LLMTimeout(Exception):
+    """Gemini ไม่ตอบภายในเวลาที่กำหนด"""
+
+
+def run_with_deadline(fn, seconds: float | None):
+    """เรียก fn() ในเธรดแยก รอไม่เกิน seconds · None/0 = ไม่จำกัด
+    เธรดที่ค้างไม่ถูกฆ่า (Python ทำไม่ได้) แต่ชั้น SDK timeout จะตัด request ให้จบเองตามมา"""
+    if not seconds:
+        return fn()
+    ex = concurrent.futures.ThreadPoolExecutor(max_workers=1, thread_name_prefix="llm")
+    fut = ex.submit(fn)
+    try:
+        return fut.result(timeout=seconds)
+    except concurrent.futures.TimeoutError:
+        raise LLMTimeout(f"Gemini ไม่ตอบภายใน {seconds:g} วินาที") from None
+    finally:
+        ex.shutdown(wait=False)
+
+
 THINKING_LEVELS = ("minimal", "low", "medium", "high")
 
 
@@ -140,14 +170,15 @@ def parse_thinking(raw) -> dict | None:
 
 
 class GeminiClient:
-    def __init__(self, genai_module, model_name: str):
+    def __init__(self, genai_module, model_name: str, timeout_s: float | None = DEFAULT_TIMEOUT_S):
         self.genai = genai_module
         self.model_name = model_name
+        self.timeout_s = timeout_s
         self.last_usage = None
         self.last_model_version = None
 
     def describe(self) -> str:
-        return f"google-generativeai · {self.model_name} · thinking ไม่จำกัด"
+        return f"google-generativeai · {self.model_name} · thinking ไม่จำกัด · timeout {self.timeout_s or 'ไม่จำกัด'} วิ"
 
     def run(self, turn: LLMTurn, chat_history: list, tool_calls: list) -> LLMResult:
         def attempt():
@@ -157,10 +188,10 @@ class GeminiClient:
             session = model.start_chat(history=history_for_llm(chat_history),
                                        enable_automatic_function_calling=True)
             return session, session.send_message(list(turn.user_parts))
-        session, response = with_retry(attempt, tool_calls)
+        session, response = run_with_deadline(lambda: with_retry(attempt, tool_calls), self.timeout_s)
         self.last_usage = usage_of(response)
         self.last_model_version = model_version_of(response)
-        return LLMResult(response, _RetrySession(session), tool_calls)
+        return LLMResult(response, _RetrySession(session, self.timeout_s), tool_calls)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -180,18 +211,23 @@ def _no_arg_tool(fn):
 
 
 class _GenAISession:
-    def __init__(self, chat, to_parts):
-        self._chat, self._to_parts = chat, to_parts
+    def __init__(self, chat, to_parts, timeout_s: float | None = None):
+        self._chat, self._to_parts, self.timeout_s = chat, to_parts, timeout_s
 
     def send_message(self, message):
-        return with_retry(lambda: self._chat.send_message(self._to_parts(message)))
+        return run_with_deadline(lambda: with_retry(lambda: self._chat.send_message(self._to_parts(message))),
+                                 self.timeout_s)
 
 
 class GenAIClient:
-    def __init__(self, genai_new, model_name: str, api_key: str, thinking: dict):
+    def __init__(self, genai_new, model_name: str, api_key: str, thinking: dict,
+                 timeout_s: float | None = DEFAULT_TIMEOUT_S):
         from google.genai import types           # มาพร้อม genai_new — import ที่นี่ให้เทสต์ส่งของปลอมได้
         self.types = types
-        self.client = genai_new.Client(api_key=api_key)
+        self.timeout_s = timeout_s
+        # ชั้น SDK: timeout ต่อ request เป็นมิลลิวินาที (google-genai 2.8.0 HttpOptions.timeout)
+        http = types.HttpOptions(timeout=int(timeout_s * 1000)) if timeout_s else None
+        self.client = genai_new.Client(api_key=api_key, **({"http_options": http} if http else {}))
         self.model_name = model_name
         self.thinking = dict(thinking or {})
         if "level" in self.thinking:
@@ -204,7 +240,8 @@ class GenAIClient:
         self.last_model_version = None
 
     def describe(self) -> str:
-        return f"google-genai · {self.model_name} · thinking {self.thinking or 'ไม่จำกัด'}"
+        return (f"google-genai · {self.model_name} · thinking {self.thinking or 'ไม่จำกัด'}"
+                f" · timeout {self.timeout_s or 'ไม่จำกัด'} วิ")
 
     def _part(self, p):
         t = self.types
@@ -228,7 +265,7 @@ class GenAIClient:
         def attempt():
             chat = self.client.chats.create(model=self.model_name, config=cfg, history=history)
             return chat, chat.send_message(self._parts(list(turn.user_parts)))
-        chat, response = with_retry(attempt, tool_calls)
+        chat, response = run_with_deadline(lambda: with_retry(attempt, tool_calls), self.timeout_s)
         self.last_usage = usage_of(response)
         self.last_model_version = model_version_of(response)
-        return LLMResult(response, _GenAISession(chat, self._parts), tool_calls)
+        return LLMResult(response, _GenAISession(chat, self._parts, self.timeout_s), tool_calls)

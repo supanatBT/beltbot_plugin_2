@@ -144,6 +144,8 @@ def parse_pitch(text: str, bare_number: bool = False) -> Optional[float]:
 
 
 _PITCH_WORD = re.compile(r"พิทช์|พิทซ์|พิช|pitch", re.IGNORECASE)
+_RANGE_RX = re.compile(r"ไม่เกิน|อย่างน้อย|ไม่ต่ำกว่า|ขึ้นไป|มากกว่า|น้อยกว่า|ต่ำกว่า|สูงกว่า|เกินกว่า|ไม่ถึง|"
+                       r"[<>≤≥]|at\s*least|at\s*most|minimum|maximum", re.IGNORECASE)
 
 
 def stated_pitch(text: str) -> Optional[float]:
@@ -153,6 +155,9 @@ def stated_pitch(text: str) -> Optional[float]:
     if not m:
         return None
     seg = (text or "")[m.start():m.start() + 30]
+    # "พิทช์ไม่เกิน 10 มม." = ช่วงค้น ไม่ใช่พิทช์ที่ต้องการ (EX-005 · test_core_decide 26 ต.ค.)
+    if _RANGE_RX.search(seg):
+        return None
     seg = re.sub(r"-?\d+(?:[.,]\d+)?\s*(?:°\s*C|องศา|℃)", " ", seg)
     v = parse_pitch(seg)
     return v if v is not None and 1.0 <= v <= 200.0 else None
