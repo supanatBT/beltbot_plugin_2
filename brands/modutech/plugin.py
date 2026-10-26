@@ -342,7 +342,12 @@ class ModutechPlugin:
             if v is not None and not (flow == "pitch_confirm" and NF._NO_RX.search(a)):
                 return AnswerReading("value", v, "mm")
         if flow == "pitch_confirm" and not nums:
-            yes, no = bool(NF._YES_RX.search(a)), bool(NF._NO_RX.search(a))
+            # "ไม่ใช่" มีคำว่า "ใช่" อยู่ข้างใน — ตัดคำปฏิเสธออกก่อนหาคำรับ (lat2 26 ต.ค.: "ไม่ใช่" ไป LLM +2.1 วิ)
+            no = bool(NF._NO_RX.search(a))
+            rest = NF._NO_RX.sub(" ", a)
+            if no:                                   # "ไม่ใช่ครับ" — หางเสียงไม่ใช่คำรับ
+                rest = re.sub(r"ครับ|ค่ะ|คะ|นะ|จ้า", " ", rest)
+            yes = bool(NF._YES_RX.search(rest))
             if yes != no:
                 return AnswerReading("yes" if yes else "no")
         if flow == "temp" and len(nums) == 1:

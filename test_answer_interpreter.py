@@ -163,9 +163,13 @@ ok("\"ไม่แน่ใจ น่าจะ 2 นิ้ว\" (คำว่า
    sl(st).get("pitch_mm") == 50.8, (seen_llm, sl(st)))
 seen_llm.clear()
 TABLE["ไม่ใช่ครับ"] = {"kind": "no"}
-ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "50.6", "ไม่ใช่ครับ"])
-ok("\"ไม่ใช่ครับ\" (มีทั้งคำปฏิเสธและคำรับ) → LLM", seen_llm == ["ไม่ใช่ครับ"]
-   and ds[-1].reply_th.startswith("ถ้าไม่ใช่ 50.8"), (seen_llm, ds[-1].reply_th[:30]))
+for no_ans in ("ไม่ใช่", "ไม่ใช่ครับ"):
+    ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "50.6", no_ans])
+    ok(f"\"{no_ans}\" → กฎอ่านเป็นปฏิเสธ ไม่เรียก LLM", seen_llm == []
+       and ds[-1].reply_th.startswith("ถ้าไม่ใช่ 50.8"), (seen_llm, ds[-1].reply_th[:30]))
+TABLE["ใช่ แต่ไม่ใช่อันนั้นนะ"] = {"kind": "no"}
+ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "50.6", "ใช่ แต่ไม่ใช่อันนั้นนะ"])
+ok("มีทั้งคำรับและคำปฏิเสธจริง → LLM", seen_llm == ["ใช่ แต่ไม่ใช่อันนั้นนะ"], seen_llm)
 
 plugin._interpreter = AnswerInterpreter(boom)
 ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "2 นิ้ว"])
