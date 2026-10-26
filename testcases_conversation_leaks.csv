@@ -35,8 +35,14 @@ CONV-08,conversation,leak,multi,2,ไม่รู้ครับ,,,,ผมตอ
 CONV-08,conversation,leak,multi,3,ไม่ทราบ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-08,conversation,leak,multi,4,ไม่ทราบ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-09,conversation,leak,multi,1,สายพาน modutech รุ่นไหนดี,,,ลำเลียงอะไร,,,,,,conversation,ขอเบอร์กลางการถาม แล้วตอบต่อ
-CONV-09,conversation,leak,multi,2,ขอเบอร์ฝ่ายขายหน่อย,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
-CONV-09,conversation,leak,multi,3,อาหารทะเล,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-09,conversation,leak,multi,2,ขอเบอร์ฝ่ายขายหน่อย,,,086-3451403,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-09,conversation,leak,multi,3,อาหารทะเล,,,พิทช์,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-09,conversation,leak,multi,4,เดี๋ยวก่อน ขอเบอร์อีกที,,,ระยะพิทช์,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-09,conversation,leak,multi,5,2 นิ้ว,,,อุณหภูมิ,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-09b,conversation,leak,multi,1,สายพาน modutech รุ่นไหนดี,,,ลำเลียงอะไร,,,,,,conversation,ขอเบอร์กลางการถาม หลังบอกงานด้วยคำว่า 'ใช้กับ' (ลูกค้าจำลอง G11)
+CONV-09b,conversation,leak,multi,2,ใช้กับไก่ครับ ไลน์ตัดแต่ง,,,พิทช์,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-09b,conversation,leak,multi,3,ขอเบอร์ฝ่ายขายก่อนได้ไหมครับ พอดีอยากคุยรายละเอียดเพิ่ม,,,086-3451403,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-09b,conversation,leak,multi,4,โอเคครับ จดเบอร์ไว้แล้ว ส่วนพิทช์ใช้ 2 นิ้วครับ,,,อุณหภูมิ,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-10,conversation,leak,multi,1,สายพาน modutech สำหรับไก่ รุ่นไหนดี,,,,,,,,,conversation,อ้างถึงรุ่นด้วยคำอ้างอิงหลายแบบ
 CONV-10,conversation,leak,multi,2,ตัวแรกพิทช์เท่าไหร่,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-10,conversation,leak,multi,3,แล้วตัวหลังล่ะ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,

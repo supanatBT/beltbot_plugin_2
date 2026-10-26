@@ -123,7 +123,9 @@ ok("\"ผิด ไม่ใช่อันนั้น\" → ถามพิท
 ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "2 นิ้ว", "หมายถึงอุณหภูมิตรงไหน"])
 ok("ถามกลับเรื่องอุณหภูมิ → อธิบาย + ถามซ้ำ", ds[-1].reply_th.startswith(NF.EXPLAIN_TH["temp"]))
 ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "เดี๋ยวก่อน ขอเบอร์ฝ่ายขายหน่อย"])
-ok("ขอเบอร์กลางการถาม → ส่งฝ่ายขาย (การถามค้างไว้ ลูกค้าตอบต่อได้ · C09)", ds[-1].action == "escalate", ds[-1].action)
+ok("ขอเบอร์กลางการถาม → ให้เบอร์ + ถามพิทช์ต่อ ไม่เรียกตัวตีความ (C09 · 26 ต.ค.)", ds[-1].action == "ask"
+   and "086-3451403" in ds[-1].reply_th and NF.ASK_PITCH_TH in ds[-1].reply_th
+   and st.pending == "modutech_pitch", (ds[-1].action, st.pending))
 TABLE["ขอดูสเปก EC508 C ก่อน"] = {"kind": "other"}
 ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "ขอดูสเปก EC508 C ก่อน"])
 ok("เปลี่ยนเรื่องเป็นรหัส → ออกจากการถาม ตอบรหัส", ds[-1].action == "answer" and NF.FLOW_KEY not in sl(st)
@@ -134,6 +136,36 @@ ok("LLM บอกเปลี่ยนเรื่อง (ไม่มีรห�
    and ds[-1].action in ("search", "answer"), (ds[-1].action, ds[-1].reason, sl(st)))
 ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "2 นิ้ว", "80", "มีน้ำกระเด็นตลอด"])
 ok("\"มีน้ำกระเด็นตลอด\" → ไลน์เปียก · ตอบ", sl(st).get("wet_or_dry") == "wet" and ds[-1].action == "answer")
+
+print("\n4) กฎก่อน LLM — คำตอบชัดไม่เรียก LLM (26 ต.ค.: เรียกทุกครั้ง +1.3–1.7 วิ/เทิร์น)")
+seen_llm = []
+
+
+def spy(system, user, json_mode=False, temperature=None):
+    seen_llm.append(user.split("คำตอบของลูกค้า: ")[-1].strip())
+    return fake(system, user, json_mode, temperature)
+
+
+plugin._interpreter = AnswerInterpreter(spy)
+ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "2 นิ้ว", "5 องศา", "เปียก"])
+ok("\"2 นิ้ว\" \"5 องศา\" \"เปียก\" → กฎอ่าน ไม่เรียก LLM", seen_llm == [] and sl(st).get("pitch_mm") == 50.8
+   and sl(st).get("temp_c") == 5.0 and "ตีความ: กฎ" in ds[2].reason, (seen_llm, sl(st)))
+ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "50.6", "ใช่"])
+ok("ยืนยัน \"ใช่\" → กฎ", seen_llm == [] and sl(st).get("pitch_mm") == 50.8, seen_llm)
+ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "ไม่ทราบ"])
+ok("\"ไม่ทราบ\" → กฎ", seen_llm == [] and sl(st).get("pitch_mm") == NF.UNKNOWN, seen_llm)
+ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "เท่าของเดิมแหละ สองนิ้วมั้ง"])
+ok("กฎไม่แน่ใจ (ไม่มีตัวเลข) → LLM", seen_llm == ["เท่าของเดิมแหละ สองนิ้วมั้ง"] and sl(st).get("pitch_mm") == 50.8, seen_llm)
+seen_llm.clear()
+TABLE["ไม่แน่ใจ น่าจะ 2 นิ้ว"] = {"kind": "value", "value": 2, "unit": "inch"}
+ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "ไม่แน่ใจ น่าจะ 2 นิ้ว"])
+ok("\"ไม่แน่ใจ น่าจะ 2 นิ้ว\" (คำว่าไม่แน่ใจ + ตัวเลขเดียว) → 50.8 ไม่ใช่ \"ไม่ทราบ\"",
+   sl(st).get("pitch_mm") == 50.8, (seen_llm, sl(st)))
+seen_llm.clear()
+TABLE["ไม่ใช่ครับ"] = {"kind": "no"}
+ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "50.6", "ไม่ใช่ครับ"])
+ok("\"ไม่ใช่ครับ\" (มีทั้งคำปฏิเสธและคำรับ) → LLM", seen_llm == ["ไม่ใช่ครับ"]
+   and ds[-1].reply_th.startswith("ถ้าไม่ใช่ 50.8"), (seen_llm, ds[-1].reply_th[:30]))
 
 plugin._interpreter = AnswerInterpreter(boom)
 ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "2 นิ้ว"])

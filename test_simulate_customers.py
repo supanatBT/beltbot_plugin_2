@@ -116,9 +116,30 @@ eng = L.new_engine(rec2)
 calls["i"] = 0
 r2 = SC.run_goal(goals["G01"], chat_fn, fake_complete, judge, max_turns=10, temperature=1.0, interpreter=interp)
 lat2 = SC.summarize([r2])["latency_sec"]
-ok("เทิร์นตอบคำถามค้างใช้ LLM · interp_ms ≥ 50 ต่อเทิร์น", lat2["answer_turns_by"].get("LLM", 0) >= 3
-   and lat2["interpreter_ms"]["median"] >= 50, lat2)
+# 26 ต.ค.: กฎก่อน LLM — คำตอบในบทนี้ชัดทั้งหมด ("ประมาณ 50 มิลครับ" "ใช่" "5 องศา" "เปียก") จึงไม่เรียก LLM เลย
+ok("คำตอบชัด → กฎอ่านทุกเทิร์น ไม่เสียเวลาเรียก LLM", lat2["answer_turns_by"].get("กฎ", 0) >= 3
+   and lat2["answer_turns_by"].get("LLM", 0) == 0 and interp.calls == 0, (lat2, interp.calls))
 ok("ได้ผลเหมือนกฎ (hit · ไม่มีรุ่นผิดเงื่อนไข)", r2["hit"] and not r2["violations"], r2.get("violations"))
+SCRIPT[2] = "เท่าของเดิมแหละ ราว ๆ สองนิ้วมั้ง"           # กฎอ่านไม่ออก → LLM
+calls["i"] = 0
+_orig = slow_llm
+
+
+def slow_llm2(system, user, json_mode=False, temperature=None):
+    if "สองนิ้ว" in user:
+        _t.sleep(0.05)
+        return '{"kind":"value","value":2,"unit":"inch"}'
+    return _orig(system, user, json_mode, temperature)
+
+
+interp = AnswerInterpreter(slow_llm2)
+L.MOD._interpreter = interp
+eng = L.new_engine(L.Recorder())
+r3 = SC.run_goal(goals["G01"], chat_fn, fake_complete, judge, max_turns=10, temperature=1.0, interpreter=interp)
+lat3 = SC.summarize([r3])["latency_sec"]
+ok("คำตอบที่กฎอ่านไม่ออก → LLM เฉพาะเทิร์นนั้น (\"สองนิ้วมั้ง\" · \"ใช่\" ตอนถามอุณหภูมิ) · interp_ms ≥ 50 · ได้รุ่นที่ถูก",
+   lat3["answer_turns_by"].get("LLM") == 2 and interp.calls == 2
+   and lat3["interpreter_ms"]["median"] >= 50 and r3["hit"] and not r3["violations"], (lat3, interp.calls))
 with tempfile.TemporaryDirectory() as d:
     pa, pb = os.path.join(d, "a.json"), os.path.join(d, "b.json")
     json.dump({"answer_interpreter": "rules", "summary": summ}, open(pa, "w", encoding="utf-8"))

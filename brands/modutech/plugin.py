@@ -171,7 +171,20 @@ class ModutechPlugin:
         # ให้ turn แปลงกลับเป็นสายพานด้วยกราฟ ไม่งั้นรหัสที่ลูกค้าพิมพ์หายทั้งตัว
         st["sprocket_codes"] = list(codes.sprocket_codes)
 
-        esc = escalation_gate(text, belt_code=(st["codes"] or [None])[0])
+        # กลางการถามทีละข้อ ตัดสิน "คำถามผสม" จากข้อความของเทิร์นนี้ ไม่ใช่ข้อความรวม
+        # 26 ต.ค. (ลูกค้าจำลอง G11): ข้อความรวม "…ใช้กับไก่… ขอเบอร์ฝ่ายขาย" มีคำว่า "ใช้กับ" จากเทิร์นก่อน
+        # → นับเป็นคำถามผสม → ตัวตีความบอก "เปลี่ยนเรื่อง" → เลิกถาม → เทิร์นหน้า "พิทช์ 2 นิ้ว" ลืมว่าเป็นงานไก่
+        flow = slots.get(NF.FLOW_KEY)
+        in_flow = bool(flow) and not (codes.belt_codes or codes.sprocket_codes or codes.candidates or st["codes"])
+        esc = escalation_gate(inp.answer if in_flow and inp.answer else text,
+                              belt_code=(st["codes"] or [None])[0])
+        if esc and not esc.has_spec_question and in_flow:
+            # ให้ช่องทางติดต่อแล้วถามข้อเดิมต่อ (ยังรอคำตอบอยู่) — เดิมส่งฝ่ายขายแล้วล้างการรอคำตอบ
+            # เทิร์นหน้า "2 นิ้ว" จึงไม่ถูกอ่านเป็นคำตอบ และถูกบันทึกเป็น "ไม่ทราบ" (C09)
+            return Decision("ask", self.info.key, f"{esc.reply_th}\n\n{self._step_question(flow, slots)}",
+                            f"ขอ{'/'.join(esc.topics)}กลางการถาม ({flow}) → ให้ช่องทาง แล้วถามข้อเดิมต่อ",
+                            topic="escalate", effective_text=text,
+                            payload=dict(codes=[], slots=dict(slots)), pending=self.STEP_PENDING[flow])
         if esc and not esc.has_spec_question:
             return Decision("escalate", self.info.key, esc.reply_th, f"หัวข้อ {esc.topics}",
                             topic="escalate", effective_text=text,
@@ -269,6 +282,8 @@ class ModutechPlugin:
     # ── ตีความคำตอบของลูกค้าต่อคำถามที่ถามค้าง: LLM ก่อน (core/answer_interpreter) · ไม่ได้ = กฎเดิม ──
     STEP_EXPECT = {"pitch": "number_mm", "pitch_confirm": "number_mm", "pitch_retry": "number_mm",
                    "temp": "number_c", "wet": "wet_dry", "need": "free"}
+    STEP_PENDING = {"pitch": "modutech_pitch", "pitch_confirm": "modutech_pitch", "pitch_retry": "modutech_pitch",
+                    "temp": "modutech_temp", "wet": "wet_or_dry", "need": "modutech_need"}
 
     def _step_question(self, flow: str, slots: dict) -> str:
         said = slots.get(NF.PITCH_SAID_KEY)
@@ -302,8 +317,50 @@ class ModutechPlugin:
             return AnswerReading("value", v, "c") if v is not None else AnswerReading("unknown")
         return AnswerReading("other")
 
+    def pending_reask(self, st: dict) -> Optional[str]:
+        """คำถามที่ถามค้างอยู่ (ถามทีละข้อ) — แกนกลางใช้ถามซ้ำหลังตอบเรื่องอื่นสั้น ๆ เช่นขอเบอร์ (core/decide.py)"""
+        slots = (st or {}).get("slots") or {}
+        flow = slots.get(NF.FLOW_KEY)
+        return self._step_question(flow, slots) if flow in self.STEP_PENDING and not (st or {}).get("codes") else None
+
+    def _read_rules_sure(self, flow: str, ans: str):
+        """ผลของกฎเมื่อมั่นใจ (คืน None = กฎไม่แน่ใจ ให้ LLM อ่าน)
+
+        26 ต.ค.: เรียก LLM ทุกคำตอบทำให้เทิร์นตอบคำถามช้าลง 1.3–1.7 วินาที (lat_rules/lat_llm · 115 คู่)
+        ทั้งที่คำตอบส่วนใหญ่สั้นและชัด ("2 นิ้ว" "ใช่" "5 องศา" "ไม่ทราบ") — กฎอ่านถูกอยู่แล้ว
+        มั่นใจ = อ่านได้ค่าเดียวโดยไม่มีอะไรขัด · กฎเดิมคืน "unknown" เมื่ออ่านไม่ออกด้วย ซึ่งแยกไม่ได้จาก
+        "ลูกค้าบอกว่าไม่ทราบ" จึงนับเฉพาะเมื่อเจอคำว่าไม่ทราบจริงและไม่มีตัวเลข"""
+        from core.answer_interpreter import AnswerReading
+        a = ans or ""
+        nums = re.findall(r"\d+(?:[.,]\d+)?", a)
+        if flow in ("pitch", "temp", "wet", "pitch_confirm", "pitch_retry") and NF.is_question(a) and not nums:
+            return AnswerReading("question")
+        if NF.is_unknown(a) and not nums:
+            return AnswerReading("unknown")
+        if flow in ("pitch", "pitch_retry", "pitch_confirm") and len(nums) == 1:
+            v = NF.parse_pitch(a, bare_number=True)
+            if v is not None and not (flow == "pitch_confirm" and NF._NO_RX.search(a)):
+                return AnswerReading("value", v, "mm")
+        if flow == "pitch_confirm" and not nums:
+            yes, no = bool(NF._YES_RX.search(a)), bool(NF._NO_RX.search(a))
+            if yes != no:
+                return AnswerReading("yes" if yes else "no")
+        if flow == "temp" and len(nums) == 1:
+            v = NF.parse_temp(a, bare_number=True)
+            if v is not None:
+                return AnswerReading("value", v, "c")
+        if flow == "wet" and not nums:
+            wd = extract_modutech_slots(a, ()).get("wet_or_dry")
+            if wd:
+                return AnswerReading("value", None, None, wet_or_dry=wd)
+        return None
+
     def _read_answer(self, flow: str, ans: str, slots: dict):
-        """คืน (reading, ที่มา) · ที่มา = "LLM" หรือ "กฎ" """
+        """คืน (reading, ที่มา) · ที่มา = "LLM" หรือ "กฎ"
+        กฎก่อน (มั่นใจ = ไม่เรียก LLM) → LLM → กฎเดิมเป็นทางสำรองเมื่อ LLM ล้ม"""
+        sure = self._read_rules_sure(flow, ans)
+        if sure is not None:
+            return sure, "กฎ"
         interp = getattr(self, "_interpreter", None)
         expect = self.STEP_EXPECT.get(flow)
         if interp is not None and expect and ans.strip():
@@ -327,8 +384,7 @@ class ModutechPlugin:
             return Decision("ask", key, reply, why + tag, topic="recommend", effective_text=text,
                             payload=dict(codes=[], slots=dict(slots)), pending=pending)
 
-        pend = {"pitch": "modutech_pitch", "pitch_confirm": "modutech_pitch", "pitch_retry": "modutech_pitch",
-                "temp": "modutech_temp", "wet": "wet_or_dry"}
+        pend = self.STEP_PENDING
         if reading is not None and reading.kind == "question":
             return ask(flow, f"{NF.EXPLAIN_TH[flow]}\n\n{self._step_question(flow, slots)}",
                        f"ถามทีละข้อ: ลูกค้าถามกลับ ({flow}) → อธิบาย", pend[flow])

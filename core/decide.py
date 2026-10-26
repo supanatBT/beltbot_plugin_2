@@ -134,6 +134,7 @@ class Dialogue:
                                             payload={"image_carried": True})
                         carried = sc
             effective = f"{st.pending_question} {text}".strip()
+        pending_q_before = st.pending_question
         st.pending, pending_before, st.pending_question = None, st.pending, ""
 
         # ── สัญญาณของทุกแบรนด์ ──
@@ -165,6 +166,16 @@ class Dialogue:
         # (หัวข้อช่องทางติดต่อไม่ใช้ชื่อรุ่นในข้อความ จึงไม่ต้องส่งรหัสของแบรนด์ใดเข้าไป)
         _esc = escalation_gate(effective)
         if _esc and _esc.topics == ["ช่องทางติดต่อ"] and not _esc.has_spec_question:
+            # ขอเบอร์กลางคำถามที่แบรนด์ถามค้าง → ให้เบอร์แล้วถามข้อเดิมต่อ (การรอคำตอบไม่หาย)
+            # ปลั๊กอินเลือกเองผ่าน pending_reask(state) — ไม่มีเมธอดนี้ = พฤติกรรมเดิม
+            # 26 ต.ค. (C09): เดิมล้างการรอคำตอบ เทิร์นหน้า "2 นิ้ว" ไม่ถูกอ่านเป็นคำตอบ → บันทึกเป็น "ไม่ทราบ"
+            reask = getattr(self.plugins.get(st.brand), "pending_reask", None) \
+                if pending_before not in (None, "brand") and st.brand else None
+            q = reask(st.brands[st.brand]) if reask else None
+            if q:
+                st.pending, st.pending_question = pending_before, pending_q_before
+                return Decision("ask", st.brand, f"{_esc.reply_th}\n\n{q}", "ขอช่องทางติดต่อกลางการถาม → ถามข้อเดิมต่อ",
+                                topic="escalate", effective_text=effective, state=st)
             return Decision("escalate", st.brand, _esc.reply_th, "ขอช่องทางติดต่อ",
                             topic="escalate", effective_text=effective, state=st)
 

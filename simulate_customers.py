@@ -169,9 +169,12 @@ def run_goal(g: dict, chat_fn, complete, judge: Judge, max_turns: int, temperatu
             ended = "error"
             break
         m = _INTERP_RX.search(str(refs or ""))
+        interp_ms = round(getattr(interpreter, "total_ms", 0.0) - ms0, 1)
+        # เรียก LLM แล้วแต่เหตุผลไม่มีป้าย (ตัวตีความบอก "เปลี่ยนเรื่อง" → ทางปกติตัดสินต่อ) ก็นับเป็น LLM
+        # (sim_llm 26 ต.ค. · G11: interp_ms 1901 แต่ป้าย "-" → answer_turns ของรอบ LLM ว่าง)
+        label = m.group(1) if m else ("LLM" if interp_ms > 0 else "-")
         transcript.append({"role": "bot", "text": reply, "sec": round(time.perf_counter() - tb, 3),
-                           "interp": m.group(1) if m else "-",
-                           "interp_ms": round(getattr(interpreter, "total_ms", 0.0) - ms0, 1)})
+                           "interp": label, "interp_ms": interp_ms})
         if ended in ("done", "giveup"):
             break
     res = score(g, transcript, judge, ended)
