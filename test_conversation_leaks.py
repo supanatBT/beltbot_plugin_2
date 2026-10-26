@@ -259,7 +259,9 @@ SCENARIOS = {
         ("ไก่", dict(reply_has="พิทช์")),
         ("2 นิ้ว", dict(reply_has="อุณหภูมิ")),
         ("ไม่ทราบ", dict(action="answer")),
-        ("ถ้าเป็นพิทช์ 1 นิ้วล่ะ", dict(not_action="refuse_offtopic")),
+        # 26 ต.ค. (c16_*.json): ยังเป็นงานไก่ (ไม่ค้นพิทช์ทั้งฐาน) + พิทช์ใหม่แทนค่าเดิม
+        ("ถ้าเป็นพิทช์ 1 นิ้วล่ะ", dict(not_action="refuse_offtopic", action="answer", ctx_has="industry_match",
+                                         slot={"pitch_mm": 25.4})),
     ]),
     "C17": ("Movex ซีรีส์ → เลือกความกว้าง → ถามต่อ", [
         ("โซ่ Movex 880 มีขนาดไหนบ้าง", dict(brand="movex")),

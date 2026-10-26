@@ -275,6 +275,44 @@ def filter_card_applications(products: list, kg) -> None:
             }
 
 
+def trim_card_industries(products: list, context: dict, cat: Catalogue) -> None:
+    """คำถามแนะนำรุ่นตามงาน/อุตสาหกรรม: การ์ดแต่ละรุ่นเหลือเฉพาะอุตสาหกรรมที่ถาม (แก้ในที่)
+
+    26 ต.ค. (c16_*.json): เทิร์นแนะนำรุ่นงานไก่ prompt ~20,600 token · products 43k ตัวอักษร
+    การ์ดละ ~5.4k ซึ่ง industries (งานใช้ทั้ง 6–7 อุตสาหกรรม) กินไป ~3.4k ทั้งที่ลูกค้าถามอุตสาหกรรมเดียว
+    ไม่ลบเงียบ — ชื่ออุตสาหกรรมอื่นที่รุ่นนี้ใช้ได้ยังอยู่ใน other_industries (กัน LLM สรุปว่าใช้ได้แค่งานนี้)
+    งานที่ตรงคำถามโดยไม่ระบุอุตสาหกรรม (เช่น Oven Infeed) → เก็บทุกอุตสาหกรรมที่มีงานนั้น"""
+    match = context.get("industry_match") or context.get("application_match") or {}
+    industry = match.get("industry")
+    apps = set(match.get("applications") or [])
+    if not industry and not apps:
+        return
+    # การ์ด (gates._card) เก็บแค่ชื่อไทย — แปลงชื่ออังกฤษจาก context เป็นไทยด้วยข้อมูลในแคตตาล็อกเอง
+    ind_th = {i.get("industry"): i.get("industry_th") for q in cat.products for i in q.get("industries", [])}
+    app_th = {v.get("application"): v.get("application_th") for v in cat.data.get("application_vocabulary", [])}
+    want_ind = ind_th.get(industry) if industry else None
+    want_apps = {app_th.get(a) for a in apps} - {None}
+    if industry and not want_ind or not industry and not want_apps:
+        return                                         # แปลงชื่อไม่ได้ = ไม่แตะ (ไม่เดา)
+    for p in products or []:
+        inds = p.get("industries")
+        if not inds:
+            continue
+
+        def wanted(ind):
+            if want_ind:
+                return ind.get("industry_th") == want_ind
+            return any(a.get("application_th") in want_apps for a in ind.get("applications") or [])
+
+        keep = [i for i in inds if wanted(i)]
+        if not keep:
+            continue                                   # ไม่ตรงเลย = ไม่แตะ (ไม่ทำให้การ์ดว่าง)
+        p["industries"] = keep
+        others = [i.get("industry_th") for i in inds if not wanted(i)]
+        if others:
+            p["other_industries"] = others
+
+
 def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSearch,
                         vector_search: Optional[Callable[[str], list[str]]] = None,
                         kg=None) -> ModutechTurn:
@@ -470,6 +508,8 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
     gated = run_gates(records, slots)
     if graph_apps_enabled():
         filter_card_applications(gated.products, kg)
+    if full_list:
+        trim_card_industries(gated.products, context, cat)
     context["products"] = gated.products
     context["slots_known"] = NF.visible_slots(md.get("slots") or {})
     if decision.sales_topics:

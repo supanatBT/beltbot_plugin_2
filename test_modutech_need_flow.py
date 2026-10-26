@@ -273,6 +273,41 @@ ok("\"พิทช์ไม่เกิน 10 มม.\" ยังเป็นช
 ok("เลของศาไม่ถูกใช้เป็นค่าค้น", s.parse("มีสายพานแรงดึงอย่างน้อย 30000 N/m ทน 80 องศาไหม").value == 30000)
 ok("stated_pitch ไม่อ่านความกว้างเป็นพิทช์", NF.stated_pitch("กว้าง 24 นิ้ว ไลน์ไก่") is None
    and NF.stated_pitch("pitch 1 นิ้ว ร้อน 120 องศา") == 25.4)
+ok("stated_pitch ไม่อ่านช่วงค้นเป็นพิทช์ที่ต้องการ", NF.stated_pitch("มีสายพานพิทช์ไม่เกิน 10 มม. ไหม") is None
+   and NF.stated_pitch("พิทช์อย่างน้อย 25 มม.") is None)
+
+print("\n8) คำถามต่อที่เปลี่ยนแค่พิทช์/อุณหภูมิ ใช้งานเดิม (c16_*.json · CONV-16 t5 · 26 ต.ค.)")
+st = None
+for t in ["สายพาน modutech รุ่นไหนดี", "ไก่", "2 นิ้ว", "ไม่ทราบ", "ถ้าเป็นพิทช์ 1 นิ้วล่ะ"]:
+    d = core.decide(t, state=st)
+    st = d.state
+t5 = build_modutech_turn(d, cat, plugin.search)
+nf = t5.context.get("need_filter") or {}
+ok("\"ถ้าเป็นพิทช์ 1 นิ้วล่ะ\" → ยังเป็นงานสัตว์ปีก + พิทช์ 25.4 (ไม่ค้นทั้งฐาน 18 รุ่น)",
+   d.action == "answer" and t5.context.get("industry_match", {}).get("industry") == "Poultry"
+   and nf.get("kept") and all(cat.by_code[c]["specifications"]["pitch"]["mm"] == 25.4 for c in nf["kept"])
+   and "search_result" not in t5.context, (d.action, list(t5.context), nf.get("kept")))
+ok("ไม่มีสายพานเลี้ยว EC254 R ปน (ไม่ใช่งานสัตว์ปีกพิทช์ 25.4 ที่ผ่าน)", "EC254 R" not in (nf.get("kept") or []))
+d = core.decide("มีสายพาน modutech พิทช์ 50.8 ไหม", state=None)
+ok("ไม่มีงานก่อนหน้า → ค้นทั้งฐานเหมือนเดิม", d.action == "search", d.action)
+st = None
+for t in ["สายพาน modutech ไลน์ปลา รุ่นไหนดี", "ถ้าพิทช์ 2 นิ้วล่ะ"]:
+    d = core.decide(t, state=st)
+    st = d.state
+nf = build_modutech_turn(d, cat, plugin.search).context.get("need_filter") or {}
+ok("ไลน์ปลา → \"ถ้าพิทช์ 2 นิ้วล่ะ\" กรองในงานปลา", nf.get("kept") and "MD508 C" in nf["kept"], nf.get("kept"))
+d = core.decide("EC508 C ถ้าพิทช์ 1 นิ้วล่ะ", state=st)
+ok("มีรหัสในประโยค → ไม่เอางานเดิมมาปน", "ไลน์ปลา" not in d.effective_text, d.effective_text)
+
+print("\n9) ตัดการ์ดเหลืออุตสาหกรรมที่ถาม (prompt 54k → ~46k ตัวอักษร · 26 ต.ค.)")
+card = next(p for p in t5.context["products"] if p["belt_code"] == "EC254 C")
+ok("การ์ดเหลือเฉพาะสัตว์ปีก + รายชื่ออุตสาหกรรมอื่นยังอยู่ (ไม่ลบเงียบ)",
+   [i["industry_th"] for i in card["industries"]] == ["สัตว์ปีก"] and len(card.get("other_industries", [])) >= 3,
+   ([i["industry_th"] for i in card["industries"]], card.get("other_industries")))
+d = core.decide("EC508 C ใช้กับงานอะไรบ้าง", state=None)
+card = build_modutech_turn(d, cat, plugin.search).context["products"][0]
+ok("ถามรหัสตรง ๆ → การ์ดครบทุกอุตสาหกรรม", len(card["industries"]) >= 6 and "other_industries" not in card,
+   len(card["industries"]))
 
 print(f"\nรวม {passed}/{passed + failed}")
 sys.exit(1 if failed else 0)

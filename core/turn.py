@@ -22,7 +22,7 @@ from typing import Any, Optional
 from core.decide import Dialogue
 from core.image_policy import ImageCarry, resolve as resolve_image_policy
 from core.image_router import route_image
-from core.llm import GeminiClient, is_transient
+from core.llm import GeminiClient, LLMTimeout, is_transient
 from core import templates as T
 from core.protocol import TurnInput
 from core.tools import ToolLog
@@ -44,6 +44,7 @@ def image_to_base64_html(pil_image) -> str:
 
 
 TRANSIENT_REPLY_TH = "❌ ตอนนี้ระบบตอบคำถามไม่ว่างชั่วคราว รบกวนส่งคำถามเดิมอีกครั้งในอีกสักครู่ครับ"
+TIMEOUT_REPLY_TH = "❌ ตอนนี้ระบบตอบช้ากว่าปกติ รบกวนส่งคำถามเดิมอีกครั้งครับ"
 
 
 class TurnEngine:
@@ -189,7 +190,9 @@ class TurnEngine:
                 raw_refs_html += f"**State patch:** {decision.brand} {out.state_patch}\n"
         except Exception as e:
             # 13 ต.ค.: Google ไม่ว่างแม้ลองใหม่แล้ว (core/llm.py with_retry) → ข้อความที่ลูกค้าเข้าใจ ไม่ใช่ JSON ดิบ
-            ai_reply = (TRANSIENT_REPLY_TH if is_transient(e) else f"❌ เกิดข้อผิดพลาด: {str(e)}")
+            # 26 ต.ค.: เกินเวลา (core/llm.py run_with_deadline) → บอกให้ส่งใหม่ แทนที่ลูกค้ารอเป็นสิบนาที
+            ai_reply = (TIMEOUT_REPLY_TH if isinstance(e, LLMTimeout) else
+                        TRANSIENT_REPLY_TH if is_transient(e) else f"❌ เกิดข้อผิดพลาด: {str(e)}")
             error_msg = str(e)
             extra_messages = []
             print(f"[ERROR] {e}")

@@ -110,6 +110,15 @@ class ModutechPlugin:
         except Exception:                                    # noqa: BLE001
             return False
 
+    def _need_in(self, text: str) -> bool:
+        """ข้อความบอกงานหรืออุตสาหกรรม (ตัวค้นจับได้)"""
+        return self.search.match_application(text) is not None or self._names_industry(text)
+
+    def _remember_need(self, text: str, st: dict) -> None:
+        """จำข้อความที่บอกงาน (ไม่มีรุ่นในโฟกัส) ไว้ให้คำถามต่อที่เปลี่ยนแค่พิทช์/อุณหภูมิ"""
+        if not st["codes"] and self._need_in(text):
+            st["slots"][self.NEED_TEXT_KEY] = text[-self.NEED_TEXT_MAX:]
+
     @property
     def weak_terms(self) -> list[str]:
         return self.detector.weak_terms
@@ -128,7 +137,10 @@ class ModutechPlugin:
 
     # slot ที่ decide รู้จัก — ค่าอื่นทิ้ง (ย้ายมาจาก webapi/bot.py _SLOT_KEYS ชั้น 6)
     SLOT_KEYS = ("wet_or_dry", "material", "line_shape", "operating_temp_c",
-                 "pitch_mm", "temp_c", NF.FLOW_KEY, NF.PITCH_SAID_KEY)   # สี่ตัวท้าย: ถามทีละข้อ (need_flow.py)
+                 "pitch_mm", "temp_c", NF.FLOW_KEY, NF.PITCH_SAID_KEY,   # สี่ตัวนี้: ถามทีละข้อ (need_flow.py)
+                 "_need_text")
+    NEED_TEXT_KEY = "_need_text"  # ข้อความที่บอกงาน/อุตสาหกรรมล่าสุด — ใช้กับคำถามต่อที่เปลี่ยนแค่พิทช์/อุณหภูมิ
+    NEED_TEXT_MAX = 300
     OFFERED_KEY = "_offered"      # รุ่นที่คำตอบล่าสุดเสนอ (list) — ใช้เมื่อลูกค้าอ้างถึง ไม่ใช่โฟกัสทันที
 
     def sanitize_state(self, raw: dict) -> dict:
@@ -214,9 +226,21 @@ class ModutechPlugin:
             # ลูกค้าเปลี่ยนเรื่อง → ตัดสินจากข้อความเทิร์นนี้อย่างเดียว (ไม่รวมคำถามเดิม)
             text = answer or text
 
+        # ── คำถามต่อที่เปลี่ยนแค่พิทช์/อุณหภูมิ ("ถ้าเป็นพิทช์ 1 นิ้วล่ะ") → ใช้งานเดิมจากเทิร์นก่อน ──
+        # 26 ต.ค. (c16_*.json · CONV-16 t5): เดิมค้นพิทช์ทั้งฐาน ไม่สนว่าเป็นงานไก่ — 2 ใน 6 รอบ LLM ลืมงานไก่
+        # แล้วไล่ 18 รุ่น · บางรอบใส่ EC254 R (สายพานเลี้ยว) ปน · จะจำงานได้หรือไม่ขึ้นกับ LLM อ่านประวัติ
+        stated = NF.stated_pitch(text)
+        if stated is not None:
+            slots["pitch_mm"] = stated                     # ลูกค้าบอกพิทช์ใหม่ = แทนค่าเดิม
+        need_prev = slots.get(self.NEED_TEXT_KEY)
+        new_temp = extract_modutech_slots(text, ()).get("operating_temp_c") is not None
+        if need_prev and not codes.belt_codes and not st["codes"] and not self._need_in(text) \
+                and (stated is not None or new_temp):
+            text = f"{need_prev} {text}"
+
         q = self.search.parse(text)
         if q is not None and q.op == "==" and not (q.surface or q.pin_material or q.belt_material) and \
-                (self.search.match_application(text) is not None or self._names_industry(text)):
+                self._need_in(text):
             # "เข้าเตาอบ … พิทช์ 1 นิ้ว" = บอกงานพร้อมพิทช์ → ทางงานใช้ แล้วกรองพิทช์/อุณหภูมิด้วยโค้ด (turn.py)
             # ไม่ใช่ค้นพิทช์ทั้งฐานซึ่งไม่สนงานที่ลูกค้าบอก (26 ต.ค. · OVEN-01/02)
             q = None
@@ -256,7 +280,8 @@ class ModutechPlugin:
         # ก่อน 1 ต.ค. มันรอดมาได้เพราะบั๊กอีกตัว — วัสดุต่อท้ายรหัส (*PA) ถูกอ่านเป็น
         # slot ของลูกค้า ทำให้ has_need เป็นจริง พอแก้บั๊กนั้นอาการนี้จึงโผล่
         # กล่าวคือมันเคย "ทำงานได้ด้วยเหตุผลที่ผิด" ไม่ใช่เคยถูกแล้วเพิ่งเสีย
-        has_need = bool(any_word(self.detector.weak_terms, text)) or bool(slots) \
+        # slot ภายใน (ขึ้นต้นด้วย _ เช่น _need_text) ไม่นับเป็น "ลูกค้าบอกความต้องการในเทิร์นนี้" (CONV-15 · 26 ต.ค.)
+        has_need = bool(any_word(self.detector.weak_terms, text)) or bool(NF.visible_slots(slots)) \
             or bool(codes.sprocket_codes) or self._names_industry(text)
         if not focus and not has_need and has(MOD_RECOMMEND + r"|สายพาน", text):
             # 25 ต.ค.: ถามทีละข้อ งาน → พิทช์ → อุณหภูมิ (เดิม ASK_MODUTECH_NEED_TH ถามสามเรื่องในข้อความเดียว)
@@ -265,6 +290,7 @@ class ModutechPlugin:
                             topic="recommend", effective_text=text,
                             payload=dict(codes=[], slots=dict(slots)), pending="modutech_need")
 
+        self._remember_need(text, st)
         return Decision("answer", key, reason="รหัสชัด" if focus else "ค้นตามการใช้งาน",
                         topic="temperature" if temp_topic else None, effective_text=text,
                         payload=dict(codes=st["codes"], slots=dict(slots)))
@@ -461,6 +487,7 @@ class ModutechPlugin:
             return ask("wet", NF.ASK_WET_TH, "ถามทีละข้อ: เปียก/แห้ง (ผลกรองอุณหภูมิต่างกัน)", "wet_or_dry")
 
         slots.pop(NF.FLOW_KEY, None)
+        self._remember_need(text, st)
         return Decision("answer", key, reason="ค้นตามการใช้งาน · กรองพิทช์/อุณหภูมิที่ลูกค้าบอก" + tag,
                         effective_text=text, payload=dict(codes=[], slots=dict(slots)))
 
@@ -496,6 +523,13 @@ class ModutechPlugin:
         """ข้อความเทิร์นนี้ขอของใหม่ (งาน · อุตสาหกรรม · ผิว) — ไม่ใช่ถามต่อเรื่องรุ่นที่เพิ่งเสนอ"""
         low = (raw or "").lower()
         if any(th.lower() in low for th, _ in self.search.surfaces) or "กันลื่น" in low:
+            return True
+        # เปลี่ยนสเปก: พิทช์ใหม่ ("ถ้าเป็นพิทช์ 1 นิ้วล่ะ") · "ถ้า … องศา" — รุ่นที่เสนอมีพิทช์ตายตัว
+        # จึงไม่ใช่ถามต่อเรื่องรุ่นเดิม (C16 · 26 ต.ค. เดิมได้ EC508 C/DT เป็นโฟกัสแล้วค้นพิทช์ทั้งฐาน)
+        if NF.stated_pitch(raw) is not None:
+            return True
+        if has(r"ถ้า|เปลี่ยนเป็น", raw or "") and \
+                extract_modutech_slots(raw or "", ()).get("operating_temp_c") is not None:
             return True
         try:
             return bool(self.search.match_application(raw)) or bool(self.search.match_industry(raw))
