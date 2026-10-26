@@ -174,10 +174,15 @@ def stated_pitch(text: str) -> Optional[float]:
 def parse_temp(text: str, bare_number: bool = False) -> Optional[float]:
     t = (text or "").replace(",", ".")
     # "ลบ 35" / "ติดลบ 35" / "minus 35" = -35 (test_conversation_leaks C13 · เดิมได้ +35)
-    t = re.sub(r"(?:ติด\s*)?ลบ\s*(?=\d)|minus\s*(?=\d)", "-", t, flags=re.IGNORECASE)
+    # main_sim G04 (26 ต.ค.): "อุณภูมิติดลบประมาน 30" — มีคำขยายคั่นก่อนตัวเลข และไม่มีคำว่าองศา → เดิมอ่านไม่ออก ถามซ้ำ
+    t = re.sub(r"(?:ติด\s*)?ลบ\s*(?:ประมาณ|ประมาน|ราว\s*ๆ?|สัก|ก็)?\s*(?=\d)|minus\s*(?=\d)", "-", t,
+               flags=re.IGNORECASE)
     m = re.search(_NUM + r"\s*(?:°\s*[cC]|องศา|℃|c\b)", t)
     if m:
         return float(m.group(1))
+    m = re.search(r"(?:อุณหภูมิ|อุณภูมิ|อุนหภูมิ|temp(?:erature)?)(?!ห้อง)[^\d\n-]{0,15}" + _NUM, t, re.IGNORECASE)
+    if m:
+        return float(m.group(1).replace(",", "."))
     if re.search(r"อุณหภูมิห้อง|room\s*temp", t, re.IGNORECASE):
         return ROOM_TEMP_C
     if bare_number:

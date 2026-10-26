@@ -84,7 +84,7 @@ with tempfile.TemporaryDirectory() as d:
     p = os.path.join(d, "x.txt")
     SC.write_txt(p, [dict(r, run=1)])
     txt = open(p, encoding="utf-8").read()
-ok("ไฟล์ .txt เป็นแชท ลูกค้า/บอท", "🧑 ลูกค้า: ไก่ ไลน์ตัดแต่ง" in txt and "🤖 บอท:" in txt)
+ok("ไฟล์ .txt เป็นแชท ลูกค้า/บอท (บอทมีเลขข้อความไว้อ้างถึงใน 🚩)", "🧑 ลูกค้า: ไก่ ไลน์ตัดแต่ง" in txt and "🤖 บอท [1]:" in txt)
 summ = SC.summarize([r])
 ok("สรุป: hit 100% · ไม่มีผิดเงื่อนไข", summ["hit_pct"] == 100.0 and summ["with_violation_pct"] == 0.0, summ)
 lat = summ["latency_sec"]

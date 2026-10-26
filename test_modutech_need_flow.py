@@ -274,6 +274,12 @@ ok("\"pitch half inch\" + \"room temp\" ในคำตอบเรื่อง�
    ds[-1].reply_th not in (NF.ASK_PITCH_TH, NF.ASK_TEMP_TH) and slots_of(ds[-1].state).get("pitch_mm") == 12.7
    and slots_of(ds[-1].state).get("temp_c") == NF.ROOM_TEMP_C, (ds[-1].reply_th[:40], slots_of(ds[-1].state)))
 
+ds, st = run(["สายพานลำเลียงกุ้งเข้าฟรีซ ใช้รุ่นไหนดีครับ", "เปียกครับ มีน้ำแขงเกาะด้วย อุณภูมิติดลบประมาน 30 ครับ",
+              "เอาพิทช์ 25.4 ครับ มีตังไหนแนะนำบ้าง"])
+ok("\"อุณภูมิติดลบประมาน 30\" (สะกดผิด · ไม่มีคำว่าองศา) → -30 ไม่ถามอุณหภูมิซ้ำ (main_sim G04)",
+   ds[-1].reply_th != NF.ASK_TEMP_TH and slots_of(ds[-1].state).get("temp_c") == -30.0,
+   (ds[-1].reply_th[:40], slots_of(ds[-1].state)))
+
 print("\n7) ค้นพิทช์ทั้งฐาน")
 s = plugin.search
 q = s.parse("มีสายพาน modutech พิทช์ 50.8 ไหม")

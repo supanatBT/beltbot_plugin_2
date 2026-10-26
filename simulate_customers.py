@@ -31,6 +31,7 @@ simulate_customers.py — ลูกค้าจำลองด้วย LLM ค�
     python simulate_customers.py -o sim_r1.json                       # ทุกเป้าหมาย 1 รอบ
     python simulate_customers.py --repeats 3 -o sim_r1.json            # เป้าหมายละ 3 บท (ลูกค้าพูดต่างกันทุกรอบ)
     python simulate_customers.py --only G01,G05 -o probe.json
+    python simulate_customers.py --goals training/redteam_goals.json --repeats 2 -o redteam.json   # ลูกค้าแบบจับผิด
     $env:ANSWER_INTERPRETER="rules"; python simulate_customers.py -o sim_rules.json   # เทียบกับกฎ regex
 ได้ไฟล์ .json (ผลเต็ม) และ .txt (บทสนทนาแบบแชท ลูกค้า/บอท)
 """
@@ -39,6 +40,7 @@ from __future__ import annotations
 import argparse
 
 import eval_mentions as EM
+import leak_detectors as LD
 import importlib
 import json
 import os
@@ -67,6 +69,11 @@ SIM_SYSTEM = """คุณเล่นเป็นลูกค้าที่ก�
 - เมื่อบอทแนะนำรุ่นแล้วและคุณพอใจ (หรือบอทบอกชัดว่าไม่มีรุ่นที่ตรง) ให้ถามต่อตามลักษณะลูกค้าถ้ามี แล้วจบด้วยข้อความที่มี {done}
 - ถ้าบอทวนถามซ้ำ ตอบไม่ตรง หรือไม่เข้าใจคุณ 3 ครั้ง ให้จบด้วย {giveup}
 """
+# ลูกค้าแบบจับผิด (training/redteam_goals.json · 26 ต.ค.) — มี tactic = ต่อท้ายกฎนี้ · ไม่มี = prompt เดิมทุกตัวอักษร
+SIM_TACTIC = """แผนของคุณในบทนี้ (ทำให้ครบระหว่างบท อย่าบอกบอทว่ากำลังทดสอบ):
+{tactic}
+- ห้ามจบบทด้วย {done} ก่อนทำตามแผนครบ
+"""
 
 
 def load_goals(path: str) -> list[dict]:
@@ -84,6 +91,7 @@ class Judge:
         mgr = DS.DialogueManager({}, self.cat)
         self.search = mgr.modutech_plugin.search
         self.detector = mgr.modutech_plugin.detector
+        self.need_in = mgr.modutech_plugin._need_in
 
     def acceptable(self, g: dict) -> dict:
         t = g.get("application", "")
@@ -142,6 +150,8 @@ def sim_message(complete, g: dict, transcript: list[dict], temperature: float) -
     facts = "\n".join(f"- {k}: {v}" for k, v in (g.get("facts") or {}).items())
     system = SIM_SYSTEM.format(persona=g["persona"], application=g.get("application", ""), facts=facts,
                                done=DONE, giveup=GIVEUP)
+    if g.get("tactic"):
+        system += SIM_TACTIC.format(tactic=g["tactic"], done=DONE)
     chat = "\n".join(f"{'ลูกค้า' if t['role'] == 'customer' else 'บอท'}: {t['text']}" for t in transcript)
     user = f"บทสนทนาจนถึงตอนนี้:\n{chat}\n\nเขียนข้อความถัดไปของลูกค้า (ข้อความเดียว):"
     text = (complete(system, user, temperature=temperature) or "").strip()
@@ -195,6 +205,7 @@ def run_goal(g: dict, chat_fn, complete, judge: Judge, max_turns: int, temperatu
         if ended in ("done", "giveup"):
             break
     res = score(g, transcript, judge, ended)
+    res["issues"] = LD.detect(g, transcript, res, need_in=judge.need_in, codes_in=judge.codes_in)
     return {"goal": g["id"], "brand": g.get("brand"), "application": g.get("application"),
             "seconds": round(time.time() - t0, 1), **res, "transcript": transcript}
 
@@ -229,6 +240,8 @@ def summarize(results: list[dict]) -> dict:
             "with_offtopic_pct": pct("offtopic"),
             "with_repeat_pct": pct("repeats"), "ended": dict(c),
             "mean_turns": round(sum(r["turns"] for r in results) / n, 1) if n else 0.0,
+            "issues_by_kind": dict(Counter(i["kind"] for r in results for i in r.get("issues", []))),
+            "with_issue_pct": pct("issues"),
             "latency_sec": latency(results)}
 
 
@@ -257,8 +270,15 @@ def write_txt(path: str, results: list[dict]) -> None:
                     + (f" · ⚠ {', '.join(flags)}" if flags else "") + " ===\n")
             if r.get("violations"):
                 f.write(f"รุ่นที่ผิดเงื่อนไข: {r['violations']}\n")
+            for i in r.get("issues", []):
+                f.write(f"🚩 {i['kind']}" + (f" (บอทข้อความที่ {i['turn']})" if i.get("turn") else "")
+                        + f": {i['detail']}\n")
+            k = 0
             for t in r["transcript"]:
-                f.write(f"{'🧑 ลูกค้า' if t['role'] == 'customer' else '🤖 บอท'}: {t['text']}\n")
+                if t["role"] == "bot":
+                    k += 1
+                flag = " 🚩" if t["role"] == "bot" and any(i.get("turn") == k for i in r.get("issues", [])) else ""
+                f.write(f"{'🧑 ลูกค้า' if t['role'] == 'customer' else f'🤖 บอท [{k}]{flag}'}: {t['text']}\n")
 
 
 def main():
@@ -294,7 +314,8 @@ def main():
                   f"{r['ended']:9} เทิร์น {r['turns']:2}"
                   + (f" ⚠ ผิดเงื่อนไข {r['violations']}" if r["violations"] else "")
                   + (f" ⚠ นอกเรื่อง {r['offtopic']}" if r["offtopic"] else "")
-                  + (f" ⚠ ซ้ำ {r['repeats']}" if r["repeats"] else ""))
+                  + (f" ⚠ ซ้ำ {r['repeats']}" if r["repeats"] else "")
+                  + (f" 🚩 {sorted({i['kind'] for i in r['issues']})}" if r.get("issues") else ""))
     summary = summarize(results)
     meta = {"module": a.module, "llm": getattr(bot.llm_client, "describe", lambda: "")(),
             "answer_interpreter": getattr(bot, "ANSWER_INTERPRETER", "?"), "repeats": a.repeats,
