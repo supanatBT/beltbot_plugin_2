@@ -587,7 +587,14 @@ def _assertions(cat_, res: dict) -> dict:
         elif d.topic == "brand":
             any_once("Movex", "Modutech")
         elif d.topic == "recommend":
-            any_once("อุตสาหกรรม", "เปียก", "จุดที่ใช้งาน")
+            # 25 ต.ค.: ถามทีละข้อ (need_flow.py) — คำที่ต้องมีตามข้อที่ถาม ไม่ใช่คำถามรวมสามเรื่องแบบเดิม
+            # (เดิมรันแล้วเขียน RT-006 กลับเป็น "อุตสาหกรรม | เปียก | จุดที่ใช้งาน" ทับ CSV ที่แก้แล้ว · 26 ต.ค.)
+            r = d.reply_th or ""
+            step = next((w for w in ("ลำเลียงอะไร", "พิทช์", "อุณหภูมิ", "เปียก") if w in r), None)
+            if step:
+                any_once(step)
+            else:
+                any_once("อุตสาหกรรม", "เปียก", "จุดที่ใช้งาน")
     elif d.action == "escalate":
         a["must_contain"] = ["ฝ่ายขาย"]
     elif d.action == "refuse_offtopic":
