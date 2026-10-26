@@ -230,5 +230,42 @@ san = plugin.sanitize_state(raw)
 ok("sanitize เก็บ _flow · pitch_mm · temp_c ทิ้งของแปลก", san["slots"] == {"_flow": "pitch", "pitch_mm": 25.4,
                                                                          "temp_c": "unknown"}, san)
 
+print("\n6) ลูกค้าบอกงาน + อุณหภูมิ + พิทช์ในข้อความเดียว (ลูกค้าจำลอง G02 · OVEN-01/02 · 26 ต.ค.)")
+OVEN = "สายพาน modutech เข้าเตาอบ ร้อน 120 องศา แห้ง พิทช์ 1 นิ้ว รุ่นไหนดี"
+d = core.decide(OVEN, state=None)
+ok("ไม่ตีเป็นค้นทั้งฐาน \"พิทช์ ≥ 120\" → ทางงานใช้", d.action == "answer", (d.action, d.reason))
+t = build_modutech_turn(d, cat, plugin.search)
+nf = t.context.get("need_filter") or {}
+ok("โค้ดกรอง: 120 °C แห้ง พิทช์ 25.4 → ไม่เหลือรุ่น · SM254 FG50% ถูกตัด (ทนแห้ง 116)",
+   nf.get("kept") == [] and "116" in (nf.get("removed") or {}).get("SM254 FG50%", "")
+   and t.context["products"] == [], nf.get("removed"))
+ok("รายงานข้อขัดแย้ง 116 (ตารางสเปก) กับ 120 (หน้า 347) ของ SM254 FG50%",
+   "116" in (nf.get("temperature_conflicts") or {}).get("SM254 FG50%", "")
+   and "120" in nf["temperature_conflicts"]["SM254 FG50%"], nf.get("temperature_conflicts"))
+ok("พิทช์ใกล้เคียงที่เสนอได้ต้องทน 120 °C ด้วย (MD254 GAP48% เกรด PA/PA 120)",
+   nf.get("pitch_near") == {"MD254 GAP48%": 25.7}, nf.get("pitch_near"))
+d = core.decide(OVEN.replace("120", "110"), state=None)
+nf = build_modutech_turn(d, cat, plugin.search).context.get("need_filter") or {}
+ok("110 °C → SM254 FG50% ผ่าน ไม่มีข้อขัดแย้ง", nf.get("kept") == ["SM254 FG50%"]
+   and not nf.get("temperature_conflicts"), nf)
+d = core.decide("สายพาน modutech ไลน์ขนมปัง ร้อน 100 องศา แห้ง รุ่นไหนดี", state=None)
+t = build_modutech_turn(d, cat, plugin.search)
+nf = t.context.get("need_filter") or {}
+ok("บอกแค่อุณหภูมิ (ไม่ผ่านการถามทีละข้อ) → โค้ดกรองรายชื่อครบ ไม่ปล่อยให้ LLM เลือกเอง",
+   nf and all(c in nf["kept"] for c in t.context.get("application_match", t.context.get("industry_match", {}))
+              .get("belt_codes_complete", [])) and nf["removed"], (d.action, list(t.context)))
+print("\n7) ค้นพิทช์ทั้งฐาน")
+s = plugin.search
+q = s.parse("มีสายพาน modutech พิทช์ 50.8 ไหม")
+ok("\"มีพิทช์ 50.8 ไหม\" = เท่ากับ ไม่ใช่ ≥ (เดิมได้ 63.5 ปน)", q.op == "==" and q.value == 50.8
+   and all(m["value"] == 50.8 for m in [h for x in s.search(q)["matches"] for h in x.get("hits", [x])]
+           if "value" in m), q)
+ok("\"พิทช์ 2 นิ้ว\" → 50.8", s.parse("สายพาน modutech พิทช์ 2 นิ้ว มีรุ่นไหนบ้าง").value == 50.8)
+ok("\"พิทช์ไม่เกิน 10 มม.\" ยังเป็นช่วง ≤ 10 (EX-005)", (lambda q: q.op == "<=" and q.value == 10)(
+   s.parse("มีสายพานพิทช์ไม่เกิน 10 มม. ไหม")))
+ok("เลของศาไม่ถูกใช้เป็นค่าค้น", s.parse("มีสายพานแรงดึงอย่างน้อย 30000 N/m ทน 80 องศาไหม").value == 30000)
+ok("stated_pitch ไม่อ่านความกว้างเป็นพิทช์", NF.stated_pitch("กว้าง 24 นิ้ว ไลน์ไก่") is None
+   and NF.stated_pitch("pitch 1 นิ้ว ร้อน 120 องศา") == 25.4)
+
 print(f"\nรวม {passed}/{passed + failed}")
 sys.exit(1 if failed else 0)

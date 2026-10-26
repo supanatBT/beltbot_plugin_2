@@ -436,10 +436,18 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
     # 25 ต.ค. เทสบนเว็บ: พิทช์ 50.6 ค้างใน slot → "ขอดูสเปคทั้งสองตัว" (MD508 C · EC508 PR11 พิทช์ 50.8)
     # ถูกกรองทิ้งทั้งสองรุ่น LLM ได้ products ว่างแล้วตอบว่าไม่มีรายละเอียดสเปก
     raw_slots = md.get("slots") or {}
-    if not md.get("codes") and any(isinstance(raw_slots.get(k), (int, float)) for k in ("pitch_mm", "temp_c")):
+    # ค่าที่ลูกค้าพิมพ์มาเองในข้อความ (ไม่ได้ผ่านการถามทีละข้อ) ก็ต้องกรองด้วยโค้ด ไม่ปล่อยให้ LLM ตัดสินเอง
+    # 26 ต.ค. (ลูกค้าจำลอง G02): "เข้าเตาอบ 120 องศา แห้ง พิทช์ 1 นิ้ว" → LLM แนะนำ SM254 FG50% ที่ทนแห้ง 116 °C
+    want_pitch = raw_slots.get("pitch_mm")
+    if not isinstance(want_pitch, (int, float)) and want_pitch != NF.UNKNOWN:
+        want_pitch = NF.stated_pitch(decision.effective_text) or want_pitch
+    want_temp = raw_slots.get("temp_c")
+    if not isinstance(want_temp, (int, float)) and want_temp != NF.UNKNOWN \
+            and isinstance(raw_slots.get("operating_temp_c"), (int, float)):
+        want_temp = raw_slots["operating_temp_c"]
+    if not md.get("codes") and any(isinstance(v, (int, float)) for v in (want_pitch, want_temp)):
         base = list(full_list or codes)
-        nf = NF.filter_by_need(cat, base, raw_slots.get("pitch_mm"), raw_slots.get("temp_c"),
-                               raw_slots.get("wet_or_dry"))
+        nf = NF.filter_by_need(cat, base, want_pitch, want_temp, raw_slots.get("wet_or_dry"))
         kept = nf["kept"]
         codes = [c for c in codes if c in kept] if not full_list else kept[:MAX_FULL_RECORDS]
         if full_list:
@@ -453,6 +461,7 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
             "removed": nf["removed"],
             **({"grades_passing_temperature": nf["grades"]} if nf["grades"] else {}),
             **({"pitch_near": nf["near"]} if nf["near"] else {}),
+            **({"temperature_conflicts": nf["conflicts"]} if nf.get("conflicts") else {}),
             **({"available_pitches_mm": NF.pitch_values(cat)} if not kept and nf["pitch_mm"] is not None else {}),
         }
         debug.append(f"need_filter: {len(base)} → {len(kept)} รุ่น ({nf['note_th'][:60]})")
