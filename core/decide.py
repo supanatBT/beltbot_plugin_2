@@ -7,6 +7,7 @@ core/decide.py
 ลำดับการตัดสินในหนึ่งเทิร์น (เท่าเดิม)
     รูปที่ระบบปฏิเสธ            → reject_image
     คำตอบของการถามกลับ          → รวมกับคำถามเดิม (ถ้าถามแบรนด์ไว้ ดูว่าตอบแบรนด์ไหน)
+                                   ถามแบรนด์เพราะรูป (core/image_policy) → ใช้ผลรูปที่เก็บไว้กับแบรนด์ที่ตอบ
     ทักทาย/ขอบคุณ               → smalltalk
     ไม่เกี่ยวกับสินค้า             → refuse_offtopic
     ขอช่องทางติดต่ออย่างเดียว     → escalate (ไม่ต้องรู้แบรนด์)
@@ -25,6 +26,7 @@ from typing import Optional, Sequence
 from core import router as _router
 from core import templates as T
 from core.protocol import BrandPlugin, DecideInput, Decision, ImageScore
+from core.image_policy import ImageCarry
 from core.sales import escalation_gate
 from core.text import any_word, has
 
@@ -37,6 +39,7 @@ DOMAIN_WORDS = [
     "วัสดุ", "ทำจาก", "เลี้ยว", "โค้ง", "วิ่งตรง", "รัศมี", "ผลิต", "ทน", "อุณหภูมิ", "องศา",
     "ร้อน", "เย็น", "แช่แข็ง", "เปียก", "แห้ง", "drawing", "datasheet", "ดรออิ้ง", "แบบ", "สเปก", "spec",
     "ราคา", "สต็อก", "สต๊อก", "ส่งของ", "อะไหล่", "ผิว", "ไลน์", "รุ่น", "series", "ซีรีส์",
+    "สเปค", "เทียบ",   # 25 ต.ค. เทสบนเว็บ: "ขอดูสเปคทั้งสองตัวเทียบกัน" (สะกด ค) ถูกตีเป็นนอกเรื่อง
     "ฟัน", "pitch", "พิทช์", "เบอร์", "ขนาด",
     # หน่วยวัด — ลูกค้าถามเปลี่ยนหน่วยบ่อยมาก และเดิมถูกตีเป็นคำถามนอกเรื่อง
     # (พบตอนเทส 2026-09-29: "ขอให้ตอบเป็นหน่วยนิ้วได้ไหม" ถูกปฏิเสธ ทั้งที่คุยรุ่น HC127 C ค้างอยู่)
@@ -53,6 +56,8 @@ DOMAIN_WORDS = [
 # "ส่งของกี่วัน") กำลังถามถึงรุ่นนั้น การปฏิเสธว่านอกเรื่องทำให้เสียงานโดยไม่จำเป็น
 # ไม่กระทบเคสนอกเรื่องจริง (CLARIF-002 "อากาศวันนี้เป็นยังไง") เพราะเป็นเทิร์นแรก ยังไม่มีรุ่นในโฟกัส
 FOLLOWUP_MAX_CHARS = 40
+THANKS_WORDS = ["ขอบคุณ", "ขอบใจ", "thank"]
+THANKS_MAX_CHARS = 25
 SMALLTALK_WORDS = ["สวัสดี", "ขอบคุณ", "ขอบใจ", "hello", "hi ", "thank", "thanks", "ดีครับ", "ดีค่ะ"]
 GREETING_WORDS = ["สวัสดี", "hello", "hi ", "ดีครับ", "ดีค่ะ"]   # ทัก (ไม่ใช่ขอบคุณ) → ข้อความทักกลับ
 REFERENCE_WORDS = ["ตัวนั้น", "ตัวนี้", "อันนั้น", "อันนี้", "รุ่นนั้น", "รุ่นนี้", "ตัวที่", "อันที่",
@@ -87,7 +92,8 @@ class Dialogue:
     # ─────────────────────────── API หลัก ───────────────────────────
 
     def decide(self, text: str, has_image: bool = False, image: Optional[ImageScore] = None,
-               image_rejected: bool = False, state=None) -> Decision:
+               image_rejected: bool = False, state=None,
+               image_carry: Optional[ImageCarry] = None) -> Decision:
         st = copy.deepcopy(state) if state is not None else self.state_cls()
         text = (text or "").strip()
 
@@ -98,15 +104,37 @@ class Dialogue:
             return Decision("reject_image", key, reply, "ViT/SigLIP ไม่พบสินค้า",
                             effective_text=text, state=st)
 
+        # ── ขอบคุณ/ขอบใจล้วน ๆ ตอนบอทค้างคำถามไว้ = จบเรื่องนั้น ไม่ใช่คำตอบ (test_conversation_leaks C01 · 25 ต.ค.)
+        # เดิมรวมกับคำถามเดิมแล้วถามซ้ำ เช่น บอทถามเปียก/แห้ง → "ขอบคุณครับ" → ถามเปียก/แห้งอีกรอบ
+        if st.pending and any_word(THANKS_WORDS, text) and not any_word(DOMAIN_WORDS, text) \
+                and len(text) <= THANKS_MAX_CHARS:
+            st.pending, st.pending_question = None, ""
+            return Decision("smalltalk", st.brand, self.smalltalk_th, "ขอบคุณ (ปิดคำถามที่ค้าง)",
+                            effective_text=text, state=st)
+
         # ── คำตอบของการถามกลับรอบก่อน: รวมกับคำถามเดิม ──
         effective = text
-        if st.pending and st.pending_question:
+        carried = None                    # ผลรูปของเทิร์นที่ถามแบรนด์ ใช้ได้เมื่อตอบแบรนด์เจ้าของคะแนนรูป
+        # ถามแบรนด์จากเทิร์นที่มีแต่รูป (ไม่มีข้อความ) — คำถามเดิมว่างได้ แต่ยังต้องอ่านคำตอบแบรนด์
+        if st.pending and (st.pending_question or st.pending == "brand"):
             if st.pending == "brand":
                 for key, p in self.plugins.items():
                     if any(has(pat, text) for pat in T.brand_answer_patterns(p.info)):
                         st.brand = key
                         break
+                if image_carry is not None and st.brand is not None and not has_image:
+                    sc = image_carry.best
+                    if sc is not None and sc.brand == st.brand:
+                        if image_carry.rejected:
+                            reply = self.plugins[st.brand].image_reject_th or GENERIC_REJECT_IMAGE_TH
+                            st.pending, st.pending_question = None, ""
+                            return Decision("reject_image", st.brand, reply,
+                                            f"ตอบ {st.brand} · รูปเทิร์นก่อนถูกปฏิเสธ",
+                                            effective_text=text, state=st,
+                                            payload={"image_carried": True})
+                        carried = sc
             effective = f"{st.pending_question} {text}".strip()
+        pending_q_before = st.pending_question
         st.pending, pending_before, st.pending_question = None, st.pending, ""
 
         # ── สัญญาณของทุกแบรนด์ ──
@@ -138,6 +166,16 @@ class Dialogue:
         # (หัวข้อช่องทางติดต่อไม่ใช้ชื่อรุ่นในข้อความ จึงไม่ต้องส่งรหัสของแบรนด์ใดเข้าไป)
         _esc = escalation_gate(effective)
         if _esc and _esc.topics == ["ช่องทางติดต่อ"] and not _esc.has_spec_question:
+            # ขอเบอร์กลางคำถามที่แบรนด์ถามค้าง → ให้เบอร์แล้วถามข้อเดิมต่อ (การรอคำตอบไม่หาย)
+            # ปลั๊กอินเลือกเองผ่าน pending_reask(state) — ไม่มีเมธอดนี้ = พฤติกรรมเดิม
+            # 26 ต.ค. (C09): เดิมล้างการรอคำตอบ เทิร์นหน้า "2 นิ้ว" ไม่ถูกอ่านเป็นคำตอบ → บันทึกเป็น "ไม่ทราบ"
+            reask = getattr(self.plugins.get(st.brand), "pending_reask", None) \
+                if pending_before not in (None, "brand") and st.brand else None
+            q = reask(st.brands[st.brand]) if reask else None
+            if q:
+                st.pending, st.pending_question = pending_before, pending_q_before
+                return Decision("ask", st.brand, f"{_esc.reply_th}\n\n{q}", "ขอช่องทางติดต่อกลางการถาม → ถามข้อเดิมต่อ",
+                                topic="escalate", effective_text=effective, state=st)
             return Decision("escalate", st.brand, _esc.reply_th, "ขอช่องทางติดต่อ",
                             topic="escalate", effective_text=effective, state=st)
 
@@ -145,8 +183,10 @@ class Dialogue:
         if route.kind == "conflict_strong":
             st.pending, st.pending_question = "brand", effective
             conflict = [self.plugins[k].info for k in route.conflict]
-            return Decision("ask", None, T.clarify_conflict(conflict),
-                            f"เจอรหัสของ{T.all_brands_th(len(conflict))}",
+            only_image = all(v == _router.IMAGE_EVIDENCE for v in route.evidence.values())
+            why = ("รูปไม่ระบุแบรนด์ (บางแบรนด์ยังไม่มีตัวให้คะแนนรูป)" if only_image
+                   else f"เจอรหัสของ{T.all_brands_th(len(conflict))}")
+            return Decision("ask", None, T.clarify_conflict(conflict), why,
                             topic="brand", effective_text=effective, state=st)
         brand = route.brand if route.brand else st.brand
         if route.brand and st.brand and route.brand != st.brand:
@@ -156,6 +196,9 @@ class Dialogue:
         if brand is None and has(STAINLESS_RX, effective):
             # คำถามเรื่องวัสดุสแตนเลสโดยไม่บอกแบรนด์ → ตอบจากข้อมูลทุกแบรนด์ (ผู้ใช้เลือก 2026-09-25)
             n = len(self.plugins)
+            # ค้างคำถามแบรนด์ไว้ — ลูกค้าเลือกแบรนด์ทีหลัง ("เอาของแบรนด์นี้") ต้องได้คำถามสแตนเลสต่อ
+            # (test_conversation_leaks C19 · 25 ต.ค. — เดิมเรื่องสแตนเลสหาย ได้คำแนะนำทั่วไป)
+            st.pending, st.pending_question = "brand", effective
             return Decision("cross_brand", None, self.cross_brand_th(CROSS_BRAND_STAINLESS),
                             f"SS ไม่ระบุแบรนด์ → ตอบ{T.all_brands_th(n)}",
                             topic="material", effective_text=effective, state=st)
@@ -167,10 +210,18 @@ class Dialogue:
 
         plugin = self.plugins[brand]
         img = image if (has_image and image is not None and image.brand == brand) else None
-        d = plugin.decide(DecideInput(text=effective, signal=signals[brand], has_image=has_image,
-                                      image=img), st.brands[brand])
+        use_image = has_image
+        if carried is not None and carried.brand == brand:
+            img, use_image = carried, True
+        d = plugin.decide(DecideInput(text=effective, signal=signals[brand], has_image=use_image,
+                                      image=img, answer=text if pending_before else ""), st.brands[brand])
         if d.pending:
-            st.pending, st.pending_question = d.pending, effective
+            # ข้อความที่ปลั๊กอินใช้ตัดสินจริง (ปกติ = effective) — ปลั๊กอินเริ่มคำขอใหม่จากคำตอบได้
+            # 26 ต.ค. (C33): เปลี่ยนงานกลางการถาม ปลั๊กอินตัดคำขอเดิมทิ้ง แต่ที่นี่เคยเก็บข้อความรวมเดิมไว้
+            # เทิร์นหน้าจึงกลับไปเป็นงานเดิม
+            st.pending, st.pending_question = d.pending, (d.effective_text or effective)
+        if carried is not None and carried.brand == brand:
+            d.payload = {**(d.payload or {}), "image_carried": True}
         d.state = st
         return d
 

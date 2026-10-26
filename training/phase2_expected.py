@@ -10,6 +10,10 @@ phase2_expected.py — ความต่างที่ "ตั้งใจ" �
   3 เลือกแบรนด์         พื้นที่เปิด · kg/m² เป็นสัญญาณแข็งของ Modutech (EX-004 · EX-006)
   4 ค้นผิว             "ผิวกันลื่น" (คำกลาง) = Non Slip + Grip Top + Flush Grid Grip Top (EX-009)
   5 Movex ถามรุ่น       ถ้าคำถามบอกงาน (ขวด PET · กระป๋อง …) ยกรุ่นที่ usage เขียนถึงงานนั้นแทนข้อความถามรุ่น (RT-014 · 11 ต.ค. ค่ำ)
+  6 Modutech ถามงาน     ถามทีละข้อ งาน → พิทช์ → อุณหภูมิ แทนข้อความเดียวสามเรื่อง (brands/modutech/need_flow.py · 25 ต.ค.)
+                        บทสนทนาที่ของเดิมได้ข้อความถามงาน ข้ามทั้งบท แล้วตรวจแยกว่าของใหม่ได้คำถามข้อแรก
+  7 สแตนเลสข้ามแบรนด์   ค้างคำถามแบรนด์ไว้ ลูกค้าเลือกแบรนด์ทีหลังได้คำถามสแตนเลสต่อ (test_conversation_leaks C19 · 25 ต.ค.)
+                        บทสนทนาที่ของเดิมได้ cross_brand ข้ามทั้งบท แล้วตรวจแยกว่าของใหม่ค้าง pending=brand
 """
 from __future__ import annotations
 
@@ -57,3 +61,11 @@ def expected_search_query(sq: dict, text: str) -> dict:
     if "กันลื่น" in (text or "") and not re.search(r"non\s*slip", text or "", re.IGNORECASE):
         return {**sq, "surface_any": list(NON_SLIP_GROUP)}
     return sq
+
+
+OLD_MODUTECH_NEED_HEAD = "ขอข้อมูลเพิ่มนิดนะครับ เพื่อแนะนำรุ่นได้ตรง"
+
+
+def need_flow_changed(old_reply: str) -> bool:
+    """ของเดิมถามงานแบบสามเรื่องในข้อความเดียว → ของใหม่ถามทีละข้อ (ทั้งบทสนทนาหลังจากนี้ต่างโดยตั้งใจ)"""
+    return (old_reply or "").startswith(OLD_MODUTECH_NEED_HEAD)

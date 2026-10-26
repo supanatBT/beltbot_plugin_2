@@ -145,7 +145,7 @@ def main() -> int:
     # เฟส 2: แปลงผลของเดิมด้วยความต่างที่ตั้งใจก่อนเทียบ (training/phase2_expected.py)
     # ข้อความที่ตั้งใจให้เลือกแบรนด์ต่าง (พื้นที่เปิด · kg/m²) ทั้งบทสนทนานั้นนับแยก ไม่เทียบ
     sys.path.insert(0, os.path.join(ROOT, "training"))
-    from phase2_expected import expected_reply, expected_search_query, routing_changed
+    from phase2_expected import expected_reply, expected_search_query, need_flow_changed, routing_changed
     texts = {}
     for k in a:
         if isinstance(a[k], dict) and "effective_text" in a[k]:
@@ -164,12 +164,49 @@ def main() -> int:
                 v["state"]["pending_question"] = expected_reply(v["state"]["pending_question"],
                                                                 v.get("effective_text", ""), "",
                                                                 {} if k.startswith("empty|") else _mx)
+    cross_turns = [k for k, v in a.items() if isinstance(v, dict) and v.get("action") == "cross_brand"]
+    bad_cross = [k for k in cross_turns if not (isinstance(b.get(k), dict) and b[k].get("action") == "cross_brand"
+                                                and (b[k].get("state") or {}).get("pending") == "brand")]
+    conv_changed = conv_changed | {k.rsplit("|", 1)[0] for k in cross_turns}
+    need_turns = [k for k, v in a.items() if isinstance(v, dict) and need_flow_changed(v.get("reply_th", ""))]
+    conv_need = {k.rsplit("|", 1)[0] for k in need_turns} - conv_changed
+    from brands.modutech.need_flow import ASK_NEED_TH
+    bad_need = [k for k in need_turns if not (isinstance(b.get(k), dict) and b[k].get("reply_th") == ASK_NEED_TH)]
+    conv_changed = conv_changed | conv_need
+    skipped_need_flow = set(need_turns)
+    # 26 ต.ค.: slot _need_text (ข้อความที่บอกงานล่าสุด · plugin._remember_need) เป็นสถานะภายในใหม่
+    # ไม่เปลี่ยน action · reply · reason — ตัดออกจากฝั่งใหม่ก่อนเทียบ (นับไว้ว่ามีกี่เทิร์น)
+    def _drop_need(o):
+        if isinstance(o, dict):
+            o.pop("_need_text", None)
+            for x in o.values():
+                _drop_need(x)
+        elif isinstance(o, list):
+            for x in o:
+                _drop_need(x)
+    n_need = sum(1 for v in b.values() if "_need_text" in json.dumps(v, ensure_ascii=False))
+    _drop_need(b)
+    print(f"      26 ต.ค.: slot _need_text ใหม่ {n_need} เทิร์น (ตัดออกก่อนเทียบ)")
+    # 26 ต.ค. (ผู้ใช้เลือกข้อ 2 ก): บอกงาน + ขอให้ช่วยเลือก ("ใช้รุ่นไหนดี") → ถามพิทช์/อุณหภูมิต่อ
+    # ของเดิมตอบรายชื่อทันที — ทั้งบทสนทนาหลังจากนี้ต่างโดยตั้งใจ
+    from brands.modutech.need_flow import ASK_PITCH_TH, ASK_TEMP_TH
+    pick_turns = [k for k in a if isinstance(a[k], dict) and a[k].get("action") == "answer"
+                  and isinstance(b.get(k), dict) and b[k].get("reply_th") in (ASK_PITCH_TH, ASK_TEMP_TH)
+                  and k not in skipped_need_flow]
+    conv_pick = {k.rsplit("|", 1)[0] for k in pick_turns} - conv_changed
+    print(f"      26 ต.ค.: บอกงานแล้วขอให้ช่วยเลือก → ถามพิทช์/อุณหภูมิ {len(conv_pick)} บท ({len(pick_turns)} เทิร์น)"
+          f" {sorted({k.split('|')[2] for k in pick_turns})}")
+    conv_changed = conv_changed | conv_pick
     skipped = [k for k in a if k.rsplit("|", 1)[0] in conv_changed]
     diff = [k for k in sorted(set(a) & set(b)) if a[k] != b[k] and k not in skipped]
     print(f"      เฟส 2: ข้ามบทสนทนาที่ตั้งใจเลือกแบรนด์ต่าง {len(conv_changed)} บท ({len(skipped)} เทิร์น)")
     bad_skip = [k for k in skipped if isinstance(b.get(k), dict) and routing_changed(b[k].get("effective_text", ""))
                 and b[k]["brand"] not in ("modutech", None)]
     ok("บทสนทนาที่ตั้งใจเปลี่ยน ได้ Modutech ทุกเทิร์นที่มีคำคุณสมบัติ", not bad_skip, bad_skip[:3])
+    print(f"      25 ต.ค.: ถามงานทีละข้อ {len(conv_need)} บท ({len(need_turns)} เทิร์นที่ของเดิมถามงาน)")
+    ok("เทิร์นที่ของเดิมถามงาน ของใหม่ได้คำถามข้อแรก (งาน) ทุกเทิร์น", not bad_need, bad_need[:3])
+    print(f"      25 ต.ค.: สแตนเลสข้ามแบรนด์ค้างคำถามแบรนด์ {len(cross_turns)} เทิร์น")
+    ok("cross_brand ของใหม่ค้าง pending=brand ทุกเทิร์น", not bad_cross, bad_cross[:3])
     for k in diff[:5]:
         fields = [f for f in a[k] if a[k].get(f) != b[k].get(f)] if isinstance(a[k], dict) else ["text"]
         print(f"      {k}: {fields}")

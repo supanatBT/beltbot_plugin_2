@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 from typing import Callable, Optional
 
 from core.protocol import Decision   # ชนิดเท่านั้น — รับทั้ง Decision ของแกนกลางและรูปเดิม
+from brands.modutech import need_flow as NF
 from brands.modutech.gates import Catalogue, Slots, run_gates, sprocket_gate
 from brands.modutech.router import (INDUSTRY_KEYWORDS, CatalogueSearch, ExploratoryQuery, NO_ABSENCE_NOTE_TH,
                                      belt_grade_note_th)
@@ -274,6 +275,64 @@ def filter_card_applications(products: list, kg) -> None:
             }
 
 
+def _near_grade_notes(nf: dict, context: dict, temp_c) -> dict:
+    """พิทช์ใกล้เคียงที่ผ่านอุณหภูมิด้วยเกรดที่เล่มไม่ได้ระบุสำหรับงานนี้ → หมายเหตุ (ผู้ใช้เลือก 26 ต.ค. ข้อ ข)
+
+    MD254 GAP48% งานเตาอบ: เล่มแนะนำ POM (ทนแห้ง 93 °C) · เกรด PA/PA ทน 120 °C แต่เล่มไม่ได้ระบุสำหรับงานเตาอบ
+    เสนอได้ แต่ต้องบอกว่าเกรดนั้นเล่มไม่ได้ระบุสำหรับงานนี้ ให้ยืนยันกับฝ่ายขาย (ไม่ซ่อน · ไม่รับรองเกิน)"""
+    recommended = (context.get("application_match") or {}).get("materials_by_belt") or {}
+    out = {}
+    for code, passing in (nf.get("near_grades") or {}).items():
+        rec = recommended.get(code)
+        if not rec or not passing:
+            continue
+        belt_ok = [g for g in passing if g.split("/")[0] in rec]
+        if belt_ok:
+            continue                                   # เกรดที่เล่มแนะนำผ่านอยู่แล้ว ไม่ต้องเตือน
+        out[code] = (f"แคตตาล็อกระบุเกรด {', '.join(rec)} สำหรับงานนี้ ซึ่งไม่ผ่าน {temp_c:g} °C "
+                     f"เกรดที่ผ่านคือ {', '.join(passing)} แต่เล่มไม่ได้ระบุเกรดนี้สำหรับงานนี้ "
+                     "ถ้าเสนอรุ่นนี้ต้องบอกลูกค้าทั้งสองข้อและให้ยืนยันกับพนักงานฝ่ายขาย")
+    return out
+
+
+def trim_card_industries(products: list, context: dict, cat: Catalogue) -> None:
+    """คำถามแนะนำรุ่นตามงาน/อุตสาหกรรม: การ์ดแต่ละรุ่นเหลือเฉพาะอุตสาหกรรมที่ถาม (แก้ในที่)
+
+    26 ต.ค. (c16_*.json): เทิร์นแนะนำรุ่นงานไก่ prompt ~20,600 token · products 43k ตัวอักษร
+    การ์ดละ ~5.4k ซึ่ง industries (งานใช้ทั้ง 6–7 อุตสาหกรรม) กินไป ~3.4k ทั้งที่ลูกค้าถามอุตสาหกรรมเดียว
+    ไม่ลบเงียบ — ชื่ออุตสาหกรรมอื่นที่รุ่นนี้ใช้ได้ยังอยู่ใน other_industries (กัน LLM สรุปว่าใช้ได้แค่งานนี้)
+    งานที่ตรงคำถามโดยไม่ระบุอุตสาหกรรม (เช่น Oven Infeed) → เก็บทุกอุตสาหกรรมที่มีงานนั้น"""
+    match = context.get("industry_match") or context.get("application_match") or {}
+    industry = match.get("industry")
+    apps = set(match.get("applications") or [])
+    if not industry and not apps:
+        return
+    # การ์ด (gates._card) เก็บแค่ชื่อไทย — แปลงชื่ออังกฤษจาก context เป็นไทยด้วยข้อมูลในแคตตาล็อกเอง
+    ind_th = {i.get("industry"): i.get("industry_th") for q in cat.products for i in q.get("industries", [])}
+    app_th = {v.get("application"): v.get("application_th") for v in cat.data.get("application_vocabulary", [])}
+    want_ind = ind_th.get(industry) if industry else None
+    want_apps = {app_th.get(a) for a in apps} - {None}
+    if industry and not want_ind or not industry and not want_apps:
+        return                                         # แปลงชื่อไม่ได้ = ไม่แตะ (ไม่เดา)
+    for p in products or []:
+        inds = p.get("industries")
+        if not inds:
+            continue
+
+        def wanted(ind):
+            if want_ind:
+                return ind.get("industry_th") == want_ind
+            return any(a.get("application_th") in want_apps for a in ind.get("applications") or [])
+
+        keep = [i for i in inds if wanted(i)]
+        if not keep:
+            continue                                   # ไม่ตรงเลย = ไม่แตะ (ไม่ทำให้การ์ดว่าง)
+        p["industries"] = keep
+        others = [i.get("industry_th") for i in inds if not wanted(i)]
+        if others:
+            p["other_industries"] = others
+
+
 def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSearch,
                         vector_search: Optional[Callable[[str], list[str]]] = None,
                         kg=None) -> ModutechTurn:
@@ -413,13 +472,67 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
         codes = [cat.by_id[i]["belt_code"] for i in ids if i in cat.by_id]
         from_vector = True
         debug.append(f"vector: {codes}")
+
+    # ── พิทช์/อุณหภูมิที่ได้จากการถามทีละข้อ → กรองรุ่นจริง (need_flow.py · 25 ต.ค.) ──
+    # ── ลูกค้าขอ "รุ่นอื่น" → ตัดรุ่นที่เสนอไปแล้ว (plugin._use_offered) ──
+    excl = list((md.get("slots") or {}).get("_exclude") or [])
+    if excl and not md.get("codes"):
+        if full_list:
+            full_list = [c for c in full_list if c not in excl]
+            for k in ("application_match", "industry_match"):
+                if k in context:
+                    context[k]["belt_codes_complete"] = full_list
+            codes = full_list[:MAX_FULL_RECORDS]
+        else:
+            codes = [c for c in codes if c not in excl]
+        context["excluded_already_offered"] = {
+            "belt_codes": excl,
+            "note_th": "ลูกค้าขอรุ่นอื่นนอกจากรุ่นเหล่านี้ที่เสนอไปแล้ว ห้ามเสนอซ้ำ ถ้าไม่มีรุ่นอื่นเหลือให้บอกตรง ๆ"}
+        debug.append(f"exclude offered: {excl}")
+
+    # กรองเฉพาะคำถามแนะนำรุ่น (ไม่มีรหัสในโฟกัส) — ลูกค้าถามรุ่นที่ระบุแล้ว ต้องได้ข้อมูลรุ่นนั้นเสมอ
+    # 25 ต.ค. เทสบนเว็บ: พิทช์ 50.6 ค้างใน slot → "ขอดูสเปคทั้งสองตัว" (MD508 C · EC508 PR11 พิทช์ 50.8)
+    # ถูกกรองทิ้งทั้งสองรุ่น LLM ได้ products ว่างแล้วตอบว่าไม่มีรายละเอียดสเปก
+    raw_slots = md.get("slots") or {}
+    # ค่าที่ลูกค้าพิมพ์มาเองในข้อความ (ไม่ได้ผ่านการถามทีละข้อ) ก็ต้องกรองด้วยโค้ด ไม่ปล่อยให้ LLM ตัดสินเอง
+    # 26 ต.ค. (ลูกค้าจำลอง G02): "เข้าเตาอบ 120 องศา แห้ง พิทช์ 1 นิ้ว" → LLM แนะนำ SM254 FG50% ที่ทนแห้ง 116 °C
+    want_pitch = raw_slots.get("pitch_mm")
+    if not isinstance(want_pitch, (int, float)) and want_pitch != NF.UNKNOWN:
+        want_pitch = NF.stated_pitch(decision.effective_text) or want_pitch
+    want_temp = raw_slots.get("temp_c")
+    if not isinstance(want_temp, (int, float)) and want_temp != NF.UNKNOWN \
+            and isinstance(raw_slots.get("operating_temp_c"), (int, float)):
+        want_temp = raw_slots["operating_temp_c"]
+    if not md.get("codes") and any(isinstance(v, (int, float)) for v in (want_pitch, want_temp)):
+        base = list(full_list or codes)
+        nf = NF.filter_by_need(cat, base, want_pitch, want_temp, raw_slots.get("wet_or_dry"))
+        kept = nf["kept"]
+        codes = [c for c in codes if c in kept] if not full_list else kept[:MAX_FULL_RECORDS]
+        if full_list:
+            full_list = kept
+            for k in ("application_match", "industry_match"):
+                if k in context:
+                    context[k]["belt_codes_complete"] = kept
+        context["need_filter"] = {
+            "note_th": nf["note_th"],
+            "kept": kept,
+            "removed": nf["removed"],
+            **({"grades_passing_temperature": nf["grades"]} if nf["grades"] else {}),
+            **({"pitch_near": nf["near"]} if nf["near"] else {}),
+            **({"temperature_conflicts": nf["conflicts"]} if nf.get("conflicts") else {}),
+            **({"pitch_near_grade_notes_th": notes} if (notes := _near_grade_notes(nf, context, want_temp)) else {}),
+            **({"available_pitches_mm": NF.pitch_values(cat)} if not kept and nf["pitch_mm"] is not None else {}),
+        }
+        debug.append(f"need_filter: {len(base)} → {len(kept)} รุ่น ({nf['note_th'][:60]})")
     records = cat.records(codes)
 
     gated = run_gates(records, slots)
     if graph_apps_enabled():
         filter_card_applications(gated.products, kg)
+    if full_list:
+        trim_card_industries(gated.products, context, cat)
     context["products"] = gated.products
-    context["slots_known"] = {k: v for k, v in (md.get("slots") or {}).items() if v is not None}
+    context["slots_known"] = NF.visible_slots(md.get("slots") or {})
     if decision.sales_topics:
         context["sales_topics"] = decision.sales_topics
     if gated.ask_back:
@@ -541,6 +654,7 @@ def _system_prompt(context: dict, rules: dict[str, list[str]]) -> str:
 - ห้ามรับปากว่าจะส่งเรื่องต่อ ประสานงาน หรือให้ฝ่ายขายติดต่อกลับ — คุณไม่มีช่องทางทำสิ่งนั้น
   หน้าที่คือให้ข้อมูลสเปกและบอกช่องทางติดต่อ ลูกค้าเป็นคนติดต่อฝ่ายขายเอง
   ห้ามขอให้ลูกค้าฝากเบอร์หรืออีเมลไว้ในแชต เพราะไม่มีใครมาอ่าน
+  ห้ามพิมพ์เบอร์โทร อีเมล ไลน์ หรือเวลาทำการของบริษัทเอง ช่องทางจริงระบบแนบท้ายคำตอบให้
 - ราคา lead time MOQ สต็อก อะไหล่ ความกว้างนอกมาตรฐาน รัศมีวงเลี้ยว: ห้ามให้ตัวเลขหรือรับปาก
   ถ้าชวนลูกค้าถามความกว้างที่ไม่อยู่ในรายการ ต้องบอกว่าต้องสอบถามฝ่ายขาย
   ถ้ามี sales_topics ใน Context ระบบจะแนบข้อความส่งต่อฝ่ายขายท้ายคำตอบเอง ให้ตอบเฉพาะส่วนสเปก ไม่ต้องพูดถึงเรื่องนั้น

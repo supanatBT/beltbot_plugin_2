@@ -181,8 +181,20 @@ class CatalogueSearch:
             if re.search(rx, t, re.IGNORECASE):
                 q.field = name
                 break
-        m = re.search(r"(\d[\d,]*(?:\.\d+)?)\s*(?:k\b|พัน)?", t.replace(" ,", ","))
-        if q.field and m:
+        # พิทช์ไม่มีคำเปรียบเทียบ = สเปกที่ต้องการ (เท่ากับ) ไม่ใช่ช่วงค้น — ให้ทางงานใช้ + filter_by_need กรอง
+        # 26 ต.ค. (ลูกค้าจำลอง G02 · OVEN-01/02): "เข้าเตาอบ 120 องศา แห้ง พิทช์ 1 นิ้ว รุ่นไหนดี"
+        # ถูกตีเป็น "พิทช์ ≥ 120 มม." ค้นได้ 0/68 → LLM ไม่มีข้อมูลอุณหภูมิ แล้วแนะนำ SM254 FG50% (ทนแห้ง 116 °C) เอง
+        pitch_eq = q.field == "pitch" and not re.search(_GE + "|" + _LE, t, re.IGNORECASE)
+        if pitch_eq:
+            from brands.modutech.need_flow import stated_pitch   # นิ้ว → มม. · ข้ามเลของศา
+            q.value = stated_pitch(t)
+            q.op = "=="
+            if q.value is None:
+                q.field = q.op = None
+        # เลขที่มีหน่วยอุณหภูมิไม่ใช่ค่าของ field ใด ๆ ในการค้นนี้
+        t_num = re.sub(r"-?\d+(?:\.\d+)?\s*(?:°\s*C|องศา|℃)", " ", t)
+        m = re.search(r"(\d[\d,]*(?:\.\d+)?)\s*(?:k\b|พัน)?", t_num.replace(" ,", ","))
+        if q.field and m and not pitch_eq:
             val = float(m.group(1).replace(",", ""))
             if re.search(r"\d\s*(?:k\b|พัน)", t, re.IGNORECASE):
                 val *= 1000
@@ -345,7 +357,9 @@ class CatalogueSearch:
                 continue
             if q.field in ("open_area", "pitch") and q.value is not None:
                 val = spec.get("open_area_pct") if q.field == "open_area" else (spec.get("pitch") or {}).get("mm")
-                if val is None or not (val >= q.value if q.op == ">=" else val <= q.value):
+                ok = (abs(val - q.value) <= 0.05 if q.op == "==" else      # พิทช์ที่ต้องการ (ไม่ใช่ช่วง)
+                      val >= q.value if q.op == ">=" else val <= q.value) if val is not None else False
+                if not ok:
                     continue
                 hits = [{"variant_id": v["variant_id"], "belt_material": v["belt_material"],
                          "pin_material": v["pin_material"], "value": val} for v in vs]

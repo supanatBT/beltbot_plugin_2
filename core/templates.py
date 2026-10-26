@@ -57,3 +57,11 @@ def brand_answer_patterns(info: BrandInfo) -> list[str]:
 def all_brands_th(n: int) -> str:
     """คำเรียกรวม — สองแบรนด์ใช้คำเดิม"""
     return "ทั้งสองแบรนด์" if n == 2 else "ทุกแบรนด์"
+
+
+def image_no_model(info: BrandInfo, from_image: bool) -> str:
+    """รูปไปแบรนด์ที่ยังไม่มีตัวให้คะแนนรูป — บอกตรง ๆ ว่ายังระบุรุ่นจากรูปไม่ได้ (ไม่ปล่อยให้ลูกค้าคิดว่ารูปถูกอ่านแล้ว)
+    from_image = แบรนด์มาจากรูปเอง (ประตูรูปมั่นใจ) ไม่ใช่จากข้อความหรือคำตอบของลูกค้า"""
+    if from_image:
+        return f"จากรูปน่าจะเป็น{info.kind_th} {info.name} ครับ แต่ตอนนี้ระบบยังระบุรุ่นจากรูปไม่ได้"
+    return f"ตอนนี้ระบบยังระบุรุ่น{info.kind_th} {info.name} จากรูปไม่ได้ครับ"

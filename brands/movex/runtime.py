@@ -54,6 +54,86 @@ def _enrich_product(p: dict) -> dict:
     return p
 
 
+SPROCKET_TOPIC_RX = re.compile(r"สเตอร์|สเตอ|เฟือง|sprocket|ฟันเฟือง|ล้อโซ่", re.IGNORECASE)
+MAX_COMPAT_RECORDS = 4
+
+
+def products_of(pid: str) -> dict:
+    return product_db.get(pid) or {}
+
+
+def focus_graph(focus: list, graph) -> "GraphResult | None":
+    """กราฟจากรุ่นที่ระบบตัดสินแล้วว่าลูกค้าหมายถึง (decision.payload.pids)
+
+    25 ต.ค. (conv_r3 CONV-17): "ใช้สเตอร์อะไร" หลังเลือก LF 880 TAB K450 → LLM ตอบว่าไม่มีข้อมูล compatible
+    ทั้งที่กราฟมี 54901 · 55001 — กราฟเดิม seed จากผลค้นข้อความ "ใช้สเตอร์อะไร" ซึ่งไม่มีชื่อรุ่น
+    ได้รุ่นอื่น (หรือไม่ได้อะไร) ส่วนรุ่นที่ระบบรู้ว่าลูกค้าหมายถึงไม่ถูกใช้เลย"""
+    if not focus or graph is None:
+        return None
+    gr = GraphResult()
+    gr.seed_products = list(focus)
+    for f in focus:
+        for c in graph.get_compatible_products(f) or []:
+            if c not in gr.compatible:
+                gr.compatible.append(c)
+        for c in graph.get_same_series(f) or []:
+            if c not in gr.same_series and c not in focus:
+                gr.same_series.append(c)
+    # get_material_details คืน dict ฟิลด์ของวัสดุเดียว แต่ GraphResult ต้องการ {รหัส: ฟิลด์}
+    # (ทาง "Graph fallback" เดิมใส่ตรง ๆ แล้ว to_llm_context พัง — ถูกห่อ try ไว้ไม่ถึงจุดพัง จึงไม่เคยเห็น)
+    mat = graph.get_material_details(focus[0]) or {}
+    proc = graph.get_process_details(focus[0]) or {}
+    code = (products_of(focus[0]).get("Material") or mat.get("material_code") or "material")
+    gr.material_details = {code: mat} if mat else {}
+    pcode = (products_of(focus[0]).get("manufacturing_process") or proc.get("process_name") or "process")
+    gr.process_details = {pcode: proc} if proc else {}
+    gr.hop_trace = [f"focus:{f}" for f in focus]
+    return gr
+
+
+def ensure_focus_context(llm_context: list, focus: list, products: dict, compatible: list,
+                         asks_sprocket: bool) -> list[str]:
+    """ใส่ข้อมูลรุ่นที่ลูกค้าหมายถึงไว้บนสุด (ถ้าผลค้นไม่มี) · ถามเรื่องสเตอร์ = แนบสเปกสเตอร์ที่เข้ากันได้ด้วย
+    คืนรายการ pid ที่เพิ่ม (ลง debug)"""
+    have = {c.get("product_id") for c in llm_context}
+    added = []
+    for f in reversed([f for f in focus if f in products and f not in have]):
+        rec = _enrich_product(products[f])
+        rec.update({"_rank": 0, "_note": "รุ่นที่ลูกค้ากำลังถามถึง (ระบบตัดสินจากบทสนทนา)"})
+        llm_context.insert(0, rec)
+        added.append(f)
+    if asks_sprocket:
+        have = {c.get("product_id") for c in llm_context}
+        for c in [c for c in compatible if c in products and c not in have][:MAX_COMPAT_RECORDS]:
+            rec = _enrich_product(products[c])
+            rec.update({"_note": f"ใช้ร่วมกับ {', '.join(focus)} ตามกราฟความเข้ากันได้"})
+            llm_context.append(rec)
+            added.append(c)
+    return added
+
+
+def sprocket_spec_lines(compatible: list, products: dict) -> list[str]:
+    """บรรทัดสเปกสเตอร์สำเร็จรูป (รหัส · ฟัน · รูเพลา · ชนิด) — โค้ดเขียน ไม่ให้ LLM ไปหยิบตัวเลขจาก JSON เอง
+
+    25 ต.ค. (conv_movex CONV-17 รอบ 2): เพิ่มกฎใน prompt ให้บอก Bore_mm แล้ว LLM ยังตอบแค่รหัส + ฟัน
+    ค่าที่ไม่มีใน record ไม่ใส่ (ไม่เดา)"""
+    out = []
+    for c in compatible:
+        p = products.get(c) or {}
+        if "sprocket" not in c.lower() and "sprocket" not in str(p.get("product_type", "")).lower():
+            continue
+        parts = []
+        if p.get("Z_Teeth") is not None:
+            parts.append(f"{p['Z_Teeth']} ฟัน")
+        if p.get("Bore_mm") is not None:
+            parts.append(f"รูเพลา {p['Bore_mm']:g} มม.")
+        # PD/OD ไม่ใส่: กฎใน prompt ให้ตอบสั้น (รหัส · ฟัน · รูเพลา) · 54901 ในข้อมูล OD 122 < PD 123.3 (รายงานผู้ใช้ 25 ต.ค.)
+        if p.get("Sprocket_Type"):
+            parts.append(f"ชนิด {p['Sprocket_Type']}")
+        out.append(f"- {p.get('Art_Nr') or c}: " + (" · ".join(parts) if parts else "ไม่มีสเปกในข้อมูล"))
+    return out
+
+
 def _build_graph_summary(graph_result) -> str:
     """
     สร้าง graph summary สำหรับ LLM
@@ -519,7 +599,8 @@ def _build_system_prompt(json_context: str, graph_summary: str,vit_signal=None, 
   product_type = "Sideflexing Chain"       → เลี้ยวได้ แล้วค่อยบอก Min_curve_radius_mm
 - "workload" → ดู Max_Working_Load_N
 - "ใช้สเตอร์ตัวไหน" → ตอบแค่รหัสสเตอร์ที่ compatible จาก GraphRAG Context
-  ห้ามอธิบาย spec ยาว ตอบแค่ชื่อรุ่น + จำนวนฟัน (ถ้ามี) เท่านั้น
+  ห้ามอธิบาย spec ยาว ตอบแค่ชื่อรุ่น + จำนวนฟัน (Z_Teeth) + ขนาดรูเพลา (Bore_mm) ของแต่ละตัว
+  เอาตัวเลขจาก record ของสเตอร์ใน RAG Context (JSON) ถ้า record ไม่มีค่านั้นให้เว้นไว้ ห้ามเดา
 - "สเตอร์นั้นผลิตยังไง" → ถ้า GraphRAG มีสเตอร์ compatible หลายตัว ต้องตอบให้ครบทุกตัว
   ห้ามตอบแค่ตัวเดียวถ้า context มีมากกว่า 1
 - ถ้า final_score < 0.2 ทุกรุ่น → แจ้งว่าข้อมูลไม่เพียงพอ
@@ -676,6 +757,20 @@ class MovexRuntime:
                     "_best_chunk": p.best_chunk_text,
                 })
                 llm_context.append(enriched)
+        # รุ่นที่ระบบตัดสินแล้วว่าลูกค้าหมายถึง → กราฟและข้อมูลมาจากรุ่นนั้น (ไม่ใช่จากผลค้นข้อความสั้น ๆ)
+        focus = [p for p in ((decision.payload or {}).get("pids") or []) if p in product_db]
+        fgr = focus_graph(focus, kg) if focus else None
+        _gr0 = retrieval_result.graph_result
+        if fgr is not None and not (_gr0 and set(focus) & set(_gr0.seed_products or [])):
+            retrieval_result.graph_result = fgr
+            dbg.append(f"**Graph (focus):** seeds={focus} compatible={fgr.compatible[:4]}\n")
+        if focus:
+            asks_spr = bool(SPROCKET_TOPIC_RX.search(effective_text or "") or SPROCKET_TOPIC_RX.search(user_text or ""))
+            added = ensure_focus_context(llm_context, focus, product_db,
+                                         (retrieval_result.graph_result.compatible
+                                          if retrieval_result.graph_result else []), asks_spr)
+            if added:
+                dbg.append(f"**Context (focus):** เพิ่ม {added}\n")
         if not llm_context:
             dbg.append("⚠️ ไม่พบข้อมูลสินค้าที่ตรงกัน")
 
@@ -696,14 +791,25 @@ class MovexRuntime:
                     _fallback_gr.seed_products    = [_top_pid]
                     _fallback_gr.compatible       = _compatible
                     _fallback_gr.same_series      = _same_series
-                    _fallback_gr.material_details = _mat_details
-                    _fallback_gr.process_details  = _proc_details
+                    # {รหัส: ฟิลด์} แบบเดียวกับ focus_graph — เดิมใส่ dict ฟิลด์ตรง ๆ แล้ว to_llm_context พัง
+                    _fallback_gr.material_details = ({products_of(_top_pid).get("Material") or "material": _mat_details}
+                                                     if _mat_details else {})
+                    _fallback_gr.process_details  = ({products_of(_top_pid).get("manufacturing_process") or "process":
+                                                      _proc_details} if _proc_details else {})
                     retrieval_result.graph_result = _fallback_gr
                     dbg.append(f"**Graph (fallback rank1):** seeds=[{_top_pid}] compatible={_compatible[:3]}\n")
             except Exception as _e:
                 print(f"[WARN] graph fallback failed: {_e}")
 
         graph_summary = _build_graph_summary(retrieval_result.graph_result)
+        _gr_final = retrieval_result.graph_result
+        if _gr_final is not None and getattr(_gr_final, "compatible", None) and \
+                (SPROCKET_TOPIC_RX.search(effective_text or "") or SPROCKET_TOPIC_RX.search(user_text or "")):
+            spec = sprocket_spec_lines(_gr_final.compatible, product_db)
+            if spec:
+                graph_summary += ("\n[สเปกสเตอร์ที่ใช้ร่วมกันได้ — ตอบตามบรรทัดนี้ครบทุกตัว ทั้งจำนวนฟันและรูเพลา]:\n"
+                                  + "\n".join(spec))
+                dbg.append(f"**Sprocket spec:** {len(spec)} ตัว\n")
         system_instruction = _build_system_prompt(json_context, graph_summary, vit_signal=vit_sig,
                                                   decision=decision)
         img_part = None

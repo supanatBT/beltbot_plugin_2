@@ -9,7 +9,7 @@ modutech_gates.py
 ----------------
     gate(products: list[dict], slots: Slots, ...) -> GateResult
 
-  · products = record สินค้าดิบจาก modutech_v30.json (ที่ retriever คืนมา)
+  · products = record สินค้าดิบจาก modutech_v30_3.json (ที่ retriever คืนมา)
   · ไม่แก้ input — ทำบน deepcopy และเทียบ fingerprint ก่อน/หลัง (shadow copy)
   · ไม่เรียก LLM ไม่โหลดโมเดล ไม่แตะ Qdrant → แชต C เทสต์ด้วย python ล้วนได้
   · ตัดสินจากฟิลด์โครงสร้างเท่านั้น ไม่อ่านข้อความใน rules_th / forbidden_th
@@ -57,11 +57,11 @@ class CatalogueError(RuntimeError):
 
 class Catalogue:
     """
-    ถือ modutech_v30.json ไว้ในหน่วยความจำ ไม่มีเมธอดไหนเขียนไฟล์
+    ถือ modutech_v30_3.json ไว้ในหน่วยความจำ ไม่มีเมธอดไหนเขียนไฟล์
     ตรวจว่าเป็น v30 จากเนื้อไฟล์ (มีคีย์สเตอร์) ไม่ใช่จากชื่อไฟล์ — v29 ถูกปฏิเสธ
     """
 
-    def __init__(self, path: str = "modutech_v30.json"):
+    def __init__(self, path: str = "modutech_v30_3.json"):
         with open(path, encoding="utf-8") as f:
             self.data = json.load(f)
         self.path = path
@@ -429,7 +429,9 @@ NO_INCREMENT_TH = ("ยังยืนยันค่าเพิ่มทีล
 NO_INCREMENT_RULE_TH = "ห้ามประกาศค่าเพิ่มทีละมาตรฐาน และห้ามคำนวณเองจากรายการความกว้าง"
 # "คนละค่ากับ…" อ่านแล้วขัดกันเมื่อตารางเองห่างเท่าค่านั้น (HC127 C ห่าง 50.8) — บอกแค่ว่าไม่ใช่ค่ามาตรฐาน
 NON_STD_CAVEAT_TH = "ไม่ใช่ค่าเพิ่มทีละมาตรฐาน"
-NON_STD_RULE_TH = "ค่าเพิ่มทีละของขนาดนอกมาตรฐาน ห้ามใช้แทนค่าเพิ่มทีละมาตรฐาน"
+# 26 ต.ค. (conv_r6 CONV-23 t3): LLM ยกประโยคนี้ไปเขียนในคำตอบ ลูกค้าเห็นคำว่า "ห้าม…" ซึ่งเป็นภาษาคำสั่ง
+# เขียนเป็นข้อเท็จจริงที่ลูกค้าอ่านได้ — ความหมายเดิม (สองค่าใช้แทนกันไม่ได้)
+NON_STD_RULE_TH = "ค่าเพิ่มทีละของขนาดนอกมาตรฐานเป็นคนละค่ากับค่าเพิ่มทีละมาตรฐาน ใช้แทนกันไม่ได้"
 
 
 def _preceded_by_non(text: str, start: int) -> bool:

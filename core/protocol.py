@@ -96,6 +96,7 @@ class DecideInput:
     signal: BrandSignal           # ผล detect() ของแบรนด์นี้ในเทิร์นนี้
     has_image: bool = False
     image: Optional["ImageScore"] = None   # มีเมื่อ ImageRouter เลือกแบรนด์นี้จากรูป
+    answer: str = ""              # ข้อความดิบของเทิร์นนี้ เมื่อเป็นคำตอบของการถามกลับรอบก่อน ("" = ไม่ใช่)
 
 
 @dataclass
@@ -167,6 +168,8 @@ class TurnOutput:
     # ของฝากเทิร์นหน้า — คำนวณหลังแกนกลางต่อข้อความฝ่ายขายแล้ว (ใช้คำตอบสุดท้าย)
     # คืน (last_focus, last_image, last_context) · None = คงของเดิมไว้
     carry_fn: Optional[Callable[[str], tuple]] = None
+    # แก้สถานะของแบรนด์นี้หลังได้คำตอบ (เช่น รุ่นที่คำตอบเพิ่งเสนอ → โฟกัสของเทิร์นหน้า) · {} = ไม่แก้
+    state_patch: dict = field(default_factory=dict)
 
 
 # ═══════════════════════════════════════════════════════════════

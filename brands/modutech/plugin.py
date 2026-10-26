@@ -23,10 +23,20 @@ from brands.modutech.router import CatalogueSearch, ExploratoryQuery
 from core.protocol import BrandInfo, BrandSignal, DecideInput, Decision
 from core.sales import attach_handoff, escalation_gate
 from core.text import any_word, has
+from brands.modutech import need_flow as NF
 
 MOD_TEMP_TOPIC = r"อุณหภูมิ|องศา|°\s*[cC]|ร้อน|เย็น|แช่แข็ง|ฟรีซ|freez|temp|ทนความร้อน|ทนเย็น"
 MOD_STRENGTH_TOPIC = r"แรงดึง|ความแข็งแรง|รับแรง|strength|N\s*/\s*m|รับน้ำหนัก|โหลด"
+REFER_RX = (r"ตัวนี้|อันนี้|รุ่นนี้|ตัวนั้น|อันนั้น|รุ่นนั้น|ตัวแรก|อันแรก|ตัวหลัง|อันหลัง|ตัวที่|อันที่|รุ่นที่|"
+            r"สองตัว|2\s*ตัว|ทั้งสอง|ทั้ง\s*2|เทียบ|ต่างกัน|อันไหน|ตัวไหน|ที่แนะนำ|เมื่อกี้|ข้างบน")
+OTHER_RX = r"รุ่นอื่น|แบบอื่น|ตัวอื่น|อันอื่น|อีกไหม|อีกมั้ย|อีกบ้าง|นอกจากนี้"
+EXCLUDE_KEY = "_exclude"          # รุ่นที่ลูกค้าขอให้ตัดออก ("ขอรุ่นอื่น") — ส่งไป build_turn เทิร์นเดียว
+FOLLOWUP_CHARS = 40
 MOD_RECOMMEND = r"แนะนำ|ใช้รุ่นไหน|ใช้อะไรดี|ตัวไหนดี|รุ่นไหนดี|เหมาะกับ|มีอะไรบ้าง|สายพานอะไร"
+# ขอให้ช่วยเลือก (ไม่ใช่ถามรายชื่อ) — บอกงานแล้วแต่ยังไม่รู้พิทช์ → ถามทีละข้อต่อ (ผู้ใช้เลือก 26 ต.ค. ข้อ 2 ก)
+# "ใช้รุ่นไหน(ได้)บ้าง" "มีงานอะไรบ้าง" = ถามรายชื่อตามเล่ม → ตอบรายชื่อเหมือนเดิม (graph_apps)
+MOD_PICK = r"แนะนำ|รุ่นไหนดี|ตัวไหนดี|อันไหนดี|ใช้อะไรดี|หาสายพาน|อยากได้สายพาน|ต้องการสายพาน|กำลังหา|ช่วยเลือก"
+MOD_LIST = r"บ้าง|ทั้งหมด|ทุกรุ่น"
 
 ASK_WET_DRY_TH = ("ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง "
                   "เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C")
@@ -104,6 +114,15 @@ class ModutechPlugin:
         except Exception:                                    # noqa: BLE001
             return False
 
+    def _need_in(self, text: str) -> bool:
+        """ข้อความบอกงานหรืออุตสาหกรรม (ตัวค้นจับได้)"""
+        return self.search.match_application(text) is not None or self._names_industry(text)
+
+    def _remember_need(self, text: str, st: dict) -> None:
+        """จำข้อความที่บอกงาน (ไม่มีรุ่นในโฟกัส) ไว้ให้คำถามต่อที่เปลี่ยนแค่พิทช์/อุณหภูมิ"""
+        if not st["codes"] and self._need_in(text):
+            st["slots"][self.NEED_TEXT_KEY] = text[-self.NEED_TEXT_MAX:]
+
     @property
     def weak_terms(self) -> list[str]:
         return self.detector.weak_terms
@@ -114,14 +133,20 @@ class ModutechPlugin:
         return {k: (type(v)() if isinstance(v, (list, dict)) else v) for k, v in self._state_defaults.items()}
 
     def has_focus(self, st: dict) -> bool:
-        return bool(st.get("codes"))
+        return bool(st.get("codes")) or bool((st.get("slots") or {}).get(self.OFFERED_KEY))
 
     def on_brand_switch(self, st: dict) -> dict:
         # ล้างรุ่นกับ slot · sprocket_codes ไม่ล้าง (ของเดิมก็ไม่ล้าง — เทิร์นถัดไปเขียนทับเอง)
         return {**st, "codes": [], "slots": {}}
 
     # slot ที่ decide รู้จัก — ค่าอื่นทิ้ง (ย้ายมาจาก webapi/bot.py _SLOT_KEYS ชั้น 6)
-    SLOT_KEYS = ("wet_or_dry", "material", "line_shape", "operating_temp_c")
+    SLOT_KEYS = ("wet_or_dry", "material", "line_shape", "operating_temp_c",
+                 "pitch_mm", "temp_c", NF.FLOW_KEY, NF.PITCH_SAID_KEY,   # สี่ตัวนี้: ถามทีละข้อ (need_flow.py)
+                 "_need_text", "_reask")
+    REASK_KEY = "_reask"          # ขั้นที่ถามซ้ำไปแล้วหนึ่งครั้งเพราะอ่านคำตอบไม่ออก (กันวน)
+    NEED_TEXT_KEY = "_need_text"  # ข้อความที่บอกงาน/อุตสาหกรรมล่าสุด — ใช้กับคำถามต่อที่เปลี่ยนแค่พิทช์/อุณหภูมิ
+    NEED_TEXT_MAX = 300
+    OFFERED_KEY = "_offered"      # รุ่นที่คำตอบล่าสุดเสนอ (list) — ใช้เมื่อลูกค้าอ้างถึง ไม่ใช่โฟกัสทันที
 
     def sanitize_state(self, raw: dict) -> dict:
         """เก็บเฉพาะรหัสที่มีจริงในแคตตาล็อก · slot ที่รู้จักและเป็นค่าธรรมดา
@@ -133,6 +158,10 @@ class ModutechPlugin:
             for k, v in slots_in.items():
                 if k in self.SLOT_KEYS and isinstance(v, (str, int, float)) and not isinstance(v, bool):
                     slots[k] = v
+                elif k == self.OFFERED_KEY and isinstance(v, list):
+                    ok = [c for c in v if isinstance(c, str) and c in self.mod.by_code]
+                    if ok:
+                        slots[k] = ok
         return {"codes": [c for c in codes if c in self.mod.by_code] if isinstance(codes, list) else [],
                 "slots": slots, "sprocket_codes": []}
 
@@ -149,18 +178,35 @@ class ModutechPlugin:
             text, self.materials,
             mask_codes=tuple(codes.belt_codes) + tuple(codes.sprocket_codes)))
         slots = st["slots"]
+        slots.pop(EXCLUDE_KEY, None)                       # "ขอรุ่นอื่น" ใช้ได้เทิร์นเดียว
+        if not codes.belt_codes:
+            self._use_offered(inp.answer or text, st)
         if codes.belt_codes:
             st["codes"] = list(codes.belt_codes)
+            slots.pop(self.OFFERED_KEY, None)
         # รหัสสเตอร์ไม่เก็บลง state เพราะไม่ใช่ "รุ่นที่อยู่ในความสนใจ" แต่ต้องส่งต่อ
         # ให้ turn แปลงกลับเป็นสายพานด้วยกราฟ ไม่งั้นรหัสที่ลูกค้าพิมพ์หายทั้งตัว
         st["sprocket_codes"] = list(codes.sprocket_codes)
 
-        esc = escalation_gate(text, belt_code=(st["codes"] or [None])[0])
+        # กลางการถามทีละข้อ ตัดสิน "คำถามผสม" จากข้อความของเทิร์นนี้ ไม่ใช่ข้อความรวม
+        # 26 ต.ค. (ลูกค้าจำลอง G11): ข้อความรวม "…ใช้กับไก่… ขอเบอร์ฝ่ายขาย" มีคำว่า "ใช้กับ" จากเทิร์นก่อน
+        # → นับเป็นคำถามผสม → ตัวตีความบอก "เปลี่ยนเรื่อง" → เลิกถาม → เทิร์นหน้า "พิทช์ 2 นิ้ว" ลืมว่าเป็นงานไก่
+        flow = slots.get(NF.FLOW_KEY)
+        in_flow = bool(flow) and not (codes.belt_codes or codes.sprocket_codes or codes.candidates or st["codes"])
+        esc = escalation_gate(inp.answer if in_flow and inp.answer else text,
+                              belt_code=(st["codes"] or [None])[0])
+        if esc and not esc.has_spec_question and in_flow:
+            # ให้ช่องทางติดต่อแล้วถามข้อเดิมต่อ (ยังรอคำตอบอยู่) — เดิมส่งฝ่ายขายแล้วล้างการรอคำตอบ
+            # เทิร์นหน้า "2 นิ้ว" จึงไม่ถูกอ่านเป็นคำตอบ และถูกบันทึกเป็น "ไม่ทราบ" (C09)
+            return Decision("ask", self.info.key, f"{esc.reply_th}\n\n{self._step_question(flow, slots)}",
+                            f"ขอ{'/'.join(esc.topics)}กลางการถาม ({flow}) → ให้ช่องทาง แล้วถามข้อเดิมต่อ",
+                            topic="escalate", effective_text=text,
+                            payload=dict(codes=[], slots=dict(slots)), pending=self.STEP_PENDING[flow])
         if esc and not esc.has_spec_question:
             return Decision("escalate", self.info.key, esc.reply_th, f"หัวข้อ {esc.topics}",
                             topic="escalate", effective_text=text,
                             payload=dict(codes=st["codes"], slots=dict(slots)))
-        d = self._decide_core(text, st, codes)
+        d = self._decide_core(text, st, codes, answer=inp.answer)
         if esc:
             attach_handoff(d, esc.handoff_th, esc.topics)
         # แนบรหัสสเตอร์ที่จุดเดียว แทนการแก้ทุก return ใน _decide_core
@@ -169,11 +215,49 @@ class ModutechPlugin:
             d.payload["sprocket_codes"] = list(codes.sprocket_codes)
         return d
 
-    def _decide_core(self, text: str, st: dict, codes) -> Decision:
+    def _decide_core(self, text: str, st: dict, codes, answer: str = "") -> Decision:
         slots = st["slots"]
         key = self.info.key
 
+        # ── ถามความต้องการทีละข้อ (need_flow.py) — ลูกค้าพิมพ์รหัสหรือเปลี่ยนเรื่อง = ออกจากการถาม ──
+        flow = slots.get(NF.FLOW_KEY)
+        if flow and (codes.belt_codes or codes.sprocket_codes or codes.candidates or st["codes"]):
+            slots.pop(NF.FLOW_KEY, None)
+            flow = None
+        # ลูกค้าบอกงานใหม่แทนการตอบ ("แล้วถ้าเป็นขนมปังเข้าเตาอบล่ะ" ตอนถามพิทช์) → เริ่มคำขอใหม่จากข้อความนี้
+        # 26 ต.ค. (C07): เดิมกฎอ่านไม่ออก = "ไม่ทราบพิทช์" แล้วถามอุณหภูมิต่อของงานเดิม
+        # ต้องไม่ใช่คำตอบของข้อที่ถาม — "ฉีดน้ำล้างทุกวัน" ตอบเปียก/แห้ง แม้คำว่า "ล้าง" จับเป็นงานได้ (CONV-26)
+        if flow and flow != "need" and answer and self._need_in(answer) and not re.search(r"\d", answer) \
+                and self._read_rules_sure(flow, answer) is None:
+            slots.pop(NF.FLOW_KEY, None)
+            slots.pop(NF.PITCH_SAID_KEY, None)
+            slots.pop(self.NEED_TEXT_KEY, None)
+            flow, text = "need", answer                # ยังอยู่ในการช่วยเลือก → ถามพิทช์ของงานใหม่ต่อ
+        if flow:
+            d = self._need_flow(text, st, flow, answer)
+            if d is not None:
+                return d
+            # ลูกค้าเปลี่ยนเรื่อง → ตัดสินจากข้อความเทิร์นนี้อย่างเดียว (ไม่รวมคำถามเดิม)
+            text = answer or text
+
+        # ── คำถามต่อที่เปลี่ยนแค่พิทช์/อุณหภูมิ ("ถ้าเป็นพิทช์ 1 นิ้วล่ะ") → ใช้งานเดิมจากเทิร์นก่อน ──
+        # 26 ต.ค. (c16_*.json · CONV-16 t5): เดิมค้นพิทช์ทั้งฐาน ไม่สนว่าเป็นงานไก่ — 2 ใน 6 รอบ LLM ลืมงานไก่
+        # แล้วไล่ 18 รุ่น · บางรอบใส่ EC254 R (สายพานเลี้ยว) ปน · จะจำงานได้หรือไม่ขึ้นกับ LLM อ่านประวัติ
+        stated = NF.stated_pitch(text)
+        if stated is not None:
+            slots["pitch_mm"] = stated                     # ลูกค้าบอกพิทช์ใหม่ = แทนค่าเดิม
+        need_prev = slots.get(self.NEED_TEXT_KEY)
+        new_temp = extract_modutech_slots(text, ()).get("operating_temp_c") is not None
+        if need_prev and not codes.belt_codes and not st["codes"] and not self._need_in(text) \
+                and (stated is not None or new_temp):
+            text = f"{need_prev} {text}"
+
         q = self.search.parse(text)
+        if q is not None and q.op == "==" and not (q.surface or q.pin_material or q.belt_material) and \
+                self._need_in(text):
+            # "เข้าเตาอบ … พิทช์ 1 นิ้ว" = บอกงานพร้อมพิทช์ → ทางงานใช้ แล้วกรองพิทช์/อุณหภูมิด้วยโค้ด (turn.py)
+            # ไม่ใช่ค้นพิทช์ทั้งฐานซึ่งไม่สนงานที่ลูกค้าบอก (26 ต.ค. · OVEN-01/02)
+            q = None
         if q is not None and not codes.belt_codes:
             return Decision("search", key, reason="คำถามเชิงสำรวจ → ค้นทั้งฐาน", topic="explore",
                             effective_text=text,
@@ -210,16 +294,244 @@ class ModutechPlugin:
         # ก่อน 1 ต.ค. มันรอดมาได้เพราะบั๊กอีกตัว — วัสดุต่อท้ายรหัส (*PA) ถูกอ่านเป็น
         # slot ของลูกค้า ทำให้ has_need เป็นจริง พอแก้บั๊กนั้นอาการนี้จึงโผล่
         # กล่าวคือมันเคย "ทำงานได้ด้วยเหตุผลที่ผิด" ไม่ใช่เคยถูกแล้วเพิ่งเสีย
-        has_need = bool(any_word(self.detector.weak_terms, text)) or bool(slots) \
+        # slot ภายใน (ขึ้นต้นด้วย _ เช่น _need_text) ไม่นับเป็น "ลูกค้าบอกความต้องการในเทิร์นนี้" (CONV-15 · 26 ต.ค.)
+        has_need = bool(any_word(self.detector.weak_terms, text)) or bool(NF.visible_slots(slots)) \
             or bool(codes.sprocket_codes) or self._names_industry(text)
         if not focus and not has_need and has(MOD_RECOMMEND + r"|สายพาน", text):
-            return Decision("ask", key, ASK_MODUTECH_NEED_TH, "ยังไม่รู้งานของลูกค้า",
+            # 25 ต.ค.: ถามทีละข้อ งาน → พิทช์ → อุณหภูมิ (เดิม ASK_MODUTECH_NEED_TH ถามสามเรื่องในข้อความเดียว)
+            slots[NF.FLOW_KEY] = "need"
+            return Decision("ask", key, NF.ASK_NEED_TH, "ยังไม่รู้งานของลูกค้า",
                             topic="recommend", effective_text=text,
                             payload=dict(codes=[], slots=dict(slots)), pending="modutech_need")
 
+        # ── บอกงานมาแล้ว + ขอให้ช่วยเลือก แต่ยังไม่รู้พิทช์ → ถามทีละข้อต่อ (ข้ามคำถามงาน) ──
+        # ลูกค้าจำลอง 26 ต.ค.: ลูกค้าบอกงานตั้งแต่ข้อความแรกแทบทุกบท บอทส่งรายการ 27–41 รุ่นทันที
+        # ขั้นตอนถามพิทช์/อุณหภูมิจึงแทบไม่ได้ทำงาน (เรียกตัวตีความ 1 ครั้งใน 28 บท)
+        need_known = "pitch_mm" in slots and ("temp_c" in slots or "operating_temp_c" in slots)
+        if not focus and not codes.sprocket_codes and not need_known \
+                and has(MOD_PICK, text) and not has(MOD_LIST, text) and self._need_in(text):
+            d = self._need_flow(text, st, "need", "")
+            if d is not None:
+                return d
+
+        self._remember_need(text, st)
         return Decision("answer", key, reason="รหัสชัด" if focus else "ค้นตามการใช้งาน",
                         topic="temperature" if temp_topic else None, effective_text=text,
                         payload=dict(codes=st["codes"], slots=dict(slots)))
+
+    def _need_candidates(self, text: str) -> list[str]:
+        """รุ่นที่งานนี้น่าจะใช้ — ไว้ตัดสินว่าต้องถามเปียก/แห้งไหม (ไม่ใช่รายชื่อที่ตอบลูกค้า)"""
+        am = self.search.match_application(text)
+        if am is not None:
+            return list(am.belt_codes)
+        im = self.search.match_industry(text)
+        if im is not None:
+            return list(im[1])
+        return [p["belt_code"] for p in self.mod.products]
+
+    # ── ตีความคำตอบของลูกค้าต่อคำถามที่ถามค้าง: LLM ก่อน (core/answer_interpreter) · ไม่ได้ = กฎเดิม ──
+    STEP_EXPECT = {"pitch": "number_mm", "pitch_confirm": "number_mm", "pitch_retry": "number_mm",
+                   "temp": "number_c", "wet": "wet_dry", "need": "free"}
+    STEP_PENDING = {"pitch": "modutech_pitch", "pitch_confirm": "modutech_pitch", "pitch_retry": "modutech_pitch",
+                    "temp": "modutech_temp", "wet": "wet_or_dry", "need": "modutech_need"}
+
+    def _step_question(self, flow: str, slots: dict) -> str:
+        said = slots.get(NF.PITCH_SAID_KEY)
+        opts = NF.nearest_pitches(self.mod, said) if isinstance(said, (int, float)) else []
+        if flow == "pitch_confirm" and opts:
+            return NF.ask_pitch_confirm_th(said, opts)
+        if flow == "pitch_retry" and opts:
+            return NF.ask_pitch_again_th(opts)
+        return {"pitch": NF.ASK_PITCH_TH, "pitch_confirm": NF.ASK_PITCH_TH, "pitch_retry": NF.ASK_PITCH_TH,
+                "temp": NF.ASK_TEMP_TH, "wet": NF.ASK_WET_TH, "need": NF.ASK_NEED_TH}[flow]
+
+    def _read_rules(self, flow: str, ans: str):
+        """กฎเดิม (regex) — ผลรูปเดียวกับตัวตีความ LLM"""
+        from core.answer_interpreter import AnswerReading
+        if flow in ("pitch", "temp", "wet", "pitch_confirm", "pitch_retry") and NF.is_question(ans):
+            return AnswerReading("question")
+        if NF.is_unknown(ans):
+            return AnswerReading("unknown")
+        if flow in ("pitch", "pitch_retry", "pitch_confirm"):
+            v = NF.parse_pitch(ans, bare_number=True)
+            if v is not None:
+                return AnswerReading("value", v, "mm")
+            if flow == "pitch_confirm":
+                if NF._NO_RX.search(ans):
+                    return AnswerReading("no")
+                if NF._YES_RX.search(ans):
+                    return AnswerReading("yes")
+            return AnswerReading("unknown")
+        if flow == "temp":
+            v = NF.parse_temp(ans, bare_number=True)
+            return AnswerReading("value", v, "c") if v is not None else AnswerReading("unknown")
+        return AnswerReading("other")
+
+    def pending_reask(self, st: dict) -> Optional[str]:
+        """คำถามที่ถามค้างอยู่ (ถามทีละข้อ) — แกนกลางใช้ถามซ้ำหลังตอบเรื่องอื่นสั้น ๆ เช่นขอเบอร์ (core/decide.py)"""
+        slots = (st or {}).get("slots") or {}
+        flow = slots.get(NF.FLOW_KEY)
+        return self._step_question(flow, slots) if flow in self.STEP_PENDING and not (st or {}).get("codes") else None
+
+    def _read_rules_sure(self, flow: str, ans: str):
+        """ผลของกฎเมื่อมั่นใจ (คืน None = กฎไม่แน่ใจ ให้ LLM อ่าน)
+
+        26 ต.ค.: เรียก LLM ทุกคำตอบทำให้เทิร์นตอบคำถามช้าลง 1.3–1.7 วินาที (lat_rules/lat_llm · 115 คู่)
+        ทั้งที่คำตอบส่วนใหญ่สั้นและชัด ("2 นิ้ว" "ใช่" "5 องศา" "ไม่ทราบ") — กฎอ่านถูกอยู่แล้ว
+        มั่นใจ = อ่านได้ค่าเดียวโดยไม่มีอะไรขัด · กฎเดิมคืน "unknown" เมื่ออ่านไม่ออกด้วย ซึ่งแยกไม่ได้จาก
+        "ลูกค้าบอกว่าไม่ทราบ" จึงนับเฉพาะเมื่อเจอคำว่าไม่ทราบจริงและไม่มีตัวเลข"""
+        from core.answer_interpreter import AnswerReading
+        a = ans or ""
+        nums = re.findall(r"\d+(?:[.,]\d+)?", a)
+        if flow in ("pitch", "temp", "wet", "pitch_confirm", "pitch_retry") and NF.is_question(a) and not nums:
+            return AnswerReading("question")
+        if NF.is_unknown(a) and not nums:
+            return AnswerReading("unknown")
+        # ตัวเลขเดียว หรือคำที่แปลงเป็นค่าได้เอง ("ครึ่งนิ้ว" "อุณหภูมิห้อง") — สองตัวขึ้นไปไม่แน่ใจ
+        if flow in ("pitch", "pitch_retry", "pitch_confirm") and len(nums) <= 1:
+            v = NF.parse_pitch(a, bare_number=True)
+            if v is not None and not (flow == "pitch_confirm" and NF._NO_RX.search(a)):
+                return AnswerReading("value", v, "mm")
+        if flow == "pitch_confirm" and not nums:
+            # "ไม่ใช่" มีคำว่า "ใช่" อยู่ข้างใน — ตัดคำปฏิเสธออกก่อนหาคำรับ (lat2 26 ต.ค.: "ไม่ใช่" ไป LLM +2.1 วิ)
+            no = bool(NF._NO_RX.search(a))
+            rest = NF._NO_RX.sub(" ", a)
+            if no:                                   # "ไม่ใช่ครับ" — หางเสียงไม่ใช่คำรับ
+                rest = re.sub(r"ครับ|ค่ะ|คะ|นะ|จ้า", " ", rest)
+            yes = bool(NF._YES_RX.search(rest))
+            if yes != no:
+                return AnswerReading("yes" if yes else "no")
+        if flow == "temp" and len(nums) <= 1:
+            v = NF.parse_temp(a, bare_number=True)
+            if v is not None:
+                return AnswerReading("value", v, "c")
+        if flow == "wet" and not nums:
+            wd = extract_modutech_slots(a, ()).get("wet_or_dry")
+            if wd:
+                return AnswerReading("value", None, None, wet_or_dry=wd)
+        return None
+
+    def _read_answer(self, flow: str, ans: str, slots: dict):
+        """คืน (reading, ที่มา) · ที่มา = "LLM" หรือ "กฎ"
+        กฎก่อน (มั่นใจ = ไม่เรียก LLM) → LLM → กฎเดิมเป็นทางสำรองเมื่อ LLM ล้ม"""
+        sure = self._read_rules_sure(flow, ans)
+        if sure is not None:
+            return sure, "กฎ"
+        interp = getattr(self, "_interpreter", None)
+        expect = self.STEP_EXPECT.get(flow)
+        if interp is not None and expect and ans.strip():
+            r = interp.interpret(self._step_question(flow, slots), ans, expect)
+            if r is not None:
+                return r, "LLM"
+        return self._read_rules(flow, ans), "กฎ (เดา)"
+
+    def _need_flow(self, text: str, st: dict, flow: str, answer: str) -> Optional[Decision]:
+        """ขั้นต่อไปของการถามทีละข้อ · text = ข้อความรวมทุกคำตอบ · answer = คำตอบดิบของเทิร์นนี้
+        คืน None = ลูกค้าเปลี่ยนเรื่อง (ตัวตีความ LLM บอก "other") → ออกจากการถาม ให้ทางปกติตัดสินต่อ"""
+        slots, key = st["slots"], self.info.key
+        ans = answer or ""
+        reading, src = (None, "")
+        if ans and flow in self.STEP_EXPECT and flow != "need":
+            reading, src = self._read_answer(flow, ans, slots)
+        tag = f" · ตีความ: {src}" if src else ""
+
+        def ask(step: str, reply: str, why: str, pending: str) -> Decision:
+            slots[NF.FLOW_KEY] = step
+            if slots.get(self.REASK_KEY) not in (None, step):
+                slots.pop(self.REASK_KEY, None)
+            return Decision("ask", key, reply, why + tag, topic="recommend", effective_text=text,
+                            payload=dict(codes=[], slots=dict(slots)), pending=pending)
+
+        pend = self.STEP_PENDING
+        # บอกค่าพร้อมถามยืนยัน ("ห่างกันประมาณ 5 เซน น่าจะตรงกับ 2 นิ้วมั้ยครับ") — มีค่าที่มีหน่วยชัด = คำตอบ
+        # sim5 G05 (26 ต.ค.): ตัวตีความอ่านเป็นคำถาม บอทอธิบายพิทช์ซ้ำ ลูกค้า "บอกไปแล้วไง ถามซ้ำทำไม"
+        if reading is not None and reading.kind == "question" and ans:
+            from core.answer_interpreter import AnswerReading
+            v = (NF.parse_pitch(ans) if flow in ("pitch", "pitch_retry", "pitch_confirm") else
+                 NF.parse_temp(ans) if flow == "temp" else None)
+            if v is not None:
+                reading = AnswerReading("value", v, "mm" if flow != "temp" else "c")
+        if reading is not None and reading.kind == "question":
+            return ask(flow, f"{NF.EXPLAIN_TH[flow]}\n\n{self._step_question(flow, slots)}",
+                       f"ถามทีละข้อ: ลูกค้าถามกลับ ({flow}) → อธิบาย", pend[flow])
+        # กฎอ่านไม่ออก (และไม่มี LLM หรือ LLM ล้ม) → ถามข้อเดิมซ้ำหนึ่งครั้ง ครั้งที่สองค่อยนับว่าไม่ทราบ
+        # 26 ต.ค. (CONV-20): ลูกค้าพิมพ์ "modutech" ตอนถามพิทช์ เดิมบันทึกว่า "ไม่ทราบพิทช์" ทันที
+        if src == "กฎ (เดา)" and flow in pend and slots.get(self.REASK_KEY) != flow:
+            slots[self.REASK_KEY] = flow
+            return ask(flow, f"{NF.REASK_TH}{self._step_question(flow, slots)}",
+                       f"ถามทีละข้อ: อ่านคำตอบไม่ออก ({flow}) → ถามซ้ำหนึ่งครั้ง", pend[flow])
+        if reading is not None and reading.kind == "other" and src == "LLM":
+            # ลูกค้าเปลี่ยนเรื่องกลางการถาม — เลิกถาม (ค่าที่ได้แล้วยังเก็บไว้)
+            slots.pop(NF.FLOW_KEY, None)
+            slots.pop(NF.PITCH_SAID_KEY, None)
+            return None
+        if reading is not None and reading.wet_or_dry and not slots.get("wet_or_dry"):
+            slots["wet_or_dry"] = reading.wet_or_dry
+
+        def take_pitch(v):
+            """พิทช์ที่ไม่มีในแคตตาล็อกแต่ใกล้ค่าที่มี → ถามยืนยันก่อน (ผู้ใช้เลือก 25 ต.ค.: 50.6 → หมายถึง 50.8 ไหม)"""
+            if isinstance(v, (int, float)):
+                opts = NF.nearest_pitches(self.mod, v)
+                if opts:
+                    slots[NF.PITCH_SAID_KEY] = v
+                    return ask("pitch_confirm", NF.ask_pitch_confirm_th(v, opts),
+                               f"ถามทีละข้อ: ยืนยันพิทช์ ({v:g} ไม่มีในแคตตาล็อก)", "modutech_pitch")
+            slots["pitch_mm"] = v
+            return None
+
+        def number(expect):
+            return reading.number(expect) if (reading is not None and reading.kind == "value") else None
+
+        if flow == "pitch_confirm" and "pitch_mm" not in slots:
+            said = slots.get(NF.PITCH_SAID_KEY)
+            opts = NF.nearest_pitches(self.mod, said) if isinstance(said, (int, float)) else []
+            v = number("number_mm")
+            if reading is not None and reading.kind == "no":
+                # "ไม่ใช่" → ถามค่าจริง (ผู้ใช้ 25 ต.ค.) · เก็บค่าที่พิมพ์ตอนแรกไว้ใช้ในคำถาม
+                return ask("pitch_retry", NF.ask_pitch_again_th(opts),
+                           f"ถามทีละข้อ: ลูกค้าบอกว่าไม่ใช่ {opts} → ถามพิทช์จริง", "modutech_pitch")
+            slots.pop(NF.PITCH_SAID_KEY, None)
+            if v is not None:
+                slots["pitch_mm"] = v
+            elif reading is not None and reading.kind == "yes" and len(opts) == 1:
+                slots["pitch_mm"] = opts[0]
+            else:
+                slots["pitch_mm"] = NF.UNKNOWN            # หลายตัวเลือกแต่ไม่บอกเลข / ไม่ทราบ = ไม่เดาแทน
+        if flow == "pitch_retry" and "pitch_mm" not in slots:
+            # ถามซ้ำได้รอบเดียว — ตอบเลขอะไรมาก็ใช้เลขนั้น (ไม่มีในแคตตาล็อก บอทจะบอกตรง ๆ ตอนตอบ) กันวนไม่จบ
+            slots.pop(NF.PITCH_SAID_KEY, None)
+            v = number("number_mm")
+            slots["pitch_mm"] = v if v is not None else NF.UNKNOWN
+        if flow == "pitch" and "pitch_mm" not in slots:
+            v = number("number_mm")
+            d = take_pitch(v if v is not None else NF.UNKNOWN)
+            if d is not None:
+                return d
+        if flow == "temp" and "temp_c" not in slots:
+            v = number("number_c")
+            slots["temp_c"] = v if v is not None else NF.UNKNOWN
+
+        if "pitch_mm" not in slots:
+            v = NF.parse_pitch(text)                      # บอกมาแล้วพร้อมหน่วย/คำว่าพิทช์ → ไม่ถาม
+            if v is None:
+                return ask("pitch", NF.ASK_PITCH_TH, "ถามทีละข้อ: พิทช์", "modutech_pitch")
+            d = take_pitch(v)
+            if d is not None:
+                return d
+        if "temp_c" not in slots:
+            v = slots.get("operating_temp_c")
+            if v is None:
+                return ask("temp", NF.ASK_TEMP_TH, "ถามทีละข้อ: อุณหภูมิ", "modutech_temp")
+            slots["temp_c"] = v
+        if flow != "wet" and not slots.get("wet_or_dry") and \
+                NF.wet_dry_matters(self.mod, self._need_candidates(text), slots.get("pitch_mm"), slots.get("temp_c")):
+            return ask("wet", NF.ASK_WET_TH, "ถามทีละข้อ: เปียก/แห้ง (ผลกรองอุณหภูมิต่างกัน)", "wet_or_dry")
+
+        slots.pop(NF.FLOW_KEY, None)
+        slots.pop(self.REASK_KEY, None)
+        self._remember_need(text, st)
+        return Decision("answer", key, reason="ค้นตามการใช้งาน · กรองพิทช์/อุณหภูมิที่ลูกค้าบอก" + tag,
+                        effective_text=text, payload=dict(codes=[], slots=dict(slots)))
 
     # ─────────────────────────── ข้ามแบรนด์ ───────────────────────────
 
@@ -247,8 +559,76 @@ class ModutechPlugin:
     def build_turn(self, decision, turn):
         return self._rt().build_turn(decision, turn)
 
+    MAX_FOCUS_FROM_REPLY = 6
+
+    def _new_request(self, raw: str) -> bool:
+        """ข้อความเทิร์นนี้ขอของใหม่ (งาน · อุตสาหกรรม · ผิว) — ไม่ใช่ถามต่อเรื่องรุ่นที่เพิ่งเสนอ"""
+        low = (raw or "").lower()
+        if any(th.lower() in low for th, _ in self.search.surfaces) or "กันลื่น" in low:
+            return True
+        # เปลี่ยนสเปก: พิทช์ใหม่ ("ถ้าเป็นพิทช์ 1 นิ้วล่ะ") · "ถ้า … องศา" — รุ่นที่เสนอมีพิทช์ตายตัว
+        # จึงไม่ใช่ถามต่อเรื่องรุ่นเดิม (C16 · 26 ต.ค. เดิมได้ EC508 C/DT เป็นโฟกัสแล้วค้นพิทช์ทั้งฐาน)
+        if NF.stated_pitch(raw) is not None:
+            return True
+        if has(r"ถ้า|เปลี่ยนเป็น", raw or "") and \
+                extract_modutech_slots(raw or "", ()).get("operating_temp_c") is not None:
+            return True
+        try:
+            return bool(self.search.match_application(raw)) or bool(self.search.match_industry(raw))
+        except Exception:                                    # noqa: BLE001
+            return False
+
+    def _use_offered(self, raw: str, st: dict) -> None:
+        """รุ่นที่บอทเพิ่งเสนอ (_offered) → โฟกัส เฉพาะเมื่อลูกค้าอ้างถึง
+
+        test_conversation_leaks 25 ต.ค.: เดิมตั้งรุ่นที่เสนอเป็นโฟกัสทันที คำขอใหม่ ("แล้วถ้าเป็นขนมปังล่ะ"
+        "มีรุ่นอื่นอีกไหม" "ขอแบบผิวกันลื่น") จึงได้รุ่นเดิมซ้ำ (C07 · C23 · C19)
+            อ้างถึง (ตัวแรก · สองตัว · เทียบ …)         → รุ่นที่อ้าง
+            ขอรุ่นอื่น                                → ค้นใหม่ ตัดรุ่นที่เสนอไปแล้ว
+            ขอของใหม่ (งาน · อุตสาหกรรม · ผิว)          → ค้นใหม่
+            ถามต่อสั้น ๆ ("แพงไหม" "ทำไม")              → รุ่นที่เสนอทั้งหมด
+        """
+        slots = st["slots"]
+        offered = list(slots.get(self.OFFERED_KEY) or [])
+        if not offered:
+            return
+        from_offer = not st["codes"] or set(st["codes"]) <= set(offered)
+        if not from_offer:
+            return
+        r = raw or ""
+        if has(OTHER_RX, r):
+            st["codes"] = []
+            slots[EXCLUDE_KEY] = offered
+            slots.pop(self.OFFERED_KEY, None)
+            return
+        refers = has(REFER_RX, r)
+        if self._new_request(r) and not refers:
+            st["codes"] = []
+            slots.pop(self.OFFERED_KEY, None)
+            return
+        if has(r"ตัวแรก|อันแรก|รุ่นแรก|ตัวที่\s*1|อันที่\s*1", r):
+            st["codes"] = offered[:1]
+        elif has(r"ตัวหลัง|อันหลัง|ตัวที่สอง|ตัวที่\s*2|อันที่\s*2|รุ่นที่สอง", r) and len(offered) > 1:
+            st["codes"] = offered[1:2]
+        elif refers or len(r) <= FOLLOWUP_CHARS:
+            st["codes"] = offered
+
     def finish_turn(self, decision, turn, llm, result):
-        return self._rt().finish_turn(decision, turn, llm, result)
+        out = self._rt().finish_turn(decision, turn, llm, result)
+        # คำตอบแนะนำรุ่น (ยังไม่มีรหัสในโฟกัส) → รุ่นที่คำตอบเสนอกลายเป็นโฟกัสของเทิร์นหน้า
+        # 25 ต.ค. เทสบนเว็บ: เสนอ MD508 C กับ EC508 PR11 แล้วลูกค้าถาม "ขอดูสเปคทั้งสองตัวเทียบกัน"
+        # บอทไม่รู้ว่า "สองตัว" คือตัวไหน เพราะสถานะไม่มีรหัสเลย (ชื่อรุ่นอยู่แค่ในข้อความของ LLM)
+        # เสนอเกิน 6 รุ่น = รายการยาว ไม่ตั้งโฟกัส (ลูกค้าต้องระบุเอง)
+        had_codes = bool((decision.payload or {}).get("codes"))
+        if not had_codes and decision.action in ("answer", "search") and out.reply:
+            mentioned = list(self.detector.detect(out.reply).parsed.belt_codes)
+            # เสนอยาวเกิน 6 รุ่น → จำ 6 รุ่นแรกที่เอ่ย (ลำดับเดียวกับในคำตอบ) — ไม่จำเลย = "ทำไม" / "แพงไหม"
+            # ถัดจากรายการยาวถูกตีว่านอกเรื่อง (conv_r1/r2 CONV-30 · Gemini จริง 25 ต.ค. ทั้งสองรอบ)
+            mentioned = mentioned[:self.MAX_FOCUS_FROM_REPLY]
+            if mentioned:
+                slots = {k: v for k, v in ((decision.payload or {}).get("slots") or {}).items() if k != EXCLUDE_KEY}
+                out.state_patch = {"slots": {**slots, self.OFFERED_KEY: mentioned}}
+        return out
 
     def close(self) -> None:
         """ปิด Qdrant แบบไฟล์ก่อนโปรแกรมจบ (ไม่บังคับในสัญญา — assistant.py เรียกผ่าน atexit)"""
@@ -260,6 +640,10 @@ class ModutechPlugin:
 
     def image_scorer(self):
         return None                      # ยังไม่มีรูปจริง — เปิดเมื่อ brand.yaml › image ผ่าน (enabled: auto)
+
+    def image_gate(self):
+        """ประตูรูป (brand.yaml › image_gate) — ไม่ใช่ตัวให้คะแนน · None = ปิด (core/image_policy ถามแบรนด์แทน)"""
+        return getattr(self, "_image_gate", None)
 
 
 def create(ctx):
@@ -311,4 +695,10 @@ def create(ctx):
         else:
             print(f"⚠️ Modutech retriever ปิดอยู่ (ไม่พบ {qpath}) — ยังตอบจากรหัสและค้นทั้งฐานได้")
         plugin.runtime = ModutechRuntime(cat, plugin.search, kg, retriever, sh["tool_log"])
+        plugin._interpreter = sh.get("answer_interpreter")      # None = กฎเดิม (need_flow)
+        if sh.get("device") is not None:
+            from brands.modutech.image_gate import load_gate
+            plugin._image_gate, why = load_gate(cfg["key"], d, cfg.get("image_gate"), sh["device"])
+            print(f"{'✅' if plugin._image_gate else '⚠️'} Modutech ประตูรูป: "
+                  f"{'เปิด' if plugin._image_gate else 'ปิด'} — {why}")
     return plugin
