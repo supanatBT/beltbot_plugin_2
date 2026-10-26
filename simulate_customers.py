@@ -13,7 +13,10 @@ simulate_customers.py — ลูกค้าจำลองด้วย LLM ค�
 ตัวชี้วัดต่อบทสนทนา
     reached      บอทเอ่ยรหัสรุ่นอย่างน้อยหนึ่งรุ่น
     hit          รุ่นที่เอ่ยอยู่ในชุดรุ่นที่ถูก (หรือ ชุดว่าง + บอทบอกว่าไม่มี)
-    violations   รุ่นที่เอ่ยแต่ผิดเงื่อนไขแข็ง (พิทช์ / อุณหภูมิ) — นี่คือ "ตอบผิด"
+    violations   รุ่นที่บอทแนะนำแต่ผิดเงื่อนไขแข็ง (พิทช์ / อุณหภูมิ) — นี่คือ "ตอบผิด"
+                 นับเฉพาะรุ่นที่แนะนำจริง (eval_mentions.py · ผู้ใช้สั่งแก้ 26 ต.ค.) — บรรทัดที่บอกว่ารุ่นนั้น
+                 ไม่ถึง/ไม่ผ่าน/ถูกตัดออก เป็นการเตือนที่ถูกต้อง ไม่นับ · รุ่นที่เอ่ยแต่ไม่นับอยู่ใน explained_not_recommended
+    final_violations  เฉพาะคำแนะนำสุดท้าย (เทิร์นล่าสุดที่บอทแนะนำรุ่น) — รายการภาพรวมช่วงแรกไม่นับ
     offtopic     บอทปฏิเสธว่านอกเรื่องกลางบท
     repeats      บอทพูดข้อความเดิมซ้ำติดกัน (วนถาม)
     ended        done (ลูกค้าพอใจ) · giveup · max_turns · error
@@ -34,6 +37,8 @@ simulate_customers.py — ลูกค้าจำลองด้วย LLM ค�
 from __future__ import annotations
 
 import argparse
+
+import eval_mentions as EM
 import importlib
 import json
 import os
@@ -107,17 +112,29 @@ def score(g: dict, transcript: list[dict], judge: Judge, ended: str) -> dict:
         hit = any(any(x in b for x in g.get("expect_any", [])) for b in bot)
         return {**out, "reached": hit, "hit": hit, "violations": [], "mentioned": []}
     acc = judge.acceptable(g)
-    mentioned = []
+    mentioned, recommended_codes, final_rec = [], [], []
     for b in bot:
+        turn_rec = []
         for c in judge.codes_in(b):
             if c not in mentioned:
                 mentioned.append(c)
-    violations = [c for c in mentioned if c not in acc["hard_ok"]]
+            if EM.recommended(c, b, contains=lambda t, l: t in judge.codes_in(l), grade_note_excludes=False):
+                turn_rec.append(c)
+        # 26 ต.ค. (ผู้ใช้สั่งแก้): นับผิดเงื่อนไขเฉพาะรุ่นที่บอทแนะนำจริง — "X ทนแห้งได้แค่ 116 °C จึงไม่ถึง 120"
+        # เป็นการเตือนที่ถูกต้อง ไม่ใช่การแนะนำ (eval_mentions.py · sim4 G02)
+        recommended_codes += [c for c in turn_rec if c not in recommended_codes]
+        if turn_rec:
+            final_rec = turn_rec            # คำแนะนำสุดท้าย = เทิร์นล่าสุดที่บอทแนะนำรุ่น
+    violations = [c for c in recommended_codes if c not in acc["hard_ok"]]
+    # ตัวเลขสำหรับเล่ม: รายการภาพรวมก่อนลูกค้าบอกพิทช์ (sim4 G06 · G07) ไม่ใช่คำแนะนำสุดท้าย
+    final_violations = [c for c in final_rec if c not in acc["hard_ok"]]
+    explained = [c for c in mentioned if c not in acc["hard_ok"] and c not in recommended_codes]
     if acc["ok"]:
         hit = any(c in acc["ok"] for c in mentioned)
     else:
-        hit = any(NONE_WORDS.search(b) for b in bot) and not [c for c in mentioned if c not in acc["hard_ok"]]
+        hit = any(NONE_WORDS.search(b) for b in bot) and not violations
     return {**out, "reached": bool(mentioned), "hit": hit, "violations": violations, "mentioned": mentioned,
+            "explained_not_recommended": explained, "final_violations": final_violations,
             "acceptable": acc["ok"], "acceptable_source": acc["source"]}
 
 
@@ -206,9 +223,10 @@ def latency(results: list[dict]) -> dict:
 def summarize(results: list[dict]) -> dict:
     n = len(results)
     c = Counter(r["ended"] for r in results)
-    pct = lambda k: round(100 * sum(bool(r[k]) for r in results) / n, 1) if n else 0.0  # noqa: E731
+    pct = lambda k: round(100 * sum(bool(r.get(k)) for r in results) / n, 1) if n else 0.0  # noqa: E731
     return {"conversations": n, "hit_pct": pct("hit"), "reached_pct": pct("reached"),
-            "with_violation_pct": pct("violations"), "with_offtopic_pct": pct("offtopic"),
+            "with_violation_pct": pct("violations"), "final_violation_pct": pct("final_violations"),
+            "with_offtopic_pct": pct("offtopic"),
             "with_repeat_pct": pct("repeats"), "ended": dict(c),
             "mean_turns": round(sum(r["turns"] for r in results) / n, 1) if n else 0.0,
             "latency_sec": latency(results)}
@@ -219,9 +237,9 @@ def compare(a_path: str, b_path: str) -> None:
     A, B = (json.load(open(p, encoding="utf-8")) for p in (a_path, b_path))
     sa, sb = A["summary"], B["summary"]
     print(f"{'':28}{A.get('answer_interpreter', '?'):>14}{B.get('answer_interpreter', '?'):>14}")
-    for k in ("conversations", "hit_pct", "reached_pct", "with_violation_pct", "with_offtopic_pct",
+    for k in ("conversations", "hit_pct", "reached_pct", "with_violation_pct", "final_violation_pct", "with_offtopic_pct",
               "with_repeat_pct", "mean_turns"):
-        print(f"{k:28}{sa.get(k):>14}{sb.get(k):>14}")
+        print(f"{k:28}{str(sa.get(k)):>14}{str(sb.get(k)):>14}")
     for part in ("all_turns", "answer_turns", "other_turns"):
         for st in ("mean", "median", "p90"):
             va, vb = sa["latency_sec"][part].get(st), sb["latency_sec"][part].get(st)

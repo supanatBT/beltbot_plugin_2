@@ -52,6 +52,8 @@ import csv
 import importlib
 import json
 import re
+
+import eval_mentions as EM
 import sys
 import time
 from collections import Counter, defaultdict
@@ -186,8 +188,10 @@ def check_reply(case: dict, reply: str, error: str | None) -> dict:
         checks["answer_avoids_forbidden"] = not any(
             mentions_positively(t, verdict) for t in forbidden)
         # เก็บผลแบบตรวจทั้งคำตอบไว้เป็นข้อมูล ไม่ใช้ตัดสิน
+        # 26 ต.ค. (ผู้ใช้สั่งแก้ · GA-F03): ตรวจทีละบรรทัด — บรรทัดที่บอกว่าใช้ไม่ได้/ไม่มีเกรด ไม่นับเป็นการเสนอ
+        # (เดิมตัดประโยคที่ "แต่" ทำให้ "…เครื่องบรรจุลงลัง… แต่ ไม่มีเกรด PE, PP" นับเป็นเสนอ)
         info_forbidden_anywhere = not any(
-            mentions_positively(t, reply) for t in forbidden)
+            EM.recommended(t, reply, contains=lambda tok, line: mentions_positively(tok, line)) for t in forbidden)
         # เคสที่คำตอบเป็นรายการ (เช่น "งานนี้ใช้รุ่นไหน") คำต้องห้ามอยู่ในย่อหน้าหลัง ๆ ไม่ใช่ย่อหน้าแรก
         # เคสแบบนี้ใส่ metrics = forbid_anywhere เพื่อตัดสินจากทั้งคำตอบ (23 ต.ค. · testcases_graph_apps)
         if "forbid_anywhere" in split_tokens(case.get("metrics", "")):
