@@ -125,8 +125,12 @@ def is_unknown(answer: str) -> bool:
 
 
 def parse_pitch(text: str, bare_number: bool = False) -> Optional[float]:
-    """พิทช์เป็นมม. · มีหน่วยนิ้ว → แปลง · bare_number=True (ตอบคำถามพิทช์ตรง ๆ) รับเลขเปล่า = มม."""
+    """พิทช์เป็นมม. · มีหน่วยนิ้ว/เซนติเมตร → แปลง · bare_number=True (ตอบคำถามพิทช์ตรง ๆ) รับเลขเปล่า = มม."""
     t = (text or "").replace(",", ".")
+    # "5 เซน" = 50 มม. (sim4_llm G05 · 26 ต.ค.: เดิมอ่านเป็น 5 มม. → กรองเหลือ 0 รุ่น → LLM เล่าเหตุผลภายในออกมา)
+    m = re.search(_NUM + r"\s*(?:เซนติเมตร|เซนต์|เซน|ซม\.?|cm\b)", t, re.IGNORECASE)
+    if m:
+        return round(float(m.group(1)) * 10, 2)
     for k, v in _FRACTION_INCH.items():
         if re.search(re.escape(k) + r"\s*(?:นิ้ว|inch|in\b|\")", t, re.IGNORECASE):
             return round(v * 25.4, 2)

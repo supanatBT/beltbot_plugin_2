@@ -22,7 +22,8 @@ from typing import Any, Optional
 from core.decide import Dialogue
 from core.image_policy import ImageCarry, resolve as resolve_image_policy
 from core.image_router import route_image
-from core.llm import GeminiClient, LLMTimeout, is_transient
+from core.llm import GeminiClient, LLMTimeout, extract_text, is_transient
+from core import reply_guard as RG
 from core import templates as T
 from core.protocol import TurnInput
 from core.tools import ToolLog
@@ -179,7 +180,9 @@ class TurnEngine:
 
             result = self.llm.run(llm_turn, chat_history, self.tool_log.calls)
             out = plugin.finish_turn(decision, turn, llm_turn, result)
-            ai_reply = _prefix(image_note, out.reply)
+            guarded, notes = guard_reply(out.reply, result, decision)
+            raw_refs_html += "".join(notes)
+            ai_reply = _prefix(image_note, guarded)
             extra_messages = list(out.extra_messages)
             raw_refs_html += "".join(out.debug)
             new_carry = out.carry_fn
@@ -250,6 +253,35 @@ class TurnEngine:
 
 
 _CONTACT_RX = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+|\d[\d-]{6,}\d")
+
+
+def guard_reply(reply: str, result, decision) -> tuple[str, list]:
+    """ตรวจคำตอบด้วยโค้ดก่อนถึงลูกค้า (core/reply_guard.py · sim4_llm 26 ต.ค.)
+    1) เหตุผลภายใน/ชื่อฟิลด์หลุด → ขอให้ LLM เขียนใหม่หนึ่งครั้ง · ยังหลุด → ข้อความขอให้ถามใหม่
+    2) เบอร์ · อีเมล · LINE ที่ไม่ใช่ช่องทางจริง → ลบบรรทัดนั้น แล้วแนบช่องทางจริงแทน (ถ้าไม่มีข้อความส่งต่ออยู่แล้ว)"""
+    notes = []
+    leak = RG.leaks(reply)
+    if leak:
+        notes.append(f"**Reply guard:** เหตุผลภายในหลุด {leak[:5]} → ขอเขียนใหม่\n")
+        new = ""
+        try:
+            new = extract_text(result.session.send_message(RG.LEAK_RETRY_TH))
+        except Exception as e:                           # noqa: BLE001 — เขียนใหม่ไม่ได้ = ใช้ข้อความสำรอง
+            notes.append(f"**Reply guard:** เขียนใหม่ไม่สำเร็จ ({type(e).__name__})\n")
+        if new and not RG.leaks(new):
+            reply = new
+        else:
+            reply = RG.LEAK_FALLBACK_TH
+            notes.append("**Reply guard:** ยังหลุด → ข้อความสำรอง\n")
+    reply, fake = RG.scrub_contacts(reply)
+    if fake:
+        notes.append(f"**Reply guard:** ลบช่องทางติดต่อที่ไม่ใช่ของจริง {fake[:5]}\n")
+        if not getattr(decision, "sales_handoff_th", ""):
+            from sales_contact import sales_contact_line_th
+            line = sales_contact_line_th()
+            if line and line not in reply:
+                reply = f"{reply}\n\n{line}".strip()
+    return reply, notes
 
 
 def _already_has_contact(reply: str, handoff: str) -> bool:
