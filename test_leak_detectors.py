@@ -106,6 +106,10 @@ import eval_mentions as EM  # noqa: E402
 ok("'เกินกว่าพิกัดสูงสุด' = ตัดออก (R10#1)", not EM.recommended(
     "SM254 FG50%", "รุ่น **SM254 FG50% (เกรด PA6)** สูงสุด **116 °C** เท่านั้น ซึ่งอุณหภูมิ 130 °C เกินกว่าพิกัดสูงสุดที่ระบุไว้"))
 
+k = kinds(MOD, [("customer", "แล่ปลา 1 นิ้ว 5 องศา"), ("bot", "แนะนำ MD254 FG ครับ"), ("customer", "เปียก"),
+                ("bot", "สภาวะเปียกหรือแห้งมีผลต่อการเลือกวัสดุสายพานโดยตรงครับ\n\n1. อุณหภูมิสูงสุด…")])
+ok("อธิบายเรื่องเปียก/แห้ง ไม่ใช่คำถาม → ไม่นับ reask_known (r2 R04#1)", "reask_known" not in k, k)
+
 print("\n5) ชุดเป้าหมายจับผิด")
 goals = SC.load_goals(os.path.join(ROOT, "training", "redteam_goals.json"))
 ok("18 เป้าหมาย · id ไม่ซ้ำ · ทุกตัวมี tactic", len(goals) == 18 and len({g["id"] for g in goals}) == 18

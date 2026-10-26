@@ -193,7 +193,7 @@ def parse_fahrenheit(text: str) -> Optional[float]:
     return round((float(m.group(1)) - 32) * 5 / 9, 1) if m else None
 
 
-_NEG_RX = re.compile(r"(?:ติด\s*)?ลบ\s*(?:ประมาณ|ประมาน|ราว\s*ๆ?|สัก|ก็)?\s*(?=\d)|minus\s*(?=\d)", re.IGNORECASE)
+_NEG_RX = re.compile(r"(?<!ไม่)(?:ติด\s*)?ลบ\s*(?:ประมาณ|ประมาน|ราว\s*ๆ?|สัก|ก็)?\s*(?=\d)|minus\s*(?=\d)", re.IGNORECASE)
 # ตัว c เปล่า ("5 C" · "-30c") ต้องไม่ใช่เศษรหัสรุ่น: "EC254 C" (ติดตัวอักษร) · "MP8 0 C" (OCR แตก · CD-002 — มีเลขนำหน้า)
 _C_RX = re.compile(r"(?<![A-Za-z\d.])" + _NUM + r"\s*(?:°\s*[cC]|องศา|℃)"
                    r"|(?<![A-Za-z\d.])(?<!\d\s)(?<![A-Z]{2}\s)" + _NUM + r"\s*[cC](?![A-Za-z])")   # "HC 508 C"
@@ -214,10 +214,16 @@ def parse_temp(text: str, bare_number: bool = False) -> Optional[float]:
     t = (text or "").replace(",", ".")
     # "ลบ 35" / "ติดลบ 35" / "minus 35" = -35 (test_conversation_leaks C13 · เดิมได้ +35)
     # main_sim G04 (26 ต.ค.): "อุณภูมิติดลบประมาน 30" — มีคำขยายคั่นก่อนตัวเลข และไม่มีคำว่าองศา → เดิมอ่านไม่ออก ถามซ้ำ
+    neg = bool(_NEG_RX.search(t))
     t = _NEG_RX.sub(" -", t)
     v = parse_temp_unit(t)               # "5 C" ตัวใหญ่ (R18) · °F (R06) · "EC254 C" ไม่ใช่ 254 °C
     if v is not None:
         return v
+    if neg:
+        # "ลบ 40 ต่างหากครับ" — คำว่าลบ/ติดลบนำหน้าเลข = อุณหภูมิ แม้ไม่มีหน่วย (redteam R17 r2 · 27 ต.ค.)
+        m = re.search(r"(?<![\d.])-\d+(?:\.\d+)?", t)
+        if m:
+            return float(m.group(0))
     m = re.search(r"(?:อุณหภูมิ|อุณภูมิ|อุนหภูมิ|temp(?:erature)?)(?!ห้อง)[^\d\n-]{0,15}" + _NUM, t, re.IGNORECASE)
     if m:
         return float(m.group(1).replace(",", "."))

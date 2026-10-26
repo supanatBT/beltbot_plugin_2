@@ -66,7 +66,7 @@ def extract_modutech_slots(text: str, materials: list[str], mask_codes: tuple = 
         out["wet_or_dry"] = "wet"
     if has(r"แห้ง|\bdry\b|ไม่เปียก|ไม่โดนน้ำ", t):
         out["wet_or_dry"] = "dry"
-    if has(r"ไลน์ตรง|วิ่งตรง|straight|ไม่มีโค้ง|ไม่เลี้ยว", t):
+    if has(r"ไลน์ตรง|วิ่งตรง|ทางตรง|straight|ไม่มีโค้ง|ไม่เลี้ยว", t):      # ทางตรง: redteam R17 r2
         out["line_shape"] = "straight"
     elif has(r"มีโค้ง|วิ่งโค้ง|เลี้ยว|โค้ง|curve|radius", t):
         out["line_shape"] = "curve"
@@ -120,6 +120,25 @@ class ModutechPlugin:
     def _need_in(self, text: str) -> bool:
         """ข้อความบอกงานหรืออุตสาหกรรม (ตัวค้นจับได้)"""
         return self.search.match_application(text) is not None or self._names_industry(text)
+
+    def _job_sig(self, text: str) -> tuple:
+        """(คำงานที่จับได้, อุตสาหกรรม) — ใช้แยก "บอกงานเดิมซ้ำ" กับ "เปลี่ยนงาน" """
+        from brands.modutech.router import APPLICATION_KEYWORDS, INDUSTRY_KEYWORDS
+        low = (text or "").lower()
+        tags = frozenset(t for t, kws in APPLICATION_KEYWORDS.items() if any(k.lower() in low for k in kws))
+        ind = next((i for i, kws in INDUSTRY_KEYWORDS.items() if any(k.lower() in low for k in kws)), None)
+        return tags, ind
+
+    def _same_job(self, answer: str, text: str) -> bool:
+        """คำตอบพูดถึงงานเดิมซ้ำ ("ก็บอกว่าห้องแห้ง ๆ ไง ตัวตรวจจับโลหะอะ") — ไม่ใช่งานใหม่
+        redteam R13 r2 (27 ต.ค.): เดิมนับเป็นงานใหม่ → เริ่มถามพิทช์ใหม่ทั้งที่เพิ่งถาม → ลูกค้าเลิกคุย
+        "ไม่ใช่ไลน์ไก่ … เป็นขนมปัง" มีงานใหม่ (ขนมปัง) ที่ข้อความก่อนไม่มี → ไม่ใช่งานเดิม"""
+        before = (text or "").replace(answer or "", " ")
+        a_tags, a_ind = self._job_sig(self.NEGATED_JOB_RX.sub(" ", answer or ""))
+        b_tags, b_ind = self._job_sig(before)
+        if not (a_tags or a_ind) or not (b_tags or b_ind):
+            return False
+        return a_tags <= b_tags and (a_ind is None or a_ind == b_ind)
 
     def _remember_need(self, text: str, st: dict) -> None:
         """จำข้อความที่บอกงาน (ไม่มีรุ่นในโฟกัส) ไว้ให้คำถามต่อที่เปลี่ยนแค่พิทช์/อุณหภูมิ"""
@@ -205,6 +224,14 @@ class ModutechPlugin:
                             f"ขอ{'/'.join(esc.topics)}กลางการถาม ({flow}) → ให้ช่องทาง แล้วถามข้อเดิมต่อ",
                             topic="escalate", effective_text=text,
                             payload=dict(codes=[], slots=dict(slots)), pending=self.STEP_PENDING[flow])
+        # "wet … ลบ30c pich1in มีของมั้ย" — ถามสต็อกพร้อมบอกสเปกครบ = ยังต้องการรุ่น (redteam R07 r2 · 27 ต.ค.)
+        # เดิมส่งฝ่ายขายอย่างเดียว ไม่ตอบรุ่น → ตอบรุ่นแล้วแนบช่องทางฝ่ายขาย
+        raw = inp.answer or text
+        spec_info = NF.stated_pitch(raw) is not None or NF.parse_temp_unit(raw) is not None
+        if esc and not esc.has_spec_question and spec_info and not st["codes"]:
+            d = self._decide_core(text, st, codes, answer=inp.answer)
+            attach_handoff(d, esc.handoff_th, esc.topics)
+            return d
         if esc and not esc.has_spec_question:
             return Decision("escalate", self.info.key, esc.reply_th, f"หัวข้อ {esc.topics}",
                             topic="escalate", effective_text=text,
@@ -235,7 +262,7 @@ class ModutechPlugin:
         # ค่าที่บอกพร้อมกัน (พิทช์ 1 นิ้ว) อ่านต่อจากข้อความนี้ในขั้น need
         if flow and flow != "need" and answer and self._need_in(answer) and (
                 (not re.search(r"\d", answer) and self._read_rules_sure(flow, answer) is None)
-                or self.CORRECTION_RX.search(answer)):
+                or self.CORRECTION_RX.search(answer)) and not self._same_job(answer, text):
             slots.pop(NF.FLOW_KEY, None)
             slots.pop(NF.PITCH_SAID_KEY, None)
             slots.pop(self.NEED_TEXT_KEY, None)
@@ -252,12 +279,19 @@ class ModutechPlugin:
         # 26 ต.ค. (c16_*.json · CONV-16 t5): เดิมค้นพิทช์ทั้งฐาน ไม่สนว่าเป็นงานไก่ — 2 ใน 6 รอบ LLM ลืมงานไก่
         # แล้วไล่ 18 รุ่น · บางรอบใส่ EC254 R (สายพานเลี้ยว) ปน · จะจำงานได้หรือไม่ขึ้นกับ LLM อ่านประวัติ
         stated = NF.stated_pitch(text)
+        if stated is None and slots.get(self.NEED_TEXT_KEY) and self.REMEASURE_RX.search(text) \
+                and not re.search(r"กว้าง|ยาว|หนา|width|length", text, re.IGNORECASE):
+            # "เดี๋ยวนะ วัดใหม่แล้วเป็น 2 นิ้ว" — ไม่มีคำว่าพิทช์ แต่แก้ค่าหลังเพิ่งถามพิทช์ (redteam R01 r2 · 27 ต.ค.)
+            v = NF.parse_pitch(text)
+            stated = v if v is not None and 1.0 <= v <= 200.0 else None
         if stated is not None:
             slots["pitch_mm"] = stated                     # ลูกค้าบอกพิทช์ใหม่ = แทนค่าเดิม
         need_prev = slots.get(self.NEED_TEXT_KEY)
         new_temp = extract_modutech_slots(text, ()).get("operating_temp_c") is not None
         if need_prev and not codes.belt_codes and not st["codes"] and not self._need_in(text) \
-                and (stated is not None or new_temp):
+                and (stated is not None or new_temp or self.COMPLAINT_RX.search(text) or self.CONTINUE_RX.search(text)
+                     or set(extract_modutech_slots(text, ())) & {"line_shape", "wet_or_dry"}):
+            # บ่นว่าถามซ้ำ/ไม่เข้าใจ → ยังเป็นงานเดิม ตอบจากงานเดิม (redteam R13 r2)
             text = f"{need_prev} {text}"
 
         q = self.search.parse(text)
@@ -344,6 +378,10 @@ class ModutechPlugin:
     # ── ตีความคำตอบของลูกค้าต่อคำถามที่ถามค้าง: LLM ก่อน (core/answer_interpreter) · ไม่ได้ = กฎเดิม ──
     STEP_EXPECT = {"pitch": "number_mm", "pitch_confirm": "number_mm", "pitch_retry": "number_mm",
                    "temp": "number_c", "wet": "wet_dry", "need": "free"}
+    REMEASURE_RX = re.compile(r"วัดใหม่|วัดอีกที|แก้เป็น|เปลี่ยนเป็น|ที่จริง(?:เป็น)?|จริง\s*ๆ\s*(?:แล้ว)?เป็น|เดี๋ยวนะ|ขอแก้")
+    # คุยต่อ/ตอบข้อที่ LLM ถามท้ายคำตอบ ("เป็นทางตรงครับ … เดี๋ยวขอเอาไปปรึกษาทีม") — ยังเป็นงานเดิม (redteam R17 r2)
+    CONTINUE_RX = re.compile(r"ปรึกษา|คุยกับ|หัวหน้า|ไว้ก่อน|เข้าใจแล้ว|ทางตรง|ทางโค้ง")
+    COMPLAINT_RX = re.compile(r"ถามซ้ำ|บอกไปแล้ว|ตอบไปแล้ว|ไม่รู้เรื่อง|ไม่เข้าใจ|งง")
     NEGATED_JOB_RX = re.compile(r"(?:ไม่ใช่|not)\s*(?:ไลน์|งาน|สาย|line\s*)?[^\s,]{0,20}", re.IGNORECASE)
     CORRECTION_RX = re.compile(r"ไม่ใช่|ที่จริง|จริง\s*ๆ|ขอโทษ|เปลี่ยนเป็น|แก้เป็น|actually|sorry", re.IGNORECASE)
     STEP_PENDING = {"pitch": "modutech_pitch", "pitch_confirm": "modutech_pitch", "pitch_retry": "modutech_pitch",
@@ -494,11 +532,25 @@ class ModutechPlugin:
             slots[self.REASK_KEY] = flow
             return ask(flow, f"{NF.REASK_TH}{self._step_question(flow, slots)}",
                        f"ถามทีละข้อ: อ่านคำตอบไม่ออก ({flow}) → ถามซ้ำหนึ่งครั้ง", pend[flow])
+        if reading is not None and reading.kind == "other" and src == "LLM" and slots.get(self.REASK_KEY) == flow \
+                and flow in pend and not self._need_in(ans):
+            # ถามซ้ำไปแล้วหนึ่งครั้งยังไม่ได้ค่า ("ถามซ้ำอยู่ได้ ไม่คุยละ") → นับว่าไม่ทราบข้อนี้ แล้วไปต่อ
+            # redteam R13 r2 (27 ต.ค.): เดิมเลิกถาม → ตอบจากข้อความบ่นอย่างเดียว ไม่รู้งาน → "ไม่ได้ระบุงานนี้" (ไม่จริง)
+            reading = None
         if reading is not None and reading.kind == "other" and src == "LLM":
             # ลูกค้าเปลี่ยนเรื่องกลางการถาม — เลิกถาม (ค่าที่ได้แล้วยังเก็บไว้)
             slots.pop(NF.FLOW_KEY, None)
             slots.pop(NF.PITCH_SAID_KEY, None)
             return None
+        # แก้อุณหภูมิระหว่างตอบข้ออื่น ("ขอโทษ ลบ 40 ต่างหาก ส่วนพิทช์เอา 50.6") — redteam R17 r2 (27 ต.ค.)
+        # เดิมเก็บแค่พิทช์ อุณหภูมิยังเป็น -20 ตามที่บอกครั้งแรก
+        # ค่าล่าสุดชนะ — เดิมขั้นอุณหภูมิอ่านจากข้อความรวม ได้ค่าแรก (-20) แทนค่าที่แก้ (-40)
+        if ans and flow != "temp":
+            t_new = NF.parse_temp(ans)
+            if t_new is not None and t_new != slots.get("temp_c"):
+                slots["temp_c"] = t_new
+                if "operating_temp_c" in slots:
+                    slots["operating_temp_c"] = t_new
         if reading is not None and reading.wet_or_dry and not slots.get("wet_or_dry"):
             slots["wet_or_dry"] = reading.wet_or_dry
 
@@ -607,6 +659,10 @@ class ModutechPlugin:
         # เปลี่ยนสเปก: พิทช์ใหม่ ("ถ้าเป็นพิทช์ 1 นิ้วล่ะ") · "ถ้า … องศา" — รุ่นที่เสนอมีพิทช์ตายตัว
         # จึงไม่ใช่ถามต่อเรื่องรุ่นเดิม (C16 · 26 ต.ค. เดิมได้ EC508 C/DT เป็นโฟกัสแล้วค้นพิทช์ทั้งฐาน)
         if NF.stated_pitch(raw) is not None:
+            return True
+        # "เดี๋ยวนะ วัดใหม่แล้วเป็น 2 นิ้ว" (redteam R01 r2) — แก้พิทช์โดยไม่มีคำว่าพิทช์
+        if self.REMEASURE_RX.search(raw or "") and NF.parse_pitch(raw) is not None \
+                and not re.search(r"กว้าง|ยาว|หนา|width|length", raw or "", re.IGNORECASE):
             return True
         if has(r"ถ้า|เปลี่ยนเป็น", raw or "") and \
                 extract_modutech_slots(raw or "", ()).get("operating_temp_c") is not None:

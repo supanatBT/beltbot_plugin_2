@@ -33,9 +33,13 @@ EXCLUDE_RX = re.compile(
     r"ตัดออก|ถูกตัด|คัดออก|ติดเงื่อนไข|ไม่สามารถ|ไม่แนะนำ|ไม่เหมาะ|ไม่ใช่ตัวเลือก|พิทช์\S{0,6}ไม่ใช่|ไม่ใช่\s*\d|"
     r"ไม่มีรุ่น|ไม่ได้นำมาเสนอ|ไม่ได้เสนอ|"      # main_sim G06 · G11 (26 ต.ค.)
     r"เกินกว่า(?:พิกัด|ค่า|สเปก|ขีด)|เกินพิกัด|เกินขีดจำกัด|สูงเกิน|"      # redteam R10#1 (26 ต.ค.)
+    r"สเตอร์คนละชุด|ใช้ร่วมกันไม่ได้|ใส่ร่วมกันไม่ได้|"                     # พิทช์ใกล้เคียง (redteam r2 R04#2)
     r"ต้องสอบถามฝ่ายขายโดยตรง")
 RECOMMEND_RX = re.compile(r"(?<!ไม่)แนะนำ|ตัวเลือกตรงรุ่น")
-NONE_RX = re.compile(r"ไม่มีรุ่นที่|ไม่มีสายพาน.*ที่ตรง|ไม่พบรุ่น|ไม่มีรุ่นใด|ไม่มีรุ่นไหน")
+NONE_RX = re.compile(r"ไม่มีรุ่นที่|ไม่มีสายพาน.*ที่ตรง|ไม่พบรุ่น|ไม่มีรุ่นใด|ไม่มีรุ่นไหน|"
+                     r"ไม่สามารถ(?:ยืนยัน|รับประกัน|ฟันธง|รับรอง)")   # เทิร์นปฏิเสธรับประกัน (redteam r2 R10)
+# หัวข้อ "รุ่นพิทช์ใกล้เคียง … ไม่ใช่ 25.4 เป๊ะ:" — รายการใต้หัวข้อนี้เป็นคำเตือน ไม่ใช่คำแนะนำ (redteam r2 R07#1)
+NEAR_SECTION_RX = re.compile(r"พิทช์ใกล้เคียง|ใกล้เคียงกันแต่ไม่ใช่|ไม่ใช่\s*\d")
 
 
 _ITEM_RX = re.compile(r"^(\s*)(?:[-*•]|\d+[.)])\s")
@@ -71,7 +75,13 @@ def recommended(term: str, text: str, contains=None, grade_note_excludes: bool =
     contains(term, line) — วิธีหาว่าบรรทัดมี term ไหม (ค่าเริ่มต้น: substring ไม่สนตัวพิมพ์)"""
     has = contains or (lambda t, l: t.lower() in l.lower())
     none_turn = bool(NONE_RX.search(text or ""))
+    excluded_section = False
     for line in _lines(text):
+        if not _ITEM_RX.match(line):                     # บรรทัดหัวข้อ/ข้อความ — ตั้งหรือล้างสถานะหัวข้อ
+            excluded_section = bool(NEAR_SECTION_RX.search(line)) or (
+                line.rstrip().endswith(":") and line_excludes(line, grade_note_excludes))
+        elif excluded_section:
+            continue
         if not has(term, line):
             continue
         if line_excludes(line, grade_note_excludes):

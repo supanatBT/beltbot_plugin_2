@@ -60,6 +60,10 @@ THANKS_WORDS = ["ขอบคุณ", "ขอบใจ", "thank"]
 THANKS_MAX_CHARS = 25
 SMALLTALK_WORDS = ["สวัสดี", "ขอบคุณ", "ขอบใจ", "hello", "hi ", "thank", "thanks", "ดีครับ", "ดีค่ะ"]
 GREETING_WORDS = ["สวัสดี", "hello", "hi ", "ดีครับ", "ดีค่ะ"]   # ทัก (ไม่ใช่ขอบคุณ) → ข้อความทักกลับ
+# คุยต่อในบทที่มีแบรนด์อยู่แล้ว — ไม่มีคำสินค้าแต่ไม่ใช่นอกเรื่อง (redteam r2 · 27 ต.ค.)
+# R17: "เป็นทางตรงครับ … เดี๋ยวขอเอาไปปรึกษาทีมก่อน" · R13: "ถามซ้ำจัง คุยไม่รู้เรื่องละ" — เดิมได้ "ตอบได้เฉพาะเรื่องสินค้า"
+CONTINUE_WORDS = ["ปรึกษา", "คุยกับ", "หัวหน้า", "เดี๋ยว", "ไว้ก่อน", "เข้าใจแล้ว", "ถามซ้ำ", "บอกไปแล้ว",
+                  "ไม่รู้เรื่อง", "ไม่เข้าใจ", "ทางตรง", "ทางโค้ง"]
 REFERENCE_WORDS = ["ตัวนั้น", "ตัวนี้", "อันนั้น", "อันนี้", "รุ่นนั้น", "รุ่นนี้", "ตัวที่", "อันที่",
                    "ตัวแรก", "ตัวหลัง", "เมื่อกี้", "ข้างบน", "ตัวเดิม"]
 
@@ -171,7 +175,7 @@ class Dialogue:
                 greet = any_word(GREETING_WORDS, text) and not any_word(["ขอบคุณ", "ขอบใจ", "thank"], text)
                 return Decision("smalltalk", st.brand, self.greeting_th if greet else self.smalltalk_th, "ทักทาย",
                                 effective_text=effective, state=st)
-            if not (st.brand and any_word(REFERENCE_WORDS, text)):
+            if not (st.brand and (any_word(REFERENCE_WORDS, text) or any_word(CONTINUE_WORDS, text))):
                 return Decision("refuse_offtopic", st.brand, self.offtopic_th, "ไม่มีคำเกี่ยวกับสินค้า",
                                 effective_text=effective, state=st)
 

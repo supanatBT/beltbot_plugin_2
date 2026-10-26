@@ -97,6 +97,21 @@ CONV-41,conversation,leak,multi,2,แล้วรุ่นนี้ทนอุ�
 CONV-42,conversation,leak,multi,1,"Hi, I need a Modutech modular belt for fish filleting. Which one do you recommend?",,,พิทช์,,,,,,conversation,ลูกค้าภาษาอังกฤษ (R18)
 CONV-42,conversation,leak,multi,2,I need a 1 inch pitch belt. It runs wet at around 5 C. Any of those match?,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-42,conversation,leak,multi,3,"wet, washed daily",,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-43,conversation,leak,multi,1,สายพาน modutech สำหรับเครื่องตรวจจับโลหะ ตัวไหนดี,,,พิทช์,,,,,,conversation,พูดงานเดิมซ้ำตอนถามพิทช์ → ไม่เริ่มถามใหม่ (R13 r2)
+CONV-43,conversation,leak,multi,2,ห้องปกติ แห้ง,,,รับทราบ,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-43,conversation,leak,multi,3,ก็บอกว่าห้องแห้งๆ ทั่วไปไง ตัวตรวจจับโลหะอะ มีของเลยไหม,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-43,conversation,leak,multi,4,ถามซ้ำจัง คุยไม่รู้เรื่องละ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-44,conversation,leak,multi,1,สายพาน modutech สำหรับไก่ตัดแต่ง รุ่นไหนดี,,,พิทช์,,,,,,conversation,วัดพิทช์ใหม่หลังได้คำตอบ ไม่มีคำว่าพิทช์ (R01 r2)
+CONV-44,conversation,leak,multi,2,1 นิ้วครับ,,,อุณหภูมิ,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-44,conversation,leak,multi,3,5 องศาครับ มีฉีดน้ำล้างทุกวัน,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-44,conversation,leak,multi,4,เดี๋ยวนะ วัดใหม่แล้วเป็น 2 นิ้ว,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-45,conversation,leak,multi,1,need belt modutec 4 กุ้งเข้าfreezer อ่ะ,,,เปียก,,,,,,conversation,ถามสต็อกพร้อมบอกสเปก → ตอบรุ่น + ส่งฝ่ายขาย (R07 r2)
+CONV-45,conversation,leak,multi,2,wetมีน้ำแข็งเกาะคับ tempลบ30c pich1in มีของมั้ยชั่งดูให้ที,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-46,conversation,leak,multi,1,สายพาน modutech ไลน์ไก่แช่แข็ง รุ่นไหนดี,,,เปียก,,,,,,conversation,แก้อุณหภูมิระหว่างตอบพิทช์ · ตอบทางตรงแล้วไม่ถูกปฏิเสธ (R17 r2)
+CONV-46,conversation,leak,multi,2,เปียกครับ อุณหภูมิลบ 20,,,พิทช์,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-46,conversation,leak,multi,3,ขอโทษ ลบ 40 ต่างหากครับ ส่วนพิทช์เอา 50.6 ครับ,,,50.8,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-46,conversation,leak,multi,4,ใช่ พิมพ์ผิดครับ 50.8 ครับ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-46,conversation,leak,multi,5,เป็นทางตรงครับ ข้อมูลละเอียดดีมาก เดี๋ยวขอเอาไปปรึกษาทีมก่อนครับ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-16,conversation,leak,multi,1,สายพาน modutech รุ่นไหนดี,,,ลำเลียงอะไร,,,,,,conversation,หลังจบการถาม ลูกค้าเปลี่ยนพิทช์
 CONV-16,conversation,leak,multi,2,ไก่,,,พิทช์,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-16,conversation,leak,multi,3,2 นิ้ว,,,อุณหภูมิ,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,

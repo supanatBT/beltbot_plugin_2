@@ -295,7 +295,8 @@ SCENARIOS = {
         ("พิทช์ประมาณ 0.083 ฟุต ครับ", dict(reply_has="25.3")),
         ("1 นิ้ว", dict(slot={"pitch_mm": 25.4})),
         ("ประมาณ 176 องศาฟาเรนไฮต์ครับ", dict(slot={"temp_c": 80.0, "operating_temp_c": 80.0})),
-        ("แห้ง", dict(action="answer", kept=["EC254 C", "MD254 C", "MD254 C-RT", "MD254 FG", "MD254 FG-RT"])),
+        # r2 (27 ต.ค.): "ออกจากเตา" จับงานทางเข้า-ออกเตาอบได้แล้ว → รุ่นของงานนั้น (เดิมได้ 5 รุ่นระดับอุตสาหกรรม)
+        ("แห้ง", dict(action="answer", kept=["SM254 FG50%"])),
     ]),
     "C39": ("พิมพ์ผิดปนอังกฤษ ตอบเปียกพร้อมพิทช์/อุณหภูมิ (R07)", [
         ("need belt modutec 4 กุ้งเข้าfreezer อ่ะ", dict(reply_has="เปียก")),
@@ -319,6 +320,33 @@ SCENARIOS = {
          dict(action="answer", slot={"pitch_mm": 25.4, "temp_c": 5.0},
               kept=["EC254 C", "EC254 NT", "EC254 PR16", "MD254 C", "MD254 FG", "MD254 GT"])),
         ("wet, washed daily", dict(not_action="refuse_offtopic")),
+    ]),
+    # ── redteam_r2 (27 ต.ค.) ──
+    "C43": ("พูดงานเดิมซ้ำตอนถามพิทช์ → ไม่เริ่มถามใหม่ (R13 r2)", [
+        ("สายพาน modutech สำหรับเครื่องตรวจจับโลหะ ตัวไหนดี", dict(reply_has="พิทช์")),
+        ("ห้องปกติ แห้ง", dict(action="ask", reply_has="รับทราบ")),
+        ("ก็บอกว่าห้องแห้งๆ ทั่วไปไง ตัวตรวจจับโลหะอะ มีของเลยไหม", dict(action="answer", ctx_codes=["EC127 C", "EC508 PR22%"])),
+        ("ถามซ้ำจัง คุยไม่รู้เรื่องละ", dict(not_action=("ask", "refuse_offtopic"))),
+    ]),
+    "C44": ("วัดพิทช์ใหม่หลังได้คำตอบ ไม่มีคำว่าพิทช์ (R01 r2)", [
+        ("สายพาน modutech สำหรับไก่ตัดแต่ง รุ่นไหนดี", dict(reply_has="พิทช์")),
+        ("1 นิ้วครับ", dict(reply_has="อุณหภูมิ")),
+        ("5 องศาครับ มีฉีดน้ำล้างทุกวัน", dict(action="answer", kept=["EC254 C"])),
+        ("เดี๋ยวนะ วัดใหม่แล้วเป็น 2 นิ้ว", dict(action="answer", slot={"pitch_mm": 50.8},
+                                                kept=["EC508 C", "EC508 PR11", "HC508 C"])),
+    ]),
+    "C45": ("ถามสต็อกพร้อมบอกสเปก → ตอบรุ่น + ส่งฝ่ายขาย (R07 r2)", [
+        ("need belt modutec 4 กุ้งเข้าfreezer อ่ะ", dict(reply_has="เปียก")),
+        ("wetมีน้ำแข็งเกาะคับ tempลบ30c pich1in มีของมั้ยชั่งดูให้ที", dict(action="answer", kept=["EC254 NT"])),
+    ]),
+    "C46": ("แก้อุณหภูมิระหว่างตอบพิทช์ · ตอบทางตรงแล้วไม่ถูกปฏิเสธ (R17 r2)", [
+        ("สายพาน modutech ไลน์ไก่แช่แข็ง รุ่นไหนดี", dict(reply_has="เปียก")),
+        ("เปียกครับ อุณหภูมิลบ 20", dict(reply_has="พิทช์")),
+        ("ขอโทษ ลบ 40 ต่างหากครับ ส่วนพิทช์เอา 50.6 ครับ", dict(reply_has="50.8", slot={"temp_c": -40.0})),
+        ("ใช่ พิมพ์ผิดครับ 50.8 ครับ", dict(action="answer", kept=["EC508 C", "EC508 FG", "EC508 NT", "EC508 PR11",
+                                                                   "EC508 R", "EC508 TR", "HC508 C", "HC508 NT"])),
+        ("เป็นทางตรงครับ ข้อมูลละเอียดดีมาก เดี๋ยวขอเอาไปปรึกษาทีมก่อนครับ",
+         dict(not_action="refuse_offtopic", slot={"line_shape": "straight"})),
     ]),
     "C16": ("หลังจบการถาม ลูกค้าเปลี่ยนพิทช์", [
         ("สายพาน modutech รุ่นไหนดี", dict(reply_has="ลำเลียงอะไร")),

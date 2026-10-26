@@ -428,7 +428,9 @@ def wet_data_status(p: dict, variant_id: str) -> str:
 APPLICATION_KEYWORDS: dict[str, list[str]] = {
     "deboning": ["เลาะกระดูก", "deboning"], "cutting": ["ตัดแบ่ง", "cut-up", "cutting"],
     "trimming": ["ตัดแต่ง", "trim"], "bone": ["ลำเลียงกระดูก", "bone"],
-    "oven": ["เตาอบ", "oven"], "spiral": ["สไปรัล", "spiral"], "freezing": ["แช่แข็ง", "ฟรีซ", "freez"],
+    # "ขนมปังออกจากเตา" ไม่มีคำว่าเตาอบ (redteam R06 r2 · 27 ต.ค.)
+    "oven": ["เตาอบ", "oven", "ออกจากเตา", "เข้าเตา", "ออกเตา", "หน้าเตา"],
+    "spiral": ["สไปรัล", "spiral"], "freezing": ["แช่แข็ง", "ฟรีซ", "freez"],
     "cooling": ["ทำความเย็น", "พักเย็น", "cooling"], "chilling": ["แช่เย็น", "chiller"],
     "proofing": ["พักแป้ง", "หมักแป้ง", "proof"], "dough": ["แป้งดิบ", "แป้งโด", "ก้อนแป้ง", "รีดแป้ง", "dough"],
     "metal_detection": ["ตรวจจับโลหะ", "metal detect"], "inspection": ["ชั่งน้ำหนัก", "checkweigh"],
