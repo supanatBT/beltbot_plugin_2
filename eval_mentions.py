@@ -36,8 +36,24 @@ RECOMMEND_RX = re.compile(r"(?<!ไม่)แนะนำ|ตัวเลือ�
 NONE_RX = re.compile(r"ไม่มีรุ่นที่|ไม่มีสายพาน.*ที่ตรง|ไม่พบรุ่น|ไม่มีรุ่นใด|ไม่มีรุ่นไหน")
 
 
+_ITEM_RX = re.compile(r"^(\s*)(?:[-*•]|\d+[.)])\s")
+
+
 def _lines(text: str) -> list[str]:
-    return [l for l in (text or "").split("\n") if l.strip()]
+    """บรรทัด · รายการที่มีรายการย่อยเยื้องเข้าไป รวมเป็นก้อนเดียว
+    sim5 G02: "1. **รุ่น SM254 FG50%** (พิทช์ตรงตามที่ต้องการ):" แล้วบรรทัดย่อย "* … 116 °C ซึ่งยังไม่ถึง 120 °C"
+    คำว่าไม่ถึงอยู่บรรทัดย่อย ดูทีละบรรทัดจึงนับเป็นแนะนำ"""
+    out: list[list] = []                   # [ข้อความ, ระดับเยื้องของหัวรายการ]
+    for l in (text or "").split("\n"):
+        if not l.strip():
+            continue
+        m = _ITEM_RX.match(l)
+        indent = len(l) - len(l.lstrip())
+        if out and out[-1][1] is not None and indent > out[-1][1] and (m or l.startswith(" ")):
+            out[-1][0] += " " + l.strip()  # รายการย่อย/บรรทัดต่อของรายการก่อนหน้า
+            continue
+        out.append([l, indent if m else None])
+    return [t for t, _ in out]
 
 
 def line_excludes(line: str, grade_note_excludes: bool = True) -> bool:

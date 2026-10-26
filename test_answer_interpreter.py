@@ -171,6 +171,16 @@ TABLE["ใช่ แต่ไม่ใช่อันนั้นนะ"] = {"ki
 ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "50.6", "ใช่ แต่ไม่ใช่อันนั้นนะ"])
 ok("มีทั้งคำรับและคำปฏิเสธจริง → LLM", seen_llm == ["ใช่ แต่ไม่ใช่อันนั้นนะ"], seen_llm)
 
+print("\n5) บอกค่าพร้อมถามยืนยัน (sim5 G05 · 26 ต.ค.)")
+TABLE["อ๋อ ระยะพินห่างกันประมาณ 5 เซน น่าจะตรงกับ 2 นิ้วมั้ยครับ"] = {"kind": "question"}   # ตัวตีความอ่านผิดแบบ sim5
+plugin._interpreter = AnswerInterpreter(fake)
+ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "อ๋อ ระยะพินห่างกันประมาณ 5 เซน น่าจะตรงกับ 2 นิ้วมั้ยครับ"])
+ok("มีค่าที่มีหน่วยชัด → ใช้ค่า (5 เซน = 50 → ถามยืนยัน 50.8) ไม่อธิบายพิทช์ซ้ำ",
+   ds[-1].reply_th.startswith(NF.ask_pitch_confirm_th(50.0, NF.nearest_pitches(plugin.mod, 50.0))[:20])
+   and not ds[-1].reply_th.startswith(NF.EXPLAIN_TH["pitch"]), ds[-1].reply_th[:60])
+r = parse_reading('{"kind":"value","value":5,"unit":"cm"}', "number_mm")
+ok("ตัวตีความ: 5 cm → 50 มม.", r and r.number("number_mm") == 50.0)
+
 plugin._interpreter = AnswerInterpreter(boom)
 ds, st = run(["สายพาน modutech รุ่นไหนดี", "ไก่", "2 นิ้ว"])
 ok("LLM ล้ม → กฎเดิมอ่าน \"2 นิ้ว\" ได้ · เหตุผลบอกว่าใช้กฎ", sl(ds[-1].state).get("pitch_mm") == 50.8

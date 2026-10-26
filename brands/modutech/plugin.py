@@ -443,6 +443,14 @@ class ModutechPlugin:
                             payload=dict(codes=[], slots=dict(slots)), pending=pending)
 
         pend = self.STEP_PENDING
+        # บอกค่าพร้อมถามยืนยัน ("ห่างกันประมาณ 5 เซน น่าจะตรงกับ 2 นิ้วมั้ยครับ") — มีค่าที่มีหน่วยชัด = คำตอบ
+        # sim5 G05 (26 ต.ค.): ตัวตีความอ่านเป็นคำถาม บอทอธิบายพิทช์ซ้ำ ลูกค้า "บอกไปแล้วไง ถามซ้ำทำไม"
+        if reading is not None and reading.kind == "question" and ans:
+            from core.answer_interpreter import AnswerReading
+            v = (NF.parse_pitch(ans) if flow in ("pitch", "pitch_retry", "pitch_confirm") else
+                 NF.parse_temp(ans) if flow == "temp" else None)
+            if v is not None:
+                reading = AnswerReading("value", v, "mm" if flow != "temp" else "c")
         if reading is not None and reading.kind == "question":
             return ask(flow, f"{NF.EXPLAIN_TH[flow]}\n\n{self._step_question(flow, slots)}",
                        f"ถามทีละข้อ: ลูกค้าถามกลับ ({flow}) → อธิบาย", pend[flow])
