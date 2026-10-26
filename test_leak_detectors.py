@@ -12,7 +12,8 @@ import sys
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 
-import leak_detectors as LD  # noqa: E402
+import leak_detectors as LD
+from brands.modutech.plugin import ASK_WET_DRY_TH  # noqa: E402
 import simulate_customers as SC  # noqa: E402
 from brands.modutech import need_flow as NF  # noqa: E402
 
@@ -87,6 +88,23 @@ ok("บท Movex ได้รหัส Modutech → wrong_brand", "wrong_brand" 
 k = kinds(MOD, [("customer", "x"), ("bot", "❌ ตอนนี้ระบบตอบช้ากว่าปกติ รบกวนส่งคำถามเดิมอีกครั้งครับ")],
           {"final_violations": ["MP80 C"], "ended": "giveup"})
 ok("timeout · คำแนะนำสุดท้ายผิด · เลิกคุย", {"error", "violation", "giveup"} <= set(k), k)
+
+print("\n4b) redteam_r1 (26 ต.ค.)")
+k = kinds(MOD, [("customer", "เข้าเตาอบ 1 นิ้ว 110 องศา"), ("bot", "แนะนำ SM254 FG50% ครับ"),
+                ("customer", "อ้าวเหรอ งั้นเดี๋ยวผมลองไปคุยกับช่างหน้างานเรื่องสเตอร์ใหม่อีกทีแล้วกัน ขอบคุณมากครับ"),
+                ("bot", ASK_WET_DRY_TH)])
+ok("ขอบคุณปิดท้ายแล้วบอทถามเปียก/แห้ง → ask_after_close (R02)", "ask_after_close" in k, k)
+k = kinds(MOD, [("customer", "ไก่ 2 นิ้ว ขอบคุณครับ แล้วต้องใช้กี่องศา"), ("bot", NF.ASK_TEMP_TH)])
+ok("ขอบคุณแต่ยังถาม → ไม่นับ ask_after_close", "ask_after_close" not in k, k)
+MXW = "รุ่น 880 Series (Sideflexing Chain) ครับ มีความกว้างให้เลือก:\n• 82.5 มม.\n• 114.3 มม.\nต้องการความกว้างไหนครับ"
+k = kinds({"brand": "movex"}, [("customer", "โซ่ movex 880 ตัวที่กว้างกว่า ใช้สเตอร์อะไร"), ("bot", "LF 880 TAB K450 ใช้ 55001"),
+                               ("customer", "แล้วรุ่นนี้ทนอุณหภูมิได้เท่าไหร่"), ("bot", MXW)])
+ok("Movex ถามความกว้างหลังลูกค้าบอก 'ตัวที่กว้างกว่า' → reask_known (R15)", "reask_known" in k, k)
+k = kinds({"brand": "movex"}, [("customer", "โซ่ movex 880 มีขนาดไหนบ้าง"), ("bot", MXW)])
+ok("Movex ถามความกว้างครั้งแรก → ไม่นับ", k == [], k)
+import eval_mentions as EM  # noqa: E402
+ok("'เกินกว่าพิกัดสูงสุด' = ตัดออก (R10#1)", not EM.recommended(
+    "SM254 FG50%", "รุ่น **SM254 FG50% (เกรด PA6)** สูงสุด **116 °C** เท่านั้น ซึ่งอุณหภูมิ 130 °C เกินกว่าพิกัดสูงสุดที่ระบุไว้"))
 
 print("\n5) ชุดเป้าหมายจับผิด")
 goals = SC.load_goals(os.path.join(ROOT, "training", "redteam_goals.json"))

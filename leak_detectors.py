@@ -17,6 +17,9 @@ leak_detectors.py — ตรวจรูรั่วในบทสนทนา�
     wrong_brand     บทของ Movex ได้รหัส Modutech
     error           คำตอบเป็น error · timeout · ข้อความสำรองของตัวกันคำตอบ
     giveup          ลูกค้าเลิกคุย หรือคุยจนครบจำนวนเทิร์นโดยไม่จบ
+    ask_after_close ลูกค้าขอบคุณปิดท้าย (ไม่มีคำถาม) แต่บอทถามข้อมูลต่อ — redteam R02 (26 ต.ค.)
+                    นับเฉพาะคำถามที่โค้ดเขียนเอง (งาน · พิทช์ · อุณหภูมิ · เปียก/แห้ง · ความกว้าง Movex)
+    reask_known     รวมคำถามความกว้างของ Movex หลังลูกค้าบอกความกว้าง/"ตัวที่กว้างกว่า" แล้ว — redteam R15
 """
 from __future__ import annotations
 
@@ -35,6 +38,12 @@ PROMISE_SAFE_RX = re.compile(r"ฝ่ายขาย|ไม่สามารถ
 PROMPT_RX = re.compile(r"system\s*prompt|คำสั่งระบบ|คำสั่งของระบบ|ผมถูกตั้งค่า|ฉันถูกตั้งค่า|กฎที่ได้รับ", re.IGNORECASE)
 FALLBACK_RX = re.compile(r"ตอบช้ากว่าปกติ|เรียบเรียงคำตอบไม่สำเร็จ|ไม่ว่างชั่วคราว|เกิดข้อผิดพลาด|^\[ERROR\]")
 OFFTOPIC_TH = "ผมตอบได้เฉพาะเรื่องสินค้า"
+CLOSE_RX = re.compile(r"ขอบคุณ|ขอบใจ|thank", re.IGNORECASE)
+QUESTION_IN_RX = re.compile(r"\?|ไหม|มั้ย|หรือเปล่า|ป่าว|ปะ\b|อะไร|ยังไง|อย่างไร|เท่าไหร่|เท่าไร|กี่|บ้าง|ไหน|"
+                            r"\b(?:what|how|which|can|could|is|are|do|does)\b", re.IGNORECASE)
+MX_WIDTH_ASK = "ต้องการความกว้างไหนครับ"
+MX_WIDTH_GIVEN_RX = re.compile(r"K\s?\d{3,4}|\d{2,3}(?:\.\d)?\s*(?:มม|mm)|กว้าง(?:กว่า|สุด|ที่สุด)|แคบ(?:กว่า|สุด)|"
+                               r"ตัว(?:ใหญ่|เล็ก)|wide|narrow", re.IGNORECASE)
 WET_QUESTION_RX = re.compile(r"(?:ไลน์|สภาวะ)\S{0,3}เปียก.{0,40}หรือ.{0,15}แห้ง.{0,40}(?:ครับ|\?)")
 
 ASKS = {                                   # ข้อความถามของบอท → ข้อมูลที่ถาม
@@ -77,10 +86,14 @@ def detect(goal: dict, transcript: list[dict], score: dict | None = None, need_i
     def add(kind, detail):
         issues.append({"kind": kind, "turn": bot_i, "detail": detail})
 
+    closed = False                               # ข้อความลูกค้าล่าสุดเป็นการขอบคุณปิดท้าย
     for t in transcript:
         text = t.get("text") or ""
         if t["role"] == "customer":
+            closed = bool(CLOSE_RX.search(text)) and not QUESTION_IN_RX.search(text)
             got = _given(text, need_in)
+            if MX_WIDTH_GIVEN_RX.search(text):
+                got["mx_width"] = True
             if got.get("need") and known.get("need"):
                 known = {}                       # เปลี่ยนงาน → ข้อมูลเดิมไม่ใช้กับงานใหม่ (C33)
             known.update(got)
@@ -88,9 +101,12 @@ def detect(goal: dict, transcript: list[dict], score: dict | None = None, need_i
                 add("frustration", text[:120])
             continue
         bot_i += 1
-        for k in sorted(_asked(text)):
+        asked = _asked(text) | ({"mx_width"} if MX_WIDTH_ASK in text else set())
+        for k in sorted(asked):
             if known.get(k):
-                add("reask_known", f"ถาม{ {'need': 'งาน', 'pitch': 'พิทช์', 'temp': 'อุณหภูมิ', 'wet': 'เปียก/แห้ง'}[k] } ที่ลูกค้าบอกแล้ว")
+                add("reask_known", f"ถาม{ {'need': 'งาน', 'pitch': 'พิทช์', 'temp': 'อุณหภูมิ', 'wet': 'เปียก/แห้ง', 'mx_width': 'ความกว้าง'}[k] } ที่ลูกค้าบอกแล้ว")
+        if closed and asked:
+            add("ask_after_close", f"ลูกค้าขอบคุณปิดท้ายแล้ว บอทถาม{'/'.join(sorted(asked))}")
         if prev_bot is not None and text.strip() and text.strip() == prev_bot.strip():
             add("repeat_reply", text[:80])
         prev_bot = text

@@ -329,5 +329,19 @@ card = build_modutech_turn(d, cat, plugin.search).context["products"][0]
 ok("ถามรหัสตรง ๆ → การ์ดครบทุกอุตสาหกรรม", len(card["industries"]) >= 6 and "other_industries" not in card,
    len(card["industries"]))
 
+print("\n10) หน่วยและคำพิมพ์ผิดจาก redteam_r1 (26 ต.ค.)")
+from brands.modutech.plugin import extract_modutech_slots as _X  # noqa: E402
+ok("ฟุต → มม. ไม่ปัด (0.083 ฟุต = 25.3 → ถามยืนยัน)", NF.parse_pitch("พิทช์ประมาณ 0.083 ฟุต") == 25.3)
+ok("ฟาเรนไฮต์ → °C (R06)", [NF.parse_temp("176 องศาฟาเรนไฮต์"), NF.parse_temp("176F"), NF.parse_temp("-4 °F"),
+                             _X("ประมาณ 176 องศาฟาเรนไฮต์ครับ", ()).get("operating_temp_c")] == [80.0, 80.0, -20.0, 80.0])
+ok("ลบติดตัวอักษร + c ตัวเล็ก (R07: tempลบ30c)", NF.parse_temp("tempลบ30c") == -30.0
+   and _X("wetมีน้ำแข็งเกาะเลยคับtempลบ30c pich1inนะคับ", ()).get("operating_temp_c") == -30.0)
+ok("pich + 1in ติดอักษรไทย (R07)", NF.stated_pitch("tempลบ30c pich1inนะคับ") == 25.4)
+ok("ค่าอยู่หน้าคำว่า pitch (R18: 1 inch pitch)", NF.stated_pitch("I need a 1 inch pitch belt. It runs wet at 5 C.") == 25.4)
+ok("5 C ตัวใหญ่ (R18)", NF.parse_temp("It runs wet at around 5 C") == 5.0)
+ok("เศษรหัสรุ่นไม่ใช่อุณหภูมิ (EC254 C · MP8 0 C · HC 508 C)",
+   [NF.parse_temp_unit(t) for t in ("EC254 C", "MP8 0 C พิทช์เท่าไหร่", "HC 508 C")] == [None, None, None])
+ok("ห้องปกติ = อุณหภูมิห้อง (R13)", NF.parse_temp("ห้องปกติ แห้ง") == NF.ROOM_TEMP_C)
+
 print(f"\nรวม {passed}/{passed + failed}")
 sys.exit(1 if failed else 0)

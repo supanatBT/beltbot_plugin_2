@@ -197,7 +197,16 @@ def main() -> int:
     print(f"      26 ต.ค.: บอกงานแล้วขอให้ช่วยเลือก → ถามพิทช์/อุณหภูมิ {len(conv_pick)} บท ({len(pick_turns)} เทิร์น)"
           f" {sorted({k.split('|')[2] for k in pick_turns})}")
     conv_changed = conv_changed | conv_pick
-    skipped = [k for k in a if k.rsplit("|", 1)[0] in conv_changed]
+    # 26 ต.ค. (redteam R08): ของเดิมวนถามแบรนด์ซ้ำ — ลูกค้าตอบแบรนด์แล้ว (modutech · 1 · 2) หรือพิมพ์รหัสแบรนด์เดียว
+    # หลังคำถามค้างของอีกแบรนด์ ยังได้ "ขอยืนยันก่อน…" ซ้ำ · ของใหม่ตอบแบรนด์ที่เลือก (เทิร์นแรกที่ชนจริงยังถามเหมือนเดิม)
+    loop_turns = [k for k in a if isinstance(a[k], dict) and not k.endswith("|t1")
+                  and a[k].get("reason") == "เจอรหัสของทั้งสองแบรนด์" and (a[k].get("state") or {}).get("pending") == "brand"
+                  and isinstance(b.get(k), dict) and b[k].get("brand") and (b[k].get("state") or {}).get("pending") != "brand"]
+    conv_loop = {k.rsplit("|", 1)[0] for k in loop_turns} - conv_changed
+    print(f"      26 ต.ค.: เลิกวนถามแบรนด์ซ้ำ {len(conv_loop)} บท ({len(loop_turns)} เทิร์น)"
+          f" {sorted({k.split('|')[2] for k in loop_turns})}")
+    conv_changed = conv_changed | conv_loop
+    skipped =[k for k in a if k.rsplit("|", 1)[0] in conv_changed]
     diff = [k for k in sorted(set(a) & set(b)) if a[k] != b[k] and k not in skipped]
     print(f"      เฟส 2: ข้ามบทสนทนาที่ตั้งใจเลือกแบรนด์ต่าง {len(conv_changed)} บท ({len(skipped)} เทิร์น)")
     bad_skip = [k for k in skipped if isinstance(b.get(k), dict) and routing_changed(b[k].get("effective_text", ""))

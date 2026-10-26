@@ -112,15 +112,27 @@ class Dialogue:
             return Decision("smalltalk", st.brand, self.smalltalk_th, "ขอบคุณ (ปิดคำถามที่ค้าง)",
                             effective_text=text, state=st)
 
+        # ── ข้อความใหม่พูดถึงอีกแบรนด์ชัดเจนระหว่างที่แบรนด์เดิมรอคำตอบ = คำถามใหม่ ไม่ใช่คำตอบ ──
+        # redteam R08 (26 ต.ค.): บอทถามพิทช์ของแบรนด์หนึ่ง → "แล้วโซ่ <อีกแบรนด์> 880 มีขนาดไหนบ้าง"
+        # เดิมรวมกับคำถามเดิม → เจอสัญญาณแรงสองแบรนด์ → ถามแบรนด์ แล้ววนถามไม่จบ ลูกค้าเลิกคุยทั้งสองรอบ
+        # กลับแบรนด์เดิมด้วยคำงาน ("กลับมาเรื่องสายพานไก่ พิทช์ 2 นิ้ว") มีแค่สัญญาณอ่อน — นับด้วยถ้าแบรนด์ที่รออยู่ไม่มีสัญญาณเลย
+        if st.pending and st.pending != "brand" and st.brand:
+            sig_now = {k: p.detect(text).strength for k, p in self.plugins.items()}
+            other = [k for k, v in sig_now.items() if k != st.brand and v in ("strong", "weak")]
+            if other and (sig_now.get(st.brand) in (None, "none")
+                          or (sig_now.get(st.brand) != "strong" and any(sig_now[k] == "strong" for k in other))):
+                st.pending, st.pending_question = None, ""
+
         # ── คำตอบของการถามกลับรอบก่อน: รวมกับคำถามเดิม ──
         effective = text
+        answered_brand = None             # ลูกค้าตอบชื่อแบรนด์ตอนบอทถามแบรนด์
         carried = None                    # ผลรูปของเทิร์นที่ถามแบรนด์ ใช้ได้เมื่อตอบแบรนด์เจ้าของคะแนนรูป
         # ถามแบรนด์จากเทิร์นที่มีแต่รูป (ไม่มีข้อความ) — คำถามเดิมว่างได้ แต่ยังต้องอ่านคำตอบแบรนด์
         if st.pending and (st.pending_question or st.pending == "brand"):
             if st.pending == "brand":
                 for key, p in self.plugins.items():
                     if any(has(pat, text) for pat in T.brand_answer_patterns(p.info)):
-                        st.brand = key
+                        st.brand = answered_brand = key
                         break
                 if image_carry is not None and st.brand is not None and not has_image:
                     sc = image_carry.best
@@ -141,6 +153,10 @@ class Dialogue:
         signals = {k: p.detect(effective) for k, p in self.plugins.items()}
         route = _router.choose(signals, prev_brand=st.brand, has_image=has_image,
                                image_brands=self.image_brands)
+        if answered_brand and route.kind in ("conflict_strong", "conflict_weak"):
+            # ลูกค้าตอบแล้วว่าแบรนด์ไหน — ข้อความเดิมยังมีชื่อทั้งสองแบรนด์ ถ้าตัดสินใหม่จะชนซ้ำทุกรอบ (R08)
+            route = _router.RouteResult(answered_brand, "strong", [], {answered_brand: "ลูกค้าตอบแบรนด์"},
+                                        route.signals)
         has_code = any(s.has_code for s in signals.values())
 
         # ── ทักทาย / นอกเรื่อง ──

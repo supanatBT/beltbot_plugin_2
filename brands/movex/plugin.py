@@ -151,6 +151,9 @@ class MovexPlugin:
         """เลือกรุ่นในซีรีส์จาก K-code หรือความกว้าง (ใช้ตอนลูกค้าตอบคำถาม "ความกว้างไหน")"""
         k = re.search(r"K\s?(\d{3,4})", text or "", re.IGNORECASE)
         nums = [float(n) for n in re.findall(r"(?<![\d.])(\d{2,3}(?:\.\d)?)(?![\d.])", text or "")]
+        # เลขซีรีส์ในข้อความเดียวกันไม่ใช่ความกว้าง — "โซ่ movex 880 ตัวที่กว้างกว่า" (redteam R15 · 26 ต.ค.)
+        # เดิมนับ 880 เป็นความกว้าง → ไม่เข้าทาง "กว้างกว่า" → เทิร์นหน้าถามความกว้างซ้ำ ลูกค้าเลิกคุย
+        nums = [x for x in nums if f"{x:g}" != str(series)]
         out = []
         for pid in self.mx_series_members.get(series, []):
             p = self.mx[pid]

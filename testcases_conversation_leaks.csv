@@ -70,6 +70,33 @@ CONV-33,conversation,leak,multi,3,1 นิ้ว,,,อุณหภูมิ,ผ�
 CONV-33,conversation,leak,multi,4,110 องศา,,,ไลน์เปียก,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-33,conversation,leak,multi,5,แห้ง,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-34,conversation,leak,multi,1,สายพาน modutech สำหรับงานเครื่องตรวจจับโลหะ ใช้รุ่นไหนได้บ้าง,,,,,,,,,conversation,ถามรายชื่อตามเล่ม ไม่ถามพิทช์
+CONV-35,conversation,leak,multi,1,สายพาน modutech ไลน์ตัดแต่งไก่ ใช้ตัวไหนดี,,,พิทช์,,,,,,conversation,แทรก Movex กลางการถาม แล้วกลับมา Modutech
+CONV-35,conversation,leak,multi,2,อ้อ แล้วโซ่ Movex 880 มีขนาดไหนบ้าง,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-35,conversation,leak,multi,3,โอเค กลับมาเรื่องสายพานไก่ พิทช์ 2 นิ้ว ใช้ในห้องเย็น 5 องศา งานเปียกครับ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-36,conversation,leak,multi,1,MP80 C กับ LF820 K325,,,ขอยืนยัน,,,,,,conversation,ชนสองแบรนด์ → ตอบแบรนด์แล้วไม่วนถามซ้ำ
+CONV-36,conversation,leak,multi,2,modutech,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-36,conversation,leak,multi,3,LF820 K325,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-36,conversation,leak,multi,4,MP80 C,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-37,conversation,leak,multi,1,อยากได้สายพาน modutech สำหรับไลน์ไก่ครับ,,,พิทช์,,,,,,conversation,แก้งานพร้อมตอบพิทช์ · ขอบคุณปิดท้ายไม่ถามต่อ (R02)
+CONV-37,conversation,leak,multi,2,ขอโทษ ไม่ใช่ไลน์ไก่ จริง ๆ เป็นไลน์ลำเลียงขนมปังเข้าเตาอบ ส่วนพิทช์เอา 1 นิ้วครับ,,,อุณหภูมิ,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-37,conversation,leak,multi,3,ประมาณ 110 องศาครับ,,,เปียก,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-37,conversation,leak,multi,4,แห้งครับ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-37,conversation,leak,multi,5,อ้าวเหรอ งั้นเดี๋ยวผมลองไปคุยกับช่างหน้างานเรื่องสเตอร์ใหม่อีกทีแล้วกัน ขอบคุณมากครับ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-38,conversation,leak,multi,1,ต้องการสายพาน modutech ช่วงขนมปังออกจากเตา แนะนำหน่อย,,,พิทช์,,,,,,conversation,ฟุต · ฟาเรนไฮต์ (R06)
+CONV-38,conversation,leak,multi,2,พิทช์ประมาณ 0.083 ฟุต ครับ,,,25.3,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-38,conversation,leak,multi,3,1 นิ้ว,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-38,conversation,leak,multi,4,ประมาณ 176 องศาฟาเรนไฮต์ครับ,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-38,conversation,leak,multi,5,แห้ง,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-39,conversation,leak,multi,1,need belt modutec 4 กุ้งเข้าfreezer อ่ะ,,,เปียก,,,,,,conversation,พิมพ์ผิดปนอังกฤษ ตอบเปียกพร้อมพิทช์/อุณหภูมิ (R07)
+CONV-39,conversation,leak,multi,2,wetมีน้ำแข็งเกาะเลยคับtempลบ30c pich1inนะคับมีรุ่นไหนมั่ง,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-40,conversation,leak,multi,1,สายพาน modutech สำหรับเครื่องตรวจจับโลหะ ตัวไหนดี,,,พิทช์,,,,,,conversation,ถามพิทช์แต่ตอบอุณหภูมิ/สภาพไลน์ (R13)
+CONV-40,conversation,leak,multi,2,ห้องปกติ แห้ง,,,รับทราบ,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-40,conversation,leak,multi,3,อยากได้พิทช์ครึ่งนิ้วมากกว่าครับ มีไหม,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-41,conversation,leak,multi,1,โซ่ movex 880 ตัวที่กว้างกว่า ใช้สเตอร์อะไร รูเพลาเท่าไหร่ ราคาเท่าไหร่,,,,,,,,,conversation,Movex ซีรีส์ + ตัวที่กว้างกว่า ในข้อความแรก (R15)
+CONV-41,conversation,leak,multi,2,แล้วรุ่นนี้ทนอุณหภูมิได้เท่าไหร่ครับ ใช้กับน้ำร้อนล้างขวดได้มั้ย,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-42,conversation,leak,multi,1,"Hi, I need a Modutech modular belt for fish filleting. Which one do you recommend?",,,พิทช์,,,,,,conversation,ลูกค้าภาษาอังกฤษ (R18)
+CONV-42,conversation,leak,multi,2,I need a 1 inch pitch belt. It runs wet at around 5 C. Any of those match?,,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
+CONV-42,conversation,leak,multi,3,"wet, washed daily",,,,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-16,conversation,leak,multi,1,สายพาน modutech รุ่นไหนดี,,,ลำเลียงอะไร,,,,,,conversation,หลังจบการถาม ลูกค้าเปลี่ยนพิทช์
 CONV-16,conversation,leak,multi,2,ไก่,,,พิทช์,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,
 CONV-16,conversation,leak,multi,3,2 นิ้ว,,,อุณหภูมิ,ผมตอบได้เฉพาะเรื่องสินค้า,,,,,conversation,

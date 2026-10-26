@@ -142,6 +142,8 @@ def new_engine(rec: Recorder) -> TurnEngine:
 #   action / not_action      action ที่ต้องได้ / ห้ามได้ (str หรือ tuple)
 #   brand                    แบรนด์ที่ต้องได้
 #   reply_has                ข้อความบอทต้องมีคำนี้ (str หรือ tuple = อย่างน้อยหนึ่ง)
+#   not_reply_has            ข้อความบอทห้ามมีคำนี้ (str หรือ tuple = ห้ามทุกคำ)
+#   kept                     รุ่นที่เหลือหลังโค้ดกรองพิทช์/อุณหภูมิ (context.need_filter.kept) ต้องตรงทุกตัว
 #   codes                    รหัสที่ต้องอยู่ใน payload.codes (ทุกตัว)
 #   ctx_codes                รหัสที่ต้องอยู่ใน products ที่ส่งให้ LLM (ทุกตัว)
 #   ctx_has                  key ที่ต้องมีใน context
@@ -266,6 +268,58 @@ SCENARIOS = {
     "C34": ("ถามรายชื่อตามเล่ม ไม่ถามพิทช์", [
         ("สายพาน modutech สำหรับงานเครื่องตรวจจับโลหะ ใช้รุ่นไหนได้บ้าง", dict(action="answer")),
     ]),
+    # 26 ต.ค. (redteam_r1 R08 ทั้งสองรอบ): ถาม Movex แทรกกลางการถามพิทช์ แล้วกลับมาเรื่องเดิม → บอทวนถามแบรนด์ไม่จบ
+    "C35": ("แทรก Movex กลางการถาม แล้วกลับมา Modutech", [
+        ("สายพาน modutech ไลน์ตัดแต่งไก่ ใช้ตัวไหนดี", dict(brand="modutech", reply_has="พิทช์")),
+        ("อ้อ แล้วโซ่ Movex 880 มีขนาดไหนบ้าง", dict(brand="movex")),
+        ("โอเค กลับมาเรื่องสายพานไก่ พิทช์ 2 นิ้ว ใช้ในห้องเย็น 5 องศา งานเปียกครับ",
+         dict(brand="modutech", action="answer", slot={"pitch_mm": 50.8, "operating_temp_c": 5.0})),
+    ]),
+    "C36": ("ชนสองแบรนด์ → ตอบแบรนด์แล้วไม่วนถามซ้ำ", [
+        ("MP80 C กับ LF820 K325", dict(reply_has="ขอยืนยัน")),
+        ("modutech", dict(brand="modutech", not_reply_has="ขอยืนยัน")),
+        ("LF820 K325", dict(brand="movex", not_reply_has="ขอยืนยัน")),
+        ("MP80 C", dict(brand="modutech", not_reply_has="ขอยืนยัน")),
+    ]),
+    # ── redteam_r1 (26 ต.ค.) — ลูกค้าจำลองแบบจับผิด ──
+    "C37": ("แก้งานพร้อมตอบพิทช์ · ขอบคุณปิดท้ายไม่ถามต่อ (R02)", [
+        ("อยากได้สายพาน modutech สำหรับไลน์ไก่ครับ", dict(reply_has="พิทช์")),
+        ("ขอโทษ ไม่ใช่ไลน์ไก่ จริง ๆ เป็นไลน์ลำเลียงขนมปังเข้าเตาอบ ส่วนพิทช์เอา 1 นิ้วครับ",
+         dict(reply_has="อุณหภูมิ", slot={"pitch_mm": 25.4})),
+        ("ประมาณ 110 องศาครับ", dict(reply_has="เปียก")),
+        ("แห้งครับ", dict(action="answer", kept=["SM254 FG50%"])),
+        ("อ้าวเหรอ งั้นเดี๋ยวผมลองไปคุยกับช่างหน้างานเรื่องสเตอร์ใหม่อีกทีแล้วกัน ขอบคุณมากครับ", dict(not_action="ask")),
+    ]),
+    "C38": ("ฟุต · ฟาเรนไฮต์ (R06)", [
+        ("ต้องการสายพาน modutech ช่วงขนมปังออกจากเตา แนะนำหน่อย", dict(reply_has="พิทช์")),
+        ("พิทช์ประมาณ 0.083 ฟุต ครับ", dict(reply_has="25.3")),
+        ("1 นิ้ว", dict(slot={"pitch_mm": 25.4})),
+        ("ประมาณ 176 องศาฟาเรนไฮต์ครับ", dict(slot={"temp_c": 80.0, "operating_temp_c": 80.0})),
+        ("แห้ง", dict(action="answer", kept=["EC254 C", "MD254 C", "MD254 C-RT", "MD254 FG", "MD254 FG-RT"])),
+    ]),
+    "C39": ("พิมพ์ผิดปนอังกฤษ ตอบเปียกพร้อมพิทช์/อุณหภูมิ (R07)", [
+        ("need belt modutec 4 กุ้งเข้าfreezer อ่ะ", dict(reply_has="เปียก")),
+        ("wetมีน้ำแข็งเกาะเลยคับtempลบ30c pich1inนะคับมีรุ่นไหนมั่ง",
+         dict(action="answer", slot={"pitch_mm": 25.4, "operating_temp_c": -30.0}, kept=["EC254 NT"])),
+    ]),
+    "C40": ("ถามพิทช์แต่ตอบอุณหภูมิ/สภาพไลน์ (R13)", [
+        ("สายพาน modutech สำหรับเครื่องตรวจจับโลหะ ตัวไหนดี", dict(reply_has="พิทช์")),
+        ("ห้องปกติ แห้ง", dict(action="ask", reply_has=("รับทราบ",), slot={"wet_or_dry": "dry", "temp_c": 30.0})),
+        ("อยากได้พิทช์ครึ่งนิ้วมากกว่าครับ มีไหม",
+         dict(action="answer", kept=["EC127 C", "EC127 FG", "HC127 C", "MD127 GAP50%", "SM127 C"])),
+    ]),
+    "C41": ("Movex ซีรีส์ + ตัวที่กว้างกว่า ในข้อความแรก (R15)", [
+        ("โซ่ movex 880 ตัวที่กว้างกว่า ใช้สเตอร์อะไร รูเพลาเท่าไหร่ ราคาเท่าไหร่",
+         dict(brand="movex", codes=["movex_chain_LF880_TAB_K450"])),
+        ("แล้วรุ่นนี้ทนอุณหภูมิได้เท่าไหร่ครับ ใช้กับน้ำร้อนล้างขวดได้มั้ย", dict(brand="movex", not_action="ask")),
+    ]),
+    "C42": ("ลูกค้าภาษาอังกฤษ (R18)", [
+        ("Hi, I need a Modutech modular belt for fish filleting. Which one do you recommend?", dict(reply_has="พิทช์")),
+        ("I need a 1 inch pitch belt. It runs wet at around 5 C. Any of those match?",
+         dict(action="answer", slot={"pitch_mm": 25.4, "temp_c": 5.0},
+              kept=["EC254 C", "EC254 NT", "EC254 PR16", "MD254 C", "MD254 FG", "MD254 GT"])),
+        ("wet, washed daily", dict(not_action="refuse_offtopic")),
+    ]),
     "C16": ("หลังจบการถาม ลูกค้าเปลี่ยนพิทช์", [
         ("สายพาน modutech รุ่นไหนดี", dict(reply_has="ลำเลียงอะไร")),
         ("ไก่", dict(reply_has="พิทช์")),
@@ -376,6 +430,10 @@ def check(cid, i, text, exp, d, rec, engine, reply, prev_brand) -> list[str]:
         need = acts(exp["reply_has"])
         if not any(w in (reply or "") for w in need):
             errs.append(f"คำตอบไม่มี {need}: {(reply or '')[:70]!r}")
+    if "not_reply_has" in exp:
+        bad = [w for w in acts(exp["not_reply_has"]) if w in (reply or "")]
+        if bad:
+            errs.append(f"คำตอบมี {bad}: {(reply or '')[:70]!r}")
     if "codes" in exp:
         got = list((d.payload or {}).get("codes") or (d.payload or {}).get("pids") or [])
         miss = [c for c in exp["codes"] if c not in got]
@@ -386,6 +444,10 @@ def check(cid, i, text, exp, d, rec, engine, reply, prev_brand) -> list[str]:
         miss = [c for c in exp["ctx_codes"] if c not in got]
         if miss:
             errs.append(f"products ที่ส่ง LLM ขาด {miss} (ได้ {got})")
+    if "kept" in exp:
+        got = sorted(((ctx or {}).get("need_filter") or {}).get("kept") or [])
+        if got != sorted(exp["kept"]):
+            errs.append(f"ผลกรองพิทช์/อุณหภูมิ {got} ≠ {sorted(exp['kept'])}")
     if exp.get("no_codes") and (d.payload or {}).get("codes"):
         errs.append(f"ควรค้นใหม่ แต่ใช้โฟกัสเดิม {(d.payload or {}).get('codes')}")
     if exp.get("ctx_not_codes") == "__prev__" and ctx is not None:

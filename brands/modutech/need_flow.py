@@ -111,6 +111,7 @@ EXPLAIN_TH = {
 
 
 REASK_TH = "ขอโทษครับ ยังไม่แน่ใจว่าหมายถึงอะไร "
+SIDE_INFO_TH = "รับทราบครับ "      # ลูกค้าตอบข้ออื่นมาแทน — เก็บไว้แล้ว ถามข้อเดิมต่อ (redteam R13)
 
 
 def is_question(answer: str) -> bool:
@@ -132,13 +133,17 @@ def parse_pitch(text: str, bare_number: bool = False) -> Optional[float]:
     m = re.search(_NUM + r"\s*(?:เซนติเมตร|เซนต์|เซน|ซม\.?|cm\b)", t, re.IGNORECASE)
     if m:
         return round(float(m.group(1)) * 10, 2)
+    # redteam R06 (26 ต.ค.): "0.083 ฟุต" เดิมอ่านเป็น 0.083 มม. → กรองเหลือ 0 รุ่น · แปลงตรง ๆ ไม่ปัด (25.3 → ถามยืนยัน 25.4)
+    m = re.search(_NUM + r"\s*(?:ฟุต|feet|foot|ft\b)", t, re.IGNORECASE)
+    if m:
+        return round(float(m.group(1)) * 304.8, 2)
     for k, v in _FRACTION_INCH.items():
-        if re.search(re.escape(k) + r"\s*(?:นิ้ว|inch|in\b|\")", t, re.IGNORECASE):
+        if re.search(re.escape(k) + r"\s*(?:นิ้ว|inch|in(?![A-Za-z])|\")", t, re.IGNORECASE):
             return round(v * 25.4, 2)
-    m = re.search(_NUM + r"\s*(?:นิ้ว|inch|in\b|\")", t, re.IGNORECASE)
+    m = re.search(_NUM + r"\s*(?:นิ้ว|inch|in(?![A-Za-z])|\")", t, re.IGNORECASE)
     if m:
         return round(float(m.group(1)) * 25.4, 2)
-    m = re.search(r"(?:พิทช์|พิช|pitch)\D{0,12}" + _NUM, t, re.IGNORECASE)
+    m = re.search(r"(?:พิทช์|พิช|pitch|pich|picth)\D{0,12}" + _NUM, t, re.IGNORECASE)
     if m:
         return float(m.group(1))
     m = re.search(_NUM + r"\s*(?:มม|mm|มิล)", t, re.IGNORECASE)
@@ -151,7 +156,7 @@ def parse_pitch(text: str, bare_number: bool = False) -> Optional[float]:
     return None
 
 
-_PITCH_WORD = re.compile(r"พิทช์|พิทซ์|พิช|pitch", re.IGNORECASE)
+_PITCH_WORD = re.compile(r"พิทช์|พิทซ์|พิช|pitch|pich|picth", re.IGNORECASE)   # pich: redteam R07 พิมพ์ผิด
 _RANGE_RX = re.compile(r"ไม่เกิน|อย่างน้อย|ไม่ต่ำกว่า|ขึ้นไป|มากกว่า|น้อยกว่า|ต่ำกว่า|สูงกว่า|เกินกว่า|ไม่ถึง|"
                        r"[<>≤≥]|at\s*least|at\s*most|minimum|maximum", re.IGNORECASE)
 
@@ -168,22 +173,55 @@ def stated_pitch(text: str) -> Optional[float]:
         return None
     seg = re.sub(r"-?\d+(?:[.,]\d+)?\s*(?:°\s*C|องศา|℃)", " ", seg)
     v = parse_pitch(seg)
+    if v is None:
+        # "1 inch pitch" / "2 นิ้ว พิทช์" — ค่าอยู่หน้าคำว่าพิทช์ (redteam R18 · 26 ต.ค.: เดิมอ่านไม่ได้ ไม่กรอง
+        # LLM เสนอ MD254 GAP48% พิทช์ 25.7 แทนรุ่น 25.4) · ต้องมีหน่วยและติดกับคำว่าพิทช์
+        before = re.search(_NUM + r"\s*(?:นิ้ว|inch(?:es)?|in|\"|มม\.?|mm|ซม\.?|cm)\s*$", (text or "")[:m.start()].rstrip(),
+                           re.IGNORECASE)
+        if before:
+            v = parse_pitch(before.group(0))
     return v if v is not None and 1.0 <= v <= 200.0 else None
+
+
+_F_RX = re.compile(r"(?<![A-Za-z\d.])" + _NUM + r"\s*(?:°\s*F\b|℉|(?:องศา\s*)?ฟาเรนไฮ[ต์ท]์?|(?:degrees?\s*)?fahrenheit|F\b)",
+                   re.IGNORECASE)
+
+
+def parse_fahrenheit(text: str) -> Optional[float]:
+    """"176 องศาฟาเรนไฮต์" / "176 °F" / "176F" → °C (redteam R06 · 26 ต.ค.: เดิมอ่านเป็น 176 °C → ไม่มีรุ่นผ่าน)"""
+    m = _F_RX.search((text or "").replace(",", "."))
+    return round((float(m.group(1)) - 32) * 5 / 9, 1) if m else None
+
+
+_NEG_RX = re.compile(r"(?:ติด\s*)?ลบ\s*(?:ประมาณ|ประมาน|ราว\s*ๆ?|สัก|ก็)?\s*(?=\d)|minus\s*(?=\d)", re.IGNORECASE)
+# ตัว c เปล่า ("5 C" · "-30c") ต้องไม่ใช่เศษรหัสรุ่น: "EC254 C" (ติดตัวอักษร) · "MP8 0 C" (OCR แตก · CD-002 — มีเลขนำหน้า)
+_C_RX = re.compile(r"(?<![A-Za-z\d.])" + _NUM + r"\s*(?:°\s*[cC]|องศา|℃)"
+                   r"|(?<![A-Za-z\d.])(?<!\d\s)(?<![A-Z]{2}\s)" + _NUM + r"\s*[cC](?![A-Za-z])")   # "HC 508 C"
+
+
+def parse_temp_unit(text: str) -> Optional[float]:
+    """อุณหภูมิที่มีหน่วยกำกับเท่านั้น (°C · องศา · c · °F) — ใช้กับข้อความอิสระทุกเทิร์น (extract_modutech_slots)
+    ไม่อ่าน "อุณหภูมิ … เลข" เพราะเลขอาจเป็นรหัสรุ่น · redteam R07: "tempลบ30c" เดิมไม่ได้ค่า → ไม่กรองอุณหภูมิ"""
+    t = _NEG_RX.sub(" -", (text or "").replace(",", "."))   # " -": "tempลบ30c" → "temp -30c" (ไม่ติดตัวอักษร)
+    f = parse_fahrenheit(t)
+    if f is not None:
+        return f
+    m = _C_RX.search(t)
+    return float(m.group(1) if m.group(1) is not None else m.group(2)) if m else None
 
 
 def parse_temp(text: str, bare_number: bool = False) -> Optional[float]:
     t = (text or "").replace(",", ".")
     # "ลบ 35" / "ติดลบ 35" / "minus 35" = -35 (test_conversation_leaks C13 · เดิมได้ +35)
     # main_sim G04 (26 ต.ค.): "อุณภูมิติดลบประมาน 30" — มีคำขยายคั่นก่อนตัวเลข และไม่มีคำว่าองศา → เดิมอ่านไม่ออก ถามซ้ำ
-    t = re.sub(r"(?:ติด\s*)?ลบ\s*(?:ประมาณ|ประมาน|ราว\s*ๆ?|สัก|ก็)?\s*(?=\d)|minus\s*(?=\d)", "-", t,
-               flags=re.IGNORECASE)
-    m = re.search(_NUM + r"\s*(?:°\s*[cC]|องศา|℃|c\b)", t)
-    if m:
-        return float(m.group(1))
+    t = _NEG_RX.sub(" -", t)
+    v = parse_temp_unit(t)               # "5 C" ตัวใหญ่ (R18) · °F (R06) · "EC254 C" ไม่ใช่ 254 °C
+    if v is not None:
+        return v
     m = re.search(r"(?:อุณหภูมิ|อุณภูมิ|อุนหภูมิ|temp(?:erature)?)(?!ห้อง)[^\d\n-]{0,15}" + _NUM, t, re.IGNORECASE)
     if m:
         return float(m.group(1).replace(",", "."))
-    if re.search(r"อุณหภูมิห้อง|room\s*temp", t, re.IGNORECASE):
+    if re.search(r"อุณหภูมิห้อง|อุณหภูมิปกติ|ห้องปกติ|ห้องธรรมดา|room\s*temp|ambient", t, re.IGNORECASE):
         return ROOM_TEMP_C
     if bare_number:
         m = re.search(_NUM, t)
