@@ -23,8 +23,7 @@
 */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkBreaks from "remark-breaks";
+import Answer from "./components/Answer";
 import { prepareImage, ResizeError } from "@/lib/resize";
 import type { Convo, Msg, Vote } from "@/lib/chat-types";
 import { exportFileName, toMarkdown } from "@/lib/export";
@@ -996,7 +995,7 @@ function BotText({ text, vote, onVote }: { text: string; vote?: Vote; onVote: (v
   return (
     <div className="row cv-botrow">
       <div className="bubble bot md">
-        <ReactMarkdown remarkPlugins={[remarkBreaks]}>{text}</ReactMarkdown>
+        <Answer text={text} />
       </div>
       <div className="cv-acts">
         <button
@@ -1126,6 +1125,27 @@ const CSS = `
 
 .cv-print-head,.cv-print-vote{display:none}
 
+/* ── คำตอบอ่านง่าย (รอบ 3) ── */
+.md h1,.md h2,.md h3,.md h4{font-size:1.02em;font-weight:600;line-height:1.4;margin:.75em 0 .3em}
+.md h1:first-child,.md h2:first-child,.md h3:first-child{margin-top:0}
+/* รหัสรุ่นที่บอททำตัวหนามา — สีเน้นของธีม (ผ่าน AA ทั้งสองโหมด) */
+.md strong{font-weight:600;color:var(--accent)}
+.md code{padding:.05em .35em;border-radius:5px;background:var(--bg);border:1px solid var(--line)}
+.md li{margin:.1em 0}
+.md hr{border:0;border-top:1px solid var(--line);margin:.8em 0}
+.cv-table{max-width:100%;overflow-x:auto;margin:.4em 0 .7em;border:1px solid var(--line);border-radius:10px}
+.cv-table:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cv-table table{border-collapse:collapse;width:100%;font-size:.93em;font-variant-numeric:tabular-nums}
+.cv-table th,.cv-table td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.cv-table th{background:var(--bg);font-weight:600}
+.cv-table tr:last-child td{border-bottom:0}
+.cv-contact{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:.6em;padding-top:.6em;
+  border-top:1px dashed var(--line)}
+.cv-contact-label{font-size:.9em;color:var(--ink-2)}
+.cv-chip{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:4px 11px;border:1px solid var(--line);
+  border-radius:999px;color:var(--ink);text-decoration:none;font-size:.92em;background:var(--panel)}
+.cv-chip:hover,.cv-chip:focus-visible{border-color:var(--accent);color:var(--accent)}
+
 /* พิมพ์ / บันทึกเป็น PDF — เอาเฉพาะบทสนทนา สีสว่างเสมอ (โหมดมืดพิมพ์แล้วหมึกเปลือง) */
 @media print{
   :root{--bg:#fff;--panel:#fff;--ink:#111;--ink-2:#444;--line:#bbb;--user:#e9f0fa;--user-ink:#111;
@@ -1141,6 +1161,8 @@ const CSS = `
   .cv-print-head b{font-size:17px;color:#111}
   .cv-print-vote{display:block;font-size:12px;color:#444;padding-left:4px}
   .bubble,.notice,.drawing{break-inside:avoid}
+  .cv-table{overflow:visible;border-color:#999}
+  .cv-chip{border:0;padding:0;min-height:0}
   .bubble.user{border:1px solid #c5d3e6}
   .cv-unsent .bubble{opacity:1}
 }
