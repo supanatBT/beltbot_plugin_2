@@ -26,24 +26,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkBreaks from "remark-breaks";
 import { prepareImage, ResizeError } from "@/lib/resize";
-
-/* ฟิลด์ที่มีเครื่องหมาย ? เพิ่มทีหลังแบบไม่บังคับ — ยังเป็น schema v2 (ผู้ใช้ตัดสิน 27 ต.ค.)
-   ข้อมูลเก่าที่ไม่มีฟิลด์เหล่านี้อ่านได้ครบ และโค้ดรุ่นเดิมคัดลอกข้อความทั้งก้อน ฟิลด์จึงไม่หายถ้าย้อนเวอร์ชัน */
-type Msg =
-  | { id: string; role: "user"; text: string; image?: string; failed?: boolean } // failed = ยังไม่ได้รับคำตอบ
-  | { id: string; role: "bot"; text: string }
-  | { id: string; role: "bot-image"; url: string; alt: string }
-  | { id: string; role: "notice"; text: string; action?: "reset" | "retry" };
-
-type Convo = {
-  id: string;
-  title: string;
-  messages: Msg[];
-  sessionId: string; // session ฝั่งเซิร์ฟเวอร์ — ตายได้ตลอด ถือไว้เฉย ๆ
-  state: Record<string, unknown> | null; // DialogState ล่าสุดที่เซิร์ฟเวอร์ส่งกลับ
-  updated: number;
-  turnsLeft?: number; // turns_left ล่าสุดจากเซิร์ฟเวอร์ (เพดาน MAX_TURNS ต่อ session)
-};
+import type { Convo, Msg, Vote } from "@/lib/chat-types";
+import { exportFileName, toMarkdown } from "@/lib/export";
 
 type Outgoing = { body: string; image: { file: File; url: string } | null };
 
@@ -433,7 +417,7 @@ export default function Chat() {
         patch(cid, (c) => ({
           ...c,
           title: c.title === NEW_TITLE ? titleFrom(body || "ถามจากรูป") : c.title,
-          messages: [...c.messages, { id: userId, role: "user", text: body, image: out.image?.url }],
+          messages: [...c.messages, { id: userId, role: "user", text: body, image: out.image?.url, at: Date.now() }],
         }));
         setText("");
         setImage(null);
@@ -468,8 +452,8 @@ export default function Chat() {
         const resumed = Boolean(resume) && Boolean(sentSid) && data.session_id !== sentSid;
         const incoming: Msg[] = (data.messages || []).map((m: any) =>
           m.type === "image"
-            ? { id: uid(), role: "bot-image", url: m.url, alt: m.alt || "แบบสินค้า" }
-            : { id: uid(), role: "bot", text: m.text },
+            ? { id: uid(), role: "bot-image", url: m.url, alt: m.alt || "แบบสินค้า", at: Date.now() }
+            : { id: uid(), role: "bot", text: m.text, at: Date.now() },
         );
         patch(cid, (c) => ({
           ...c,
@@ -534,6 +518,59 @@ export default function Chat() {
       autoGrow();
       inputRef.current?.focus();
     });
+  };
+
+  // ── 👍/👎 — กดซ้ำอันเดิม = ยกเลิก · ไม่เลื่อนบทสนทนาขึ้นบนสุด (ไม่ใช่การคุยต่อ) ──
+  const setVote = (cid: string, msgId: string, v: Vote) =>
+    setConvos((cs) =>
+      cs.map((c) =>
+        c.id !== cid
+          ? c
+          : {
+              ...c,
+              messages: c.messages.map((m) =>
+                m.id === msgId && m.role === "bot" ? { ...m, vote: m.vote === v ? undefined : v } : m,
+              ),
+            },
+      ),
+    );
+
+  // ── ส่งออก ──
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = (e: Event) => {
+      if (e instanceof KeyboardEvent ? e.key === "Escape" : !menuRef.current?.contains(e.target as Node))
+        setMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", close);
+    };
+  }, [menuOpen]);
+
+  const exportMd = () => {
+    setMenuOpen(false);
+    if (!active) return;
+    const blob = new Blob([toMarkdown(active)], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = exportFileName(active, "md");
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  /** PDF ผ่านหน้าพิมพ์ของเบราว์เซอร์ (เลือก "บันทึกเป็น PDF") — ไม่เพิ่ม dependency
+      CSS @media print ซ่อนแถบ ช่องพิมพ์ ปุ่ม และคลี่รายการข้อความให้ยาวเต็มหน้า */
+  const exportPdf = () => {
+    setMenuOpen(false);
+    requestAnimationFrame(() => window.print());
   };
 
   const messages = active?.messages || [];
@@ -697,7 +734,58 @@ export default function Chat() {
                 <p>Movex โซ่ท็อปเชน · Modutech สายพานโมดูลาร์</p>
               </div>
             </div>
+            <div className="cv-menu" ref={menuRef}>
+              <button
+                className="ghost cv-export"
+                onClick={() => setMenuOpen((v) => !v)}
+                disabled={empty}
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                aria-label="ส่งออกบทสนทนานี้"
+                title="ส่งออกบทสนทนานี้"
+              >
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden>
+                  <path
+                    d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="cv-export-label">ส่งออก</span>
+              </button>
+              {menuOpen && (
+                <div className="cv-pop" role="menu" aria-label="รูปแบบไฟล์">
+                  <button role="menuitem" onClick={exportMd} autoFocus>
+                    <b>Markdown (.md)</b>
+                    <span>ข้อความล้วน แก้ต่อได้ · แนบในเล่ม</span>
+                  </button>
+                  <button role="menuitem" onClick={exportPdf}>
+                    <b>PDF</b>
+                    <span>เปิดหน้าพิมพ์ เลือก “บันทึกเป็น PDF”</span>
+                  </button>
+                  <p>รูปที่แนบและรูปแบบสินค้าไม่ได้รวมในไฟล์</p>
+                </div>
+              )}
+            </div>
           </header>
+
+          {/* หัวกระดาษตอนพิมพ์เท่านั้น — บอกว่าเป็นบทสนทนาไหน ส่งออกเมื่อไหร่ */}
+          {active && (
+            <div className="cv-print-head" aria-hidden>
+              <b>{active.title}</b>
+              <span>
+                Beltbot · ส่งออกเมื่อ{" "}
+                {new Date().toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
+              </span>
+              <span>
+                คำตอบมาจากแคตตาล็อก ราคา สต็อก และระยะเวลาส่งของ ฝ่ายขายเป็นผู้ยืนยัน ·
+                รูปแบบสินค้าในแชตเก่าอาจไม่แสดง (ลิงก์หมดอายุ)
+              </span>
+            </div>
+          )}
 
           <main className="list" ref={listRef} aria-live="polite">
             {empty && (
@@ -724,7 +812,15 @@ export default function Chat() {
                     {m.failed && <span className="cv-unsent-tag">ยังไม่ได้รับคำตอบ</span>}
                   </div>
                 );
-              if (m.role === "bot") return <BotText key={m.id} text={m.text} />;
+              if (m.role === "bot")
+                return (
+                  <BotText
+                    key={m.id}
+                    text={m.text}
+                    vote={m.vote}
+                    onVote={(v) => active && setVote(active.id, m.id, v)}
+                  />
+                );
               if (m.role === "bot-image") return <BotImage key={m.id} url={m.url} alt={m.alt} />;
               const live = m.action === "retry" && failed?.noticeId === m.id ? failed : null;
               const left = live?.until ? Math.max(0, Math.ceil((live.until - now) / 1000)) : 0;
@@ -874,14 +970,29 @@ export default function Chat() {
   );
 }
 
-/** คำตอบของบอท + ปุ่มคัดลอก */
-function BotText({ text }: { text: string }) {
+/** คำตอบของบอท + ปุ่มคัดลอก + 👍/👎
+    ความเห็นเก็บในเบราว์เซอร์นี้เท่านั้น ไม่มีที่เก็บฝั่งเซิร์ฟเวอร์ — บอกตรง ๆ ใต้ปุ่มเมื่อกดแล้ว */
+function BotText({ text, vote, onVote }: { text: string; vote?: Vote; onVote: (v: Vote) => void }) {
   const [copied, setCopied] = useState<"" | "ok" | "fail">("");
   useEffect(() => {
     if (!copied) return;
     const t = setTimeout(() => setCopied(""), 1800);
     return () => clearTimeout(t);
   }, [copied]);
+  const thumb = (v: Vote, label: string, d: string) => (
+    <button
+      type="button"
+      className={"cv-act cv-vote" + (vote === v ? " cv-on" : "")}
+      aria-label={label}
+      aria-pressed={vote === v}
+      title={label}
+      onClick={() => onVote(v)}
+    >
+      <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden>
+        <path d={d} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
   return (
     <div className="row cv-botrow">
       <div className="bubble bot md">
@@ -906,7 +1017,13 @@ function BotText({ text }: { text: string }) {
           </svg>
           <span role="status">{copied === "ok" ? "คัดลอกแล้ว" : copied === "fail" ? "คัดลอกไม่ได้" : "คัดลอก"}</span>
         </button>
+        {thumb("up", "คำตอบนี้มีประโยชน์", "M7 11v9H4v-9zM7 11l4-7c1.5 0 2.5 1 2.2 2.6L12.6 10H19a2 2 0 0 1 2 2.3l-1.2 6A2 2 0 0 1 17.8 20H7")}
+        {thumb("down", "คำตอบนี้ไม่มีประโยชน์", "M7 13V4H4v9zM7 13l4 7c1.5 0 2.5-1 2.2-2.6L12.6 14H19a2 2 0 0 0 2-2.3l-1.2-6A2 2 0 0 0 17.8 4H7")}
+        {vote && <span className="cv-vote-note">บันทึกไว้ในเบราว์เซอร์นี้เท่านั้น ไม่ได้ส่งถึงผู้พัฒนา · ส่งออกพร้อมบทสนทนาได้</span>}
       </div>
+      {vote && (
+        <span className="cv-print-vote">ความเห็นผู้ใช้: {vote === "up" ? "👍 มีประโยชน์" : "👎 ไม่มีประโยชน์"}</span>
+      )}
     </div>
   );
 }
@@ -976,9 +1093,9 @@ const CSS = `
 
 /* ปุ่มใต้คำตอบ — จางไว้ไม่แย่งสายตาจากเนื้อหา ชี้หรือโฟกัสแล้วชัด */
 .cv-botrow{flex-direction:column;align-items:flex-start;gap:2px}
-.cv-acts{display:flex;gap:4px;padding-left:4px}
+.cv-acts{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding-left:4px}
 .cv-act{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 8px;border:0;border-radius:7px;
-  background:transparent;color:var(--ink-2);font-size:12.5px}
+  background:transparent;color:var(--ink-2);font-size:12.5px;white-space:nowrap}
 .cv-act:hover,.cv-act:focus-visible{color:var(--ink);background:rgba(128,128,128,.12)}
 
 /* ข้อความที่ส่งไม่สำเร็จ — ฟองจางลง + ป้ายบอกตรง ๆ (คงอยู่แม้โหลดหน้าใหม่) */
@@ -987,6 +1104,46 @@ const CSS = `
 .cv-unsent-tag{font-size:12px;color:var(--ink-2)}
 .cv-count{color:var(--ink-2);font-variant-numeric:tabular-nums}
 .cv-left{margin:0 4px 8px;font-size:13px;color:var(--ink-2);text-align:center}
+
+/* ส่งออก — ปุ่มในหัว + เมนูเล็ก */
+.cv-menu{position:relative;flex:0 0 auto}
+.cv-export{display:inline-flex;align-items:center;gap:6px}
+.cv-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:250px;padding:6px;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.14)}
+.cv-pop button{display:flex;flex-direction:column;align-items:flex-start;width:100%;padding:8px 10px;border:0;
+  border-radius:8px;background:transparent;color:var(--ink);text-align:left}
+.cv-pop button:hover,.cv-pop button:focus-visible{background:var(--bg)}
+.cv-pop b{font-weight:600;font-size:14px}
+.cv-pop span{font-size:12.5px;color:var(--ink-2)}
+.cv-pop p{margin:4px 10px 4px;font-size:12px;color:var(--ink-2)}
+@media (max-width:520px){.cv-export-label{display:none}.cv-export{padding:6px 9px}}
+
+.cv-vote{padding:0 7px}
+.cv-on{color:var(--accent)}
+.cv-on:hover{color:var(--accent)}
+/* แยกบรรทัดของตัวเอง ไม่เบียดปุ่มบนจอแคบ */
+.cv-vote-note{flex-basis:100%;font-size:12px;line-height:1.45;color:var(--ink-2);padding:0 4px 2px}
+
+.cv-print-head,.cv-print-vote{display:none}
+
+/* พิมพ์ / บันทึกเป็น PDF — เอาเฉพาะบทสนทนา สีสว่างเสมอ (โหมดมืดพิมพ์แล้วหมึกเปลือง) */
+@media print{
+  :root{--bg:#fff;--panel:#fff;--ink:#111;--ink-2:#444;--line:#bbb;--user:#e9f0fa;--user-ink:#111;
+    --notice:#f4f4f4;--notice-line:#ccc;color-scheme:light}
+  @page{margin:14mm}
+  body{background:#fff}
+  .cv-side,.cv-veil,.top,.composer,.cv-acts,.typing,.notice .link,.cv-count,.empty{display:none!important}
+  .cv-wrap,.cv-main,.shell,.list{height:auto!important;overflow:visible!important;max-width:none}
+  .cv-wrap{display:block}
+  .list{padding:0}
+  .cv-print-head{display:flex;flex-direction:column;gap:2px;margin:0 0 14px;padding-bottom:10px;
+    border-bottom:1px solid #999;font-size:12px;color:#444}
+  .cv-print-head b{font-size:17px;color:#111}
+  .cv-print-vote{display:block;font-size:12px;color:#444;padding-left:4px}
+  .bubble,.notice,.drawing{break-inside:avoid}
+  .bubble.user{border:1px solid #c5d3e6}
+  .cv-unsent .bubble{opacity:1}
+}
 .cv-veil{display:none}
 
 @media (max-width:820px){
