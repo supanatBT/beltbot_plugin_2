@@ -152,6 +152,9 @@ ok("ตอบ 'โมดูเทค' → Modutech", d3b.brand == "modutech")
 
 pol_r = resolve(route_of(mx(0.30)), BRANDS, ["movex"], gate(0.79, 0.05), [])
 # 27 ต.ค. (ผู้ใช้เลือก · เคส R5): Movex ไม่รับ + ประตูบอกว่าเป็นสินค้า → ถามยืนยัน Modutech แบรนด์เดียว (เดิมถามสองแบรนด์)
+_acc = ImageScore("movex", 0.4257, True, group=None)
+r_acc = resolve(ImageRoute(False, ["movex"], _acc, {"movex": _acc}), BRANDS, ["movex"], gate(0.79, 0.05), [])
+ok("ViT 0.43 ระบุซีรีส์ไม่ได้ แม้ accepted=true (ค่าจริงจาก log) → confirm", r_acc.kind == "confirm", r_acc.kind)
 ok("Movex ไม่รับ + ประตูบอกว่าเป็นสินค้า → confirm modutech", pol_r.kind == "confirm" and pol_r.confirm == "modutech"
    and pol_r.asks_brand, (pol_r.kind, pol_r.confirm))
 core.image_brands = tuple(pol_r.route.image_brands)

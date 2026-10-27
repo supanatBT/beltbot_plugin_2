@@ -137,6 +137,8 @@ IMAGES = {
     "ambiguous": (ImageScore("movex", 0.70, True, group="880"), GateReading("modutech", True, False, {})),
     # ViT ไม่รับ + ประตูบอกว่าเป็นสินค้าแต่ไม่มั่นใจ = น่าจะ Modutech (เคส R5 · 27 ต.ค.)
     "modutech_maybe": (ImageScore("movex", 0.30, False), GateReading("modutech", True, False, {})),
+    # ของจริงจาก log 27 ต.ค.: ViT 0.4257 ระบุซีรีส์ไม่ได้ แต่ accepted = true (ระบบค้นเจอสินค้าบางอย่าง)
+    "modutech_maybe_acc": (ImageScore("movex", 0.4257, True, group=None), GateReading("modutech", True, False, {})),
     "not_product": (ImageScore("movex", 0.13, False), GateReading("modutech", False, False, {})),
 }
 # ── ประวัติ 4 แบบ ──
@@ -187,13 +189,13 @@ for h in HISTORIES:
                 ok(f"{tag}: ปฏิเสธรูป", "reject_image" in refs and reply == GENERIC_REJECT_IMAGE_TH, reply[:80])
             pending = h == "Modutech ถามค้าง"
             in_mod = h in ("คุย Modutech", "Modutech ถามค้าง")
-            if i in ("ambiguous", "modutech_maybe") and in_mod:
+            if i in ("ambiguous", "modutech_maybe", "modutech_maybe_acc") and in_mod:
                 # กรณี 1 (ผู้ใช้เลือก 27 ต.ค.): แชตคุย Modutech อยู่ → ถือเป็น Modutech ไม่ถามแบรนด์ + บอกสิ่งที่สมมติ
                 ok(f"{tag}: แชต Modutech → ไม่ถามแบรนด์ · บอกว่าน่าจะ Modutech และให้แก้ได้",
                    "ขอยืนยันก่อน" not in reply and "ถ้ารูปนี้ไม่ใช่" in reply, reply[:120])
                 if h == "Modutech ถามค้าง":
                     ok(f"{tag}: คำถามเปียก/แห้งที่ค้างไม่หาย", "เปียก" in reply and not sent, (reply[:160], sent))
-            elif i == "modutech_maybe":
+            elif i in ("modutech_maybe", "modutech_maybe_acc"):
                 # กรณี 2: ไม่มีบริบท Modutech + ViT ไม่รับ → ถามยืนยันแบรนด์เดียว
                 ok(f"{tag}: ถาม 'ใช่ Modutech ไหม' (ไม่ใช่เมนูสองแบรนด์) · ไม่เรียก LLM",
                    "Modutech ใช่ไหม" in reply and "Movex" not in reply and not sent, reply[:120])

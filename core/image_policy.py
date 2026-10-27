@@ -14,7 +14,7 @@ core/image_policy.py — รูปเมื่อบางแบรนด์ย�
     4. ประตูของแบรนด์ที่ไม่มีตัวให้คะแนนบอกว่า "ของเรา" แบรนด์เดียว → แบรนด์นั้น            direct
     4a. แชตคุยแบรนด์ที่ไม่มีตัวให้คะแนนอยู่ + ประตูของมันบอกว่าเป็นสินค้า → แบรนด์นั้น        context
         (ผู้ใช้เลือก 27 ต.ค. เคส R5: คุย MP80 C ค้างคำถามเปียก/แห้ง ส่งรูปสายพาน → เดิมถามสองแบรนด์ คำถามค้างหาย)
-    4b. ไม่มีตัวให้คะแนนตัวไหนรับรูป + ประตูบอกว่าเป็นสินค้าแบรนด์เดียว → ถามยืนยันแบรนด์นั้น  confirm
+    4b. ไม่มีตัวให้คะแนนตัวไหนระบุกลุ่มได้ + ประตูบอกว่าเป็นสินค้าแบรนด์เดียว → ถามยืนยันแบรนด์นั้น  confirm
         ("ใช่ไหม" แทนเมนูสองแบรนด์ · ตอบไม่ใช่ = แบรนด์ที่เหลือพร้อมผลรูปเดิม)
         ⚠ ยังไม่ได้วัดว่ารูปของแบรนด์ที่มีตัวให้คะแนนโดนปฏิเสธบ่อยแค่ไหน (ลูกค้าแบรนด์นั้นจะถูกถามผิดหนึ่งครั้ง)
     5. นอกนั้น                                        → ถามแบรนด์ เก็บผลรูปไว้หนึ่งเทิร์น   ask
@@ -105,8 +105,11 @@ def resolve(route: ImageRoute, brands: Sequence[str], scored: Sequence[str],
         return PolicyResult(ImageRoute(False, [b], None, route.scores), "context",
                             f"แชตคุย {b} อยู่ + ประตูบอกว่าเป็นสินค้า ({_fmt(readings[b].detail)})", route)
 
+    # "ตัวให้คะแนนไม่รับ" = ไม่มีตัวไหนระบุกลุ่ม/ซีรีส์ได้ (ViT ต่ำกว่าเกณฑ์กลุ่ม) — ไม่ใช่ accepted
+    # accepted ของบางแบรนด์แปลว่า "ระบบค้นเจอสินค้าอะไรสักอย่าง" ซึ่งเกือบ true เสมอ (log 27 ต.ค.:
+    # conf 0.4257 · group ว่าง · accepted true) → เดิมกฎนี้แทบไม่ทำงาน ไหลไปถามสองแบรนด์แทน
     like = [b for b in unscored if b in readings and readings[b].product_like]
-    if len(like) == 1 and not any(sc.accepted for sc in route.scores.values()):
+    if len(like) == 1 and not any(_believed(sc) for sc in route.scores.values()):
         b = like[0]
         return PolicyResult(ImageRoute(False, [b], None, route.scores), "confirm",
                             f"ตัวให้คะแนนไม่รับ + ประตู {b} บอกว่าเป็นสินค้า → ถามยืนยัน {b}", route, confirm=b)
@@ -114,6 +117,11 @@ def resolve(route: ImageRoute, brands: Sequence[str], scored: Sequence[str],
     every = [b for b in brands]
     return PolicyResult(ImageRoute(False, every, route.best, route.scores), "ask",
                         "รูปไม่ระบุแบรนด์ → ถามแบรนด์", route)
+
+
+def _believed(sc: ImageScore) -> bool:
+    """ตัวให้คะแนนเชื่อว่ารูปเป็นของแบรนด์ตัวเอง — ระบุกลุ่มได้ หรือ dominant"""
+    return bool(sc.accepted and (sc.group or sc.dominant))
 
 
 def _fmt(detail: dict) -> str:
