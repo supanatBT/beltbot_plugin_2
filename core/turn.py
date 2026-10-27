@@ -44,8 +44,22 @@ def image_to_base64_html(pil_image) -> str:
     return f'<img src="data:image/jpeg;base64,{b64}" style="max-width:250px;border-radius:10px;margin-bottom:10px;" />'
 
 
-TRANSIENT_REPLY_TH = "❌ ตอนนี้ระบบตอบคำถามไม่ว่างชั่วคราว รบกวนส่งคำถามเดิมอีกครั้งในอีกสักครู่ครับ"
-TIMEOUT_REPLY_TH = "❌ ตอนนี้ระบบตอบช้ากว่าปกติ รบกวนส่งคำถามเดิมอีกครั้งครับ"
+# ข้อความเมื่อตอบไม่สำเร็จ — ใช้ถ้อยคำทางการ ไม่มีรายละเอียดทางเทคนิค (ผู้ใช้เลือก 27 ต.ค.)
+# คำว่า "ไม่ว่างชั่วคราว" · "ตอบช้ากว่าปกติ" · "เกิดข้อผิดพลาด" ต้องคงไว้ — leak_detectors.FALLBACK_RX ใช้นับเทิร์นที่ตอบไม่สำเร็จ
+TRANSIENT_REPLY_TH = "ขออภัยครับ ขณะนี้ระบบไม่ว่างชั่วคราว กรุณาส่งคำถามเดิมอีกครั้งในอีกสักครู่ครับ"
+TIMEOUT_REPLY_TH = "ขออภัยครับ ขณะนี้ระบบตอบช้ากว่าปกติ กรุณาส่งคำถามเดิมอีกครั้งครับ"
+ERROR_REPLY_TH = ("ขออภัยครับ เกิดข้อผิดพลาดระหว่างประมวลผลคำถามนี้ กรุณาส่งคำถามอีกครั้ง "
+                  "หากยังพบปัญหา กรุณาติดต่อฝ่ายขายโดยตรงครับ")
+
+
+def error_reply_th() -> str:
+    """error ที่ไม่รู้จัก — เดิมส่ง str(e) ดิบถึงลูกค้า (เช่น 400 INVALID_ARGUMENT {...}) · รายละเอียดอยู่ใน log แทน"""
+    try:
+        from sales_contact import sales_contact_line_th
+        contact = sales_contact_line_th()
+    except Exception:                                    # noqa: BLE001 — ไม่มีไฟล์ช่องทางติดต่อ = ข้อความอย่างเดียว
+        contact = ""
+    return f"{ERROR_REPLY_TH}\n{contact}" if contact else ERROR_REPLY_TH
 
 
 class TurnEngine:
@@ -129,7 +143,7 @@ class TurnEngine:
             img_route, policy = None, None
             if img_input is not None:
                 img_route = route_image(self.image_scorers, img_input, effective_text)
-                policy = self._image_policy(img_route, gate_src, user_text)
+                policy = self._image_policy(img_route, gate_src, user_text, session_id)
                 if policy is not None:
                     img_route = policy.route
                     raw_refs_html += f"**Image policy:** {policy.kind} · {policy.reason}\n"
@@ -140,7 +154,7 @@ class TurnEngine:
                 user_text, has_image=img_input is not None,
                 image=img_route.best if img_route else None,
                 image_rejected=bool(img_route and img_route.rejected), state=dstate,
-                image_carry=carry)
+                image_carry=carry, image_confirm=policy.confirm if policy is not None else None)
             self.dialog_states[session_id] = decision.state.to_dict()
             raw_refs_html += (f"**Decision:** {decision.action} · brand={decision.brand} · "
                               f"{decision.reason}\n\n")
@@ -161,6 +175,22 @@ class TurnEngine:
                 return (chat_history, chat_history, raw_refs_html,
                         last_pids, session_id, last_vit_signal, last_graph_result)
 
+            # ── รูปเปล่าไปแบรนด์ที่อ่านรูปไม่ได้ (27 ต.ค.) ──
+            # ส่งรูปโดยไม่พิมพ์ (แชตใหม่หรือกลางแชต) + ประตูรูปมั่นใจว่าเป็นแบรนด์ที่อ่านรุ่นจากรูปไม่ได้ → ปลั๊กอินตัดสินว่า "ตอบ" ด้วยข้อความว่าง
+            # แบรนด์ที่ไม่มีตัวให้คะแนนรูปไม่ส่งรูปให้ LLM (ปลั๊กอินแบบนี้ส่ง user_parts = [effective_text] ล้วน)
+            # ผลเดิม: Gemini ได้ประวัติที่จบด้วยคำตอบบอท → 400 "Requests ending with a model turn"
+            # และต่อให้ไม่ error ก็จะตอบเรื่องรุ่นเดิมโดยไม่ได้ดูรูป (เดาแทนลูกค้า) → ขอคำถามแทน
+            if turn_image is not None and not (user_text or "").strip() \
+                    and decision.brand not in self.image_scorers:
+                ai_reply = _prefix(image_note, T.image_need_question(self.plugins[decision.brand].info))
+                raw_refs_html += (f"**Image-only:** {decision.brand} อ่านรูปไม่ได้ + ไม่มีข้อความ "
+                                  f"→ ขอคำถาม (เดิม {decision.action} · {decision.reason})\n")
+                self._log_finish(turn_log, ai_reply, [], t_start, error=None)
+                chat_history += [{"role": "user", "content": display_content},
+                                 {"role": "assistant", "content": ai_reply}]
+                return (chat_history, chat_history, raw_refs_html,
+                        last_pids, session_id, last_vit_signal, last_graph_result)
+
             plugin = self.plugins[decision.brand]
             turn = TurnInput(user_text=user_text, image=turn_image, history=chat_history,
                              session_id=session_id, effective_text=effective_text, followup=is_followup,
@@ -169,6 +199,12 @@ class TurnEngine:
                              image_score=turn_score, log=turn_log)
             llm_turn = plugin.build_turn(decision, turn)
             raw_refs_html += "".join(llm_turn.debug)
+
+            # กันชั้นสุดท้าย: ห้ามส่งเทิร์นผู้ใช้ที่ว่างให้ LLM (ทางไหนก็ตามที่ยังไม่รู้) — ขอคำถามแทน error ดิบ
+            if llm_turn.direct_reply is None and not _has_content(llm_turn.user_parts):
+                llm_turn.direct_reply = T.image_need_question(plugin.info) if turn_image is not None \
+                    else EMPTY_INPUT_TH
+                raw_refs_html += "**Empty turn:** user_parts ว่าง → ไม่เรียก LLM\n"
 
             if llm_turn.direct_reply is not None:
                 ai_reply = _prefix(image_note, llm_turn.direct_reply)
@@ -195,7 +231,7 @@ class TurnEngine:
             # 13 ต.ค.: Google ไม่ว่างแม้ลองใหม่แล้ว (core/llm.py with_retry) → ข้อความที่ลูกค้าเข้าใจ ไม่ใช่ JSON ดิบ
             # 26 ต.ค.: เกินเวลา (core/llm.py run_with_deadline) → บอกให้ส่งใหม่ แทนที่ลูกค้ารอเป็นสิบนาที
             ai_reply = (TIMEOUT_REPLY_TH if isinstance(e, LLMTimeout) else
-                        TRANSIENT_REPLY_TH if is_transient(e) else f"❌ เกิดข้อผิดพลาด: {str(e)}")
+                        TRANSIENT_REPLY_TH if is_transient(e) else error_reply_th())
             error_msg = str(e)
             extra_messages = []
             print(f"[ERROR] {e}")
@@ -231,13 +267,15 @@ class TurnEngine:
             return ""
         if decision.action == "ask" and decision.topic == "brand":
             return ""
-        if policy is not None and policy.kind in ("direct", "text_brand", "ask"):
+        if policy is not None and policy.kind == "context":
+            return T.image_from_context(self.plugins[b].info)
+        if policy is not None and policy.kind in ("direct", "text_brand", "ask", "confirm"):
             return T.image_no_model(self.plugins[b].info, from_image=policy.kind == "direct")
         if policy is None and carry is not None:
             return T.image_no_model(self.plugins[b].info, from_image=False)
         return ""
 
-    def _image_policy(self, route, image, user_text: str):
+    def _image_policy(self, route, image, user_text: str, session_id: str = ""):
         """core/image_policy — คืน None เมื่อทุกแบรนด์มีตัวให้คะแนนรูป (พฤติกรรมเดิม)"""
         brands = list(self.plugins)
         if all(b in self.image_scorers for b in brands):
@@ -249,7 +287,13 @@ class TurnEngine:
             except Exception as e:                       # noqa: BLE001 — ประตูพัง = ไม่มีประตู ไม่ล้มทั้งเทิร์น
                 print(f"⚠️ ประตูรูป {b} ผิดพลาด ({type(e).__name__}: {e}) — ข้ามประตูนี้")
         strong = [b for b, p in self.plugins.items() if p.detect(user_text or "").strength == "strong"]
-        return resolve_image_policy(route, brands, list(self.image_scorers), readings, strong)
+        context = (self.dialog_states.get(session_id) or {}).get("brand")   # แบรนด์ที่แชตคุยอยู่ก่อนเทิร์นนี้
+        return resolve_image_policy(route, brands, list(self.image_scorers), readings, strong, context)
+
+
+def _has_content(parts) -> bool:
+    """มีอะไรให้ LLM อ่านไหม — ข้อความที่ไม่ว่าง หรือส่วนที่ไม่ใช่ข้อความ (รูป)"""
+    return any((p.strip() if isinstance(p, str) else p is not None) for p in (parts or []))
 
 
 _CONTACT_RX = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+|\d[\d-]{6,}\d")

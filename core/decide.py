@@ -21,6 +21,7 @@ core/decide.py
 from __future__ import annotations
 
 import copy
+import re
 from typing import Optional, Sequence
 
 from core import router as _router
@@ -70,8 +71,23 @@ REFERENCE_WORDS = ["ตัวนั้น", "ตัวนี้", "อันน�
 STAINLESS_RX = r"สแตนเลส|stainless|(?<![A-Za-z])SS(?![A-Za-z])"
 CROSS_BRAND_STAINLESS = "stainless"
 
-GENERIC_REJECT_IMAGE_TH = ("❌ ระบบตรวจพบว่ารูปภาพที่อัปโหลดไม่เกี่ยวข้องกับสินค้าในระบบ หรือยังไม่ชัดพอให้ระบุรุ่น "
-                           "กรุณาอัปโหลดภาพสินค้าที่ชัดเจน หรือแจ้งรหัสที่ปั๊มบนตัวสินค้าครับ")
+# ถามยืนยันแบรนด์เดียวจากรูป (core/image_policy › confirm · 27 ต.ค.) — pending = "brand:<key>"
+BRAND_CONFIRM = "brand:"
+_CONFIRM_NO = re.compile(r"ไม่ใช่|ไม่ได้เป็น|^\s*ไม่\s*(?:ครับ|ค่ะ|คะ)?\s*$|\bno\b|\bnope\b|\bnot\b", re.I)
+_CONFIRM_YES = re.compile(r"ใช่|ถูกต้อง|ถูกแล้ว|โอเค|\bok\b|\byes\b|^\s*(?:ครับ|ค่ะ|คะ|จ้า)\s*$", re.I)
+
+
+def brand_pending(p) -> bool:
+    """กำลังรอคำตอบเรื่องแบรนด์ — เมนูหลายแบรนด์ ("brand") หรือถามยืนยันแบรนด์เดียว ("brand:<key>")"""
+    return p == "brand" or (isinstance(p, str) and p.startswith(BRAND_CONFIRM))
+
+
+# 27 ต.ค. (ผู้ใช้เลือกถ้อยคำ): เดิม "ระบบตรวจพบว่ารูปภาพ…ไม่เกี่ยวข้องกับสินค้าในระบบ" — ผิดกับของจริงที่ถ่ายไกล
+# รูปชิ้นสายพานบนกล่องกระดาษ: รูปเต็ม 0.568 / −0.090 → ปฏิเสธ · ครอปเหลือชิ้นงาน 0.888 / +0.083 → ผ่าน (direct)
+# จึงบอกสาเหตุที่เป็นไปได้ทั้งสองทาง และวิธีแก้ที่ได้ผลจริง (ถ่ายใกล้ให้เต็มกรอบ) ไม่กล่าวหาว่ารูปไม่เกี่ยว
+GENERIC_REJECT_IMAGE_TH = ("รูปนี้อาจถ่ายไกลเกินไป หรืออาจไม่ใช่โซ่หรือสายพานครับ "
+                           "หากเป็นโซ่หรือสายพาน กรุณาถ่ายใกล้กว่านี้ให้ตัวสินค้าเต็มกรอบและเห็นผิวด้านบนชัดเจน "
+                           "หรือแจ้งรหัสรุ่นที่ปั๊มบนตัวสินค้าครับ")
 
 
 class Dialogue:
@@ -97,7 +113,8 @@ class Dialogue:
 
     def decide(self, text: str, has_image: bool = False, image: Optional[ImageScore] = None,
                image_rejected: bool = False, state=None,
-               image_carry: Optional[ImageCarry] = None) -> Decision:
+               image_carry: Optional[ImageCarry] = None, image_confirm: Optional[str] = None) -> Decision:
+        """image_confirm = แบรนด์ที่รูปน่าจะเป็น แต่ไม่มั่นใจพอ (core/image_policy › confirm) → ถาม "ใช่ไหม" """
         st = copy.deepcopy(state) if state is not None else self.state_cls()
         text = (text or "").strip()
 
@@ -106,6 +123,12 @@ class Dialogue:
                 self.image_brands[0] if len(self.image_brands) == 1 else None)
             reply = (self.plugins[key].image_reject_th if key in self.plugins else "") or GENERIC_REJECT_IMAGE_TH
             return Decision("reject_image", key, reply, "ViT/SigLIP ไม่พบสินค้า",
+                            effective_text=text, state=st)
+
+        if image_confirm in self.plugins and has_image:
+            st.pending, st.pending_question = BRAND_CONFIRM + image_confirm, text
+            return Decision("ask", None, T.confirm_brand(self.plugins[image_confirm].info),
+                            f"รูปน่าจะเป็น {image_confirm} แต่ไม่มั่นใจ → ถามยืนยัน", topic="brand",
                             effective_text=text, state=st)
 
         # ── ขอบคุณ/ขอบใจล้วน ๆ ตอนบอทค้างคำถามไว้ = จบเรื่องนั้น ไม่ใช่คำตอบ (test_conversation_leaks C01 · 25 ต.ค.)
@@ -120,7 +143,7 @@ class Dialogue:
         # redteam R08 (26 ต.ค.): บอทถามพิทช์ของแบรนด์หนึ่ง → "แล้วโซ่ <อีกแบรนด์> 880 มีขนาดไหนบ้าง"
         # เดิมรวมกับคำถามเดิม → เจอสัญญาณแรงสองแบรนด์ → ถามแบรนด์ แล้ววนถามไม่จบ ลูกค้าเลิกคุยทั้งสองรอบ
         # กลับแบรนด์เดิมด้วยคำงาน ("กลับมาเรื่องสายพานไก่ พิทช์ 2 นิ้ว") มีแค่สัญญาณอ่อน — นับด้วยถ้าแบรนด์ที่รออยู่ไม่มีสัญญาณเลย
-        if st.pending and st.pending != "brand" and st.brand:
+        if st.pending and not brand_pending(st.pending) and st.brand:
             sig_now = {k: p.detect(text).strength for k, p in self.plugins.items()}
             other = [k for k, v in sig_now.items() if k != st.brand and v in ("strong", "weak")]
             if other and (sig_now.get(st.brand) in (None, "none")
@@ -132,12 +155,39 @@ class Dialogue:
         answered_brand = None             # ลูกค้าตอบชื่อแบรนด์ตอนบอทถามแบรนด์
         carried = None                    # ผลรูปของเทิร์นที่ถามแบรนด์ ใช้ได้เมื่อตอบแบรนด์เจ้าของคะแนนรูป
         # ถามแบรนด์จากเทิร์นที่มีแต่รูป (ไม่มีข้อความ) — คำถามเดิมว่างได้ แต่ยังต้องอ่านคำตอบแบรนด์
-        if st.pending and (st.pending_question or st.pending == "brand"):
-            if st.pending == "brand":
+        confirmed = None                  # ตอบ ใช่/ไม่ใช่ ของคำถามยืนยันแบรนด์เดียว
+        if st.pending and (st.pending_question or brand_pending(st.pending)):
+            if brand_pending(st.pending):
                 for key, p in self.plugins.items():
                     if any(has(pat, text) for pat in T.brand_answer_patterns(p.info)):
                         st.brand = answered_brand = key
                         break
+                ask_key = st.pending[len(BRAND_CONFIRM):] if st.pending.startswith(BRAND_CONFIRM) else None
+                if ask_key in self.plugins and answered_brand is None:
+                    others = [k for k in self.plugins if k != ask_key]
+                    if _CONFIRM_NO.search(text):
+                        if len(others) != 1:            # หลายแบรนด์ที่เหลือ → กลับไปเมนูแบรนด์
+                            st.pending = "brand"
+                            return Decision("ask", None, self.ask_brand_th, "ตอบไม่ใช่ · เหลือหลายแบรนด์",
+                                            topic="brand", effective_text=st.pending_question, state=st)
+                        st.brand = answered_brand = confirmed = others[0]
+                    elif _CONFIRM_YES.search(text):
+                        st.brand = answered_brand = confirmed = ask_key
+                # รูปเปล่าแล้วตอบแค่แบรนด์ (ใช่/ไม่ใช่ · ชื่อ · เลขเมนู) — ยังไม่มีคำถามให้ตอบ
+                # เดิมส่ง "2" หรือชื่อแบรนด์ให้ LLM เป็นคำถาม (เจอ 27 ต.ค. ตอนเพิ่มการถามยืนยัน)
+                brand_only = confirmed is not None or (
+                    answered_brand is not None and len(text) <= 20
+                    and not any(p.detect(text).has_code for p in self.plugins.values()))
+                if brand_only and not st.pending_question and not has_image:
+                    sc = image_carry.best if image_carry is not None else None
+                    if not (sc is not None and sc.brand == answered_brand):
+                        # แบรนด์ที่อ่านรูปไม่ได้ → ขอคำถาม (ไม่เดา) · แบรนด์ที่อ่านรูปได้ไหลต่อด้วยผลรูปเดิมตามปกติ
+                        # "ระบุรุ่นจากรูปไม่ได้" core/turn เติมให้จากรูปที่เก็บไว้ (_image_note) ไม่ใส่ซ้ำที่นี่
+                        info = self.plugins[answered_brand].info
+                        st.pending, st.pending_question = None, ""
+                        return Decision("ask", answered_brand, T.image_need_question(info),
+                                        f"ตอบแบรนด์ {answered_brand} หลังรูปเปล่า · ไม่มีคำถาม", topic="image",
+                                        effective_text="", state=st)
                 if image_carry is not None and st.brand is not None and not has_image:
                     sc = image_carry.best
                     if sc is not None and sc.brand == st.brand:
@@ -149,7 +199,8 @@ class Dialogue:
                                             effective_text=text, state=st,
                                             payload={"image_carried": True})
                         carried = sc
-            effective = f"{st.pending_question} {text}".strip()
+            # ตอบ ใช่/ไม่ใช่ = คำตอบเรื่องแบรนด์ล้วน ไม่ใช่ส่วนของคำถาม
+            effective = st.pending_question.strip() if confirmed else f"{st.pending_question} {text}".strip()
         pending_q_before = st.pending_question
         st.pending, pending_before, st.pending_question = None, st.pending, ""
 
@@ -190,7 +241,7 @@ class Dialogue:
             # ปลั๊กอินเลือกเองผ่าน pending_reask(state) — ไม่มีเมธอดนี้ = พฤติกรรมเดิม
             # 26 ต.ค. (C09): เดิมล้างการรอคำตอบ เทิร์นหน้า "2 นิ้ว" ไม่ถูกอ่านเป็นคำตอบ → บันทึกเป็น "ไม่ทราบ"
             reask = getattr(self.plugins.get(st.brand), "pending_reask", None) \
-                if pending_before not in (None, "brand") and st.brand else None
+                if pending_before is not None and not brand_pending(pending_before) and st.brand else None
             q = reask(st.brands[st.brand]) if reask else None
             if q:
                 st.pending, st.pending_question = pending_before, pending_q_before

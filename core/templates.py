@@ -65,3 +65,21 @@ def image_no_model(info: BrandInfo, from_image: bool) -> str:
     if from_image:
         return f"จากรูปน่าจะเป็น{info.kind_th} {info.name} ครับ แต่ตอนนี้ระบบยังระบุรุ่นจากรูปไม่ได้"
     return f"ตอนนี้ระบบยังระบุรุ่น{info.kind_th} {info.name} จากรูปไม่ได้ครับ"
+
+
+def image_from_context(info: BrandInfo) -> str:
+    """รูปไปแบรนด์ที่แชตคุยอยู่ (image_policy › context) — บอกสิ่งที่ระบบสมมติ และเปิดทางให้ลูกค้าแก้"""
+    return (f"จากรูปน่าจะเป็น{info.kind_th} {info.name} ครับ แต่ตอนนี้ระบบยังระบุรุ่นจากรูปไม่ได้ "
+            f"ถ้ารูปนี้ไม่ใช่{info.kind_th} {info.name} บอกได้เลยครับ")
+
+
+def confirm_brand(info: BrandInfo) -> str:
+    """ถามยืนยันแบรนด์เดียวจากรูป (image_policy › confirm) — ตอบ ใช่ / ไม่ใช่ หรือชื่อแบรนด์ก็ได้"""
+    return f"ขอยืนยันก่อนนะครับ รูปนี้เป็น{info.kind_th} {info.name} ใช่ไหมครับ (ตอบ ใช่ / ไม่ใช่)"
+
+
+def image_need_question(info: BrandInfo) -> str:
+    """ส่งรูปมาเฉย ๆ (ไม่มีข้อความ) ไปแบรนด์ที่อ่านรูปไม่ได้ — ไม่มีคำถามให้ตอบ จึงขอคำถามแทนการเดา (27 ต.ค.)
+    ไม่อ้างรุ่นที่คุยค้างอยู่ — รูปใหม่อาจเป็นคนละรุ่น"""
+    return (f"ถ้าต้องการถามเกี่ยวกับรูปนี้ รบกวนพิมพ์คำถามมาด้วยครับ เช่น รหัสรุ่นที่ปั๊มบน{info.kind_th} "
+            "ใช้ลำเลียงอะไร หรืออยากทราบสเปกเรื่องไหน")

@@ -151,7 +151,13 @@ d3b = decide_with(None, "โมดูเทค", d1.state, carry, has_image=Fals
 ok("ตอบ 'โมดูเทค' → Modutech", d3b.brand == "modutech")
 
 pol_r = resolve(route_of(mx(0.30)), BRANDS, ["movex"], gate(0.79, 0.05), [])
-d1r = decide_with(pol_r.route)
+# 27 ต.ค. (ผู้ใช้เลือก · เคส R5): Movex ไม่รับ + ประตูบอกว่าเป็นสินค้า → ถามยืนยัน Modutech แบรนด์เดียว (เดิมถามสองแบรนด์)
+ok("Movex ไม่รับ + ประตูบอกว่าเป็นสินค้า → confirm modutech", pol_r.kind == "confirm" and pol_r.confirm == "modutech"
+   and pol_r.asks_brand, (pol_r.kind, pol_r.confirm))
+core.image_brands = tuple(pol_r.route.image_brands)
+d1r = core.decide("", has_image=True, image=None, image_rejected=False, image_confirm=pol_r.confirm)
+ok("… ถาม 'ใช่ไหม' แบรนด์เดียว", d1r.action == "ask" and "ใช่ไหม" in d1r.reply_th and "Movex" not in d1r.reply_th
+   and d1r.state.pending == "brand:modutech", (d1r.reply_th, d1r.state.pending))
 carry_r = ImageCarry("PIL", pol_r.original.best, pol_r.original.rejected)
 d4 = decide_with(None, "1", d1r.state, carry_r, has_image=False)
 ok("Movex ปฏิเสธรูป + ตอบ Movex → reject_image ข้อความของ Movex", d4.action == "reject_image"
@@ -159,6 +165,12 @@ ok("Movex ปฏิเสธรูป + ตอบ Movex → reject_image ข้�
 ok("… สถานะไม่ค้าง pending", d4.state.pending is None)
 d5 = decide_with(None, "2", d1r.state, carry_r, has_image=False)
 ok("Movex ปฏิเสธรูป + ตอบ Modutech → ไหลแบบข้อความ", d5.brand == "modutech" and d5.action != "reject_image")
+d4n = decide_with(None, "ไม่ใช่", d1r.state, carry_r, has_image=False)
+ok("ตอบ 'ไม่ใช่' = Movex → reject_image ข้อความของ Movex", d4n.action == "reject_image" and d4n.brand == "movex"
+   and d4n.reply_th == movex_plugin.image_reject_th, (d4n.action, d4n.reply_th[:40]))
+d5y = decide_with(None, "ใช่", d1r.state, carry_r, has_image=False)
+ok("ตอบ 'ใช่' = Modutech → ขอคำถาม (ไม่ส่ง 'ใช่' ให้ LLM)", d5y.brand == "modutech" and not d5y.needs_llm
+   and "พิมพ์คำถาม" in d5y.reply_th, (d5y.action, d5y.reply_th[:60]))
 
 d6 = decide_with(None, "1", d1.state, None, has_image=False)
 ok("ไม่มีของเก็บ (เกินหนึ่งเทิร์น/รีสตาร์ต) → Movex แบบข้อความ", d6.brand == "movex"
@@ -167,7 +179,7 @@ ok("ไม่มีของเก็บ (เกินหนึ่งเทิ�
 pol_np = resolve(route_of(mx(0.13)), BRANDS, ["movex"], gate(0.582, -0.124), [])
 d7 = decide_with(pol_np.route)
 ok("not_product → reject_image ข้อความกลาง", d7.action == "reject_image" and d7.brand is None
-   and "ไม่เกี่ยวข้องกับสินค้า" in d7.reply_th, (d7.action, d7.brand))
+   and "ถ่ายใกล้กว่านี้" in d7.reply_th, (d7.action, d7.brand))
 pol_d = resolve(route_of(mx(0.70)), BRANDS, ["movex"], gate(0.84, 0.05), [])
 d8 = decide_with(pol_d.route)
 ok("direct → Modutech ไม่ถาม", d8.brand == "modutech" and d8.action != "ask", (d8.action, d8.reason))
@@ -297,7 +309,7 @@ ok("รูปใหม่ → ทิ้งของเก่า · เก็บ�
 
 e = engine(_Scorer(mx(0.13)), _Gate(GateReading("modutech", False, False, {"score": 0.58, "text": -0.12})))
 out = e.chat("", img(), [], session_id="s1")
-ok("IMG-003 ผ่านเครื่องยนต์ → ปฏิเสธทันที", "ไม่เกี่ยวข้องกับสินค้า" in out[0][-1]["content"]
+ok("IMG-003 ผ่านเครื่องยนต์ → ปฏิเสธทันที", "ถ่ายใกล้กว่านี้" in out[0][-1]["content"]
    and "s1" not in e.image_carry)
 
 e = engine(_Scorer(mx(0.70)), _Gate(boom=True))
@@ -332,7 +344,7 @@ ok("Movex dominant → ไม่มีข้อความเรื่องร
 e = engine(_Scorer(mx(0.13)), _Gate(GateReading("modutech", True, False, {})), all_scored=True)
 out = e.chat("", img(), [], session_id="s1")
 ok("ทุกแบรนด์มีตัวให้คะแนน → ไม่เรียก policy (ปฏิเสธแบบเดิม)", "s1" not in e.image_carry
-   and "❌" in out[0][-1]["content"] and "Image policy" not in out[2])
+   and "ถ่ายใกล้กว่านี้" in out[0][-1]["content"] and "Image policy" not in out[2])
 
 # ════════════════════════════ 4) image_gate ════════════════════════════
 print("\n4) brands/modutech/image_gate")
