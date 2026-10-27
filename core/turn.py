@@ -161,6 +161,22 @@ class TurnEngine:
                 return (chat_history, chat_history, raw_refs_html,
                         last_pids, session_id, last_vit_signal, last_graph_result)
 
+            # ── รูปเปล่าไปแบรนด์ที่อ่านรูปไม่ได้ (27 ต.ค.) ──
+            # ส่งรูปโดยไม่พิมพ์ (แชตใหม่หรือกลางแชต) + ประตูรูปมั่นใจว่าเป็นแบรนด์ที่อ่านรุ่นจากรูปไม่ได้ → ปลั๊กอินตัดสินว่า "ตอบ" ด้วยข้อความว่าง
+            # แบรนด์ที่ไม่มีตัวให้คะแนนรูปไม่ส่งรูปให้ LLM (ปลั๊กอินแบบนี้ส่ง user_parts = [effective_text] ล้วน)
+            # ผลเดิม: Gemini ได้ประวัติที่จบด้วยคำตอบบอท → 400 "Requests ending with a model turn"
+            # และต่อให้ไม่ error ก็จะตอบเรื่องรุ่นเดิมโดยไม่ได้ดูรูป (เดาแทนลูกค้า) → ขอคำถามแทน
+            if turn_image is not None and not (user_text or "").strip() \
+                    and decision.brand not in self.image_scorers:
+                ai_reply = _prefix(image_note, T.image_need_question(self.plugins[decision.brand].info))
+                raw_refs_html += (f"**Image-only:** {decision.brand} อ่านรูปไม่ได้ + ไม่มีข้อความ "
+                                  f"→ ขอคำถาม (เดิม {decision.action} · {decision.reason})\n")
+                self._log_finish(turn_log, ai_reply, [], t_start, error=None)
+                chat_history += [{"role": "user", "content": display_content},
+                                 {"role": "assistant", "content": ai_reply}]
+                return (chat_history, chat_history, raw_refs_html,
+                        last_pids, session_id, last_vit_signal, last_graph_result)
+
             plugin = self.plugins[decision.brand]
             turn = TurnInput(user_text=user_text, image=turn_image, history=chat_history,
                              session_id=session_id, effective_text=effective_text, followup=is_followup,
@@ -169,6 +185,12 @@ class TurnEngine:
                              image_score=turn_score, log=turn_log)
             llm_turn = plugin.build_turn(decision, turn)
             raw_refs_html += "".join(llm_turn.debug)
+
+            # กันชั้นสุดท้าย: ห้ามส่งเทิร์นผู้ใช้ที่ว่างให้ LLM (ทางไหนก็ตามที่ยังไม่รู้) — ขอคำถามแทน error ดิบ
+            if llm_turn.direct_reply is None and not _has_content(llm_turn.user_parts):
+                llm_turn.direct_reply = T.image_need_question(plugin.info) if turn_image is not None \
+                    else EMPTY_INPUT_TH
+                raw_refs_html += "**Empty turn:** user_parts ว่าง → ไม่เรียก LLM\n"
 
             if llm_turn.direct_reply is not None:
                 ai_reply = _prefix(image_note, llm_turn.direct_reply)
@@ -250,6 +272,11 @@ class TurnEngine:
                 print(f"⚠️ ประตูรูป {b} ผิดพลาด ({type(e).__name__}: {e}) — ข้ามประตูนี้")
         strong = [b for b, p in self.plugins.items() if p.detect(user_text or "").strength == "strong"]
         return resolve_image_policy(route, brands, list(self.image_scorers), readings, strong)
+
+
+def _has_content(parts) -> bool:
+    """มีอะไรให้ LLM อ่านไหม — ข้อความที่ไม่ว่าง หรือส่วนที่ไม่ใช่ข้อความ (รูป)"""
+    return any((p.strip() if isinstance(p, str) else p is not None) for p in (parts or []))
 
 
 _CONTACT_RX = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+|\d[\d-]{6,}\d")
