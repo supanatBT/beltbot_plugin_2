@@ -215,6 +215,19 @@ def main() -> int:
     conv_changed = conv_changed | conv_again
     skipped =[k for k in a if k.rsplit("|", 1)[0] in conv_changed]
     diff = [k for k in sorted(set(a) & set(b)) if a[k] != b[k] and k not in skipped]
+    # 27 ต.ค. (ผู้ใช้เลือกถ้อยคำทางการ): ข้อความปฏิเสธรูปเปลี่ยน — ต่างได้เฉพาะ reply_th ของ reject_image
+    # และต้องเป็นข้อความใหม่ของแบรนด์นั้นหรือข้อความกลาง (action · reason · payload · สถานะเท่าเดิม)
+    from core.decide import GENERIC_REJECT_IMAGE_TH as _GEN
+    import yaml
+    from brands.movex.plugin import reject_text as _mx_reject
+    _mx_cfg = yaml.safe_load(open(os.path.join(ROOT, "brands", "movex", "brand.yaml"), encoding="utf-8"))
+    _new_rej = {_GEN, _mx_reject(_mx_cfg)}
+    reword = [k for k in diff if isinstance(a[k], dict) and isinstance(b[k], dict)
+              and a[k].get("action") == b[k].get("action") == "reject_image"
+              and [f for f in a[k] if a[k].get(f) != b[k].get(f)] == ["reply_th"]
+              and b[k]["reply_th"] in _new_rej]
+    diff = [k for k in diff if k not in reword]
+    print(f"      27 ต.ค.: ข้อความปฏิเสธรูปเป็นถ้อยคำทางการ {len(reword)} เทิร์น (ต่างเฉพาะ reply_th)")
     print(f"      เฟส 2: ข้ามบทสนทนาที่ตั้งใจเลือกแบรนด์ต่าง {len(conv_changed)} บท ({len(skipped)} เทิร์น)")
     bad_skip = [k for k in skipped if isinstance(b.get(k), dict) and routing_changed(b[k].get("effective_text", ""))
                 and b[k]["brand"] not in ("modutech", None)]

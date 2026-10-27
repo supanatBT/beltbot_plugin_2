@@ -44,8 +44,22 @@ def image_to_base64_html(pil_image) -> str:
     return f'<img src="data:image/jpeg;base64,{b64}" style="max-width:250px;border-radius:10px;margin-bottom:10px;" />'
 
 
-TRANSIENT_REPLY_TH = "❌ ตอนนี้ระบบตอบคำถามไม่ว่างชั่วคราว รบกวนส่งคำถามเดิมอีกครั้งในอีกสักครู่ครับ"
-TIMEOUT_REPLY_TH = "❌ ตอนนี้ระบบตอบช้ากว่าปกติ รบกวนส่งคำถามเดิมอีกครั้งครับ"
+# ข้อความเมื่อตอบไม่สำเร็จ — ใช้ถ้อยคำทางการ ไม่มีรายละเอียดทางเทคนิค (ผู้ใช้เลือก 27 ต.ค.)
+# คำว่า "ไม่ว่างชั่วคราว" · "ตอบช้ากว่าปกติ" · "เกิดข้อผิดพลาด" ต้องคงไว้ — leak_detectors.FALLBACK_RX ใช้นับเทิร์นที่ตอบไม่สำเร็จ
+TRANSIENT_REPLY_TH = "ขออภัยครับ ขณะนี้ระบบไม่ว่างชั่วคราว กรุณาส่งคำถามเดิมอีกครั้งในอีกสักครู่ครับ"
+TIMEOUT_REPLY_TH = "ขออภัยครับ ขณะนี้ระบบตอบช้ากว่าปกติ กรุณาส่งคำถามเดิมอีกครั้งครับ"
+ERROR_REPLY_TH = ("ขออภัยครับ เกิดข้อผิดพลาดระหว่างประมวลผลคำถามนี้ กรุณาส่งคำถามอีกครั้ง "
+                  "หากยังพบปัญหา กรุณาติดต่อฝ่ายขายโดยตรงครับ")
+
+
+def error_reply_th() -> str:
+    """error ที่ไม่รู้จัก — เดิมส่ง str(e) ดิบถึงลูกค้า (เช่น 400 INVALID_ARGUMENT {...}) · รายละเอียดอยู่ใน log แทน"""
+    try:
+        from sales_contact import sales_contact_line_th
+        contact = sales_contact_line_th()
+    except Exception:                                    # noqa: BLE001 — ไม่มีไฟล์ช่องทางติดต่อ = ข้อความอย่างเดียว
+        contact = ""
+    return f"{ERROR_REPLY_TH}\n{contact}" if contact else ERROR_REPLY_TH
 
 
 class TurnEngine:
@@ -217,7 +231,7 @@ class TurnEngine:
             # 13 ต.ค.: Google ไม่ว่างแม้ลองใหม่แล้ว (core/llm.py with_retry) → ข้อความที่ลูกค้าเข้าใจ ไม่ใช่ JSON ดิบ
             # 26 ต.ค.: เกินเวลา (core/llm.py run_with_deadline) → บอกให้ส่งใหม่ แทนที่ลูกค้ารอเป็นสิบนาที
             ai_reply = (TIMEOUT_REPLY_TH if isinstance(e, LLMTimeout) else
-                        TRANSIENT_REPLY_TH if is_transient(e) else f"❌ เกิดข้อผิดพลาด: {str(e)}")
+                        TRANSIENT_REPLY_TH if is_transient(e) else error_reply_th())
             error_msg = str(e)
             extra_messages = []
             print(f"[ERROR] {e}")

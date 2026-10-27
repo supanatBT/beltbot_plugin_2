@@ -271,6 +271,29 @@ ok("ไม่เรียก LLM · ไม่มี error ดิบ", not llm.ca
 ok("log บอกเหตุผล", "**Empty turn:**" in out[2])
 mgr.movex_plugin.build_turn = orig
 
+print("\nerror ที่ไม่รู้จักจาก LLM → ข้อความทางการ ไม่มีรายละเอียดทางเทคนิค (27 ต.ค.)")
+
+
+class BoomLLM(FakeLLM):
+    def run(self, llm_turn, chat_history, tool_calls):
+        raise RuntimeError("400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'x', 'status': 'INVALID_ARGUMENT'}}")
+
+
+e = TurnEngine(core, llm=BoomLLM(), logger=_Log(), tool_log=tool_log,
+               image_scorers={"movex": Scorer(IMAGES["ambiguous"][0])})
+out = e.chat("HC508 C กว้างเท่าไหร่", None, [], session_id="b1")
+rep_ = out[0][-1]["content"]
+ok("ไม่มี INVALID_ARGUMENT / code / ❌ ถึงลูกค้า", not any(w in rep_ for w in ("INVALID_ARGUMENT", "'code'", "❌", "400")),
+   rep_[:120])
+ok("ขอโทษ + ให้ส่งใหม่ + ช่องทางฝ่ายขาย", rep_.startswith("ขออภัยครับ") and "ส่งคำถามอีกครั้ง" in rep_
+   and "ติดต่อฝ่ายขาย" in rep_, rep_)
+from leak_detectors import FALLBACK_RX  # noqa: E402
+from core.turn import TIMEOUT_REPLY_TH, TRANSIENT_REPLY_TH  # noqa: E402
+ok("ตัวนับเทิร์นที่ตอบไม่สำเร็จยังจับข้อความใหม่ได้ครบสามแบบ",
+   all(FALLBACK_RX.search(t) for t in (rep_, TIMEOUT_REPLY_TH, TRANSIENT_REPLY_TH)))
+ok("ข้อความปฏิเสธรูปของ Movex ไม่กล่าวหาว่ารูปไม่เกี่ยว",
+   "ไม่เกี่ยวข้อง" not in mgr.movex_plugin.image_reject_th or not mgr.movex_plugin.image_reject_th)
+
 print("\nข้อความไม่มีรูป — ไม่เปลี่ยนจากเดิม")
 llm = FakeLLM()
 e = TurnEngine(core, llm=llm, logger=_Log(), tool_log=tool_log, image_scorers={"movex": Scorer(IMAGES["ambiguous"][0])})
