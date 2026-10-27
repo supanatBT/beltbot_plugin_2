@@ -12,6 +12,11 @@ core/image_policy.py — รูปเมื่อบางแบรนด์ย�
        ข้อความระบุแบรนด์อื่น                           → ผลเดิม                          unchanged
     3. dominant                                       → ผลเดิม (แบรนด์ที่ให้คะแนน)        dominant
     4. ประตูของแบรนด์ที่ไม่มีตัวให้คะแนนบอกว่า "ของเรา" แบรนด์เดียว → แบรนด์นั้น            direct
+    4a. แชตคุยแบรนด์ที่ไม่มีตัวให้คะแนนอยู่ + ประตูของมันบอกว่าเป็นสินค้า → แบรนด์นั้น        context
+        (ผู้ใช้เลือก 27 ต.ค. เคส R5: คุย MP80 C ค้างคำถามเปียก/แห้ง ส่งรูปสายพาน → เดิมถามสองแบรนด์ คำถามค้างหาย)
+    4b. ไม่มีตัวให้คะแนนตัวไหนรับรูป + ประตูบอกว่าเป็นสินค้าแบรนด์เดียว → ถามยืนยันแบรนด์นั้น  confirm
+        ("ใช่ไหม" แทนเมนูสองแบรนด์ · ตอบไม่ใช่ = แบรนด์ที่เหลือพร้อมผลรูปเดิม)
+        ⚠ ยังไม่ได้วัดว่ารูปของแบรนด์ที่มีตัวให้คะแนนโดนปฏิเสธบ่อยแค่ไหน (ลูกค้าแบรนด์นั้นจะถูกถามผิดหนึ่งครั้ง)
     5. นอกนั้น                                        → ถามแบรนด์ เก็บผลรูปไว้หนึ่งเทิร์น   ask
 
 ประตู (ImageGate) เป็นของปลั๊กอิน — แกนกลางเห็นแค่ GateReading
@@ -52,19 +57,21 @@ class ImageCarry:
 @dataclass
 class PolicyResult:
     route: ImageRoute
-    kind: str                     # not_product · text_brand · unchanged · dominant · direct · ask · off
+    kind: str                     # not_product · text_brand · unchanged · dominant · direct · context · confirm · ask · off
     reason: str = ""
     original: Optional[ImageRoute] = None
+    confirm: Optional[str] = None  # kind == confirm: แบรนด์ที่จะถามว่า "ใช่ไหม"
 
     @property
     def asks_brand(self) -> bool:
-        return self.kind == "ask"
+        return self.kind in ("ask", "confirm")
 
 
 def resolve(route: ImageRoute, brands: Sequence[str], scored: Sequence[str],
-            readings: dict, text_strong: Sequence[str]) -> PolicyResult:
+            readings: dict, text_strong: Sequence[str], context_brand: Optional[str] = None) -> PolicyResult:
     """brands = ทุกแบรนด์ตาม info.order · scored = แบรนด์ที่มีตัวให้คะแนนรูป
-    readings = {brand: GateReading} · text_strong = แบรนด์ที่ข้อความเทิร์นนี้ให้สัญญาณ strong"""
+    readings = {brand: GateReading} · text_strong = แบรนด์ที่ข้อความเทิร์นนี้ให้สัญญาณ strong
+    context_brand = แบรนด์ที่แชตคุยอยู่ก่อนเทิร์นนี้ (None = ยังไม่รู้)"""
     unscored = [b for b in brands if b not in scored]
     if not unscored:
         return PolicyResult(route, "off", "ทุกแบรนด์มีตัวให้คะแนนรูป")
@@ -91,6 +98,17 @@ def resolve(route: ImageRoute, brands: Sequence[str], scored: Sequence[str],
         b = direct[0]
         return PolicyResult(ImageRoute(False, [b], None, route.scores), "direct",
                             f"ประตู {b} มั่นใจ ({_fmt(readings[b].detail)})", route)
+
+    if context_brand in unscored and context_brand in readings and readings[context_brand].product_like:
+        b = context_brand
+        return PolicyResult(ImageRoute(False, [b], None, route.scores), "context",
+                            f"แชตคุย {b} อยู่ + ประตูบอกว่าเป็นสินค้า ({_fmt(readings[b].detail)})", route)
+
+    like = [b for b in unscored if b in readings and readings[b].product_like]
+    if len(like) == 1 and not any(sc.accepted for sc in route.scores.values()):
+        b = like[0]
+        return PolicyResult(ImageRoute(False, [b], None, route.scores), "confirm",
+                            f"ตัวให้คะแนนไม่รับ + ประตู {b} บอกว่าเป็นสินค้า → ถามยืนยัน {b}", route, confirm=b)
 
     every = [b for b in brands]
     return PolicyResult(ImageRoute(False, every, route.best, route.scores), "ask",
