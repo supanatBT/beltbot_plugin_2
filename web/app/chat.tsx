@@ -27,8 +27,10 @@ import ReactMarkdown from "react-markdown";
 import remarkBreaks from "remark-breaks";
 import { prepareImage, ResizeError } from "@/lib/resize";
 
+/* ฟิลด์ที่มีเครื่องหมาย ? เพิ่มทีหลังแบบไม่บังคับ — ยังเป็น schema v2 (ผู้ใช้ตัดสิน 27 ต.ค.)
+   ข้อมูลเก่าที่ไม่มีฟิลด์เหล่านี้อ่านได้ครบ และโค้ดรุ่นเดิมคัดลอกข้อความทั้งก้อน ฟิลด์จึงไม่หายถ้าย้อนเวอร์ชัน */
 type Msg =
-  | { id: string; role: "user"; text: string; image?: string }
+  | { id: string; role: "user"; text: string; image?: string; failed?: boolean } // failed = ยังไม่ได้รับคำตอบ
   | { id: string; role: "bot"; text: string }
   | { id: string; role: "bot-image"; url: string; alt: string }
   | { id: string; role: "notice"; text: string; action?: "reset" | "retry" };
@@ -40,7 +42,30 @@ type Convo = {
   sessionId: string; // session ฝั่งเซิร์ฟเวอร์ — ตายได้ตลอด ถือไว้เฉย ๆ
   state: Record<string, unknown> | null; // DialogState ล่าสุดที่เซิร์ฟเวอร์ส่งกลับ
   updated: number;
+  turnsLeft?: number; // turns_left ล่าสุดจากเซิร์ฟเวอร์ (เพดาน MAX_TURNS ต่อ session)
 };
+
+type Outgoing = { body: string; image: { file: File; url: string } | null };
+
+/** ข้อความที่ส่งไม่สำเร็จและยังส่งใหม่ได้ — อยู่ในหน่วยความจำเท่านั้น (File ลง localStorage ไม่ได้)
+    ปุ่มส่งใหม่แสดงเฉพาะที่ notice ตัวนี้ notice เก่า ๆ เหลือแค่ข้อความ */
+type Failed = {
+  cid: string;
+  userId: string; // ฟองข้อความเดิม — ส่งใหม่ใช้ฟองเดิม ไม่เพิ่มฟองซ้ำ
+  noticeId: string;
+  out: Outgoing;
+  code: string;
+  attempt: number; // ล้มเหลวมาแล้วกี่ครั้ง
+  until: number; // เวลาที่จะส่งใหม่เอง (ms) · 0 = รอผู้ใช้กด
+};
+
+/* ส่งใหม่เองได้เฉพาะ error ที่รู้แน่ว่าเซิร์ฟเวอร์ยังไม่ได้ประมวลผลเทิร์นนั้น (ยกเลิกก่อนเรียกบอท)
+   upstream / หมดเวลา / เน็ตหลุด ไม่ส่งเอง เพราะ Space อาจตอบเทิร์นนั้นไปแล้ว ส่งซ้ำ = เทิร์นซ้ำใน session
+   ตัวเลข = จำนวนครั้งสูงสุดที่ส่งเอง · warming_up ให้มากหน่อยเพราะโหลดโมเดลบน CPU ฟรีใช้เวลาหลายนาที */
+const AUTO_RETRY: Record<string, number> = { warming_up: 8, busy: 3, per_minute: 2 };
+const AUTO_MAX_WAIT_S = 90; // retry_after นานกว่านี้ไม่นับถอยหลังเอง บอกเวลาแล้วให้ผู้ใช้กดเอง
+const TERMINAL = new Set(["session_full", "resume_too_large"]);
+const TURNS_WARN = 10; // เหลือข้อความน้อยกว่านี้จึงขึ้นบอก
 
 const STORE_KEY = "beltbot.chats.v2";
 const OLD_KEY = "beltbot.chat.v1"; // ของเวอร์ชันเดิมใน sessionStorage
@@ -85,10 +110,50 @@ const dayLabel = (ts: number) => {
   return d.toLocaleDateString("th-TH", { day: "numeric", month: "short" });
 };
 
+/** วินาทีที่เซิร์ฟเวอร์ให้รอ → คำอ่านง่าย (ปัดขึ้น ไม่บอกเร็วกว่าความจริง) */
+const waitLabel = (s: number) =>
+  s < 90 ? `${Math.ceil(s)} วินาที` : s < 5400 ? `${Math.ceil(s / 60)} นาที` : `${Math.ceil(s / 3600)} ชั่วโมง`;
+
+/** คัดลอกคำตอบเป็นข้อความอ่านง่าย: ตัดเครื่องหมายตัวหนา/หัวข้อ/โค้ดของ markdown · คงรายการ "- " ไว้ */
+const plainText = (md: string) =>
+  md
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/__(.+?)__/g, "$1")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/`([^`]+)`/g, "$1")
+    .trim();
+
+async function copyText(s: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(s);
+    return true;
+  } catch {
+    // http ธรรมดา / เบราว์เซอร์เก่าไม่มี clipboard API — ใช้วิธีเลือกข้อความแทน
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = s;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+}
+
 /** ของที่ส่งกลับไปให้เซิร์ฟเวอร์กู้บทสนทนา — ข้อความล้วนกับ state เท่านั้น ไม่มีพาธรูป */
 function resumeBody(c: Convo): string {
+  // ข้อความที่ส่งไม่สำเร็จไม่ใช่ส่วนของบทสนทนาที่บอทเห็น — ไม่ส่งกลับไปเป็นประวัติ
   const msgs = c.messages
-    .filter((m): m is Extract<Msg, { role: "user" | "bot" }> => m.role === "user" || m.role === "bot")
+    .filter(
+      (m): m is Extract<Msg, { role: "user" | "bot" }> =>
+        (m.role === "user" && !m.failed) || m.role === "bot",
+    )
     .slice(-RESUME_TURNS * 2)
     .map((m) => ({
       role: m.role === "bot" ? "assistant" : "user",
@@ -118,7 +183,11 @@ export default function Chat() {
   const [sideOpen, setSideOpen] = useState(false);
   const [renaming, setRenaming] = useState("");
   const [storeWarned, setStoreWarned] = useState(false);
+  const [failed, setFailed] = useState<Failed | null>(null);
+  const [now, setNow] = useState(() => Date.now());
 
+  // busy ใน state อัปเดตช้ากว่าหนึ่งรอบ render — ตัวจับเวลาส่งใหม่ต้องเห็นค่าทันที กันส่งซ้อน
+  const busyRef = useRef(false);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -290,6 +359,7 @@ export default function Chat() {
     const next = convosRef.current.filter((x) => x.id !== id);
     const list = next.length ? next : [newConvo()];
     setConvos(list);
+    setFailed((f) => (f?.cid === id ? null : f)); // ไม่ส่งใหม่เข้าแชตที่ลบไปแล้ว
     if (id === activeRef.current) {
       setActiveId(list[0].id);
       setText("");
@@ -298,13 +368,42 @@ export default function Chat() {
   };
 
   // ── ส่งข้อความ ──
-  const send = useCallback(
-    async (override?: string) => {
-      const body = (override ?? text).trim();
-      if (busy || preparing || (!body && !image)) return;
+  /** บันทึกความล้มเหลว: ทำเครื่องหมายฟองว่ายังไม่ได้คำตอบ + notice ที่มีปุ่มส่งใหม่
+      ข้อความ error เป็นของเซิร์ฟเวอร์ (message_th) ตามเดิม หน้าเว็บเติมแค่เวลารอที่เซิร์ฟเวอร์บอกมา */
+  const fail = useCallback(
+    (cid: string, userId: string, out: Outgoing, code: string, text: string, retryAfter: number, attempt: number) => {
+      const terminal = TERMINAL.has(code);
+      const auto =
+        !terminal && attempt <= (AUTO_RETRY[code] ?? 0) && retryAfter > 0 && retryAfter <= AUTO_MAX_WAIT_S;
+      let full = text;
+      if (!terminal && !auto && retryAfter > AUTO_MAX_WAIT_S) {
+        full += ` (ลองใหม่ได้ในราว ${waitLabel(retryAfter)})`;
+      }
+      const noticeId = uid();
+      patch(cid, (c) => ({
+        ...c,
+        messages: [
+          ...c.messages.map((m) => (m.id === userId && m.role === "user" ? { ...m, failed: true } : m)),
+          { id: noticeId, role: "notice", text: full, action: terminal ? "reset" : "retry" },
+        ],
+      }));
+      setFailed(
+        terminal
+          ? null
+          : { cid, userId, noticeId, out, code, attempt, until: auto ? Date.now() + retryAfter * 1000 : 0 },
+      );
+    },
+    [patch],
+  );
 
-      let target = convosRef.current.find((c) => c.id === activeRef.current);
+  /** ส่งหนึ่งครั้ง · retry = ส่งข้อความที่ล้มเหลวซ้ำ ใช้ฟองเดิม ไม่เพิ่มฟองใหม่ */
+  const deliver = useCallback(
+    async (out: Outgoing, retry?: Failed) => {
+      if (busyRef.current) return;
+
+      let target = convosRef.current.find((c) => c.id === (retry ? retry.cid : activeRef.current));
       if (!target) {
+        if (retry) return setFailed(null); // แชตถูกลบไปแล้ว
         target = newConvo();
         setConvos((cs) => [target as Convo, ...cs]);
         setActiveId(target.id);
@@ -312,41 +411,57 @@ export default function Chat() {
       }
       const cid = target.id;
       const sentSid = target.sessionId;
-      const hadHistory = target.messages.some((m) => m.role === "user" || m.role === "bot");
-      const resume = hadHistory ? resumeBody(target) : "";
-      const sent = image;
+      const userId = retry ? retry.userId : uid();
+      // ประวัติก่อนข้อความนี้ — ตอนส่งใหม่ ฟองของข้อความนี้อยู่ในรายการแล้ว ต้องไม่ส่งไปเป็นประวัติซ้ำ
+      const prior = target.messages.filter((m) => m.id !== userId);
+      const hadHistory = prior.some((m) => (m.role === "user" && !m.failed) || m.role === "bot");
+      const resume = hadHistory ? resumeBody({ ...target, messages: prior }) : "";
+      const body = out.body;
 
-      patch(cid, (c) => ({
-        ...c,
-        title: c.title === NEW_TITLE ? titleFrom(body || "ถามจากรูป") : c.title,
-        messages: [...c.messages, { id: uid(), role: "user", text: body, image: sent?.url }],
-      }));
-      setText("");
-      setImage(null);
-      requestAnimationFrame(autoGrow);
+      busyRef.current = true;
       setBusy(true);
+      // ส่งเรื่องใหม่ในแชตเดียวกัน = ยกเลิกการส่งใหม่ที่ค้าง (ลำดับคำถามจะสลับ) · แชตอื่นไม่แตะ
+      setFailed((f) => (f && f.cid !== cid ? f : null));
+      if (retry) {
+        patch(cid, (c) => ({
+          ...c,
+          messages: c.messages
+            .filter((m) => m.id !== retry.noticeId)
+            .map((m) => (m.id === userId && m.role === "user" ? { ...m, failed: undefined } : m)),
+        }));
+      } else {
+        patch(cid, (c) => ({
+          ...c,
+          title: c.title === NEW_TITLE ? titleFrom(body || "ถามจากรูป") : c.title,
+          messages: [...c.messages, { id: userId, role: "user", text: body, image: out.image?.url }],
+        }));
+        setText("");
+        setImage(null);
+        requestAnimationFrame(autoGrow);
+      }
 
       const form = new FormData();
       form.set("text", body);
       form.set("session_id", sentSid);
       if (resume) form.set("resume", resume);
-      if (sent) form.set("image", sent.file);
+      if (out.image) form.set("image", out.image.file);
 
+      const attempt = (retry?.attempt ?? 0) + 1;
       try {
         const res = await fetch("/api/chat", { method: "POST", body: form });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          const retryable = data.error !== "session_full" && data.error !== "resume_too_large";
-          addMsgs(cid, {
-            id: uid(),
-            role: "notice",
-            text: data.message_th || "ส่งไม่สำเร็จครับ รบกวนลองใหม่อีกครั้ง",
-            action: retryable ? "retry" : "reset",
-          });
-          if (retryable) {
-            setText(body);
-            if (sent) setImage(sent);
-          }
+          // Retry-After มาทาง header (app.py) — route.ts / space.ts ส่งต่อมาให้แล้ว
+          const ra = parseInt(res.headers.get("retry-after") || "", 10);
+          fail(
+            cid,
+            userId,
+            out,
+            String(data.error || `http_${res.status}`),
+            data.message_th || "ส่งไม่สำเร็จครับ รบกวนลองใหม่อีกครั้ง",
+            Number.isFinite(ra) ? ra : 0,
+            attempt,
+          );
           return;
         }
 
@@ -360,6 +475,7 @@ export default function Chat() {
           ...c,
           sessionId: data.session_id || c.sessionId,
           state: data.state && Object.keys(data.state).length ? data.state : c.state,
+          turnsLeft: typeof data.turns_left === "number" ? data.turns_left : c.turnsLeft,
           messages: [
             ...c.messages,
             ...(resumed
@@ -378,21 +494,47 @@ export default function Chat() {
           ],
         }));
       } catch {
-        addMsgs(cid, {
-          id: uid(),
-          role: "notice",
-          text: "เชื่อมต่อไม่ได้ครับ ตรวจอินเทอร์เน็ตแล้วลองใหม่",
-          action: "retry",
-        });
-        setText(body);
-        if (sent) setImage(sent);
+        fail(cid, userId, out, "network", "เชื่อมต่อไม่ได้ครับ ตรวจอินเทอร์เน็ตแล้วลองใหม่", 0, attempt);
       } finally {
+        busyRef.current = false;
         setBusy(false);
         inputRef.current?.focus();
       }
     },
-    [busy, preparing, text, image, patch, addMsgs],
+    [patch, fail],
   );
+
+  const send = (override?: string) => {
+    const body = (override ?? text).trim();
+    if (busyRef.current || preparing || (!body && !image)) return;
+    void deliver({ body, image });
+  };
+
+  const deliverRef = useRef(deliver);
+  deliverRef.current = deliver;
+
+  // ── นับถอยหลังแล้วส่งใหม่เอง ──
+  useEffect(() => {
+    if (!failed?.until) return;
+    setNow(Date.now());
+    const t = setInterval(() => setNow(Date.now()), 500);
+    return () => clearInterval(t);
+  }, [failed?.until]);
+
+  useEffect(() => {
+    if (failed?.until && now >= failed.until && !busy) void deliverRef.current(failed.out, failed);
+  }, [now, failed, busy]);
+
+  /** เอาข้อความที่ส่งไม่สำเร็จกลับมาไว้ในช่องพิมพ์ให้แก้ — ฟองเดิมคงเครื่องหมาย "ยังไม่ได้ส่ง" ไว้ */
+  const editFailed = (f: Failed) => {
+    setFailed(null);
+    setText(f.out.body);
+    setImage(f.out.image);
+    requestAnimationFrame(() => {
+      autoGrow();
+      inputRef.current?.focus();
+    });
+  };
 
   const messages = active?.messages || [];
   const empty = messages.length === 0;
@@ -573,23 +715,19 @@ export default function Chat() {
             {messages.map((m) => {
               if (m.role === "user")
                 return (
-                  <div key={m.id} className="row me">
+                  <div key={m.id} className={"row me" + (m.failed ? " cv-unsent" : "")}>
                     <div className="bubble user">
                       {m.image && <img src={m.image} alt="รูปที่แนบ" className="thumb" />}
                       {m.text && <div className="plain">{m.text}</div>}
                       {!m.text && !m.image && <div className="plain muted">(รูปที่แนบ)</div>}
                     </div>
+                    {m.failed && <span className="cv-unsent-tag">ยังไม่ได้รับคำตอบ</span>}
                   </div>
                 );
-              if (m.role === "bot")
-                return (
-                  <div key={m.id} className="row">
-                    <div className="bubble bot md">
-                      <ReactMarkdown remarkPlugins={[remarkBreaks]}>{m.text}</ReactMarkdown>
-                    </div>
-                  </div>
-                );
+              if (m.role === "bot") return <BotText key={m.id} text={m.text} />;
               if (m.role === "bot-image") return <BotImage key={m.id} url={m.url} alt={m.alt} />;
+              const live = m.action === "retry" && failed?.noticeId === m.id ? failed : null;
+              const left = live?.until ? Math.max(0, Math.ceil((live.until - now) / 1000)) : 0;
               return (
                 <div key={m.id} className="notice" role="status">
                   <span>{m.text}</span>
@@ -598,14 +736,29 @@ export default function Chat() {
                       เริ่มแชตใหม่
                     </button>
                   )}
-                  {m.action === "retry" && (
-                    <button
-                      className="link"
-                      onClick={() => send()}
-                      disabled={busy || preparing || (!text.trim() && !image)}
-                    >
-                      ส่งอีกครั้ง
-                    </button>
+                  {live && live.until > 0 && (
+                    <>
+                      {/* ตัวเลขเปลี่ยนทุกวินาที — ไม่ให้โปรแกรมอ่านจอประกาศซ้ำทุกวินาที */}
+                      <span className="cv-count" aria-live="off">
+                        ส่งใหม่อัตโนมัติใน {left} วินาที
+                      </span>
+                      <button className="link" onClick={() => void deliver(live.out, live)} disabled={busy}>
+                        ส่งเลย
+                      </button>
+                      <button className="link" onClick={() => setFailed({ ...live, until: 0 })}>
+                        ยกเลิก
+                      </button>
+                    </>
+                  )}
+                  {live && live.until === 0 && (
+                    <>
+                      <button className="link" onClick={() => void deliver(live.out, live)} disabled={busy}>
+                        ส่งอีกครั้ง
+                      </button>
+                      <button className="link" onClick={() => editFailed(live)} disabled={busy}>
+                        แก้ก่อนส่ง
+                      </button>
+                    </>
                   )}
                 </div>
               );
@@ -628,6 +781,21 @@ export default function Chat() {
               send();
             }}
           >
+            {/* turns_left มาจากเซิร์ฟเวอร์ตรง ๆ · บอกเฉพาะตอนใกล้ครบ ไม่รกจอ */}
+            {active?.turnsLeft !== undefined && active.turnsLeft <= TURNS_WARN && (
+              <p className="cv-left" role="status">
+                {active.turnsLeft > 0 ? (
+                  <>บทสนทนานี้ถามต่อได้อีก {active.turnsLeft} ข้อความ จากนั้นต้องเริ่มแชตใหม่</>
+                ) : (
+                  <>
+                    บทสนทนานี้ครบจำนวนข้อความแล้ว{" "}
+                    <button type="button" className="link" onClick={startNew} disabled={busy}>
+                      เริ่มแชตใหม่
+                    </button>
+                  </>
+                )}
+              </p>
+            )}
             {(image || preparing) && (
               <div className="attach">
                 {preparing ? (
@@ -706,6 +874,43 @@ export default function Chat() {
   );
 }
 
+/** คำตอบของบอท + ปุ่มคัดลอก */
+function BotText({ text }: { text: string }) {
+  const [copied, setCopied] = useState<"" | "ok" | "fail">("");
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(""), 1800);
+    return () => clearTimeout(t);
+  }, [copied]);
+  return (
+    <div className="row cv-botrow">
+      <div className="bubble bot md">
+        <ReactMarkdown remarkPlugins={[remarkBreaks]}>{text}</ReactMarkdown>
+      </div>
+      <div className="cv-acts">
+        <button
+          type="button"
+          className="cv-act"
+          aria-label="คัดลอกคำตอบ"
+          title="คัดลอกคำตอบ"
+          onClick={async () => setCopied((await copyText(plainText(text))) ? "ok" : "fail")}
+        >
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden>
+            <path
+              d="M9 9h10v11H9zM15 9V4H5v11h4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span role="status">{copied === "ok" ? "คัดลอกแล้ว" : copied === "fail" ? "คัดลอกไม่ได้" : "คัดลอก"}</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /** รูป drawing — token ของแชตเก่าหมดอายุไปกับ session จึงต้องบอกตรง ๆ ไม่ปล่อยเป็นรูปแตก */
 function BotImage({ url, alt }: { url: string; alt: string }) {
   const [dead, setDead] = useState(false);
@@ -768,6 +973,20 @@ const CSS = `
   border-radius:6px;background:transparent;color:inherit;font:inherit;font-size:13.5px}
 
 .cv-fine{margin:0;font-size:11px;line-height:1.5;opacity:.45}
+
+/* ปุ่มใต้คำตอบ — จางไว้ไม่แย่งสายตาจากเนื้อหา ชี้หรือโฟกัสแล้วชัด */
+.cv-botrow{flex-direction:column;align-items:flex-start;gap:2px}
+.cv-acts{display:flex;gap:4px;padding-left:4px}
+.cv-act{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 8px;border:0;border-radius:7px;
+  background:transparent;color:var(--ink-2);font-size:12.5px}
+.cv-act:hover,.cv-act:focus-visible{color:var(--ink);background:rgba(128,128,128,.12)}
+
+/* ข้อความที่ส่งไม่สำเร็จ — ฟองจางลง + ป้ายบอกตรง ๆ (คงอยู่แม้โหลดหน้าใหม่) */
+.cv-unsent{flex-direction:column;align-items:flex-end;gap:3px}
+.cv-unsent .bubble{opacity:.6}
+.cv-unsent-tag{font-size:12px;color:var(--ink-2)}
+.cv-count{color:var(--ink-2);font-variant-numeric:tabular-nums}
+.cv-left{margin:0 4px 8px;font-size:13px;color:var(--ink-2);text-align:center}
 .cv-veil{display:none}
 
 @media (max-width:820px){
