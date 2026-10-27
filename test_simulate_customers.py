@@ -152,5 +152,16 @@ ok("--compare พิมพ์ตารางคุณภาพ + เวลา", 
 L.MOD._interpreter = None
 L.MOD.runtime = None
 
+print("\nredteam r3 (27 ต.ค.) ตัดสินเฉพาะเงื่อนไขที่ลูกค้าพิมพ์แล้ว")
+_g = {"id": "T", "brand": "modutech", "application": "เครื่องตรวจจับโลหะ", "opening": "สายพาน modutech สำหรับเครื่องตรวจจับโลหะ",
+      "pitch_mm": 12.7, "temp_c": 30, "wet_or_dry": "dry"}
+_tr = [{"role": "customer", "text": "สายพาน modutech สำหรับเครื่องตรวจจับโลหะ ตัวไหนดี"}, {"role": "bot", "text": "พิทช์เท่าไหร่ครับ"},
+       {"role": "customer", "text": "ห้องปกติ แห้ง"}, {"role": "bot", "text": "แนะนำ EC254 C และ EC127 C ครับ"}]
+_s = SC.score(_g, _tr, judge, "done")
+ok("ลูกค้าไม่เคยบอกพิทช์ → เสนอพิทช์อื่นไม่ผิดเงื่อนไข (R13#2)", _s["final_violations"] == [], _s["final_violations"])
+_tr2 = _tr[:2] + [{"role": "customer", "text": "ครึ่งนิ้ว แห้ง ห้องปกติ"}, _tr[3]]
+_s2 = SC.score(_g, _tr2, judge, "done")
+ok("ลูกค้าบอกครึ่งนิ้วแล้ว → EC254 C ผิดเงื่อนไข", _s2["final_violations"] == ["EC254 C"], _s2["final_violations"])
+
 print(f"\nรวม {passed}/{passed + failed}")
 sys.exit(1 if failed else 0)

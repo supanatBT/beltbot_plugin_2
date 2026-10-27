@@ -106,6 +106,31 @@ class Judge:
                                       g.get("pitch_mm"), g.get("temp_c"), g.get("wet_or_dry"))
         return dict(ok=f["kept"], hard_ok=hard["kept"], source=src, n_candidates=len(cands))
 
+    def stated_before(self, transcript: list[dict], bot_index: int) -> set:
+        """เงื่อนไขที่ลูกค้าพิมพ์ออกมาแล้ว ก่อนข้อความที่ bot_index ของบอท (pitch · temp · wet)"""
+        from brands.modutech.plugin import extract_modutech_slots
+        seen, b = set(), -1
+        for t in transcript:
+            if t["role"] == "bot":
+                b += 1
+                if b >= bot_index:
+                    break
+                continue
+            txt = t.get("text") or ""
+            if self.NF.parse_pitch(txt) is not None or self.NF.stated_pitch(txt) is not None:
+                seen.add("pitch")
+            if self.NF.parse_temp(txt) is not None:
+                seen.add("temp")
+            if extract_modutech_slots(txt, ()).get("wet_or_dry"):
+                seen.add("wet")
+        return seen
+
+    def hard_ok_stated(self, g: dict, stated: set) -> list[str]:
+        return self.NF.filter_by_need(self.cat, [p["belt_code"] for p in self.cat.products],
+                                      g.get("pitch_mm") if "pitch" in stated else None,
+                                      g.get("temp_c") if "temp" in stated else None,
+                                      g.get("wet_or_dry") if "wet" in stated else None)["kept"]
+
     def codes_in(self, text: str) -> list[str]:
         return list(self.detector.detect(text or "").parsed.belt_codes)
 
@@ -120,8 +145,8 @@ def score(g: dict, transcript: list[dict], judge: Judge, ended: str) -> dict:
         hit = any(any(x in b for x in g.get("expect_any", [])) for b in bot)
         return {**out, "reached": hit, "hit": hit, "violations": [], "mentioned": []}
     acc = judge.acceptable(g)
-    mentioned, recommended_codes, final_rec = [], [], []
-    for b in bot:
+    mentioned, recommended_codes, final_rec, final_i = [], [], [], -1
+    for bi, b in enumerate(bot):
         turn_rec = []
         for c in judge.codes_in(b):
             if c not in mentioned:
@@ -132,10 +157,13 @@ def score(g: dict, transcript: list[dict], judge: Judge, ended: str) -> dict:
         # เป็นการเตือนที่ถูกต้อง ไม่ใช่การแนะนำ (eval_mentions.py · sim4 G02)
         recommended_codes += [c for c in turn_rec if c not in recommended_codes]
         if turn_rec:
-            final_rec = turn_rec            # คำแนะนำสุดท้าย = เทิร์นล่าสุดที่บอทแนะนำรุ่น
+            final_rec, final_i = turn_rec, bi   # คำแนะนำสุดท้าย = เทิร์นล่าสุดที่บอทแนะนำรุ่น
     violations = [c for c in recommended_codes if c not in acc["hard_ok"]]
     # ตัวเลขสำหรับเล่ม: รายการภาพรวมก่อนลูกค้าบอกพิทช์ (sim4 G06 · G07) ไม่ใช่คำแนะนำสุดท้าย
-    final_violations = [c for c in final_rec if c not in acc["hard_ok"]]
+    # 27 ต.ค. (redteam r3 R13#2): ตัดสินเฉพาะเงื่อนไขที่ลูกค้าพิมพ์ออกมาแล้วก่อนเทิร์นนั้น — ลูกค้าไม่เคยบอกพิทช์
+    # บอทเสนอทุกพิทช์ไม่ใช่การผิดเงื่อนไข (ข้อเท็จจริงในเป้าหมายบอทมองไม่เห็น)
+    hard_final = judge.hard_ok_stated(g, judge.stated_before(transcript, final_i)) if final_rec else acc["hard_ok"]
+    final_violations = [c for c in final_rec if c not in hard_final]
     explained = [c for c in mentioned if c not in acc["hard_ok"] and c not in recommended_codes]
     if acc["ok"]:
         hit = any(c in acc["ok"] for c in mentioned)
