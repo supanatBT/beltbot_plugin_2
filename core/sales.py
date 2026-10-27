@@ -138,6 +138,18 @@ def escalation_gate(user_text: str, belt_code: Optional[str] = None,
     return Escalation(topics=topics, reply_th=reply, handoff_th=handoff, has_spec_question=spec)
 
 
+def escalation_again_th(esc: Escalation) -> str:
+    """ลูกค้าถามเรื่องการค้าเดิมซ้ำทันที ("กะราคาคร่าว ๆ ให้หน่อยไม่ได้เหรอ") — ไม่ตอบประโยคเดิมทุกตัวอักษร
+    redteam r4 R09#2 (27 ต.ค.): ลูกค้าเซ้าซี้ราคาซ้ำ บอทตอบข้อความเดิมซ้ำ · ยังไม่ให้ตัวเลขหรือรับปากเหมือนเดิม"""
+    from sales_contact import sales_contact_line_th
+    topic_txt = "/".join(esc.topics)
+    topic_txt = (" " + topic_txt + " ") if topic_txt[0].isascii() else topic_txt
+    contact = sales_contact_line_th()
+    reply = (f"ขออภัยครับ เรื่อง{topic_txt}ผมให้ตัวเลขหรือรับปากแทน{SALES_CONTACT_TH}ไม่ได้จริง ๆ "
+             f"เพราะขึ้นกับความกว้าง ความยาว และจำนวนที่สั่ง ระหว่างนี้ถ้าต้องการเทียบสเปกรุ่นอื่นเพิ่ม ถามผมได้เลยครับ")
+    return reply + ("\n" + contact if contact else "")
+
+
 def attach_handoff(d, handoff_th: str, topics: list) -> None:
     """
     คำถามผสม: ส่วนสเปกเดินตามปกติ ส่วนการค้าส่งฝ่ายขาย

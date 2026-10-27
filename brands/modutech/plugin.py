@@ -21,7 +21,7 @@ from brands.modutech.detect import ModutechDetector
 from brands.modutech.gates import Catalogue
 from brands.modutech.router import CatalogueSearch, ExploratoryQuery
 from core.protocol import BrandInfo, BrandSignal, DecideInput, Decision
-from core.sales import attach_handoff, escalation_gate
+from core.sales import attach_handoff, escalation_again_th, escalation_gate
 from core.text import any_word, has
 from brands.modutech import need_flow as NF
 
@@ -164,7 +164,8 @@ class ModutechPlugin:
     # slot ที่ decide รู้จัก — ค่าอื่นทิ้ง (ย้ายมาจาก webapi/bot.py _SLOT_KEYS ชั้น 6)
     SLOT_KEYS = ("wet_or_dry", "material", "line_shape", "operating_temp_c",
                  "pitch_mm", "temp_c", NF.FLOW_KEY, NF.PITCH_SAID_KEY,   # สี่ตัวนี้: ถามทีละข้อ (need_flow.py)
-                 "_need_text", "_reask")
+                 "_need_text", "_reask", "_esc_last")
+    ESC_LAST_KEY = "_esc_last"    # หัวข้อส่งฝ่ายขายของเทิร์นก่อน — ถามซ้ำทันทีได้ข้อความอีกแบบ (redteam r4 R09#2)
     REASK_KEY = "_reask"          # ขั้นที่ถามซ้ำไปแล้วหนึ่งครั้งเพราะอ่านคำตอบไม่ออก (กันวน)
     NEED_TEXT_KEY = "_need_text"  # ข้อความที่บอกงาน/อุตสาหกรรมล่าสุด — ใช้กับคำถามต่อที่เปลี่ยนแค่พิทช์/อุณหภูมิ
     NEED_TEXT_MAX = 300
@@ -201,6 +202,7 @@ class ModutechPlugin:
             mask_codes=tuple(codes.belt_codes) + tuple(codes.sprocket_codes)))
         slots = st["slots"]
         slots.pop(EXCLUDE_KEY, None)                       # "ขอรุ่นอื่น" ใช้ได้เทิร์นเดียว
+        last_esc = slots.pop(self.ESC_LAST_KEY, None)      # หัวข้อส่งฝ่ายขายของเทิร์นก่อน (ใช้ได้เทิร์นเดียว)
         if not codes.belt_codes:
             self._use_offered(inp.answer or text, st)
         if codes.belt_codes:
@@ -233,7 +235,10 @@ class ModutechPlugin:
             attach_handoff(d, esc.handoff_th, esc.topics)
             return d
         if esc and not esc.has_spec_question:
-            return Decision("escalate", self.info.key, esc.reply_th, f"หัวข้อ {esc.topics}",
+            again = last_esc == "/".join(esc.topics)
+            slots[self.ESC_LAST_KEY] = "/".join(esc.topics)
+            return Decision("escalate", self.info.key, escalation_again_th(esc) if again else esc.reply_th,
+                            f"หัวข้อ {esc.topics}" + (" (ถามซ้ำ)" if again else ""),
                             topic="escalate", effective_text=text,
                             payload=dict(codes=st["codes"], slots=dict(slots)))
         d = self._decide_core(text, st, codes, answer=inp.answer)

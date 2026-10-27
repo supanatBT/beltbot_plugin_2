@@ -179,6 +179,7 @@ def main() -> int:
     def _drop_need(o):
         if isinstance(o, dict):
             o.pop("_need_text", None)
+            o.pop("_esc_last", None)       # 27 ต.ค. หัวข้อส่งฝ่ายขายของเทิร์นก่อน (redteam r4) — สถานะภายใน
             for x in o.values():
                 _drop_need(x)
         elif isinstance(o, list):
@@ -206,6 +207,12 @@ def main() -> int:
     print(f"      26 ต.ค.: เลิกวนถามแบรนด์ซ้ำ {len(conv_loop)} บท ({len(loop_turns)} เทิร์น)"
           f" {sorted({k.split('|')[2] for k in loop_turns})}")
     conv_changed = conv_changed | conv_loop
+    # 27 ต.ค. (redteam r4 R09#2): ถามเรื่องการค้าเดิมซ้ำทันที → ข้อความส่งฝ่ายขายอีกแบบ (ของเดิมตอบประโยคเดิมซ้ำ)
+    again_turns = [k for k in a if isinstance(a[k], dict) and a[k].get("action") == "escalate"
+                   and isinstance(b.get(k), dict) and str(b[k].get("reason", "")).endswith("(ถามซ้ำ)")]
+    conv_again = {k.rsplit("|", 1)[0] for k in again_turns} - conv_changed
+    print(f"      27 ต.ค.: ถามการค้าเดิมซ้ำ → ข้อความอีกแบบ {len(conv_again)} บท ({len(again_turns)} เทิร์น)")
+    conv_changed = conv_changed | conv_again
     skipped =[k for k in a if k.rsplit("|", 1)[0] in conv_changed]
     diff = [k for k in sorted(set(a) & set(b)) if a[k] != b[k] and k not in skipped]
     print(f"      เฟส 2: ข้ามบทสนทนาที่ตั้งใจเลือกแบรนด์ต่าง {len(conv_changed)} บท ({len(skipped)} เทิร์น)")
