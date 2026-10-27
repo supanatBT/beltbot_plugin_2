@@ -179,7 +179,7 @@ ok("ไม่มีของเก็บ (เกินหนึ่งเทิ�
 pol_np = resolve(route_of(mx(0.13)), BRANDS, ["movex"], gate(0.582, -0.124), [])
 d7 = decide_with(pol_np.route)
 ok("not_product → reject_image ข้อความกลาง", d7.action == "reject_image" and d7.brand is None
-   and "ไม่เกี่ยวข้องกับสินค้า" in d7.reply_th, (d7.action, d7.brand))
+   and "ถ่ายใกล้กว่านี้" in d7.reply_th, (d7.action, d7.brand))
 pol_d = resolve(route_of(mx(0.70)), BRANDS, ["movex"], gate(0.84, 0.05), [])
 d8 = decide_with(pol_d.route)
 ok("direct → Modutech ไม่ถาม", d8.brand == "modutech" and d8.action != "ask", (d8.action, d8.reason))
@@ -309,7 +309,7 @@ ok("รูปใหม่ → ทิ้งของเก่า · เก็บ�
 
 e = engine(_Scorer(mx(0.13)), _Gate(GateReading("modutech", False, False, {"score": 0.58, "text": -0.12})))
 out = e.chat("", img(), [], session_id="s1")
-ok("IMG-003 ผ่านเครื่องยนต์ → ปฏิเสธทันที", "ไม่เกี่ยวข้องกับสินค้า" in out[0][-1]["content"]
+ok("IMG-003 ผ่านเครื่องยนต์ → ปฏิเสธทันที", "ถ่ายใกล้กว่านี้" in out[0][-1]["content"]
    and "s1" not in e.image_carry)
 
 e = engine(_Scorer(mx(0.70)), _Gate(boom=True))
@@ -344,7 +344,7 @@ ok("Movex dominant → ไม่มีข้อความเรื่องร
 e = engine(_Scorer(mx(0.13)), _Gate(GateReading("modutech", True, False, {})), all_scored=True)
 out = e.chat("", img(), [], session_id="s1")
 ok("ทุกแบรนด์มีตัวให้คะแนน → ไม่เรียก policy (ปฏิเสธแบบเดิม)", "s1" not in e.image_carry
-   and "❌" in out[0][-1]["content"] and "Image policy" not in out[2])
+   and "ถ่ายใกล้กว่านี้" in out[0][-1]["content"] and "Image policy" not in out[2])
 
 # ════════════════════════════ 4) image_gate ════════════════════════════
 print("\n4) brands/modutech/image_gate")

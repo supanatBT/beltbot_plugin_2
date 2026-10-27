@@ -184,7 +184,7 @@ for h in HISTORIES:
                all(any((p.strip() if isinstance(p, str) else p is not None) for p in s) for s in sent), sent)
 
             if i == "not_product":
-                ok(f"{tag}: ปฏิเสธรูป", "reject_image" in refs and "ไม่เกี่ยวข้อง" in reply, reply[:80])
+                ok(f"{tag}: ปฏิเสธรูป", "reject_image" in refs and reply == GENERIC_REJECT_IMAGE_TH, reply[:80])
             pending = h == "Modutech ถามค้าง"
             in_mod = h in ("คุย Modutech", "Modutech ถามค้าง")
             if i in ("ambiguous", "modutech_maybe") and in_mod:
