@@ -500,10 +500,27 @@ export default function Chat() {
     [patch, fail],
   );
 
+  /* ระหว่างนับถอยหลังส่งใหม่ของแชตนี้ ห้ามส่งข้อความใหม่ (ผู้ใช้เจอ 27 ต.ค.)
+     เดิมส่งได้ และข้อความใหม่ยกเลิกการส่งซ้ำของข้อความก่อน → ชนเพดานเหมือนกัน → ส่ง 3 ได้คำตอบ 1
+     ตอนนี้พิมพ์รอได้ แต่ส่งได้เมื่อข้อความก่อนได้คำตอบ หรือผู้ใช้กด "ยกเลิก" ที่กล่องแจ้งเตือน */
+  const waitingHere = !!failed?.until && failed.cid === activeId;
+  const waitLeft = waitingHere && failed ? Math.max(0, Math.ceil((failed.until - now) / 1000)) : 0;
+
   const send = (override?: string) => {
     const body = (override ?? text).trim();
     if (busyRef.current || preparing || (!body && !image)) return;
+    if (failed?.until && failed.cid === activeRef.current) return;
     void deliver({ body, image });
+  };
+
+  /** ข้อความที่ค้าง "ยังไม่ได้รับคำตอบ" (ถูกยกเลิก หรือโหลดหน้าใหม่) → ย้ายไปส่งใหม่ท้ายแชต ไม่ทิ้งฟองซ้ำ
+      เฉพาะข้อความตัวอักษร — ไฟล์รูปไม่ได้เก็บในเครื่อง จึงต้องแนบใหม่ */
+  const resendStale = (id: string, body: string) => {
+    if (busyRef.current || preparing || !body.trim()) return;
+    if (failed && failed.cid === activeRef.current) return; // จัดการข้อความที่รอส่งอยู่ก่อน
+    const cid = activeRef.current;
+    patch(cid, (c) => ({ ...c, messages: c.messages.filter((x) => x.id !== id) }));
+    void deliver({ body, image: null });
   };
 
   const deliverRef = useRef(deliver);
@@ -821,7 +838,26 @@ export default function Chat() {
                       {m.text && <div className="plain">{m.text}</div>}
                       {!m.text && !m.image && <div className="plain muted">(รูปที่แนบ)</div>}
                     </div>
-                    {m.failed && <span className="cv-unsent-tag">ยังไม่ได้รับคำตอบ</span>}
+                    {m.failed && (
+                      <span className="cv-unsent-tag">
+                        ยังไม่ได้รับคำตอบ
+                        {/* ข้อความที่รอส่งอยู่ (มีปุ่มในกล่องแจ้งเตือนแล้ว) ไม่ต้องมีปุ่มซ้ำ */}
+                        {failed?.userId !== m.id && m.text && !m.image && (
+                          <>
+                            {" · "}
+                            <button
+                              type="button"
+                              className="link cv-tag-link"
+                              onClick={() => resendStale(m.id, m.text)}
+                              disabled={busy || preparing || (!!failed && failed.cid === activeId)}
+                              aria-label={`ส่งข้อความนี้อีกครั้ง: ${m.text.slice(0, 30)}`}
+                            >
+                              ส่งอีกครั้ง
+                            </button>
+                          </>
+                        )}
+                      </span>
+                    )}
                   </div>
                 );
               if (m.role === "bot")
@@ -907,6 +943,11 @@ export default function Chat() {
               send();
             }}
           >
+            {waitingHere && (
+              <p className="cv-left" role="status">
+                กำลังรอส่งข้อความก่อนหน้า (อีก {waitLeft} วินาที) · พิมพ์รอไว้ได้ ส่งได้เมื่อข้อความก่อนหน้าได้คำตอบ
+              </p>
+            )}
             {/* turns_left มาจากเซิร์ฟเวอร์ตรง ๆ · บอกเฉพาะตอนใกล้ครบ ไม่รกจอ */}
             {active?.turnsLeft !== undefined && active.turnsLeft <= TURNS_WARN && (
               <p className="cv-left" role="status">
@@ -988,7 +1029,12 @@ export default function Chat() {
                   }
                 }}
               />
-              <button type="submit" className="send" disabled={busy || preparing || (!text.trim() && !image)}>
+              <button
+                type="submit"
+                className="send"
+                disabled={busy || preparing || waitingHere || (!text.trim() && !image)}
+                title={waitingHere ? "รอข้อความก่อนหน้าได้คำตอบก่อน" : undefined}
+              >
                 ส่ง
               </button>
             </div>
@@ -1132,6 +1178,7 @@ const CSS = `
 .cv-unsent{flex-direction:column;align-items:flex-end;gap:3px}
 .cv-unsent .bubble{opacity:.6}
 .cv-unsent-tag{font-size:12px;color:var(--ink-2)}
+.cv-tag-link{font-size:12px;color:var(--accent)}
 .cv-count{color:var(--ink-2);font-variant-numeric:tabular-nums}
 .cv-left{margin:0 4px 8px;font-size:13px;color:var(--ink-2);text-align:center}
 
