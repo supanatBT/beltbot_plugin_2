@@ -90,7 +90,12 @@ ok("ทักทาย", TPL.smalltalk(I) == OLD["SMALLTALK_TH"])
 ok("ทักทายกลับ (เฟส 2)", TPL.greeting(I) == expected_reply(OLD["SMALLTALK_TH"], "สวัสดีครับ"))
 ok("ลำดับในข้อความตาม order ไม่ใช่ลำดับที่ส่งมา", TPL.ask_brand(I[::-1]) == expected_reply(OLD["ASK_BRAND_TH"], ""))
 ok("ถามยืนยันเมื่อเจอสองแบรนด์", f'"{TPL.clarify_conflict(I)}"' in _oldr.replace('"\n                         "', ""))
-ok("ปฏิเสธรูป", spec.reject_th == OLD["REJECT_IMAGE_TH"])
+# 27 ต.ค. (ผู้ใช้เลือกถ้อยคำทางการ): ข้อความปฏิเสธรูปตั้งใจต่างจากของเดิม — ไม่กล่าวหาว่ารูปไม่เกี่ยว
+# (ของจริงที่ถ่ายไกลก็โดนปฏิเสธได้ · รูปเต็ม 0.568 → ครอป 0.888) · เทียบกับถ้อยคำที่ผู้ใช้อนุมัติแทนของเดิม
+REJECT_IMAGE_TH_27OCT = ("รูปนี้อาจถ่ายไกลเกินไป หรือยังไม่ชัดพอให้ระบุรุ่นโซ่ครับ "
+                         "กรุณาถ่ายจากด้านบนให้เห็นแผ่นโซ่เต็มกรอบ หรือแจ้งรหัสที่ปั๊มบนตัวโซ่ครับ")
+ok("ปฏิเสธรูป (ถ้อยคำใหม่ 27 ต.ค.)", spec.reject_th == REJECT_IMAGE_TH_27OCT and "ไม่เกี่ยวข้อง" not in spec.reject_th,
+   spec.reject_th)
 ok("คำตอบเลือกแบรนด์ (รวมเลขเมนู)",
    TPL.brand_answer_patterns(I[0]) == OLD["BRAND_ANSWERS"]["movex"]
    and TPL.brand_answer_patterns(I[1]) == OLD["BRAND_ANSWERS"]["modutech"])
