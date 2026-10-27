@@ -171,6 +171,33 @@ class ModutechPlugin:
     NEED_TEXT_MAX = 300
     OFFERED_KEY = "_offered"      # รุ่นที่คำตอบล่าสุดเสนอ (list) — ใช้เมื่อลูกค้าอ้างถึง ไม่ใช่โฟกัสทันที
 
+    # ── ปุ่มตอบเร็วของหน้าเว็บ (webapi/bot.py suggestions_for · 27 ต.ค.) ──
+    # อ่านอย่างเดียว ไม่เปลี่ยนสิ่งที่บอทตัดสินใจ · ข้อความที่ปุ่มส่งต้องเป็นคำตอบที่กฎเดิม (_read_rules / slot) อ่านออก
+    # — test_suggestions.py ส่งทุกปุ่มกลับเข้าบอทแล้วตรวจว่าคำถามเดิมไม่ถูกถามซ้ำ
+    QUICK_PITCHES = (12.7, 25.4, 50.8)
+
+    def reply_suggestions(self, pending: str, fields: dict) -> list:
+        """[(label, ข้อความที่ส่ง)] ของคำถามที่ค้างอยู่ · [] = ไม่มีปุ่ม (คำตอบปลายเปิด)"""
+        slots = fields.get("slots") if isinstance(fields.get("slots"), dict) else {}
+        flow = slots.get(NF.FLOW_KEY)
+        unknown = [("ไม่ทราบ", "ไม่ทราบ")]
+        if pending == "modutech_pitch":
+            said = slots.get(NF.PITCH_SAID_KEY)
+            near = NF.nearest_pitches(self.mod, said) if isinstance(said, (int, float)) else []
+            if flow in ("pitch_confirm", "pitch_retry") and near:
+                opts = [(NF._pitch_label(v), f"{v:g} มม.") for v in near]
+                return opts + ([("ไม่ใช่", "ไม่ใช่")] if flow == "pitch_confirm" else []) + unknown
+            have = set(NF.pitch_values(self.mod))
+            return [(NF._pitch_label(v), f"{v:g} มม.") for v in self.QUICK_PITCHES if v in have] + unknown
+        if pending == "modutech_temp":
+            return [("อุณหภูมิห้อง", "อุณหภูมิห้อง")] + unknown
+        if pending == "wet_or_dry":
+            opts = [("ไลน์เปียก", "ไลน์เปียก"), ("ไลน์แห้ง", "ไลน์แห้ง")]
+            return opts + (unknown if flow == "wet" else [])
+        if pending == "line_shape":
+            return [("วิ่งตรงอย่างเดียว", "วิ่งตรงอย่างเดียว"), ("มีช่วงโค้ง", "มีช่วงโค้ง")]
+        return []
+
     def sanitize_state(self, raw: dict) -> dict:
         """เก็บเฉพาะรหัสที่มีจริงในแคตตาล็อก · slot ที่รู้จักและเป็นค่าธรรมดา
         รหัสสเตอร์เป็นของเทิร์นเดียว ไม่กู้"""

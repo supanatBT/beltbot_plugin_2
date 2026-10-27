@@ -172,9 +172,11 @@ def create_app(cfg: Settings = default_settings, bot: Optional[BotAdapter] = Non
             msgs = [{"type": "text", "text": "ขออภัยครับ ระบบยังไม่มีคำตอบสำหรับคำถามนี้ รบกวนถามใหม่อีกครั้ง"}]
         # state ส่งกลับให้เบราว์เซอร์เก็บ ไว้กู้บทสนทนาเมื่อ session นี้หาย
         # ไม่มีข้อมูลส่วนบุคคล มีแค่รหัสรุ่นกับ slot ที่ลูกค้าบอกมาเอง
+        # suggestions (27 ต.ค.): ปุ่มตอบเร็วของคำถามที่ค้าง — ฟิลด์เพิ่ม ไม่เปลี่ยนฟิลด์เดิม
         return {"session_id": s.id, "messages": msgs,
                 "turns_left": max(0, cfg.max_turns - s.turns),
-                "state": bot.current_state(s)}
+                "state": bot.current_state(s),
+                "suggestions": bot.suggestions(s)}
 
     @app.post("/api/session/reset")
     async def reset(session_id: str = Form(""), _ip: str = Depends(client_ip)):

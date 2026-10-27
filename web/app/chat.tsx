@@ -23,24 +23,32 @@
 */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkBreaks from "remark-breaks";
+import Answer from "./components/Answer";
 import { prepareImage, ResizeError } from "@/lib/resize";
+import type { Convo, Msg, Suggestion, Vote } from "@/lib/chat-types";
+import { exportFileName, toMarkdown } from "@/lib/export";
 
-type Msg =
-  | { id: string; role: "user"; text: string; image?: string }
-  | { id: string; role: "bot"; text: string }
-  | { id: string; role: "bot-image"; url: string; alt: string }
-  | { id: string; role: "notice"; text: string; action?: "reset" | "retry" };
+type Outgoing = { body: string; image: { file: File; url: string } | null };
 
-type Convo = {
-  id: string;
-  title: string;
-  messages: Msg[];
-  sessionId: string; // session ฝั่งเซิร์ฟเวอร์ — ตายได้ตลอด ถือไว้เฉย ๆ
-  state: Record<string, unknown> | null; // DialogState ล่าสุดที่เซิร์ฟเวอร์ส่งกลับ
-  updated: number;
+/** ข้อความที่ส่งไม่สำเร็จและยังส่งใหม่ได้ — อยู่ในหน่วยความจำเท่านั้น (File ลง localStorage ไม่ได้)
+    ปุ่มส่งใหม่แสดงเฉพาะที่ notice ตัวนี้ notice เก่า ๆ เหลือแค่ข้อความ */
+type Failed = {
+  cid: string;
+  userId: string; // ฟองข้อความเดิม — ส่งใหม่ใช้ฟองเดิม ไม่เพิ่มฟองซ้ำ
+  noticeId: string;
+  out: Outgoing;
+  code: string;
+  attempt: number; // ล้มเหลวมาแล้วกี่ครั้ง
+  until: number; // เวลาที่จะส่งใหม่เอง (ms) · 0 = รอผู้ใช้กด
 };
+
+/* ส่งใหม่เองได้เฉพาะ error ที่รู้แน่ว่าเซิร์ฟเวอร์ยังไม่ได้ประมวลผลเทิร์นนั้น (ยกเลิกก่อนเรียกบอท)
+   upstream / หมดเวลา / เน็ตหลุด ไม่ส่งเอง เพราะ Space อาจตอบเทิร์นนั้นไปแล้ว ส่งซ้ำ = เทิร์นซ้ำใน session
+   ตัวเลข = จำนวนครั้งสูงสุดที่ส่งเอง · warming_up ให้มากหน่อยเพราะโหลดโมเดลบน CPU ฟรีใช้เวลาหลายนาที */
+const AUTO_RETRY: Record<string, number> = { warming_up: 8, busy: 3, per_minute: 2 };
+const AUTO_MAX_WAIT_S = 90; // retry_after นานกว่านี้ไม่นับถอยหลังเอง บอกเวลาแล้วให้ผู้ใช้กดเอง
+const TERMINAL = new Set(["session_full", "resume_too_large"]);
+const TURNS_WARN = 10; // เหลือข้อความน้อยกว่านี้จึงขึ้นบอก
 
 const STORE_KEY = "beltbot.chats.v2";
 const OLD_KEY = "beltbot.chat.v1"; // ของเวอร์ชันเดิมใน sessionStorage
@@ -85,10 +93,61 @@ const dayLabel = (ts: number) => {
   return d.toLocaleDateString("th-TH", { day: "numeric", month: "short" });
 };
 
+/** ปุ่มตอบเร็วจากเซิร์ฟเวอร์ — รับเฉพาะรูปที่คาด ไม่มีปุ่ม = undefined (เซิร์ฟเวอร์รุ่นเก่าไม่มีฟิลด์นี้) */
+function readSuggestions(v: unknown): Suggestion[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const out = v
+    .filter((x): x is Suggestion => !!x && typeof x.label === "string" && typeof x.text === "string")
+    .map((x) => ({ label: x.label.slice(0, 40), text: x.text.slice(0, 80) }))
+    .filter((x) => x.label.trim() && x.text.trim())
+    .slice(0, 8);
+  return out.length ? out : undefined;
+}
+
+/** วินาทีที่เซิร์ฟเวอร์ให้รอ → คำอ่านง่าย (ปัดขึ้น ไม่บอกเร็วกว่าความจริง) */
+const waitLabel = (s: number) =>
+  s < 90 ? `${Math.ceil(s)} วินาที` : s < 5400 ? `${Math.ceil(s / 60)} นาที` : `${Math.ceil(s / 3600)} ชั่วโมง`;
+
+/** คัดลอกคำตอบเป็นข้อความอ่านง่าย: ตัดเครื่องหมายตัวหนา/หัวข้อ/โค้ดของ markdown · คงรายการ "- " ไว้ */
+const plainText = (md: string) =>
+  md
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/__(.+?)__/g, "$1")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/`([^`]+)`/g, "$1")
+    .trim();
+
+async function copyText(s: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(s);
+    return true;
+  } catch {
+    // http ธรรมดา / เบราว์เซอร์เก่าไม่มี clipboard API — ใช้วิธีเลือกข้อความแทน
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = s;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+}
+
 /** ของที่ส่งกลับไปให้เซิร์ฟเวอร์กู้บทสนทนา — ข้อความล้วนกับ state เท่านั้น ไม่มีพาธรูป */
 function resumeBody(c: Convo): string {
+  // ข้อความที่ส่งไม่สำเร็จไม่ใช่ส่วนของบทสนทนาที่บอทเห็น — ไม่ส่งกลับไปเป็นประวัติ
   const msgs = c.messages
-    .filter((m): m is Extract<Msg, { role: "user" | "bot" }> => m.role === "user" || m.role === "bot")
+    .filter(
+      (m): m is Extract<Msg, { role: "user" | "bot" }> =>
+        (m.role === "user" && !m.failed) || m.role === "bot",
+    )
     .slice(-RESUME_TURNS * 2)
     .map((m) => ({
       role: m.role === "bot" ? "assistant" : "user",
@@ -118,7 +177,11 @@ export default function Chat() {
   const [sideOpen, setSideOpen] = useState(false);
   const [renaming, setRenaming] = useState("");
   const [storeWarned, setStoreWarned] = useState(false);
+  const [failed, setFailed] = useState<Failed | null>(null);
+  const [now, setNow] = useState(() => Date.now());
 
+  // busy ใน state อัปเดตช้ากว่าหนึ่งรอบ render — ตัวจับเวลาส่งใหม่ต้องเห็นค่าทันที กันส่งซ้อน
+  const busyRef = useRef(false);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -290,6 +353,7 @@ export default function Chat() {
     const next = convosRef.current.filter((x) => x.id !== id);
     const list = next.length ? next : [newConvo()];
     setConvos(list);
+    setFailed((f) => (f?.cid === id ? null : f)); // ไม่ส่งใหม่เข้าแชตที่ลบไปแล้ว
     if (id === activeRef.current) {
       setActiveId(list[0].id);
       setText("");
@@ -298,13 +362,42 @@ export default function Chat() {
   };
 
   // ── ส่งข้อความ ──
-  const send = useCallback(
-    async (override?: string) => {
-      const body = (override ?? text).trim();
-      if (busy || preparing || (!body && !image)) return;
+  /** บันทึกความล้มเหลว: ทำเครื่องหมายฟองว่ายังไม่ได้คำตอบ + notice ที่มีปุ่มส่งใหม่
+      ข้อความ error เป็นของเซิร์ฟเวอร์ (message_th) ตามเดิม หน้าเว็บเติมแค่เวลารอที่เซิร์ฟเวอร์บอกมา */
+  const fail = useCallback(
+    (cid: string, userId: string, out: Outgoing, code: string, text: string, retryAfter: number, attempt: number) => {
+      const terminal = TERMINAL.has(code);
+      const auto =
+        !terminal && attempt <= (AUTO_RETRY[code] ?? 0) && retryAfter > 0 && retryAfter <= AUTO_MAX_WAIT_S;
+      let full = text;
+      if (!terminal && !auto && retryAfter > AUTO_MAX_WAIT_S) {
+        full += ` (ลองใหม่ได้ในราว ${waitLabel(retryAfter)})`;
+      }
+      const noticeId = uid();
+      patch(cid, (c) => ({
+        ...c,
+        messages: [
+          ...c.messages.map((m) => (m.id === userId && m.role === "user" ? { ...m, failed: true } : m)),
+          { id: noticeId, role: "notice", text: full, action: terminal ? "reset" : "retry" },
+        ],
+      }));
+      setFailed(
+        terminal
+          ? null
+          : { cid, userId, noticeId, out, code, attempt, until: auto ? Date.now() + retryAfter * 1000 : 0 },
+      );
+    },
+    [patch],
+  );
 
-      let target = convosRef.current.find((c) => c.id === activeRef.current);
+  /** ส่งหนึ่งครั้ง · retry = ส่งข้อความที่ล้มเหลวซ้ำ ใช้ฟองเดิม ไม่เพิ่มฟองใหม่ */
+  const deliver = useCallback(
+    async (out: Outgoing, retry?: Failed) => {
+      if (busyRef.current) return;
+
+      let target = convosRef.current.find((c) => c.id === (retry ? retry.cid : activeRef.current));
       if (!target) {
+        if (retry) return setFailed(null); // แชตถูกลบไปแล้ว
         target = newConvo();
         setConvos((cs) => [target as Convo, ...cs]);
         setActiveId(target.id);
@@ -312,54 +405,73 @@ export default function Chat() {
       }
       const cid = target.id;
       const sentSid = target.sessionId;
-      const hadHistory = target.messages.some((m) => m.role === "user" || m.role === "bot");
-      const resume = hadHistory ? resumeBody(target) : "";
-      const sent = image;
+      const userId = retry ? retry.userId : uid();
+      // ประวัติก่อนข้อความนี้ — ตอนส่งใหม่ ฟองของข้อความนี้อยู่ในรายการแล้ว ต้องไม่ส่งไปเป็นประวัติซ้ำ
+      const prior = target.messages.filter((m) => m.id !== userId);
+      const hadHistory = prior.some((m) => (m.role === "user" && !m.failed) || m.role === "bot");
+      const resume = hadHistory ? resumeBody({ ...target, messages: prior }) : "";
+      const body = out.body;
 
-      patch(cid, (c) => ({
-        ...c,
-        title: c.title === NEW_TITLE ? titleFrom(body || "ถามจากรูป") : c.title,
-        messages: [...c.messages, { id: uid(), role: "user", text: body, image: sent?.url }],
-      }));
-      setText("");
-      setImage(null);
-      requestAnimationFrame(autoGrow);
+      busyRef.current = true;
       setBusy(true);
+      // ส่งเรื่องใหม่ในแชตเดียวกัน = ยกเลิกการส่งใหม่ที่ค้าง (ลำดับคำถามจะสลับ) · แชตอื่นไม่แตะ
+      setFailed((f) => (f && f.cid !== cid ? f : null));
+      if (retry) {
+        patch(cid, (c) => ({
+          ...c,
+          messages: c.messages
+            .filter((m) => m.id !== retry.noticeId)
+            .map((m) => (m.id === userId && m.role === "user" ? { ...m, failed: undefined } : m)),
+        }));
+      } else {
+        patch(cid, (c) => ({
+          ...c,
+          title: c.title === NEW_TITLE ? titleFrom(body || "ถามจากรูป") : c.title,
+          suggest: undefined, // ปุ่มของคำถามก่อนหน้าหมดความหมายแล้ว
+          messages: [...c.messages, { id: userId, role: "user", text: body, image: out.image?.url, at: Date.now() }],
+        }));
+        setText("");
+        setImage(null);
+        requestAnimationFrame(autoGrow);
+      }
 
       const form = new FormData();
       form.set("text", body);
       form.set("session_id", sentSid);
       if (resume) form.set("resume", resume);
-      if (sent) form.set("image", sent.file);
+      if (out.image) form.set("image", out.image.file);
 
+      const attempt = (retry?.attempt ?? 0) + 1;
       try {
         const res = await fetch("/api/chat", { method: "POST", body: form });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          const retryable = data.error !== "session_full" && data.error !== "resume_too_large";
-          addMsgs(cid, {
-            id: uid(),
-            role: "notice",
-            text: data.message_th || "ส่งไม่สำเร็จครับ รบกวนลองใหม่อีกครั้ง",
-            action: retryable ? "retry" : "reset",
-          });
-          if (retryable) {
-            setText(body);
-            if (sent) setImage(sent);
-          }
+          // Retry-After มาทาง header (app.py) — route.ts / space.ts ส่งต่อมาให้แล้ว
+          const ra = parseInt(res.headers.get("retry-after") || "", 10);
+          fail(
+            cid,
+            userId,
+            out,
+            String(data.error || `http_${res.status}`),
+            data.message_th || "ส่งไม่สำเร็จครับ รบกวนลองใหม่อีกครั้ง",
+            Number.isFinite(ra) ? ra : 0,
+            attempt,
+          );
           return;
         }
 
         const resumed = Boolean(resume) && Boolean(sentSid) && data.session_id !== sentSid;
         const incoming: Msg[] = (data.messages || []).map((m: any) =>
           m.type === "image"
-            ? { id: uid(), role: "bot-image", url: m.url, alt: m.alt || "แบบสินค้า" }
-            : { id: uid(), role: "bot", text: m.text },
+            ? { id: uid(), role: "bot-image", url: m.url, alt: m.alt || "แบบสินค้า", at: Date.now() }
+            : { id: uid(), role: "bot", text: m.text, at: Date.now() },
         );
         patch(cid, (c) => ({
           ...c,
           sessionId: data.session_id || c.sessionId,
           state: data.state && Object.keys(data.state).length ? data.state : c.state,
+          turnsLeft: typeof data.turns_left === "number" ? data.turns_left : c.turnsLeft,
+          suggest: readSuggestions(data.suggestions),
           messages: [
             ...c.messages,
             ...(resumed
@@ -378,21 +490,100 @@ export default function Chat() {
           ],
         }));
       } catch {
-        addMsgs(cid, {
-          id: uid(),
-          role: "notice",
-          text: "เชื่อมต่อไม่ได้ครับ ตรวจอินเทอร์เน็ตแล้วลองใหม่",
-          action: "retry",
-        });
-        setText(body);
-        if (sent) setImage(sent);
+        fail(cid, userId, out, "network", "เชื่อมต่อไม่ได้ครับ ตรวจอินเทอร์เน็ตแล้วลองใหม่", 0, attempt);
       } finally {
+        busyRef.current = false;
         setBusy(false);
         inputRef.current?.focus();
       }
     },
-    [busy, preparing, text, image, patch, addMsgs],
+    [patch, fail],
   );
+
+  const send = (override?: string) => {
+    const body = (override ?? text).trim();
+    if (busyRef.current || preparing || (!body && !image)) return;
+    void deliver({ body, image });
+  };
+
+  const deliverRef = useRef(deliver);
+  deliverRef.current = deliver;
+
+  // ── นับถอยหลังแล้วส่งใหม่เอง ──
+  useEffect(() => {
+    if (!failed?.until) return;
+    setNow(Date.now());
+    const t = setInterval(() => setNow(Date.now()), 500);
+    return () => clearInterval(t);
+  }, [failed?.until]);
+
+  useEffect(() => {
+    if (failed?.until && now >= failed.until && !busy) void deliverRef.current(failed.out, failed);
+  }, [now, failed, busy]);
+
+  /** เอาข้อความที่ส่งไม่สำเร็จกลับมาไว้ในช่องพิมพ์ให้แก้ — ฟองเดิมคงเครื่องหมาย "ยังไม่ได้ส่ง" ไว้ */
+  const editFailed = (f: Failed) => {
+    setFailed(null);
+    setText(f.out.body);
+    setImage(f.out.image);
+    requestAnimationFrame(() => {
+      autoGrow();
+      inputRef.current?.focus();
+    });
+  };
+
+  // ── 👍/👎 — กดซ้ำอันเดิม = ยกเลิก · ไม่เลื่อนบทสนทนาขึ้นบนสุด (ไม่ใช่การคุยต่อ) ──
+  const setVote = (cid: string, msgId: string, v: Vote) =>
+    setConvos((cs) =>
+      cs.map((c) =>
+        c.id !== cid
+          ? c
+          : {
+              ...c,
+              messages: c.messages.map((m) =>
+                m.id === msgId && m.role === "bot" ? { ...m, vote: m.vote === v ? undefined : v } : m,
+              ),
+            },
+      ),
+    );
+
+  // ── ส่งออก ──
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = (e: Event) => {
+      if (e instanceof KeyboardEvent ? e.key === "Escape" : !menuRef.current?.contains(e.target as Node))
+        setMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", close);
+    };
+  }, [menuOpen]);
+
+  const exportMd = () => {
+    setMenuOpen(false);
+    if (!active) return;
+    const blob = new Blob([toMarkdown(active)], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = exportFileName(active, "md");
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  /** PDF ผ่านหน้าพิมพ์ของเบราว์เซอร์ (เลือก "บันทึกเป็น PDF") — ไม่เพิ่ม dependency
+      CSS @media print ซ่อนแถบ ช่องพิมพ์ ปุ่ม และคลี่รายการข้อความให้ยาวเต็มหน้า */
+  const exportPdf = () => {
+    setMenuOpen(false);
+    requestAnimationFrame(() => window.print());
+  };
 
   const messages = active?.messages || [];
   const empty = messages.length === 0;
@@ -555,7 +746,58 @@ export default function Chat() {
                 <p>Movex โซ่ท็อปเชน · Modutech สายพานโมดูลาร์</p>
               </div>
             </div>
+            <div className="cv-menu" ref={menuRef}>
+              <button
+                className="ghost cv-export"
+                onClick={() => setMenuOpen((v) => !v)}
+                disabled={empty}
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                aria-label="ส่งออกบทสนทนานี้"
+                title="ส่งออกบทสนทนานี้"
+              >
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden>
+                  <path
+                    d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="cv-export-label">ส่งออก</span>
+              </button>
+              {menuOpen && (
+                <div className="cv-pop" role="menu" aria-label="รูปแบบไฟล์">
+                  <button role="menuitem" onClick={exportMd} autoFocus>
+                    <b>Markdown (.md)</b>
+                    <span>ข้อความล้วน แก้ต่อได้ · แนบในเล่ม</span>
+                  </button>
+                  <button role="menuitem" onClick={exportPdf}>
+                    <b>PDF</b>
+                    <span>เปิดหน้าพิมพ์ เลือก “บันทึกเป็น PDF”</span>
+                  </button>
+                  <p>รูปที่แนบและรูปแบบสินค้าไม่ได้รวมในไฟล์</p>
+                </div>
+              )}
+            </div>
           </header>
+
+          {/* หัวกระดาษตอนพิมพ์เท่านั้น — บอกว่าเป็นบทสนทนาไหน ส่งออกเมื่อไหร่ */}
+          {active && (
+            <div className="cv-print-head" aria-hidden>
+              <b>{active.title}</b>
+              <span>
+                Beltbot · ส่งออกเมื่อ{" "}
+                {new Date().toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
+              </span>
+              <span>
+                คำตอบมาจากแคตตาล็อก ราคา สต็อก และระยะเวลาส่งของ ฝ่ายขายเป็นผู้ยืนยัน ·
+                รูปแบบสินค้าในแชตเก่าอาจไม่แสดง (ลิงก์หมดอายุ)
+              </span>
+            </div>
+          )}
 
           <main className="list" ref={listRef} aria-live="polite">
             {empty && (
@@ -573,23 +815,27 @@ export default function Chat() {
             {messages.map((m) => {
               if (m.role === "user")
                 return (
-                  <div key={m.id} className="row me">
+                  <div key={m.id} className={"row me" + (m.failed ? " cv-unsent" : "")}>
                     <div className="bubble user">
                       {m.image && <img src={m.image} alt="รูปที่แนบ" className="thumb" />}
                       {m.text && <div className="plain">{m.text}</div>}
                       {!m.text && !m.image && <div className="plain muted">(รูปที่แนบ)</div>}
                     </div>
+                    {m.failed && <span className="cv-unsent-tag">ยังไม่ได้รับคำตอบ</span>}
                   </div>
                 );
               if (m.role === "bot")
                 return (
-                  <div key={m.id} className="row">
-                    <div className="bubble bot md">
-                      <ReactMarkdown remarkPlugins={[remarkBreaks]}>{m.text}</ReactMarkdown>
-                    </div>
-                  </div>
+                  <BotText
+                    key={m.id}
+                    text={m.text}
+                    vote={m.vote}
+                    onVote={(v) => active && setVote(active.id, m.id, v)}
+                  />
                 );
               if (m.role === "bot-image") return <BotImage key={m.id} url={m.url} alt={m.alt} />;
+              const live = m.action === "retry" && failed?.noticeId === m.id ? failed : null;
+              const left = live?.until ? Math.max(0, Math.ceil((live.until - now) / 1000)) : 0;
               return (
                 <div key={m.id} className="notice" role="status">
                   <span>{m.text}</span>
@@ -598,18 +844,51 @@ export default function Chat() {
                       เริ่มแชตใหม่
                     </button>
                   )}
-                  {m.action === "retry" && (
-                    <button
-                      className="link"
-                      onClick={() => send()}
-                      disabled={busy || preparing || (!text.trim() && !image)}
-                    >
-                      ส่งอีกครั้ง
-                    </button>
+                  {live && live.until > 0 && (
+                    <>
+                      {/* ตัวเลขเปลี่ยนทุกวินาที — ไม่ให้โปรแกรมอ่านจอประกาศซ้ำทุกวินาที */}
+                      <span className="cv-count" aria-live="off">
+                        ส่งใหม่อัตโนมัติใน {left} วินาที
+                      </span>
+                      <button className="link" onClick={() => void deliver(live.out, live)} disabled={busy}>
+                        ส่งเลย
+                      </button>
+                      <button className="link" onClick={() => setFailed({ ...live, until: 0 })}>
+                        ยกเลิก
+                      </button>
+                    </>
+                  )}
+                  {live && live.until === 0 && (
+                    <>
+                      <button className="link" onClick={() => void deliver(live.out, live)} disabled={busy}>
+                        ส่งอีกครั้ง
+                      </button>
+                      <button className="link" onClick={() => editFailed(live)} disabled={busy}>
+                        แก้ก่อนส่ง
+                      </button>
+                    </>
                   )}
                 </div>
               );
             })}
+            {/* ปุ่มตอบเร็ว — เฉพาะเมื่อข้อความล่าสุดเป็นของบอท (คำถามที่ค้างอยู่จริง) */}
+            {!busy &&
+              !!active?.suggest?.length &&
+              (messages[messages.length - 1]?.role === "bot" || messages[messages.length - 1]?.role === "bot-image") && (
+                <div className="cv-quick" role="group" aria-label="ตอบเร็ว">
+                  {active.suggest.map((sg) => (
+                    <button
+                      key={sg.label}
+                      type="button"
+                      onClick={() => send(sg.text)}
+                      disabled={preparing}
+                      aria-label={`ตอบ: ${sg.label}`}
+                    >
+                      {sg.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             {busy && (
               <div className="row">
                 <div className="bubble bot typing" aria-label="กำลังตอบ">
@@ -628,6 +907,21 @@ export default function Chat() {
               send();
             }}
           >
+            {/* turns_left มาจากเซิร์ฟเวอร์ตรง ๆ · บอกเฉพาะตอนใกล้ครบ ไม่รกจอ */}
+            {active?.turnsLeft !== undefined && active.turnsLeft <= TURNS_WARN && (
+              <p className="cv-left" role="status">
+                {active.turnsLeft > 0 ? (
+                  <>บทสนทนานี้ถามต่อได้อีก {active.turnsLeft} ข้อความ จากนั้นต้องเริ่มแชตใหม่</>
+                ) : (
+                  <>
+                    บทสนทนานี้ครบจำนวนข้อความแล้ว{" "}
+                    <button type="button" className="link" onClick={startNew} disabled={busy}>
+                      เริ่มแชตใหม่
+                    </button>
+                  </>
+                )}
+              </p>
+            )}
             {(image || preparing) && (
               <div className="attach">
                 {preparing ? (
@@ -706,6 +1000,64 @@ export default function Chat() {
   );
 }
 
+/** คำตอบของบอท + ปุ่มคัดลอก + 👍/👎
+    ความเห็นเก็บในเบราว์เซอร์นี้เท่านั้น ไม่มีที่เก็บฝั่งเซิร์ฟเวอร์ — บอกตรง ๆ ใต้ปุ่มเมื่อกดแล้ว */
+function BotText({ text, vote, onVote }: { text: string; vote?: Vote; onVote: (v: Vote) => void }) {
+  const [copied, setCopied] = useState<"" | "ok" | "fail">("");
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(""), 1800);
+    return () => clearTimeout(t);
+  }, [copied]);
+  const thumb = (v: Vote, label: string, d: string) => (
+    <button
+      type="button"
+      className={"cv-act cv-vote" + (vote === v ? " cv-on" : "")}
+      aria-label={label}
+      aria-pressed={vote === v}
+      title={label}
+      onClick={() => onVote(v)}
+    >
+      <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden>
+        <path d={d} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+  return (
+    <div className="row cv-botrow">
+      <div className="bubble bot md">
+        <Answer text={text} />
+      </div>
+      <div className="cv-acts">
+        <button
+          type="button"
+          className="cv-act"
+          aria-label="คัดลอกคำตอบ"
+          title="คัดลอกคำตอบ"
+          onClick={async () => setCopied((await copyText(plainText(text))) ? "ok" : "fail")}
+        >
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden>
+            <path
+              d="M9 9h10v11H9zM15 9V4H5v11h4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span role="status">{copied === "ok" ? "คัดลอกแล้ว" : copied === "fail" ? "คัดลอกไม่ได้" : "คัดลอก"}</span>
+        </button>
+        {thumb("up", "คำตอบนี้มีประโยชน์", "M7 11v9H4v-9zM7 11l4-7c1.5 0 2.5 1 2.2 2.6L12.6 10H19a2 2 0 0 1 2 2.3l-1.2 6A2 2 0 0 1 17.8 20H7")}
+        {thumb("down", "คำตอบนี้ไม่มีประโยชน์", "M7 13V4H4v9zM7 13l4 7c1.5 0 2.5-1 2.2-2.6L12.6 14H19a2 2 0 0 0 2-2.3l-1.2-6A2 2 0 0 0 17.8 4H7")}
+        {vote && <span className="cv-vote-note">บันทึกไว้ในเบราว์เซอร์นี้เท่านั้น ไม่ได้ส่งถึงผู้พัฒนา · ส่งออกพร้อมบทสนทนาได้</span>}
+      </div>
+      {vote && (
+        <span className="cv-print-vote">ความเห็นผู้ใช้: {vote === "up" ? "👍 มีประโยชน์" : "👎 ไม่มีประโยชน์"}</span>
+      )}
+    </div>
+  );
+}
+
 /** รูป drawing — token ของแชตเก่าหมดอายุไปกับ session จึงต้องบอกตรง ๆ ไม่ปล่อยเป็นรูปแตก */
 function BotImage({ url, alt }: { url: string; alt: string }) {
   const [dead, setDead] = useState(false);
@@ -768,6 +1120,89 @@ const CSS = `
   border-radius:6px;background:transparent;color:inherit;font:inherit;font-size:13.5px}
 
 .cv-fine{margin:0;font-size:11px;line-height:1.5;opacity:.45}
+
+/* ปุ่มใต้คำตอบ — จางไว้ไม่แย่งสายตาจากเนื้อหา ชี้หรือโฟกัสแล้วชัด */
+.cv-botrow{flex-direction:column;align-items:flex-start;gap:2px}
+.cv-acts{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding-left:4px}
+.cv-act{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 8px;border:0;border-radius:7px;
+  background:transparent;color:var(--ink-2);font-size:12.5px;white-space:nowrap}
+.cv-act:hover,.cv-act:focus-visible{color:var(--ink);background:rgba(128,128,128,.12)}
+
+/* ข้อความที่ส่งไม่สำเร็จ — ฟองจางลง + ป้ายบอกตรง ๆ (คงอยู่แม้โหลดหน้าใหม่) */
+.cv-unsent{flex-direction:column;align-items:flex-end;gap:3px}
+.cv-unsent .bubble{opacity:.6}
+.cv-unsent-tag{font-size:12px;color:var(--ink-2)}
+.cv-count{color:var(--ink-2);font-variant-numeric:tabular-nums}
+.cv-left{margin:0 4px 8px;font-size:13px;color:var(--ink-2);text-align:center}
+
+/* ส่งออก — ปุ่มในหัว + เมนูเล็ก */
+.cv-menu{position:relative;flex:0 0 auto}
+.cv-export{display:inline-flex;align-items:center;gap:6px}
+.cv-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:250px;padding:6px;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.14)}
+.cv-pop button{display:flex;flex-direction:column;align-items:flex-start;width:100%;padding:8px 10px;border:0;
+  border-radius:8px;background:transparent;color:var(--ink);text-align:left}
+.cv-pop button:hover,.cv-pop button:focus-visible{background:var(--bg)}
+.cv-pop b{font-weight:600;font-size:14px}
+.cv-pop span{font-size:12.5px;color:var(--ink-2)}
+.cv-pop p{margin:4px 10px 4px;font-size:12px;color:var(--ink-2)}
+@media (max-width:520px){.cv-export-label{display:none}.cv-export{padding:6px 9px}}
+
+.cv-vote{padding:0 7px}
+.cv-on{color:var(--accent)}
+.cv-on:hover{color:var(--accent)}
+/* แยกบรรทัดของตัวเอง ไม่เบียดปุ่มบนจอแคบ */
+.cv-vote-note{flex-basis:100%;font-size:12px;line-height:1.45;color:var(--ink-2);padding:0 4px 2px}
+
+.cv-print-head,.cv-print-vote{display:none}
+
+/* ปุ่มตอบเร็ว (รอบ 4) — ชิดซ้ายใต้คำถามของบอท กดง่ายบนมือถือ (สูง ≥ 36px) */
+.cv-quick{display:flex;flex-wrap:wrap;gap:8px;padding:2px 0 4px}
+.cv-quick button{min-height:36px;padding:6px 14px;border:1px solid var(--accent);border-radius:999px;
+  background:var(--panel);color:var(--accent);font-size:14px;font-weight:500}
+.cv-quick button:hover:not(:disabled),.cv-quick button:focus-visible{background:var(--accent);color:var(--accent-ink)}
+
+/* ── คำตอบอ่านง่าย (รอบ 3) ── */
+.md h1,.md h2,.md h3,.md h4{font-size:1.02em;font-weight:600;line-height:1.4;margin:.75em 0 .3em}
+.md h1:first-child,.md h2:first-child,.md h3:first-child{margin-top:0}
+/* รหัสรุ่นที่บอททำตัวหนามา — สีเน้นของธีม (ผ่าน AA ทั้งสองโหมด) */
+.md strong{font-weight:600;color:var(--accent)}
+.md code{padding:.05em .35em;border-radius:5px;background:var(--bg);border:1px solid var(--line)}
+.md li{margin:.1em 0}
+.md hr{border:0;border-top:1px solid var(--line);margin:.8em 0}
+.cv-table{max-width:100%;overflow-x:auto;margin:.4em 0 .7em;border:1px solid var(--line);border-radius:10px}
+.cv-table:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cv-table table{border-collapse:collapse;width:100%;font-size:.93em;font-variant-numeric:tabular-nums}
+.cv-table th,.cv-table td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.cv-table th{background:var(--bg);font-weight:600}
+.cv-table tr:last-child td{border-bottom:0}
+.cv-contact{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:.6em;padding-top:.6em;
+  border-top:1px dashed var(--line)}
+.cv-contact-label{font-size:.9em;color:var(--ink-2)}
+.cv-chip{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:4px 11px;border:1px solid var(--line);
+  border-radius:999px;color:var(--ink);text-decoration:none;font-size:.92em;background:var(--panel)}
+.cv-chip:hover,.cv-chip:focus-visible{border-color:var(--accent);color:var(--accent)}
+
+/* พิมพ์ / บันทึกเป็น PDF — เอาเฉพาะบทสนทนา สีสว่างเสมอ (โหมดมืดพิมพ์แล้วหมึกเปลือง) */
+@media print{
+  :root{--bg:#fff;--panel:#fff;--ink:#111;--ink-2:#444;--line:#bbb;--user:#e9f0fa;--user-ink:#111;
+    --notice:#f4f4f4;--notice-line:#ccc;color-scheme:light}
+  @page{margin:14mm}
+  body{background:#fff}
+  .cv-side,.cv-veil,.top,.composer,.cv-acts,.typing,.notice .link,.cv-count,.empty,.cv-quick{display:none!important}
+  .cv-wrap,.cv-main,.shell,.list{height:auto!important;overflow:visible!important;max-width:none}
+  .cv-wrap{display:block}
+  .list{padding:0}
+  .cv-print-head{display:flex;flex-direction:column;gap:2px;margin:0 0 14px;padding-bottom:10px;
+    border-bottom:1px solid #999;font-size:12px;color:#444}
+  .cv-print-head b{font-size:17px;color:#111}
+  .cv-print-vote{display:block;font-size:12px;color:#444;padding-left:4px}
+  .bubble,.notice,.drawing{break-inside:avoid}
+  .cv-table{overflow:visible;border-color:#999}
+  .cv-chip{border:0;padding:0;min-height:0}
+  .bubble.user{border:1px solid #c5d3e6}
+  .cv-unsent .bubble{opacity:1}
+}
 .cv-veil{display:none}
 
 @media (max-width:820px){
