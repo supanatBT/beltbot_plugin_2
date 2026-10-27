@@ -322,6 +322,59 @@ def _sanitize_legacy(raw: Any, mod: Any) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════════
+# ปุ่มตอบเร็ว (27 ต.ค. · ผู้ใช้เลือกทาง ข: backend ส่งฟิลด์เพิ่ม)
+# ═══════════════════════════════════════════════════════════════
+#
+# ฟิลด์ใหม่ใน response — เพิ่มอย่างเดียว ไม่เปลี่ยนสิ่งที่บอทตัดสินใจ
+#     suggestions: [{"label": "½ นิ้ว", "text": "12.7 มม."}, ...]   ว่าง = ไม่มีปุ่ม
+# label/text เป็นข้อความไทยที่ผู้ใช้เห็นหรือพิมพ์เองได้อยู่แล้ว ไม่มีชื่อฟิลด์ภายในหรือ path
+# ถามแบรนด์ = ทำที่นี่ (แกนกลาง) · คำถามของแบรนด์ = plugin.reply_suggestions(pending, fields) ถ้ามี
+# ไม่รู้จักแบรนด์ใด (test_webapi_sanitize ตรวจว่าไม่มีชื่อแบรนด์ในไฟล์นี้)
+
+SUGGEST_MAX = 8
+SUGGEST_LABEL_MAX = 40
+SUGGEST_TEXT_MAX = 80
+_BRAND_CONFIRM = "brand:"
+
+
+def suggestions_for(state: Any, mod: Any) -> list[dict]:
+    if not isinstance(state, dict):
+        return []
+    pending = state.get("pending")
+    plugins = getattr(mod, "plugins", None)
+    if not isinstance(pending, str) or not pending or not plugins:
+        return []
+    pairs: list = []
+    if pending == "brand":
+        pairs = [(f"{p.info.name} ({p.info.kind_th})", p.info.name)
+                 for p in sorted(plugins.values(), key=lambda p: p.info.order)]
+    elif pending.startswith(_BRAND_CONFIRM):
+        pairs = [("ใช่", "ใช่"), ("ไม่ใช่", "ไม่ใช่")]
+    else:
+        for key, p in plugins.items():
+            fn = getattr(p, "reply_suggestions", None)
+            if fn is None:
+                continue
+            pre = f"{key}_"
+            fields = {k[len(pre):]: v for k, v in state.items() if isinstance(k, str) and k.startswith(pre)}
+            try:
+                pairs = list(fn(pending, fields) or [])
+            except Exception:                           # noqa: BLE001 — ปุ่มเป็นของเสริม พังแล้วไม่มีปุ่ม ไม่ล้มเทิร์น
+                log.exception("สร้างปุ่มตอบเร็วไม่สำเร็จ")
+                pairs = []
+            if pairs:
+                break
+    out = []
+    for pair in pairs[:SUGGEST_MAX]:
+        if not (isinstance(pair, (tuple, list)) and len(pair) == 2):
+            continue
+        label, text = (str(x).strip() for x in pair)
+        if label and text and len(label) <= SUGGEST_LABEL_MAX and len(text) <= SUGGEST_TEXT_MAX:
+            out.append({"label": label, "text": text})
+    return out
+
+
+# ═══════════════════════════════════════════════════════════════
 # adapter
 # ═══════════════════════════════════════════════════════════════
 
@@ -392,6 +445,16 @@ class BotAdapter:
             return dict(self._module()._dialog_states.get(s.bot_session_id) or {})
         except Exception:                               # noqa: BLE001
             return {}
+
+    def suggestions(self, s: BotSession) -> list[dict]:
+        """ปุ่มตอบเร็วของคำถามที่บอทถามค้างใน session นี้ — ไม่มีคำถามค้าง = []"""
+        if self._fn is None:
+            return []
+        try:
+            return suggestions_for(self.current_state(s), self._module())
+        except Exception:                               # noqa: BLE001
+            log.exception("ปุ่มตอบเร็วผิดพลาด")
+            return []
 
     def turn(self, s: BotSession, text: str, image) -> tuple[list, str]:
         """เรียกบอทหนึ่งเทิร์น คืน (ข้อความใหม่ของ assistant ในเทิร์นนี้, decision)"""

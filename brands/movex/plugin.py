@@ -193,6 +193,24 @@ class MovexPlugin:
     def on_brand_switch(self, st: dict) -> dict:
         return {**st, "pids": [], "series": None}
 
+    # ── ปุ่มตอบเร็วของหน้าเว็บ (webapi/bot.py suggestions_for · 27 ต.ค.) — อ่านอย่างเดียว ──
+    QUICK_WIDTH_MAX = 8
+
+    def reply_suggestions(self, pending: str, fields: dict) -> list:
+        """ถามความกว้าง → ปุ่มละความกว้าง ส่งรหัสรุ่นเต็ม (อ่านเป็นรหัสชัด ไม่ต้องตีความตัวเลข)"""
+        if pending != "movex_width":
+            return []
+        members = self.mx_series_members.get(fields.get("series") or "", [])
+        if not members or len(members) > self.QUICK_WIDTH_MAX:
+            return []                                   # ตัวเลือกเยอะเกิน — ปล่อยให้พิมพ์ตามรายการในข้อความ
+        out = []
+        for pid in sorted(members, key=lambda x: self.mx[x].get("Plate_Width_mm", 0)):
+            p = self.mx[pid]
+            w, ref = p.get("Plate_Width_mm"), str(p.get("Ref") or "").strip()
+            if isinstance(w, (int, float)) and ref:
+                out.append((f"{w:g} มม.", ref))
+        return out
+
     def sanitize_state(self, raw: dict) -> dict:
         """ย้ายมาจาก webapi/bot.py sanitize_dialog_state (ชั้น 6) — เก็บเฉพาะ pid ที่มีจริง"""
         pids = raw.get("pids")

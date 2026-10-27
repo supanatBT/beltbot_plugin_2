@@ -25,7 +25,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Answer from "./components/Answer";
 import { prepareImage, ResizeError } from "@/lib/resize";
-import type { Convo, Msg, Vote } from "@/lib/chat-types";
+import type { Convo, Msg, Suggestion, Vote } from "@/lib/chat-types";
 import { exportFileName, toMarkdown } from "@/lib/export";
 
 type Outgoing = { body: string; image: { file: File; url: string } | null };
@@ -92,6 +92,17 @@ const dayLabel = (ts: number) => {
   if (same(d, y)) return "เมื่อวาน";
   return d.toLocaleDateString("th-TH", { day: "numeric", month: "short" });
 };
+
+/** ปุ่มตอบเร็วจากเซิร์ฟเวอร์ — รับเฉพาะรูปที่คาด ไม่มีปุ่ม = undefined (เซิร์ฟเวอร์รุ่นเก่าไม่มีฟิลด์นี้) */
+function readSuggestions(v: unknown): Suggestion[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const out = v
+    .filter((x): x is Suggestion => !!x && typeof x.label === "string" && typeof x.text === "string")
+    .map((x) => ({ label: x.label.slice(0, 40), text: x.text.slice(0, 80) }))
+    .filter((x) => x.label.trim() && x.text.trim())
+    .slice(0, 8);
+  return out.length ? out : undefined;
+}
 
 /** วินาทีที่เซิร์ฟเวอร์ให้รอ → คำอ่านง่าย (ปัดขึ้น ไม่บอกเร็วกว่าความจริง) */
 const waitLabel = (s: number) =>
@@ -416,6 +427,7 @@ export default function Chat() {
         patch(cid, (c) => ({
           ...c,
           title: c.title === NEW_TITLE ? titleFrom(body || "ถามจากรูป") : c.title,
+          suggest: undefined, // ปุ่มของคำถามก่อนหน้าหมดความหมายแล้ว
           messages: [...c.messages, { id: userId, role: "user", text: body, image: out.image?.url, at: Date.now() }],
         }));
         setText("");
@@ -459,6 +471,7 @@ export default function Chat() {
           sessionId: data.session_id || c.sessionId,
           state: data.state && Object.keys(data.state).length ? data.state : c.state,
           turnsLeft: typeof data.turns_left === "number" ? data.turns_left : c.turnsLeft,
+          suggest: readSuggestions(data.suggestions),
           messages: [
             ...c.messages,
             ...(resumed
@@ -858,6 +871,24 @@ export default function Chat() {
                 </div>
               );
             })}
+            {/* ปุ่มตอบเร็ว — เฉพาะเมื่อข้อความล่าสุดเป็นของบอท (คำถามที่ค้างอยู่จริง) */}
+            {!busy &&
+              !!active?.suggest?.length &&
+              (messages[messages.length - 1]?.role === "bot" || messages[messages.length - 1]?.role === "bot-image") && (
+                <div className="cv-quick" role="group" aria-label="ตอบเร็ว">
+                  {active.suggest.map((sg) => (
+                    <button
+                      key={sg.label}
+                      type="button"
+                      onClick={() => send(sg.text)}
+                      disabled={preparing}
+                      aria-label={`ตอบ: ${sg.label}`}
+                    >
+                      {sg.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             {busy && (
               <div className="row">
                 <div className="bubble bot typing" aria-label="กำลังตอบ">
@@ -1125,6 +1156,12 @@ const CSS = `
 
 .cv-print-head,.cv-print-vote{display:none}
 
+/* ปุ่มตอบเร็ว (รอบ 4) — ชิดซ้ายใต้คำถามของบอท กดง่ายบนมือถือ (สูง ≥ 36px) */
+.cv-quick{display:flex;flex-wrap:wrap;gap:8px;padding:2px 0 4px}
+.cv-quick button{min-height:36px;padding:6px 14px;border:1px solid var(--accent);border-radius:999px;
+  background:var(--panel);color:var(--accent);font-size:14px;font-weight:500}
+.cv-quick button:hover:not(:disabled),.cv-quick button:focus-visible{background:var(--accent);color:var(--accent-ink)}
+
 /* ── คำตอบอ่านง่าย (รอบ 3) ── */
 .md h1,.md h2,.md h3,.md h4{font-size:1.02em;font-weight:600;line-height:1.4;margin:.75em 0 .3em}
 .md h1:first-child,.md h2:first-child,.md h3:first-child{margin-top:0}
@@ -1152,7 +1189,7 @@ const CSS = `
     --notice:#f4f4f4;--notice-line:#ccc;color-scheme:light}
   @page{margin:14mm}
   body{background:#fff}
-  .cv-side,.cv-veil,.top,.composer,.cv-acts,.typing,.notice .link,.cv-count,.empty{display:none!important}
+  .cv-side,.cv-veil,.top,.composer,.cv-acts,.typing,.notice .link,.cv-count,.empty,.cv-quick{display:none!important}
   .cv-wrap,.cv-main,.shell,.list{height:auto!important;overflow:visible!important;max-width:none}
   .cv-wrap{display:block}
   .list{padding:0}
