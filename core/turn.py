@@ -14,6 +14,9 @@ from __future__ import annotations
 import re
 
 import base64
+import json
+import os
+import threading
 import time
 import traceback
 from io import BytesIO
@@ -62,6 +65,40 @@ def error_reply_th() -> str:
     return f"{ERROR_REPLY_TH}\n{contact}" if contact else ERROR_REPLY_TH
 
 
+# ── log ทดสอบรูป (27 ต.ค.) ──
+# IMAGE_TEST_LOG=1 → หนึ่งบรรทัดต่อเทิร์นที่มีรูป "IMGLOG {json}" (คะแนนทุกตัวให้คะแนน · ประตู · policy · การตัดสิน)
+#   เขียนต่อท้ายไฟล์ image_test.log (UTF-8) ในโฟลเดอร์ที่รัน + พิมพ์ลงหน้าต่างด้วย · ตั้งเป็น path แทน 1 ได้
+#   เขียนไฟล์เอง ไม่พึ่ง Tee-Object ของ PowerShell ซึ่งทำภาษาไทยเพี้ยนได้
+# อ่านด้วย image_test_log.py → CSV · ปิดไว้เป็นค่าเริ่มต้น เพราะมีข้อความลูกค้าและคำตอบบางส่วน (Space จริงไม่ต้องเก็บ)
+_IMG_LOG_ENV = os.environ.get("IMAGE_TEST_LOG", "").strip()
+IMAGE_TEST_LOG = bool(_IMG_LOG_ENV) and _IMG_LOG_ENV != "0"
+IMAGE_TEST_LOG_FILE = "image_test.log" if _IMG_LOG_ENV == "1" else _IMG_LOG_ENV
+_img_log_lock = threading.Lock()
+
+
+def _round(v):
+    return round(v, 4) if isinstance(v, float) else v
+
+
+def _score_log(sc) -> dict:
+    return {"conf": _round(getattr(sc, "confidence", None)), "accepted": bool(getattr(sc, "accepted", False)),
+            "dominant": bool(getattr(sc, "dominant", False)), "group": getattr(sc, "group", None) or ""}
+
+
+def _emit_image_log(img: Optional[dict], ai_reply: str) -> None:
+    if not (IMAGE_TEST_LOG and img):
+        return
+    img["reply_head"] = re.sub(r"\s+", " ", ai_reply or "")[:120]
+    img["at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+    line = "IMGLOG " + json.dumps(img, ensure_ascii=False)
+    print(line, flush=True)
+    try:
+        with _img_log_lock, open(IMAGE_TEST_LOG_FILE, "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+    except OSError as e:                                  # เขียนไม่ได้ = ไม่ล้มเทิร์น แค่เตือน
+        print(f"⚠️ เขียน {IMAGE_TEST_LOG_FILE} ไม่ได้: {e}")
+
+
 class TurnEngine:
     def __init__(self, dialogue: Dialogue, llm: GeminiClient, logger, tool_log: ToolLog,
                  image_scorers: Optional[dict] = None, image_gates: Optional[dict] = None):
@@ -75,7 +112,8 @@ class TurnEngine:
         self.dialog_states: dict[str, dict] = {}         # session_id → DialogState.to_dict()
         self.image_carry: dict[str, ImageCarry] = {}     # session_id → รูปของเทิร์นที่ถามแบรนด์ (ใช้เทิร์นเดียว)
 
-    def _log_finish(self, turn_log, ai_reply: str, tool_calls: list, t_start: float, error=None):
+    def _log_finish(self, turn_log, ai_reply: str, tool_calls: list, t_start: float, error=None, img=None):
+        _emit_image_log(img, ai_reply)
         latency_ms = (time.perf_counter() - t_start) * 1000
         self.logger.log_llm(turn_log, ai_reply=ai_reply, tool_calls=tool_calls, latency_ms=latency_ms)
         self.logger.finish_turn(turn_log, error=error)
@@ -98,6 +136,8 @@ class TurnEngine:
         # ประตูรูปวัดจากรูปเต็ม (ปรับเกณฑ์ด้วยรูปเต็ม) · image_to_base64_html ย่อรูปตัวจริงเหลือ 400 px
         # ตัวให้คะแนนเดิมของแต่ละแบรนด์ได้รูปที่ย่อแล้วเหมือนเดิมทุกอย่าง — ไม่เปลี่ยนพฤติกรรมเดิม
         gate_src = img_input.copy() if (img_input is not None and self.image_gates) else None
+        img_log = None                                   # IMGLOG (ถ้าเปิด) — เติมหลังตัดสิน
+        img_size = list(img_input.size) if img_input is not None else None
 
         display_content = ""
         if img_input:
@@ -156,6 +196,19 @@ class TurnEngine:
                 image_rejected=bool(img_route and img_route.rejected), state=dstate,
                 image_carry=carry, image_confirm=policy.confirm if policy is not None else None)
             self.dialog_states[session_id] = decision.state.to_dict()
+            if img_input is not None and IMAGE_TEST_LOG:
+                raw = policy.original if (policy is not None and policy.original is not None) else img_route
+                img_log = {
+                    "turn": turn_log.turn_id, "session": session_id, "size": img_size,
+                    "text": (user_text or "")[:60],
+                    "scores": {b: _score_log(sc) for b, sc in ((raw.scores if raw else {}) or {}).items()},
+                    "gates": {b: {"product_like": r.product_like, "direct": r.direct,
+                                  **{k: _round(v) for k, v in (r.detail or {}).items()}}
+                              for b, r in ((policy.readings if policy is not None else {}) or {}).items()},
+                    "policy": policy.kind if policy is not None else "off",
+                    "policy_reason": policy.reason if policy is not None else "",
+                    "action": decision.action, "brand": decision.brand, "reason": decision.reason,
+                }
             raw_refs_html += (f"**Decision:** {decision.action} · brand={decision.brand} · "
                               f"{decision.reason}\n\n")
             if policy is not None and policy.asks_brand and decision.action == "ask" \
@@ -169,7 +222,7 @@ class TurnEngine:
 
             if not decision.needs_llm:
                 ai_reply = _prefix(image_note, decision.reply_th)
-                self._log_finish(turn_log, ai_reply, [], t_start, error=None)
+                self._log_finish(turn_log, ai_reply, [], t_start, error=None, img=img_log)
                 chat_history += [{"role": "user", "content": display_content},
                                  {"role": "assistant", "content": ai_reply}]
                 return (chat_history, chat_history, raw_refs_html,
@@ -185,7 +238,9 @@ class TurnEngine:
                 ai_reply = _prefix(image_note, T.image_need_question(self.plugins[decision.brand].info))
                 raw_refs_html += (f"**Image-only:** {decision.brand} อ่านรูปไม่ได้ + ไม่มีข้อความ "
                                   f"→ ขอคำถาม (เดิม {decision.action} · {decision.reason})\n")
-                self._log_finish(turn_log, ai_reply, [], t_start, error=None)
+                if img_log is not None:
+                    img_log["guard"] = "รูปเปล่า → ขอคำถาม (ไม่เรียก LLM)"
+                self._log_finish(turn_log, ai_reply, [], t_start, error=None, img=img_log)
                 chat_history += [{"role": "user", "content": display_content},
                                  {"role": "assistant", "content": ai_reply}]
                 return (chat_history, chat_history, raw_refs_html,
@@ -205,10 +260,12 @@ class TurnEngine:
                 llm_turn.direct_reply = T.image_need_question(plugin.info) if turn_image is not None \
                     else EMPTY_INPUT_TH
                 raw_refs_html += "**Empty turn:** user_parts ว่าง → ไม่เรียก LLM\n"
+                if img_log is not None:
+                    img_log["guard"] = "เทิร์นว่าง → ไม่เรียก LLM"
 
             if llm_turn.direct_reply is not None:
                 ai_reply = _prefix(image_note, llm_turn.direct_reply)
-                self._log_finish(turn_log, ai_reply, [], t_start, error=None)
+                self._log_finish(turn_log, ai_reply, [], t_start, error=None, img=img_log)
                 chat_history += [{"role": "user", "content": display_content},
                                  {"role": "assistant", "content": ai_reply}]
                 return (chat_history, chat_history, raw_refs_html,
@@ -241,7 +298,7 @@ class TurnEngine:
                 and not _already_has_contact(ai_reply, decision.sales_handoff_th):
             ai_reply = f"{ai_reply}\n\n{decision.sales_handoff_th}"   # คำถามผสม: ส่วนฝ่ายขายมาจากโค้ด
 
-        self._log_finish(turn_log, ai_reply, self.tool_log.calls, t_start, error=error_msg)
+        self._log_finish(turn_log, ai_reply, self.tool_log.calls, t_start, error=error_msg, img=img_log)
 
         chat_history += [{"role": "user", "content": display_content},
                          {"role": "assistant", "content": ai_reply}]
@@ -288,7 +345,9 @@ class TurnEngine:
                 print(f"⚠️ ประตูรูป {b} ผิดพลาด ({type(e).__name__}: {e}) — ข้ามประตูนี้")
         strong = [b for b, p in self.plugins.items() if p.detect(user_text or "").strength == "strong"]
         context = (self.dialog_states.get(session_id) or {}).get("brand")   # แบรนด์ที่แชตคุยอยู่ก่อนเทิร์นนี้
-        return resolve_image_policy(route, brands, list(self.image_scorers), readings, strong, context)
+        pol = resolve_image_policy(route, brands, list(self.image_scorers), readings, strong, context)
+        pol.readings = readings
+        return pol
 
 
 def _has_content(parts) -> bool:

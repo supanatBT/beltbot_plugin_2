@@ -13,3 +13,5 @@ logs/
 # snapshot ต่อรอบใหญ่ ~5MB — ผลสรุปอยู่ใน MLflow และ gate_snapshots/<label>.json แล้ว
 training/gate_snapshots/prompt_*.json
 training/out/
+# log ทดสอบรูป (IMAGE_TEST_LOG=1) — ของดิบของผู้ทดสอบ ไม่เข้า repo · ตาราง CSV ที่เติมผลแล้วเก็บเองตามต้องการ
+image_test.log

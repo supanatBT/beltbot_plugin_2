@@ -301,6 +301,43 @@ out = e.chat("HC508 C กว้างเท่าไหร่", None, [], sessio
 ok("คำถามข้อความล้วนยังไปถึง LLM พร้อมข้อความ", llm.calls and "HC508" in " ".join(
     p for p in llm.calls[-1] if isinstance(p, str)), llm.calls)
 
+print("\nlog ทดสอบรูป (IMAGE_TEST_LOG) → image_test_log.py → CSV")
+import csv as _csv  # noqa: E402
+import tempfile  # noqa: E402
+import core.turn as CT  # noqa: E402
+import image_test_log as ITL  # noqa: E402
+
+with tempfile.TemporaryDirectory() as tmp:
+    logf = os.path.join(tmp, "image_test.log")
+    CT.IMAGE_TEST_LOG, CT.IMAGE_TEST_LOG_FILE = True, logf
+    try:
+        for h, i, t in (("แชตใหม่", "modutech_maybe", "รูปเปล่า"), ("คุย Modutech", "ambiguous", "รูปเปล่า"),
+                        ("แชตใหม่", "not_product", "รูป+ข้อความ"), ("แชตใหม่", "movex_dominant", "รูปเปล่า")):
+            run_case(h, i, t)
+        run_case("คุย Modutech", "ambiguous", "รูปเปล่า")       # เทิร์นข้อความในประวัติต้องไม่ลง log
+    finally:
+        CT.IMAGE_TEST_LOG = False
+    rows_, bad_ = ITL.parse(ITL.read_text(logf))
+    ok("ลง log เฉพาะเทิร์นที่มีรูป (5 บรรทัด) · อ่านได้ทุกบรรทัด", len(rows_) == 5 and bad_ == 0, (len(rows_), bad_))
+    ok("policy ตรงกับเคส", [r["policy"] for r in rows_] == ["confirm", "context", "not_product", "dominant", "context"],
+       [r["policy"] for r in rows_])
+    ok("รูปเปล่าที่ถูกกันไว้มีช่อง guard (action ของปลั๊กอินอย่างเดียวอ่านผิดได้)",
+       rows_[1].get("guard", "").startswith("รูปเปล่า") and not rows_[0].get("guard"), rows_[1])
+    ok("มีคะแนนตัวให้คะแนนรูปและค่าประตู", all(r["scores"] and r["gates"] for r in rows_), rows_[0])
+    ok("ข้อความไทยไม่เพี้ยน", rows_[2]["text"] == "รุ่นนี้คืออะไร" and "ใช่ไหม" in rows_[0]["reply_head"], rows_[2])
+    out_csv = os.path.join(tmp, "t.csv")
+    ok("สร้าง CSV ได้", ITL.main([logf, "-o", out_csv]) == 0)
+    with open(out_csv, encoding="utf-8-sig") as f:
+        table = list(_csv.DictReader(f))
+    ok("CSV มีคอลัมน์ให้เติม และ 5 แถว", len(table) == 5 and all(k in table[0] for k in ITL.FILL), list(table[0])[:6])
+    ok("ไม่เขียนทับไฟล์ที่มีอยู่ (อาจเติมผลไว้แล้ว)", ITL.main([logf, "-o", out_csv]) == 2)
+    with open(logf, "rb") as f:
+        utf16 = f.read().decode("utf-8").encode("utf-16")
+    with open(os.path.join(tmp, "u16.log"), "wb") as f:
+        f.write(utf16)
+    ok("อ่าน log UTF-16 (PowerShell 5) ได้", len(ITL.parse(ITL.read_text(os.path.join(tmp, "u16.log")))[0]) == 5)
+ok("ปิดไว้เป็นค่าเริ่มต้น", os.environ.get("IMAGE_TEST_LOG", "") != "" or not CT.IMAGE_TEST_LOG)
+
 print("\nสรุปผลแต่ละคู่ (ดูด้วยตา)")
 w = max(len(r[0]) for r in rows)
 for tag, dec, how, rep in rows:

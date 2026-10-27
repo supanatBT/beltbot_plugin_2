@@ -61,6 +61,7 @@ class PolicyResult:
     reason: str = ""
     original: Optional[ImageRoute] = None
     confirm: Optional[str] = None  # kind == confirm: แบรนด์ที่จะถามว่า "ใช่ไหม"
+    readings: dict = field(default_factory=dict)   # GateReading ต่อแบรนด์ — ไว้ลง log ทดสอบรูป (core/turn IMGLOG)
 
     @property
     def asks_brand(self) -> bool:
