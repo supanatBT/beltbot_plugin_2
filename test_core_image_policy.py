@@ -151,7 +151,13 @@ d3b = decide_with(None, "โมดูเทค", d1.state, carry, has_image=Fals
 ok("ตอบ 'โมดูเทค' → Modutech", d3b.brand == "modutech")
 
 pol_r = resolve(route_of(mx(0.30)), BRANDS, ["movex"], gate(0.79, 0.05), [])
-d1r = decide_with(pol_r.route)
+# 27 ต.ค. (ผู้ใช้เลือก · เคส R5): Movex ไม่รับ + ประตูบอกว่าเป็นสินค้า → ถามยืนยัน Modutech แบรนด์เดียว (เดิมถามสองแบรนด์)
+ok("Movex ไม่รับ + ประตูบอกว่าเป็นสินค้า → confirm modutech", pol_r.kind == "confirm" and pol_r.confirm == "modutech"
+   and pol_r.asks_brand, (pol_r.kind, pol_r.confirm))
+core.image_brands = tuple(pol_r.route.image_brands)
+d1r = core.decide("", has_image=True, image=None, image_rejected=False, image_confirm=pol_r.confirm)
+ok("… ถาม 'ใช่ไหม' แบรนด์เดียว", d1r.action == "ask" and "ใช่ไหม" in d1r.reply_th and "Movex" not in d1r.reply_th
+   and d1r.state.pending == "brand:modutech", (d1r.reply_th, d1r.state.pending))
 carry_r = ImageCarry("PIL", pol_r.original.best, pol_r.original.rejected)
 d4 = decide_with(None, "1", d1r.state, carry_r, has_image=False)
 ok("Movex ปฏิเสธรูป + ตอบ Movex → reject_image ข้อความของ Movex", d4.action == "reject_image"
@@ -159,6 +165,12 @@ ok("Movex ปฏิเสธรูป + ตอบ Movex → reject_image ข้�
 ok("… สถานะไม่ค้าง pending", d4.state.pending is None)
 d5 = decide_with(None, "2", d1r.state, carry_r, has_image=False)
 ok("Movex ปฏิเสธรูป + ตอบ Modutech → ไหลแบบข้อความ", d5.brand == "modutech" and d5.action != "reject_image")
+d4n = decide_with(None, "ไม่ใช่", d1r.state, carry_r, has_image=False)
+ok("ตอบ 'ไม่ใช่' = Movex → reject_image ข้อความของ Movex", d4n.action == "reject_image" and d4n.brand == "movex"
+   and d4n.reply_th == movex_plugin.image_reject_th, (d4n.action, d4n.reply_th[:40]))
+d5y = decide_with(None, "ใช่", d1r.state, carry_r, has_image=False)
+ok("ตอบ 'ใช่' = Modutech → ขอคำถาม (ไม่ส่ง 'ใช่' ให้ LLM)", d5y.brand == "modutech" and not d5y.needs_llm
+   and "พิมพ์คำถาม" in d5y.reply_th, (d5y.action, d5y.reply_th[:60]))
 
 d6 = decide_with(None, "1", d1.state, None, has_image=False)
 ok("ไม่มีของเก็บ (เกินหนึ่งเทิร์น/รีสตาร์ต) → Movex แบบข้อความ", d6.brand == "movex"

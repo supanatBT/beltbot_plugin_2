@@ -133,7 +133,10 @@ IMAGES = {
                                   product_ref="movex_chain_LF880_TAB_K450"),
                        GateReading("modutech", True, False, {})),
     "modutech_direct": (ImageScore("movex", 0.30, False), GateReading("modutech", True, True, {})),
+    # ViT รับ (0.50–0.85) + ประตูบอกว่าเป็นสินค้าแต่ไม่มั่นใจ = กำกวมจริง
     "ambiguous": (ImageScore("movex", 0.70, True, group="880"), GateReading("modutech", True, False, {})),
+    # ViT ไม่รับ + ประตูบอกว่าเป็นสินค้าแต่ไม่มั่นใจ = น่าจะ Modutech (เคส R5 · 27 ต.ค.)
+    "modutech_maybe": (ImageScore("movex", 0.30, False), GateReading("modutech", True, False, {})),
     "not_product": (ImageScore("movex", 0.13, False), GateReading("modutech", False, False, {})),
 }
 # ── ประวัติ 4 แบบ ──
@@ -182,9 +185,21 @@ for h in HISTORIES:
 
             if i == "not_product":
                 ok(f"{tag}: ปฏิเสธรูป", "reject_image" in refs and "ไม่เกี่ยวข้อง" in reply, reply[:80])
-            if i == "ambiguous" and t == "รูปเปล่า":
-                ok(f"{tag}: ถามแบรนด์ (ไม่เดา)", "ขอยืนยันก่อน" in reply and not sent, reply[:80])
             pending = h == "Modutech ถามค้าง"
+            in_mod = h in ("คุย Modutech", "Modutech ถามค้าง")
+            if i in ("ambiguous", "modutech_maybe") and in_mod:
+                # กรณี 1 (ผู้ใช้เลือก 27 ต.ค.): แชตคุย Modutech อยู่ → ถือเป็น Modutech ไม่ถามแบรนด์ + บอกสิ่งที่สมมติ
+                ok(f"{tag}: แชต Modutech → ไม่ถามแบรนด์ · บอกว่าน่าจะ Modutech และให้แก้ได้",
+                   "ขอยืนยันก่อน" not in reply and "ถ้ารูปนี้ไม่ใช่" in reply, reply[:120])
+                if h == "Modutech ถามค้าง":
+                    ok(f"{tag}: คำถามเปียก/แห้งที่ค้างไม่หาย", "เปียก" in reply and not sent, (reply[:160], sent))
+            elif i == "modutech_maybe":
+                # กรณี 2: ไม่มีบริบท Modutech + ViT ไม่รับ → ถามยืนยันแบรนด์เดียว
+                ok(f"{tag}: ถาม 'ใช่ Modutech ไหม' (ไม่ใช่เมนูสองแบรนด์) · ไม่เรียก LLM",
+                   "Modutech ใช่ไหม" in reply and "Movex" not in reply and not sent, reply[:120])
+            elif i == "ambiguous":
+                # กรณี 3: กำกวมจริง → ถามสองแบรนด์เหมือนเดิม
+                ok(f"{tag}: ถามแบรนด์ (ไม่เดา)", "ขอยืนยันก่อน" in reply and "Movex" in reply and not sent, reply[:80])
             if i == "modutech_direct" and t == "รูปเปล่า":
                 if pending:
                     # บอทรอคำตอบเปียก/แห้งอยู่ → ถามข้อเดิมซ้ำ (ไม่เรียก LLM) พร้อมบอกว่าอ่านรุ่นจากรูปไม่ได้ — พฤติกรรมเดิม
@@ -205,6 +220,45 @@ for h in HISTORIES:
             if i == "modutech_direct" and t == "รูป+ข้อความ":
                 ok(f"{tag}: มีข้อความ → ทางเดิม (ไม่ใช่ขอคำถาม) และบอกว่ายังระบุรุ่นจากรูปไม่ได้",
                    "**Image-only:**" not in refs and "ระบุรุ่น" in reply, (reply[:100], refs[-300:]))
+
+print("\nตอบคำถามยืนยันแบรนด์ (กรณี 2)")
+
+
+def confirm_then(answer, first_text="", hist_name="แชตใหม่"):
+    sc, reading = IMAGES["modutech_maybe"]
+    llm = FakeLLM()
+    e = TurnEngine(core, llm=llm, logger=_Log(), tool_log=tool_log,
+                   image_scorers={"movex": Scorer(sc)}, image_gates={"modutech": Gate(reading)})
+    core.image_brands = ("movex",)
+    hist, sid = [], "c1"
+    for t in HISTORIES[hist_name]:
+        hist = e.chat(t, None, hist, session_id=sid)[0]
+    hist = e.chat(first_text, Image.new("RGB", (800, 600)), hist, session_id=sid)[0]
+    n = len(llm.calls)
+    out = e.chat(answer, None, hist, session_id=sid)
+    return out[0][-1]["content"], out[2], llm.calls[n:], e.dialog_states.get(sid) or {}
+
+
+for ans in ("ใช่", "ใช่ครับ", "ครับ", "Modutech", "2"):
+    reply, refs, sent, st = confirm_then(ans)
+    ok(f"รูปเปล่า → '{ans}' = Modutech · บอกว่าระบุรุ่นจากรูปไม่ได้ + ขอคำถาม · ไม่เรียก LLM",
+       st.get("brand") == "modutech" and "ระบุรุ่น" in reply and "พิมพ์คำถาม" in reply and not sent
+       and reply.count("ระบุรุ่น") == 1, (reply[:150], st.get("brand"), sent))
+for ans in ("ไม่ใช่", "ไม่ใช่ครับ เป็นโซ่", "ไม่", "Movex"):
+    reply, refs, sent, st = confirm_then(ans)
+    ok(f"รูปเปล่า → '{ans}' = Movex ใช้ผลรูปเดิม (ViT ไม่รับ) → ปฏิเสธรูปสุภาพ ไม่เดาซีรีส์",
+       st.get("brand") == "movex" and "reject_image" in refs and not sent, (reply[:120], refs[-200:]))
+reply, refs, sent, st = confirm_then("ใช่", first_text="รุ่นนี้ทนอุณหภูมิเท่าไหร่")
+ok("รูป+คำถาม → 'ใช่' = ตอบคำถามเดิมทาง Modutech (ไม่มีคำว่า 'ใช่' ปนในคำถาม)",
+   st.get("brand") == "modutech" and "ระบุรุ่น" in reply
+   and not any(isinstance(p, str) and "ใช่" in p for c in sent for p in c), (reply[:150], sent))
+reply, refs, sent, st = confirm_then("ใช่", hist_name="คุย Movex")
+ok("แชต Movex + รูปน่าจะ Modutech → ถามยืนยัน → 'ใช่' เปลี่ยนไป Modutech", st.get("brand") == "modutech"
+   and "พิมพ์คำถาม" in reply, (reply[:120], st.get("brand")))
+reply, refs, sent, st = confirm_then("HC508 C กว้างเท่าไหร่")
+ok("ไม่ตอบ ใช่/ไม่ใช่ แต่พิมพ์คำถามใหม่ที่มีรหัส → ตอบคำถามนั้น (ไม่วนถามซ้ำ)",
+   st.get("brand") == "modutech" and "ใช่ไหม" not in reply and any(
+       isinstance(p, str) and "HC508" in p for c in sent for p in c), (reply[:120], sent))
 
 print("\nกันชั้นสุดท้าย: ปลั๊กอินคืน user_parts ว่าง (ทางที่ยังไม่รู้) → ไม่เรียก LLM")
 orig = mgr.movex_plugin.build_turn

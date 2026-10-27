@@ -129,7 +129,7 @@ class TurnEngine:
             img_route, policy = None, None
             if img_input is not None:
                 img_route = route_image(self.image_scorers, img_input, effective_text)
-                policy = self._image_policy(img_route, gate_src, user_text)
+                policy = self._image_policy(img_route, gate_src, user_text, session_id)
                 if policy is not None:
                     img_route = policy.route
                     raw_refs_html += f"**Image policy:** {policy.kind} · {policy.reason}\n"
@@ -140,7 +140,7 @@ class TurnEngine:
                 user_text, has_image=img_input is not None,
                 image=img_route.best if img_route else None,
                 image_rejected=bool(img_route and img_route.rejected), state=dstate,
-                image_carry=carry)
+                image_carry=carry, image_confirm=policy.confirm if policy is not None else None)
             self.dialog_states[session_id] = decision.state.to_dict()
             raw_refs_html += (f"**Decision:** {decision.action} · brand={decision.brand} · "
                               f"{decision.reason}\n\n")
@@ -253,13 +253,15 @@ class TurnEngine:
             return ""
         if decision.action == "ask" and decision.topic == "brand":
             return ""
-        if policy is not None and policy.kind in ("direct", "text_brand", "ask"):
+        if policy is not None and policy.kind == "context":
+            return T.image_from_context(self.plugins[b].info)
+        if policy is not None and policy.kind in ("direct", "text_brand", "ask", "confirm"):
             return T.image_no_model(self.plugins[b].info, from_image=policy.kind == "direct")
         if policy is None and carry is not None:
             return T.image_no_model(self.plugins[b].info, from_image=False)
         return ""
 
-    def _image_policy(self, route, image, user_text: str):
+    def _image_policy(self, route, image, user_text: str, session_id: str = ""):
         """core/image_policy — คืน None เมื่อทุกแบรนด์มีตัวให้คะแนนรูป (พฤติกรรมเดิม)"""
         brands = list(self.plugins)
         if all(b in self.image_scorers for b in brands):
@@ -271,7 +273,8 @@ class TurnEngine:
             except Exception as e:                       # noqa: BLE001 — ประตูพัง = ไม่มีประตู ไม่ล้มทั้งเทิร์น
                 print(f"⚠️ ประตูรูป {b} ผิดพลาด ({type(e).__name__}: {e}) — ข้ามประตูนี้")
         strong = [b for b, p in self.plugins.items() if p.detect(user_text or "").strength == "strong"]
-        return resolve_image_policy(route, brands, list(self.image_scorers), readings, strong)
+        context = (self.dialog_states.get(session_id) or {}).get("brand")   # แบรนด์ที่แชตคุยอยู่ก่อนเทิร์นนี้
+        return resolve_image_policy(route, brands, list(self.image_scorers), readings, strong, context)
 
 
 def _has_content(parts) -> bool:
