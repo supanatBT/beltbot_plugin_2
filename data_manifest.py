@@ -30,6 +30,8 @@ LINEAGE = [
     ("modutech_v30_2.json", "modutech_v30_1.json", "patch_v30_2.py · CHANGELOG_v30_2.md"),
     ("modutech_v30_3.json", "modutech_v30_2.json", "patch_v30_3.py · CHANGELOG_v30_3.md · ตัวที่บอทใช้"),
 ]
+# ไฟล์ที่บอทไม่ได้เปิดตอนรัน — บน Space ไม่มีก็ได้ (ไฟล์ที่บอทใช้จริงต้องมีเสมอ)
+HISTORY_ONLY = {"modutech_v30.json", "modutech_v30_1.json", "modutech_v30_2.json"}
 OTHER = ["extracted_data_v3_machine_ready.json", "modutech_kg.db", "movex_kg.db",
          "brands/modutech/image_gate.npz", "brands/movex/thresholds.json"]
 
@@ -78,8 +80,8 @@ def check(manifest_path: str = OUT) -> list[str]:
         if not e.get("found"):
             continue
         p = os.path.join(BASE, e["file"])
-        if e["file"] == "modutech_v30.json" and not os.path.isfile(p):
-            continue                                    # ไฟล์ดิบอยู่นอกรีโป — ไม่ตรวจซ้ำ
+        if e["file"] in HISTORY_ONLY and not os.path.isfile(p):
+            continue                                    # ไฟล์ประวัติ (ดิบ/ขั้นกลาง) ไม่ต้องอยู่บน Space — หายไม่ใช่ปัญหา แต่ถ้ามีต้อง hash ตรง
         now = entry(p, e["file"])
         if not now.get("found"):
             problems.append(f"{e['file']}: หายไป")
