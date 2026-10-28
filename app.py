@@ -5,7 +5,8 @@ app.py — FastAPI สำหรับ Hugging Face Spaces (Docker, พอร์�
 หน้าเว็บ Next.js บน Vercel เรียกผ่าน /api/chat ของตัวเอง (proxy) ซึ่งแนบ PROXY_SECRET และ IP จริงของผู้ใช้
 
 Endpoints
-  GET  /health                 สถานะ (บอทโหลดเสร็จหรือยัง)
+  GET  /health                 สถานะ (บอทโหลดเสร็จหรือยัง) + เวอร์ชันแบบสั้น — ใช้กับ uptime check
+  GET  /health/detail          เวอร์ชันข้อมูล/โมเดลเต็ม (ต้องมี X-Proxy-Secret เมื่อตั้ง PROXY_SECRET)
   POST /api/chat               multipart: text, image (ไม่บังคับ), session_id (ไม่บังคับ),
                                resume (ไม่บังคับ — JSON ประวัติจากเบราว์เซอร์ ใช้เมื่อ session หาย)
   POST /api/session/reset      form: session_id → เริ่มบทสนทนาใหม่
@@ -31,6 +32,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from starlette.concurrency import run_in_threadpool
 
+from core import metrics as M
+from webapi import versions as V
 from webapi.bot import BotAdapter, MediaRegistry, SessionStore, to_web_messages
 from webapi.image_guard import ImageRejected, load_image, read_limited
 from webapi.ratelimit import MESSAGES_TH, RateLimiter
@@ -88,10 +91,23 @@ def create_app(cfg: Settings = default_settings, bot: Optional[BotAdapter] = Non
             return fwd.split(",")[0].strip()
         return request.client.host if request.client else "unknown"
 
+    def _status() -> str:
+        return "ok" if bot.ready else ("error" if bot.load_error else "loading")
+
     @app.get("/health")
     async def health():
-        return {"status": "ok" if bot.ready else ("error" if bot.load_error else "loading"),
-                "bot_ready": bot.ready, "sessions": len(sessions)}
+        # versions (28 ต.ค.): ฟิลด์เพิ่ม — แคตตาล็อกตัวไหน · ล็อกโมเดลกี่ตัว · ข้อมูลตรง DATA_MANIFEST ไหม
+        return {"status": _status(), "bot_ready": bot.ready, "sessions": len(sessions),
+                "versions": V.summary(bot.versions)}
+
+    @app.get("/health/detail")
+    async def health_detail(request: Request):
+        # ชื่อ collection · hash · commit ของโมเดล — ไม่ใช่ความลับร้ายแรง แต่ไม่ต้องเปิดให้ทุกคนเห็น
+        if cfg.proxy_secret:
+            sent = request.headers.get("x-proxy-secret", "")
+            if not hmac.compare_digest(sent.encode(), cfg.proxy_secret.encode()):
+                raise ApiError(403, "forbidden", "ไม่อนุญาต")
+        return {"status": _status(), **(bot.versions or {})}
 
     # ขนาดสูงสุดของ resume — 8 เทิร์น × 1200 ตัวอักษร × 2 ฝ่าย บวกเผื่อ
     MAX_RESUME_BYTES = 48 * 1024
@@ -99,6 +115,24 @@ def create_app(cfg: Settings = default_settings, bot: Optional[BotAdapter] = Non
     @app.post("/api/chat")
     async def chat(text: str = Form(""), session_id: str = Form(""), resume: str = Form(""),
                    image: Optional[UploadFile] = File(None), ip: str = Depends(client_ip)):
+        # METRIC src=api (28 ต.ค.): ทุกคำขอ รวมที่ถูกปฏิเสธก่อนถึงบอท (rate limit · warming_up · busy · รูปเสีย)
+        # ไม่มี IP ไม่มีข้อความ — code · สถานะ HTTP · มีรูปไหม · เวลา
+        t0 = time.perf_counter()
+        code, http = "ok", 200
+        try:
+            return await _chat(text, session_id, resume, image, ip)
+        except ApiError as e:
+            code, http = e.code, e.status
+            raise
+        except Exception:
+            code, http = "exception", 500
+            raise
+        finally:
+            M.emit({"src": "api", "code": code, "http": http,
+                    "image": image is not None and bool(image.filename or image.size),
+                    "ms": round((time.perf_counter() - t0) * 1000)})
+
+    async def _chat(text: str, session_id: str, resume: str, image: Optional[UploadFile], ip: str):
         text = (text or "").strip()
         has_image = image is not None and bool(image.filename or image.size)
         if not text and not has_image:

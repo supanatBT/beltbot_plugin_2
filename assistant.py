@@ -34,6 +34,7 @@ from core.decide import Dialogue                           # noqa: E402
 from core.dialogue import state_class                      # noqa: E402
 from core.llm import DEFAULT_TIMEOUT_S, GeminiClient, GenAIClient, parse_thinking  # noqa: E402
 from core.models import resolve_image                      # noqa: E402
+from core import model_lock                                # noqa: E402
 from core.registry import discover, load_plugins, state_schema  # noqa: E402
 from core.tools import ToolLog                             # noqa: E402
 from core.turn import TurnEngine                           # noqa: E402
@@ -93,13 +94,17 @@ for _b in _configs:
 # 2. โมเดล
 # ================================================================
 print("⏳ โหลด Jina v3...")
-jina_tokenizer = AutoTokenizer.from_pretrained(JINA_MODEL_ID, trust_remote_code=True)
+# 28 ต.ค.: model_lock.pin = revision จาก models.yaml (ไม่มีไฟล์ = {} เท่าเดิม) · note = จด commit ที่โหลดจริงให้ /health
+_locked = model_lock.load()
+print(f"   ล็อก revision: {', '.join(_locked) if _locked else 'ไม่มี models.yaml — โหลด main ตามเดิม'}")
+jina_tokenizer = AutoTokenizer.from_pretrained(JINA_MODEL_ID, trust_remote_code=True, **model_lock.pin(JINA_MODEL_ID))
 jina_model = AutoModel.from_pretrained(
-    JINA_MODEL_ID, trust_remote_code=True,
+    JINA_MODEL_ID, trust_remote_code=True, **model_lock.pin(JINA_MODEL_ID),
     torch_dtype=torch.float16 if DEVICE == "cuda" else torch.float32,
     attn_implementation="eager"
 ).to(DEVICE)
 jina_model.eval()
+model_lock.note(JINA_MODEL_ID, jina_model)
 print(f"✅ Jina v3 ({'fp16' if DEVICE == 'cuda' else 'fp32'})")
 
 
@@ -117,8 +122,10 @@ for _b in _configs:
     if spec is None:
         continue
     print(f"⏳ โหลด ViT LoRA ({_b.key} · {spec.num_labels} คลาส · {spec.revision})...")
-    _proc = ViTImageProcessor.from_pretrained(spec.base)
-    _base = ViTForImageClassification.from_pretrained(spec.base, num_labels=spec.num_labels)
+    _proc = ViTImageProcessor.from_pretrained(spec.base, **model_lock.pin(spec.base))
+    _base = ViTForImageClassification.from_pretrained(spec.base, num_labels=spec.num_labels,
+                                                      **model_lock.pin(spec.base))
+    model_lock.note(spec.base, _base)
     _vit = PeftModel.from_pretrained(_base, _adapter_arg(spec.adapter) if spec.adapter_is_local else spec.adapter,
                                      **({} if spec.adapter_is_local else {"revision": spec.revision}))
     _vit.eval().to(DEVICE)
@@ -128,8 +135,9 @@ for _b in _configs:
     print(f"✅ ViT LoRA {_b.key} ({'fp16' if DEVICE == 'cuda' else 'fp32'})")
 
 print("⏳ โหลด SigLIP...")
-siglip_processor = SiglipProcessor.from_pretrained(SIGLIP_MODEL_ID)
-siglip_model     = SiglipModel.from_pretrained(SIGLIP_MODEL_ID).to(DEVICE)
+siglip_processor = SiglipProcessor.from_pretrained(SIGLIP_MODEL_ID, **model_lock.pin(SIGLIP_MODEL_ID))
+siglip_model     = SiglipModel.from_pretrained(SIGLIP_MODEL_ID, **model_lock.pin(SIGLIP_MODEL_ID)).to(DEVICE)
+model_lock.note(SIGLIP_MODEL_ID, siglip_model)
 siglip_model.eval()
 if DEVICE == "cuda":
     siglip_model.half()

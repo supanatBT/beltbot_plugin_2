@@ -164,8 +164,10 @@ def siglip_embedder(model_id: str, device: str) -> Callable[[Sequence], np.ndarr
     """
     import torch
     from transformers import AutoProcessor, SiglipVisionModel
-    proc = AutoProcessor.from_pretrained(model_id)
-    model = SiglipVisionModel.from_pretrained(model_id).eval().to(device)
+    from core import model_lock                       # 28 ต.ค.: revision จาก models.yaml (ไม่มี = เท่าเดิม)
+    proc = AutoProcessor.from_pretrained(model_id, **model_lock.pin(model_id))
+    model = SiglipVisionModel.from_pretrained(model_id, **model_lock.pin(model_id)).eval().to(device)
+    model_lock.note(model_id, model)
 
     def embed(imgs):
         with torch.no_grad():

@@ -14,6 +14,7 @@ brands/modutech/plugin.py
 """
 from __future__ import annotations
 
+import os
 import re
 from typing import Optional
 
@@ -772,6 +773,36 @@ class ModutechPlugin:
         return getattr(self, "_image_gate", None)
 
 
+def resolve_collection(qdrant_path: str, wanted, fallback: str) -> dict:
+    """ชื่อที่ retriever ใช้: wanted (alias หรือชื่อ collection) ถ้ามีจริง ไม่งั้น fallback
+    คืน {"name", "target", "via"} — target = collection จริงที่ alias ชี้ (ไว้ให้ /health/detail)
+    เปิด Qdrant แบบไฟล์แล้วปิดทันที (ล็อกโฟลเดอร์ — เปิดค้าง retriever จะเปิดซ้ำไม่ได้) · ผิดพลาด = ใช้ fallback"""
+    info = {"name": fallback, "target": fallback, "via": "fallback"}
+    if not wanted or wanted == fallback:
+        info["via"] = "name"
+        return info
+    if not os.path.isdir(qdrant_path):                           # QdrantClient(path=) สร้างโฟลเดอร์ใหม่ให้เอง — ไม่เอา
+        return info
+    try:
+        from qdrant_client import QdrantClient
+        c = QdrantClient(path=qdrant_path)
+        try:
+            aliases = {a.alias_name: a.collection_name for a in c.get_aliases().aliases}
+            names = {x.name for x in c.get_collections().collections}
+        finally:
+            c.close()
+            del c
+    except Exception as e:                                       # noqa: BLE001
+        print(f"⚠️ Modutech: อ่าน alias ไม่ได้ ({type(e).__name__}) — ใช้ {fallback}")
+        return info
+    if wanted in aliases and aliases[wanted] in names:
+        return {"name": wanted, "target": aliases[wanted], "via": "alias"}
+    if wanted in names:
+        return {"name": wanted, "target": wanted, "via": "name"}
+    print(f"⚠️ Modutech: ไม่พบ alias/collection '{wanted}' — ใช้ {fallback} (ตั้ง alias ด้วย qdrant_alias.py)")
+    return info
+
+
 def create(ctx):
     """registry เรียก — โหลดแคตตาล็อก (ตรวจ v30_3) กราฟ และ collection แยกของ Modutech"""
     import os
@@ -809,6 +840,10 @@ def create(ctx):
             }
             kw = modutech_retriever_config_kwargs()
             kw["qdrant_path"] = qpath
+            # 28 ต.ค.: ชื่อจาก brand.yaml (alias) · หาไม่เจอ = ชื่อสำรอง (เดิม) — ไม่สร้าง/ไม่แก้ collection
+            plugin.collection_info = resolve_collection(
+                qpath, data.get("text_collection"), data.get("text_collection_fallback") or kw["text_collection"])
+            kw["text_collection"] = plugin.collection_info["name"]
             # ViT ของแบรนด์อื่นไม่ส่งเข้ามา — retriever ตัวนี้ค้นข้อความอย่างเดียว (image_collection ไม่มีจริง)
             retriever = RetrieverV4(
                 cfg=RetrieverV4Config(**kw, device=sh["device"]),
@@ -817,7 +852,9 @@ def create(ctx):
                 siglip_processor=sh["siglip_processor"], siglip_model=sh["siglip_model"],
                 product_db=mod_db, kg=kg,
             )
-            print(f"✅ Modutech: {len(mod_db)} สายพาน · collection {kw['text_collection']}")
+            ci = plugin.collection_info
+            print(f"✅ Modutech: {len(mod_db)} สายพาน · collection {ci['name']}"
+                  + (f" → {ci['target']}" if ci["via"] == "alias" else f" ({ci['via']})"))
         else:
             print(f"⚠️ Modutech retriever ปิดอยู่ (ไม่พบ {qpath}) — ยังตอบจากรหัสและค้นทั้งฐานได้")
         plugin.runtime = ModutechRuntime(cat, plugin.search, kg, retriever, sh["tool_log"])

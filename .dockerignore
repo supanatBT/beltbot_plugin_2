@@ -53,3 +53,9 @@ logs/
 
 # training/ — สมุดทดลอง ไม่ใช่ของที่ระบบรัน (HANDOFF_brand_plugin ข้อ 5.2)
 training/
+
+# เครื่องมือ monitor / ขยาย (28 ต.ค.) — รันบนเครื่อง ไม่ใช้ตอนตอบ (data_manifest.py ต้องขึ้น Space: /health/detail เรียก check())
+qdrant_alias.py
+models_lock.py
+metrics_report.py
+*.bak-*

@@ -25,7 +25,8 @@ from typing import Any, Optional
 from core.decide import Dialogue
 from core.image_policy import ImageCarry, resolve as resolve_image_policy
 from core.image_router import route_image
-from core.llm import GeminiClient, LLMTimeout, extract_text, is_transient
+from core.llm import GeminiClient, LLMTimeout, extract_text, is_transient, model_version_of, usage_of
+from core import metrics as M
 from core import reply_guard as RG
 from core import templates as T
 from core.protocol import TurnInput
@@ -112,9 +113,14 @@ class TurnEngine:
         self.dialog_states: dict[str, dict] = {}         # session_id → DialogState.to_dict()
         self.image_carry: dict[str, ImageCarry] = {}     # session_id → รูปของเทิร์นที่ถามแบรนด์ (ใช้เทิร์นเดียว)
 
-    def _log_finish(self, turn_log, ai_reply: str, tool_calls: list, t_start: float, error=None, img=None):
+    def _log_finish(self, turn_log, ai_reply: str, tool_calls: list, t_start: float, error=None, img=None,
+                    met=None):
         _emit_image_log(img, ai_reply)
         latency_ms = (time.perf_counter() - t_start) * 1000
+        if met is not None:                              # METRIC (core/metrics.py) — ตัวเลขล้วน ไม่มีข้อความ
+            met["ms_total"] = round(latency_ms)
+            met.setdefault("status", "error" if error else "ok")
+            M.emit(met)
         self.logger.log_llm(turn_log, ai_reply=ai_reply, tool_calls=tool_calls, latency_ms=latency_ms)
         self.logger.finish_turn(turn_log, error=error)
         print(f"📋 Logged {turn_log.turn_id}  latency={latency_ms:.0f}ms  "
@@ -138,6 +144,7 @@ class TurnEngine:
         gate_src = img_input.copy() if (img_input is not None and self.image_gates) else None
         img_log = None                                   # IMGLOG (ถ้าเปิด) — เติมหลังตัดสิน
         img_size = list(img_input.size) if img_input is not None else None
+        met = {"src": "turn", "s": M.session_tag(session_id), "image": img_input is not None}
 
         display_content = ""
         if img_input:
@@ -196,6 +203,9 @@ class TurnEngine:
                 image_rejected=bool(img_route and img_route.rejected), state=dstate,
                 image_carry=carry, image_confirm=policy.confirm if policy is not None else None)
             self.dialog_states[session_id] = decision.state.to_dict()
+            met.update(brand=decision.brand, action=decision.action)
+            if img_input is not None:
+                met.update(M.image_fields(policy, img_route))
             if img_input is not None and IMAGE_TEST_LOG:
                 raw = policy.original if (policy is not None and policy.original is not None) else img_route
                 img_log = {
@@ -222,7 +232,7 @@ class TurnEngine:
 
             if not decision.needs_llm:
                 ai_reply = _prefix(image_note, decision.reply_th)
-                self._log_finish(turn_log, ai_reply, [], t_start, error=None, img=img_log)
+                self._log_finish(turn_log, ai_reply, [], t_start, error=None, img=img_log, met=met)
                 chat_history += [{"role": "user", "content": display_content},
                                  {"role": "assistant", "content": ai_reply}]
                 return (chat_history, chat_history, raw_refs_html,
@@ -240,7 +250,8 @@ class TurnEngine:
                                   f"→ ขอคำถาม (เดิม {decision.action} · {decision.reason})\n")
                 if img_log is not None:
                     img_log["guard"] = "รูปเปล่า → ขอคำถาม (ไม่เรียก LLM)"
-                self._log_finish(turn_log, ai_reply, [], t_start, error=None, img=img_log)
+                met["guard"] = "image_only"
+                self._log_finish(turn_log, ai_reply, [], t_start, error=None, img=img_log, met=met)
                 chat_history += [{"role": "user", "content": display_content},
                                  {"role": "assistant", "content": ai_reply}]
                 return (chat_history, chat_history, raw_refs_html,
@@ -262,18 +273,25 @@ class TurnEngine:
                 raw_refs_html += "**Empty turn:** user_parts ว่าง → ไม่เรียก LLM\n"
                 if img_log is not None:
                     img_log["guard"] = "เทิร์นว่าง → ไม่เรียก LLM"
+                met["guard"] = "empty_turn"
 
             if llm_turn.direct_reply is not None:
                 ai_reply = _prefix(image_note, llm_turn.direct_reply)
-                self._log_finish(turn_log, ai_reply, [], t_start, error=None, img=img_log)
+                self._log_finish(turn_log, ai_reply, [], t_start, error=None, img=img_log, met=met)
                 chat_history += [{"role": "user", "content": display_content},
                                  {"role": "assistant", "content": ai_reply}]
                 return (chat_history, chat_history, raw_refs_html,
                         last_pids, session_id, last_vit_signal, last_graph_result)
 
+            t_llm = time.perf_counter()
             result = self.llm.run(llm_turn, chat_history, self.tool_log.calls)
+            met["ms_llm"] = round((time.perf_counter() - t_llm) * 1000)
+            met["tokens"] = M.token_fields(usage_of(getattr(result, "response", None)))
+            met["model"] = model_version_of(getattr(result, "response", None))
             out = plugin.finish_turn(decision, turn, llm_turn, result)
             guarded, notes = guard_reply(out.reply, result, decision)
+            if notes:                                    # METRIC: นับว่าชั้นกันทำงานบ่อยแค่ไหน (ไม่เก็บเนื้อหา)
+                met["guard"] = "leak" if any("หลุด" in n for n in notes) else "contact"
             raw_refs_html += "".join(notes)
             ai_reply = _prefix(image_note, guarded)
             extra_messages = list(out.extra_messages)
@@ -291,6 +309,7 @@ class TurnEngine:
                         TRANSIENT_REPLY_TH if is_transient(e) else error_reply_th())
             error_msg = str(e)
             extra_messages = []
+            met.update(status="error", err=type(e).__name__)
             print(f"[ERROR] {e}")
             traceback.print_exc()
 
@@ -298,7 +317,7 @@ class TurnEngine:
                 and not _already_has_contact(ai_reply, decision.sales_handoff_th):
             ai_reply = f"{ai_reply}\n\n{decision.sales_handoff_th}"   # คำถามผสม: ส่วนฝ่ายขายมาจากโค้ด
 
-        self._log_finish(turn_log, ai_reply, self.tool_log.calls, t_start, error=error_msg, img=img_log)
+        self._log_finish(turn_log, ai_reply, self.tool_log.calls, t_start, error=error_msg, img=img_log, met=met)
 
         chat_history += [{"role": "user", "content": display_content},
                          {"role": "assistant", "content": ai_reply}]

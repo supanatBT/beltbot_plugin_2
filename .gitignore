@@ -15,3 +15,5 @@ training/gate_snapshots/prompt_*.json
 training/out/
 # log ทดสอบรูป (IMAGE_TEST_LOG=1) — ของดิบของผู้ทดสอบ ไม่เข้า repo · ตาราง CSV ที่เติมผลแล้วเก็บเองตามต้องการ
 image_test.log
+# สำรองอัตโนมัติก่อนเขียนไฟล์ (qdrant_alias.py · models_lock.py · data_manifest.py) — เก็บไว้บนเครื่อง ไม่เข้า repo
+*.bak-*

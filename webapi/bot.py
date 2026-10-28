@@ -384,6 +384,7 @@ class BotAdapter:
         self._fn = chat_fn
         self._load_lock = threading.Lock()
         self.load_error: Optional[str] = None
+        self.versions: dict = {}                    # webapi/versions.collect — เก็บครั้งเดียวหลังโหลด
 
     @property
     def ready(self) -> bool:
@@ -399,6 +400,11 @@ class BotAdapter:
                 mod = importlib.import_module(self.module_name)
                 self._fn = getattr(mod, "chat_interaction")
                 log.info("โหลด %s เสร็จใน %.1f วินาที", self.module_name, time.time() - t0)
+                try:                                # อ่านอย่างเดียว · พังก็ไม่ทำให้บอทใช้ไม่ได้
+                    from webapi.versions import collect
+                    self.versions = collect(mod)
+                except Exception:                   # noqa: BLE001
+                    log.exception("เก็บข้อมูลเวอร์ชันไม่สำเร็จ")
             except Exception as e:
                 self.load_error = f"{type(e).__name__}: {e}"
                 log.exception("โหลดบอทไม่สำเร็จ")
