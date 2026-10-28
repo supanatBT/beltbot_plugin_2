@@ -249,5 +249,5 @@ with tempfile.TemporaryDirectory() as td:
     ok("p95 / ก่อน LLM", s["p95_total_ms"] == 5000 and s["p95_before_llm_ms"] == 4000, s)
     ok("token ต่อวัน", s["tokens_per_day"] == 200, s)
 
-print(f"\nผล: ผ่าน {PASS} · ไม่ผ่าน {FAIL}")
+print(f"\nรวม {PASS}/{PASS + FAIL}")
 sys.exit(1 if FAIL else 0)
