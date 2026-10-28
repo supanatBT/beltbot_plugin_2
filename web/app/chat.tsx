@@ -1244,7 +1244,11 @@ const CSS = `
     border-bottom:1px solid #999;font-size:12px;color:#444}
   .cv-print-head b{font-size:17px;color:#111}
   .cv-print-vote{display:block;font-size:12px;color:#444;padding-left:4px}
-  .bubble,.notice,.drawing{break-inside:avoid}
+  /* คำตอบยาวเกินหน้า + avoid = ถูกดันไปหน้าถัดไปทั้งก้อน เหลือหน้าว่าง (ทดสอบบนเว็บจริง 28 ต.ค.)
+     → ให้คำตอบตัดข้ามหน้าได้ แต่ไม่ตัดกลางย่อหน้า/ข้อในรายการ/แถวตาราง */
+  .bubble{break-inside:auto}
+  .bubble.user,.notice,.drawing{break-inside:avoid}
+  .bubble p,.bubble li,.cv-table tr{break-inside:avoid}
   .cv-table{overflow:visible;border-color:#999}
   .cv-chip{border:0;padding:0;min-height:0}
   .bubble.user{border:1px solid #c5d3e6}
