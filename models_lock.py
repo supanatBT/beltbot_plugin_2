@@ -34,15 +34,30 @@ CODE_REPOS = {"jinaai/xlm-roberta-flash-implementation": "โค้ดโมเ�
 SHA = re.compile(r"^[0-9a-f]{40}$")
 
 
-def cached_main(repo_id: str, info) -> tuple[str | None, str]:
-    for repo in info.repos:
-        if repo.repo_id == repo_id and repo.repo_type == "model":
-            mains = [r for r in repo.revisions if "main" in r.refs]
-            if mains:
-                return mains[0].commit_hash, f"refs/main ({len(repo.revisions)} revision ในแคช)"
-            others = ", ".join(r.commit_hash[:10] for r in repo.revisions)
-            return None, f"มีในแคชแต่ไม่มี refs/main ({others}) — ระบุเองด้วย --rev"
-    return None, "ไม่มีในแคช"
+def cache_dir() -> str:
+    from huggingface_hub import constants
+    return constants.HF_HUB_CACHE
+
+
+def cached_main(repo_id: str, root: str) -> tuple[str | None, str]:
+    """อ่าน refs/main ของรีโปเดียวตรง ๆ — ไม่ใช้ scan_cache_dir เพราะมันไล่ทุกรีโปในแคช
+    แล้วล้มทั้งหมดเมื่อเจอ symlink เสียของรีโปอื่น (Windows · WinError 1920 · 28 ต.ค.)"""
+    d = os.path.join(root, "models--" + repo_id.replace("/", "--"))
+    if not os.path.isdir(d):
+        return None, "ไม่มีในแคช"
+    snaps = os.path.join(d, "snapshots")
+    have = sorted(os.listdir(snaps)) if os.path.isdir(snaps) else []
+    ref = os.path.join(d, "refs", "main")
+    if os.path.isfile(ref):
+        with open(ref, encoding="utf-8") as f:
+            sha = f.read().strip()
+        if not SHA.match(sha):
+            return None, f"refs/main อ่านได้ '{sha[:20]}' ไม่ใช่ commit — ระบุเองด้วย --rev"
+        if sha not in have:
+            return None, f"refs/main ชี้ {sha[:10]} แต่ไม่มี snapshot นั้นในแคช — ระบุเองด้วย --rev"
+        return sha, f"refs/main ({len(have)} snapshot ในแคช)"
+    others = ", ".join(h[:10] for h in have) or "-"
+    return None, f"มีในแคชแต่ไม่มี refs/main (snapshot: {others}) — ระบุเองด้วย --rev"
 
 
 def main() -> int:
@@ -52,8 +67,7 @@ def main() -> int:
     ap.add_argument("-o", default=os.path.join(BASE, "models.yaml"))
     a = ap.parse_args()
 
-    from huggingface_hub import scan_cache_dir
-    info = scan_cache_dir()
+    root = cache_dir()
     manual = {}
     for x in a.rev:
         mid, _, sha = x.partition("=")
@@ -63,9 +77,9 @@ def main() -> int:
         manual[mid.strip()] = sha.strip()
 
     locked, missing = {}, []
-    print(f"แคช HF: {len(info.repos)} รีโป · {info.size_on_disk_str}")
+    print(f"แคช HF: {root}")
     for mid, role in {**MODELS, **CODE_REPOS}.items():
-        sha, why = (manual[mid], "--rev") if mid in manual else cached_main(mid, info)
+        sha, why = (manual[mid], "--rev") if mid in manual else cached_main(mid, root)
         mark = "✅" if sha else "⚠️"
         print(f"{mark} {mid}: {sha or '-'}  · {why}  · {role}")
         if mid in MODELS:
