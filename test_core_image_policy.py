@@ -101,7 +101,12 @@ ok("ขอบ direct 0.8254 → ไป Modutech", r.kind == "direct" and r.route
 r = resolve(route_of(mx(0.70)), BRANDS, ["movex"], gate(0.8253, 0.05), [])
 ok("ขอบ direct 0.8253 → ถาม", r.kind == "ask")
 r = resolve(route_of(mx(0.87)), BRANDS, ["movex"], gate(0.88, 0.05), [])
-ok("dominant + direct → Movex (dominant มาก่อน · เคสผิดแบรนด์ 1/247 ที่ยอมรับ)", r.kind == "dominant")
+ok("dominant + direct → ถามแบรนด์ (conflict · 28 ต.ค. เคส F03)", r.kind == "conflict" and r.asks_brand
+   and r.route.image_brands == BRANDS and not r.route.rejected and r.original.best.confidence == 0.87, r.kind)
+r = resolve(route_of(mx(0.851)), BRANDS, ["movex"], gate(0.861, 0.11), [])
+ok("ค่าจริง F03 (ViT 0.851 · ประตู 0.861) → conflict", r.kind == "conflict", r.kind)
+r = resolve(route_of(mx(0.97)), BRANDS, ["movex"], gate(0.816, 0.06), [])
+ok("dominant + ประตูไม่ถึง direct (Movex จริงสูงสุด 0.816) → Movex เหมือนเดิม", r.kind == "dominant", r.kind)
 
 r = resolve(route_of(mx(0.70)), BRANDS, ["movex"], gate(0.79, 0.05), [])
 ok("รูปสายพานทั่วไป → ask · ทุกแบรนด์อยู่ใน image_brands", r.kind == "ask" and r.asks_brand

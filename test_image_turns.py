@@ -140,6 +140,9 @@ IMAGES = {
     # ของจริงจาก log 27 ต.ค.: ViT 0.4257 ระบุซีรีส์ไม่ได้ แต่ accepted = true (ระบบค้นเจอสินค้าบางอย่าง)
     "modutech_maybe_acc": (ImageScore("movex", 0.4257, True, group=None), GateReading("modutech", True, False, {})),
     "not_product": (ImageScore("movex", 0.13, False), GateReading("modutech", False, False, {})),
+    # ทดสอบรูปรอบ ① F03 (28 ต.ค.): ViT 0.851 dominant แต่ประตู Modutech ก็มั่นใจ → ต้องถาม ไม่เดาว่า Movex
+    "conflict": (ImageScore("movex", 0.851, True, group="821", dominant=True,
+                            product_ref="movex_chain_LF821_K750"), GateReading("modutech", True, True, {})),
 }
 # ── ประวัติ 4 แบบ ──
 HISTORIES = {
@@ -185,6 +188,9 @@ for h in HISTORIES:
             ok(f"{tag}: ไม่ส่งเทิร์นว่างให้ LLM",
                all(any((p.strip() if isinstance(p, str) else p is not None) for p in s) for s in sent), sent)
 
+            if i == "conflict":
+                ok(f"{tag}: สองฝั่งมั่นใจคนละแบรนด์ → ไม่ตอบซีรีส์ Movex · ไม่เรียก LLM",
+                   "821" not in reply and not sent and ("ขอยืนยันก่อน" in reply or "Modutech" in reply), (reply[:100], sent))
             if i == "not_product":
                 ok(f"{tag}: ปฏิเสธรูป", "reject_image" in refs and reply == GENERIC_REJECT_IMAGE_TH, reply[:80])
             pending = h == "Modutech ถามค้าง"

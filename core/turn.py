@@ -326,7 +326,7 @@ class TurnEngine:
             return ""
         if policy is not None and policy.kind == "context":
             return T.image_from_context(self.plugins[b].info)
-        if policy is not None and policy.kind in ("direct", "text_brand", "ask", "confirm"):
+        if policy is not None and policy.kind in ("direct", "text_brand", "ask", "confirm", "conflict"):
             return T.image_no_model(self.plugins[b].info, from_image=policy.kind == "direct")
         if policy is None and carry is not None:
             return T.image_no_model(self.plugins[b].info, from_image=False)

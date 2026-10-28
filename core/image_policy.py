@@ -11,6 +11,10 @@ core/image_policy.py — รูปเมื่อบางแบรนด์ย�
     2. ข้อความระบุแบรนด์ที่ไม่มีตัวให้คะแนนแบรนด์เดียว   → แบรนด์นั้น รูปไม่ใช้               text_brand
        ข้อความระบุแบรนด์อื่น                           → ผลเดิม                          unchanged
     3. dominant                                       → ผลเดิม (แบรนด์ที่ให้คะแนน)        dominant
+    3a. dominant แต่ประตูของแบรนด์ที่ไม่มีตัวให้คะแนนก็มั่นใจ (direct) → ถามแบรนด์           conflict
+        (ผู้ใช้เลือก 28 ต.ค. · ทดสอบรูปรอบ ① F03: ViT 0.851 dominant + ประตู 0.861 direct → บอทตอบซีรีส์ผิดแบรนด์
+         สองฝั่งชี้คนละแบรนด์ = ไม่เดา · brand_calibration_rows: รูปของแบรนด์ที่ให้คะแนนไม่มีใบไหนผ่าน direct
+         ทั้ง cal 0/49 · eval 0/57 → ไม่มีลูกค้าแบรนด์นั้นโดนถามเพิ่มในชุดวัด)
     4. ประตูของแบรนด์ที่ไม่มีตัวให้คะแนนบอกว่า "ของเรา" แบรนด์เดียว → แบรนด์นั้น            direct
     4a. แชตคุยแบรนด์ที่ไม่มีตัวให้คะแนนอยู่ + ประตูของมันบอกว่าเป็นสินค้า → แบรนด์นั้น        context
         (ผู้ใช้เลือก 27 ต.ค. เคส R5: คุย MP80 C ค้างคำถามเปียก/แห้ง ส่งรูปสายพาน → เดิมถามสองแบรนด์ คำถามค้างหาย)
@@ -57,7 +61,7 @@ class ImageCarry:
 @dataclass
 class PolicyResult:
     route: ImageRoute
-    kind: str                     # not_product · text_brand · unchanged · dominant · direct · context · confirm · ask · off
+    kind: str                     # not_product · text_brand · unchanged · dominant · conflict · direct · context · confirm · ask · off
     reason: str = ""
     original: Optional[ImageRoute] = None
     confirm: Optional[str] = None  # kind == confirm: แบรนด์ที่จะถามว่า "ใช่ไหม"
@@ -65,7 +69,7 @@ class PolicyResult:
 
     @property
     def asks_brand(self) -> bool:
-        return self.kind in ("ask", "confirm")
+        return self.kind in ("ask", "confirm", "conflict")
 
 
 def resolve(route: ImageRoute, brands: Sequence[str], scored: Sequence[str],
@@ -92,6 +96,13 @@ def resolve(route: ImageRoute, brands: Sequence[str], scored: Sequence[str],
         return PolicyResult(route, "unchanged", "ข้อความระบุแบรนด์ที่มีตัวให้คะแนนรูป", route)
 
     if dominant:
+        clash = [b for b in unscored if b in readings and readings[b].direct]
+        if clash:
+            every = [b for b in brands]
+            why = " · ".join(f"{b} {_fmt(readings[b].detail)}" for b in clash)
+            return PolicyResult(ImageRoute(False, every, route.best, route.scores), "conflict",
+                                f"{best.brand} dominant {best.confidence:.2f} แต่ประตู {why} มั่นใจด้วย → ถามแบรนด์",
+                                route)
         return PolicyResult(route, "dominant", f"{best.brand} dominant {best.confidence:.2f}", route)
 
     direct = [b for b in unscored if b in readings and readings[b].direct]
