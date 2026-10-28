@@ -1,0 +1,15 @@
+# สร้างด้วย models_lock.py 2026-10-28 22:43 จากแคช HF บนเครื่องที่ผ่านชุดทดสอบ
+# เปลี่ยนโมเดลตัวไหน = ต้องรันชุดทดสอบใหม่ · เปลี่ยน SigLIP-384 = ต้องปรับเกณฑ์ประตูใหม่ด้วย brand_calibration_rows.csv
+models:
+  jinaai/jina-embeddings-v3:
+    revision: ab036b023d30b4d1138c4c3bfa9f0c445ab455d6
+    role: "ข้อความ → เวกเตอร์ (ค้นทั้งสองแบรนด์)"
+  google/siglip-base-patch16-224:
+    revision: 7fd15f0689c79d79e38b1c2e2e2370a7bf2761ed
+    role: "SigLIP ของ retriever Movex"
+  google/siglip-base-patch16-384:
+    revision: 41aec1c83b32e0a6fca20ad88ba058aa5b5ea394
+    role: "ประตูรูป Modutech (เกณฑ์ 0.65 / 0.8254 ปรับกับรุ่นนี้)"
+  google/vit-base-patch16-224-in21k:
+    revision: b4569560a39a0f1af58e3ddaf17facf20ab919b0
+    role: "ฐานของ ViT LoRA Movex"

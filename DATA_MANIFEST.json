@@ -1,0 +1,69 @@
+{
+ "made_at": "2026-10-28 22:43",
+ "lineage": [
+  {
+   "file": "modutech_v30.json",
+   "found": true,
+   "sha256": "a6906fd8e2fee0103034a996bf5648f719cb2ac8ac4689c6fba8ec2fbf8b5ff7",
+   "bytes": 2587632,
+   "parent": null,
+   "made_by": "ไฟล์ดิบ (Project) — ห้ามใช้ v29 หรือเก่ากว่า"
+  },
+  {
+   "file": "modutech_v30_1.json",
+   "found": true,
+   "sha256": "fc04bd444e853666bd8c8e5e42bfe1fd12473fdf29280f6ac0bd68f79913c00d",
+   "bytes": 2512604,
+   "parent": "modutech_v30.json",
+   "made_by": "patch_v30_1.py"
+  },
+  {
+   "file": "modutech_v30_2.json",
+   "found": true,
+   "sha256": "b1c828708ee764ba24b0339904e7394f36b0d363a63ce3bc9324a36d52b92113",
+   "bytes": 2558796,
+   "parent": "modutech_v30_1.json",
+   "made_by": "patch_v30_2.py · CHANGELOG_v30_2.md"
+  },
+  {
+   "file": "modutech_v30_3.json",
+   "found": true,
+   "sha256": "0adb1b511f2413a49d9fb9f77102f8760672a1515962fe188f195eace89e7210",
+   "bytes": 2580860,
+   "parent": "modutech_v30_2.json",
+   "made_by": "patch_v30_3.py · CHANGELOG_v30_3.md · ตัวที่บอทใช้"
+  }
+ ],
+ "other": [
+  {
+   "file": "extracted_data_v3_machine_ready.json",
+   "found": true,
+   "sha256": "b9d86ca4ee51521be925dd88a712e77c93131a1b6b49d98ee594a68dc3d27a15",
+   "bytes": 66887
+  },
+  {
+   "file": "modutech_kg.db",
+   "found": true,
+   "sha256": "f1619d364afdfd48a91aedd886cbdf76fa37a44fcdc540be5395d0ca2e7fac37",
+   "bytes": 655360
+  },
+  {
+   "file": "movex_kg.db",
+   "found": true,
+   "sha256": "6107220b9ba7ad889c68c8922155a5a64c99f26db337ba3d2f73ccaf4e81885f",
+   "bytes": 81920
+  },
+  {
+   "file": "brands/modutech/image_gate.npz",
+   "found": true,
+   "sha256": "91cee512a3a557c2c3c3bda90dde6c611a2785be32e6692accc2fe5aaa8d285d",
+   "bytes": 670694
+  },
+  {
+   "file": "brands/movex/thresholds.json",
+   "found": true,
+   "sha256": "43fb50b73b1f14f111bc98a4bb15869208e687560885a4d37d25b4274616c014",
+   "bytes": 400
+  }
+ ]
+}
