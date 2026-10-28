@@ -66,9 +66,30 @@ def pin(model_id: str) -> dict:
     return {"revision": spec["revision"]} if spec else {}
 
 
+def commit_from_cache(model_id: str, revision: Optional[str] = None,
+                      cache_dir: Optional[str] = None) -> Optional[str]:
+    """commit จากพาธ snapshot ในแคช HF (…/snapshots/<commit>/config.json)
+    ใช้เมื่อ config._commit_hash ว่าง — เช่น SiglipVisionModel ที่ดึงเฉพาะ vision_config ออกมา (28 ต.ค.)"""
+    try:
+        from huggingface_hub import try_to_load_from_cache
+        p = try_to_load_from_cache(model_id, "config.json", revision=revision, cache_dir=cache_dir)
+    except Exception:                                    # noqa: BLE001
+        return None
+    if not isinstance(p, str):
+        return None
+    parts = os.path.normpath(p).split(os.sep)
+    if "snapshots" in parts:
+        i = parts.index("snapshots")
+        if i + 1 < len(parts) and _SHA.match(parts[i + 1]):
+            return parts[i + 1]
+    return None
+
+
 def note(model_id: str, model: Any) -> None:
     """บันทึก commit ที่โหลดจริง · โหลดซ้ำหลายตัว (processor + model) ใช้ค่าล่าสุดที่ไม่ใช่ None"""
     commit = getattr(getattr(model, "config", None), "_commit_hash", None)
+    if not commit and "/" in model_id and not os.path.isdir(model_id):
+        commit = commit_from_cache(model_id, pin(model_id).get("revision"))
     if commit or model_id not in LOADED:
         LOADED[model_id] = commit if isinstance(commit, str) else None
 

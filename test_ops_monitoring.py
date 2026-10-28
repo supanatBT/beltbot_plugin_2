@@ -170,6 +170,15 @@ with tempfile.TemporaryDirectory() as td:
     ok("status ตรง", model_lock.status()["a/b"]["match"] is True)
     model_lock.LOADED["a/b"] = "b" * 40
     ok("status ไม่ตรง = False", model_lock.status()["a/b"]["match"] is False)
+    cache = os.path.join(td, "hub")
+    snap = os.path.join(cache, "models--g--sig", "snapshots", "e" * 40)
+    os.makedirs(snap)
+    os.makedirs(os.path.join(cache, "models--g--sig", "refs"))
+    open(os.path.join(cache, "models--g--sig", "refs", "main"), "w").write("e" * 40)
+    open(os.path.join(snap, "config.json"), "w").write("{}")
+    ok("commit จากแคช เมื่อ config ไม่มี _commit_hash (SigLIP vision)",
+       model_lock.commit_from_cache("g/sig", None, cache) == "e" * 40)
+    ok("commit จากแคช: ไม่มีรีโป = None", model_lock.commit_from_cache("g/none", None, cache) is None)
     model_lock.LOADED.clear()
     model_lock._cache = old_cache
     if old_env is None:
