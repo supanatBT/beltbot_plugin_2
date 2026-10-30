@@ -1,0 +1,346 @@
+{
+  "module": "assistant",
+  "testcases": "testcases_probe_movex_tools.csv",
+  "results": [
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true,
+        "answer_has_any": true
+      },
+      "passed": true,
+      "reply": "ตารางเปรียบเทียบระหว่างรุ่น **LF 820 K325** และ **LF 880 TAB K325** ครับ:\n\n| คุณสมบัติ | LF 820 K325 | LF 880 TAB K325 |\n| :--- | :--- | :--- |\n| **ซีรีส์ (Series)** | 820 Series | 880 Series |\n| **ประเภทโซ่ (Product Type)** | **โซ่วิ่งทางตรง (Straight Running Chain)** | **โซ่วิ่งทางโค้ง (Sideflexing Chain)** |\n| **การเลี้ยว (Curved)** | **เลี้ยวไม่ได้** (วิ่งได้เฉพาะแนวตรง) | **เลี้ยวได้** (รัศมีเลี้ยวแคบสุด $457\\text{ mm}$) |\n| **ความกว้างหน้าโซ่ (Plate Width)** | $82.5\\text{ mm}$ | $82.5\\text{ mm}$ |\n| **การรับแรงดึงสูงสุด (Max Working Load)** | $1,625\\text{ N}$ | $2,200\\text{ N}$ |\n| **น้ำหนักโซ่ (Weight)** | $0.89\\text{ kg/m}$ | $1.015\\text{ kg/m}$ |\n| **วัสดุ (Material)** | LF (Low Friction Acetal) | LF (Low Friction Acetal) |\n| **ระบบยึดร่องราง (Hold-down)** | - | มีปีก TAB ป้องกันโซ่ยกตัวขณะเข้าโค้ง |\n\n---\n\n### สรุปคำแนะนำการใช้งาน:\n- **LF 820 K325:** เหมาะสำหรับไลน์ลำเลียง **ทางตรงล้วน** ที่ต้องการความเสถียร น้ำหนักเบา และประหยัด เหมาะกับงานขวด PET, กระป๋อง หรือขวดแก้วในแนวเส้นตรง\n- **LF 880 TAB K325:** ออกแบบมาสำหรับไลน์ลำเลียงที่มี **ช่วงเลี้ยว/โค้ง** โดยมีปีก TAB ช่วยล็อกไม่ให้โซ่กระดกหลุดจากรางโค้ง และรับแรงดึงได้สูงกว่า ($2,200\\text{ N}$) ครับ\n\nหากต้องการข้อมูลเพิ่มเติมหรือต้องการดู Drawing/Datasheet ของรุ่นไหน แจ้งได้เลยนะครับ!",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MXT-C1",
+      "turn": "1",
+      "subcategory": "compare",
+      "query": "เปรียบเทียบ LF820 K325 กับ LF880 TAB K325",
+      "description": "คาดเรียก compare_specific_products · LF820 ตรง 1625 N · LF880 TAB เลี้ยวได้ 2200 N · กว้าง 82.5 ทั้งคู่",
+      "seconds": 7.8,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [
+        {
+          "tool": "compare_specific_products",
+          "args": {
+            "product_ids": "movex_chain_LF820_K325,movex_chain_LF880_TAB_K325"
+          },
+          "success": true,
+          "result": "=== movex_chain_LF820_K325 ===\n  series: 820 Series\n  product_type: Straight Running Chain\n  plate_width_mm: -\n  pitch_mm: -\n  max_load_n: 1625\n  material: LF\n  min_curve_radius_mm: -\n  Ref: LF 820 K325\n\n=== movex_chain_LF880_TAB_K325 ===\n  series: 880 Series\n  product_type: Sideflexing Chain\n  plate_width_mm: -\n  pitch_mm: -\n  max_load_n: 2200\n  material: LF\n  min_curve_radius_mm: 457\n  Ref: LF 880 TAB K325"
+        }
+      ],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_181116_46a161_t001`\n**Effective query:** เปรียบเทียบ LF820 K325 กับ LF880 TAB K325\n\n**Decision:** answer · brand=movex · รหัสในข้อความ\n\n**Graph:** seeds=['movex_chain_LF880_TAB_K325'] | compatible=['movex_sprocket_54901', 'movex_sprocket_55001'] | hop_trace=[\"seeds=['movex_chain_LF880_TAB_K325']\", \"hop1: compatible=['movex_sprocket_54901', 'movex_sprocket_55001'], same_series=['movex_chain_LF880_TAB_K450', 'movex_sprocket_54901', 'movex_sprocket_55001']\"]\n\n**Mode:** RRF+KeywordBoost (no CE)\n**1. movex_chain_LF880_TAB_K325** (final:0.766 | CE:0.00 | RRF:0.6163)\n**2. movex_chain_LF880_TAB_K450** (final:0.015 | CE:0.00 | RRF:0.0150)\n**3. movex_chain_LF882_TAB_K1000** (final:0.014 | CE:0.00 | RRF:0.0142)\n**4. movex_chain_LF882_TAB_K750** (final:0.014 | CE:0.00 | RRF:0.0136)\n**5. movex_chain_LF882_TAB_K1200** (final:0.013 | CE:0.00 | RRF:0.0133)\n**Context (focus):** เพิ่ม ['movex_chain_LF820_K325']\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "การเปรียบเทียบระหว่างรุ่น **LF 820 K325** และ **LF 821 K750** มีจุดแตกต่างหลักๆ ดังนี้ครับ:\n\n| คุณสมบัติ / สเปก | **LF 820 K325** | **LF 821 K750** |\n| :--- | :--- | :--- |\n| **ซีรีส์ (Series)** | 820 Series | 821 Series (Heavy-Duty) |\n| **ประเภทโซ่** | Straight Running (วิ่งตรงเท่านั้น) | Straight Running (วิ่งตรงเท่านั้น) |\n| **ความกว้างหน้าโซ่ (Plate Width)** | **82.5 มม.** (K325) | **190.5 มม.** (K750) |\n| **การรับโหลดสูงสุด (Max Working Load)** | **1,625 N** | **2,770 N** |\n| **น้ำหนักโซ่ (Weight)** | **0.89 กก./ม.** | **2.55 กก./ม.** |\n| **โครงสร้างข้อต่อ (Hinge)** | ข้อต่อเดี่ยวมาตรฐาน (Single Hinge) | เสริมความแข็งแรงแบบ **Double-Hinge** แผ่นโซ่หนาขึ้น |\n| **ลักษณะการใช้งานหลัก** | เหมาะสำหรับลำเลียงขวดแก้ว, ขวด PET, หรือกระป๋องอลูมิเนียม แบบแถวเดี่ยว (Single-file) ในไลน์บรรจุทั่วไป | เหมาะสำหรับงานหนัก (Heavy-Duty) เช่น ลำเลียงลังพลาสติก (Crates), ถังเบียร์ (Kegs) หรือชิ้นส่วนอุตสาหกรรมขนาดใหญ่ |\n| **วัสดุ (Material)** | Low Friction Acetal (LF) | Low Friction Acetal (LF) |\n\n**สรุปภาพรวม:**\n- **LF 820 K325** จะมีหน้ากว้างขนาดมาตรฐาน (82.5 มม.) น้ำหนักเบา เหมาะกับขวดหรือกระป๋องในไลน์ผลิตทั่วไป\n- **LF 821 K750** เป็นรุ่น Heavy-Duty หน้ากว้างพิเศษ (190.5 มม.) โครงสร้างบานพับคู่คู่หนาเป็นพิเศษ จึงรับแรงดึงได้สูงกว่าอย่างชัดเจน (2,770 N เทียบกับ 1,625 N) เพื่อรองรับชิ้นงานหนักครับ\n\nหากต้องการข้อมูลเพิ่มเติมหรือแบบ Drawing แจ้งได้เลยนะครับ!",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MXT-C2",
+      "turn": "1",
+      "subcategory": "compare",
+      "query": "LF820 K325 กับ LF821 K750 ต่างกันยังไง",
+      "description": "คาดเรียก compare_specific_products · กว้าง 82.5 vs 190.5 · โหลด 1625 vs 2770",
+      "seconds": 16.4,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [
+        {
+          "tool": "compare_specific_products",
+          "args": {
+            "product_ids": "movex_chain_LF820_K325,movex_chain_LF821_K750"
+          },
+          "success": true,
+          "result": "=== movex_chain_LF820_K325 ===\n  series: 820 Series\n  product_type: Straight Running Chain\n  plate_width_mm: -\n  pitch_mm: -\n  max_load_n: 1625\n  material: LF\n  min_curve_radius_mm: -\n  Ref: LF 820 K325\n\n=== movex_chain_LF821_K750 ===\n  series: 821 Series\n  product_type: Straight Running Chain\n  plate_width_mm: -\n  pitch_mm: -\n  max_load_n: 2770\n  material: LF\n  min_curve_radius_mm: -\n  Ref: LF 821 K750"
+        }
+      ],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_181126_60953b_t001`\n**Effective query:** LF820 K325 กับ LF821 K750 ต่างกันยังไง\n\n**Decision:** answer · brand=movex · รหัสในข้อความ\n\n**Graph:** seeds=['movex_chain_LF880_TAB_K325'] | compatible=['movex_sprocket_54901', 'movex_sprocket_55001'] | hop_trace=[\"seeds=['movex_chain_LF880_TAB_K325']\", \"hop1: compatible=['movex_sprocket_54901', 'movex_sprocket_55001'], same_series=['movex_chain_LF880_TAB_K450', 'movex_sprocket_54901', 'movex_sprocket_55001']\"]\n\n**Mode:** RRF+KeywordBoost (no CE)\n**1. movex_chain_LF880_TAB_K325** (final:0.015 | CE:0.00 | RRF:0.0152)\n**2. movex_chain_LF820_K750** (final:0.015 | CE:0.00 | RRF:0.0147)\n**3. movex_chain_LF821_K750** (final:0.014 | CE:0.00 | RRF:0.0144)\n**4. movex_chain_LF820_K325** (final:0.014 | CE:0.00 | RRF:0.0144)\n**5. movex_chain_LF882_TAB_K750** (final:0.014 | CE:0.00 | RRF:0.0137)\n**Graph (focus):** seeds=['movex_chain_LF820_K325', 'movex_chain_LF821_K750'] compatible=['movex_sprocket_54201', 'movex_sprocket_54301', 'movex_sprocket_54401']\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "เปรียบเทียบความแตกต่างระหว่าง **LF 882 TAB K750** กับ **LFN 103 MFH** มีรายละเอียดดังนี้ครับ:\n\n### 1. **ขนาดและความกว้างหน้าโซ่ (Plate Width)**\n* **LF 882 TAB K750:** หน้ากว้าง **190.5 มม.** เป็นโซ่หน้ากว้างสำหรับลำเลียงชิ้นงานขนาดใหญ่หรือรองรับน้ำหนักมาก\n* **LFN 103 MFH:** หน้ากว้าง **103.0 มม.** ออกแบบมาสำหรับภาชนะหรือขวดขนาดกลางที่ต้องการเสถียรภาพในการลำเลียงความเร็วสูง\n\n### 2. **ระบบการยึดจับในทางโค้ง (System Design)**\n* **LF 882 TAB K750:** ใช้ระบบ **TAB** (เขี้ยวล็อกใต้ราง) ป้องกันโซ่กระดกในทางโค้ง โดยมีรัศมีเลี้ยวขั้นต่ำ **610 มม.**\n* **LFN 103 MFH:** ใช้ระบบแม่เหล็ก **Magnetic Track System (MFH)** ยึดโซ่ด้วยแรงแม่เหล็ก และมีรัศมีวงเลี้ยวที่แคบมากเพียง **170 มม.** ช่วยประหยัดพื้นที่ในการวางเลย์เอาต์ไลน์ผลิต\n\n### 3. **การรับแรงดึง (Max Working Load)**\n* **LF 882 TAB K750:** รับแรงดึงสูงสุดได้ **3,830 N** (โครงสร้างแข็งแรงพิเศษ ทนโหลดหนัก)\n* **LFN 103 MFH:** รับแรงดึงสูงสุดได้ **2,400 N** (ใช้เทคโนโลยี MX Pivot ช่วยลดการยืดตัวและการสึกหรอที่ความเร็วสูง)\n\n### 4. **วัสดุ (Material)**\n* **LF 882 TAB K750:** วัสดุ **LF (Low Friction Acetal)** สีน้ำตาล/เทา สำหรับงานลำเลียงทั่วไปที่ต้องการความทนทานต่อการสึกหรอ\n* **LFN 103 MFH:** วัสดุ **LFN (Low Friction White/Natural)** สีขาว เหมาะกับไลน์บรรจุภัณฑ์ที่ต้องการความสะอาดสูง (Hygienic environments) หรืองานที่ต้องการการตรวจสอบด้วยสายตา/เซนเซอร์\n\n### 5. **การนำไปใช้งาน (Application)**\n* **LF 882 TAB K750:** เหมาะสำหรับงาน Heavy-duty เช่น ลำเลียงถังเบียร์ (Kegs), แบตเตอรี่, ลังพลาสติกบรรจุขวด หรือกล่องสินค้าอุตสาหกรรม\n* **LFN 103 MFH:** เหมาะสำหรับไลน์บรรจุขวดความเร็วสูง (High-speed packaging lines) เช่น ขวดแก้วหรือขวด PET ขนาดใหญ่ที่ต้องการความนิ่งและเสถียรภาพสูงในโค้ง\n\nหากต้องการข้อมูลเพิ่มเติมในส่วนของระยะพิทช์ (Pitch) สเตอร์ หรือการออกแบบรางเลื่อน สอบถามได้เลยนะครับ!",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MXT-C3",
+      "turn": "1",
+      "subcategory": "compare",
+      "query": "LF 882 TAB K750 กับ LFN 103 MFH ต่างกันยังไง",
+      "description": "คาดเรียก compare_specific_products · กว้าง 190.5 vs 103 · โหลด 3830 vs 2400",
+      "seconds": 12.0,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [
+        {
+          "tool": "compare_specific_products",
+          "args": {
+            "product_ids": "LF882_TAB_K750,LFN_103_MFH"
+          },
+          "success": true,
+          "result": "=== movex_chain_LF882_TAB_K750 ===\n  series: 882 Series\n  product_type: Sideflexing Chain\n  plate_width_mm: -\n  pitch_mm: -\n  max_load_n: 3830\n  material: LF\n  min_curve_radius_mm: -\n  Ref: LF 882 TAB K750\n\n=== movex_chain_LFN_103_MFH ===\n  series: 103 MFM PRO Series\n  product_type: Sideflexing Chain\n  plate_width_mm: -\n  pitch_mm: -\n  max_load_n: 2400\n  material: LFN\n  min_curve_radius_mm: 170.0\n  Ref: LFN 103 MFH"
+        }
+      ],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_181144_9ce740_t001`\n**Effective query:** LF 882 TAB K750 กับ LFN 103 MFH ต่างกันยังไง\n\n**Decision:** answer · brand=movex · รหัสในข้อความ\n\n**Graph:** seeds=['movex_chain_LF882_TAB_K750'] | compatible=['movex_sprocket_55601'] | hop_trace=[\"seeds=['movex_chain_LF882_TAB_K750']\", \"hop1: compatible=['movex_sprocket_55601'], same_series=['movex_chain_LF882_TAB_K1000', 'movex_chain_LF882_TAB_K1200', 'movex_sprocket_55601']\"]\n\n**Mode:** RRF+KeywordBoost (no CE)\n**1. movex_chain_LF882_TAB_K750** (final:0.765 | CE:0.00 | RRF:0.6154)\n**2. movex_chain_LF882_TAB_K1000** (final:0.015 | CE:0.00 | RRF:0.0154)\n**3. movex_chain_LF880_TAB_K325** (final:0.015 | CE:0.00 | RRF:0.0149)\n**4. movex_chain_LF880_TAB_K450** (final:0.013 | CE:0.00 | RRF:0.0133)\n**5. movex_chain_LF882_TAB_K1200** (final:0.013 | CE:0.00 | RRF:0.0132)\n**Context (focus):** เพิ่ม ['movex_chain_LFN_103_MFH']\n"
+    },
+    {
+      "checks": {
+        "no_error": true
+      },
+      "passed": true,
+      "reply": "นี่คือ Datasheet และ Drawing สำหรับโซ่ **Movex LF 820 K325** ครับ\n\n---\n\n### **ข้อมูลจำเพาะเบื้องต้น (Specifications):**\n* **รหัสสินค้า:** LF 820 K325\n* **ซีรีส์:** 820 Series\n* **ประเภทโซ่:** Straight Running Chain (วิ่งตรงเท่านั้น ไม่สามารถเลี้ยวได้)\n* **วัสดุ:** LF (Low Friction Acetal) สีน้ำตาล/เทา\n* **ความกว้างของหน้าโซ่ (Plate Width):** 82.5 มม.\n* **น้ำหนัก (Weight):** 0.89 กก./ม.\n* **ความสามารถในการรับโหลดสูงสุด (Max Working Load):** 1,625 นิวตัน (N)\n* **อุณหภูมิการใช้งาน:** -40°C ถึง +80°C (สภาวะแห้ง) / -40°C ถึง +65°C (สภาวะเปียก)\n\nเหมาะสำหรับการลำเลียงแบบแถวเดี่ยวสำหรับขวด PET (330–600 มล.), กระป๋องอะลูมิเนียม และขวดแก้วในไลน์ผลิตทั่วไปครับ หากต้องการสอบถามข้อมูลสเตอร์หรือชิ้นส่วนที่ใช้งานร่วมกันเพิ่มเติม แจ้งได้เลยนะครับ!",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MXT-D1",
+      "turn": "1",
+      "subcategory": "datasheet",
+      "query": "ขอ datasheet LF820 K325",
+      "description": "คาดเรียก generate_datasheet(product_id) · ก่อนแก้ส่ง product_id ไม่ได้ · ดูว่ามีรูป datasheet ในคำตอบ",
+      "seconds": 7.5,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [
+        {
+          "tool": "generate_datasheet",
+          "args": {
+            "product_id": "movex_chain_LF820_K325"
+          },
+          "success": true,
+          "result": "สร้าง datasheet ของ LF 820 K325 สำเร็จแล้ว"
+        }
+      ],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_181158_50be8f_t001`\n**Effective query:** ขอ datasheet LF820 K325\n\n**Decision:** answer · brand=movex · รหัสในข้อความ\n\n**Graph:** seeds=['movex_chain_LF820_K325'] | compatible=['movex_sprocket_54201', 'movex_sprocket_54301', 'movex_sprocket_54401'] | hop_trace=[\"seeds=['movex_chain_LF820_K325']\", \"hop1: compatible=['movex_sprocket_54201', 'movex_sprocket_54301', 'movex_sprocket_54401'], same_series=['movex_chain_LF820_K400', 'movex_chain_LF820_K450', 'movex_chain_LF820_K600']\"]\n\n**Mode:** RRF+KeywordBoost (no CE)\n**1. movex_chain_LF820_K325** (final:0.015 | CE:0.00 | RRF:0.0153)\n**2. movex_chain_LF880_TAB_K325** (final:0.015 | CE:0.00 | RRF:0.0149)\n**3. movex_chain_LF820_K600** (final:0.014 | CE:0.00 | RRF:0.0145)\n**4. movex_chain_LF820_K750** (final:0.014 | CE:0.00 | RRF:0.0142)\n**5. movex_chain_LF820_K450** (final:0.014 | CE:0.00 | RRF:0.0139)\n"
+    },
+    {
+      "checks": {
+        "no_error": true
+      },
+      "passed": true,
+      "reply": "นี่คือแบบ Drawing และ Datasheet ของโซ่รุ่น **LF 880 TAB K450** ครับ\n\n---\n\n### **ข้อมูลจำเพาะเบื้องต้น (Specifications)**\n- **รุ่น (Ref):** LF 880 TAB K450\n- **ซีรีส์:** 880 Series\n- **ประเภท (Product Type):** Sideflexing Chain (โซ่เลี้ยวโค้ง มีระบบ TAB ล็อกราง)\n- **ความกว้างหน้าโซ่ (Plate Width):** 114.3 มม. (4.5 นิ้ว)\n- **วัสดุ (Material):** Low Friction Acetal (LF) สีน้ำตาล/เทา\n- **รัศมีโค้งต่ำสุด (Min. Curve Radius):** 457 มม.\n- **การรับแรงดึงสูงสุด (Max. Working Load):** 2,200 N\n- **น้ำหนัก (Weight):** 1.09 กก./ม.\n\nหากต้องการข้อมูลด้านการใช้งานร่วมกับสเตอร์หรือสอบถามสเปกเพิ่มเติม แจ้งได้เลยนะครับ!",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MXT-D2",
+      "turn": "1",
+      "subcategory": "datasheet",
+      "query": "ขอดูแบบ LF880 TAB K450",
+      "description": "คาดเรียก generate_datasheet(product_id)",
+      "seconds": 6.6,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [
+        {
+          "tool": "generate_datasheet",
+          "args": {
+            "product_id": "movex_chain_LF880_TAB_K450"
+          },
+          "success": true,
+          "result": "สร้าง datasheet ของ LF 880 TAB K450 สำเร็จแล้ว"
+        }
+      ],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_181208_766987_t001`\n**Effective query:** ขอดูแบบ LF880 TAB K450\n\n**Decision:** answer · brand=movex · รหัสในข้อความ\n\n**Graph:** seeds=['movex_chain_LF880_TAB_K450'] | compatible=['movex_sprocket_54901', 'movex_sprocket_55001'] | hop_trace=[\"seeds=['movex_chain_LF880_TAB_K450']\", \"hop1: compatible=['movex_sprocket_54901', 'movex_sprocket_55001'], same_series=['movex_chain_LF880_TAB_K325', 'movex_sprocket_54901', 'movex_sprocket_55001']\"]\n\n**Mode:** RRF+KeywordBoost (no CE)\n**1. movex_chain_LF880_TAB_K450** (final:2.166 | CE:0.00 | RRF:2.0163)\n**2. movex_chain_LF880_TAB_K325** (final:0.765 | CE:0.00 | RRF:0.6153)\n**3. movex_chain_LF882_TAB_K1000** (final:0.014 | CE:0.00 | RRF:0.0141)\n**4. movex_chain_LF882_TAB_K750** (final:0.013 | CE:0.00 | RRF:0.0134)\n**5. movex_chain_LF882_TAB_K1200** (final:0.013 | CE:0.00 | RRF:0.0134)\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_avoids_forbidden": true
+      },
+      "passed": true,
+      "reply": "จากการตรวจสอบฐานข้อมูลสินค้า Movex โซ่รุ่น **LF 820 K325** มีน้ำหนักอยู่ที่ **0.89 kg/m** ซึ่งถือเป็นรุ่นที่มีน้ำหนักน้อยที่สุด (เบาที่สุด) แล้วครับ ในซีรีส์ 820 และกลุ่มโซ่สายพานลำเลียงตรงของ Movex จึงไม่มีรุ่นที่เบากว่านี้แล้วครับ\n\nหากต้องการสอบถามข้อมูลด้านอื่นเพิ่มเติม เช่น การรับโหลด หรือสเตอร์ที่ใช้งานร่วมกัน สามารถแจ้งได้เลยนะครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": true
+      },
+      "id": "MXT-F1",
+      "turn": "1",
+      "subcategory": "filter",
+      "query": "LF820 K325 มีรุ่นที่เบากว่านี้ไหม",
+      "description": "คาดเรียก filter_product_specs(weight) · ไม่มีรุ่นที่เบากว่า (0.89 kg/m เบาสุด) · ระวัง key น้ำหนักใน filter เป็น weight_kg_m ตัวเล็ก ข้อมูลเป็น Weight_kg_m",
+      "seconds": 7.4,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [
+        {
+          "tool": "filter_product_specs",
+          "args": {
+            "spec_type": "weight",
+            "condition": "<",
+            "target_value": 0.89,
+            "product_type": "chain"
+          },
+          "success": true,
+          "result": "ไม่พบสินค้าที่มี weight < 0.89"
+        }
+      ],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_181216_c2e41d_t001`\n**Effective query:** LF820 K325 มีรุ่นที่เบากว่านี้ไหม\n\n**Decision:** answer · brand=movex · รหัสในข้อความ\n\n**Graph:** seeds=['movex_chain_LF820_K325'] | compatible=['movex_sprocket_54201', 'movex_sprocket_54301', 'movex_sprocket_54401'] | hop_trace=[\"seeds=['movex_chain_LF820_K325']\", \"hop1: compatible=['movex_sprocket_54201', 'movex_sprocket_54301', 'movex_sprocket_54401'], same_series=['movex_chain_LF820_K400', 'movex_chain_LF820_K450', 'movex_chain_LF820_K600']\"]\n\n**Mode:** RRF+KeywordBoost (no CE)\n**1. movex_chain_LF820_K325** (final:2.165 | CE:0.00 | RRF:2.0149)\n**2. movex_chain_LF820_K750** (final:0.764 | CE:0.00 | RRF:0.6139)\n**3. movex_chain_LF820_K450** (final:0.763 | CE:0.00 | RRF:0.6135)\n**4. movex_chain_LF880_TAB_K325** (final:0.016 | CE:0.00 | RRF:0.0155)\n**5. movex_chain_LF820_K400** (final:0.015 | CE:0.00 | RRF:0.0149)\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_any": true
+      },
+      "passed": true,
+      "reply": "สำหรับรุ่น **LF 880 TAB K450** มีค่ารับแรงดึงสูงสุด (Max Working Load) อยู่ที่ **2,200 N** ครับ \n\nหากต้องการรุ่นที่**รับโหลดได้มากกว่านี้** ในกลุ่มโซ่เลี้ยวโค้ง (Sideflexing Chain) แนะนำเป็น **882 Series (LF 882 TAB)** ซึ่งออกแบบมาสำหรับงาน Heavy-duty โดยเฉพาะครับ:\n\n### 1. กลุ่มโซ่เลี้ยวโค้งงานหนัก (Sideflexing Chain) — รับโหลดสูงถึง 3,830 N\n* **LF 882 TAB K750** — หน้ากว้าง 190.5 mm | รับโหลดสูงสุด **3,830 N**\n* **LF 882 TAB K1000** — หน้ากว้าง 254.0 mm | รับโหลดสูงสุด **3,830 N**\n* **LF 882 TAB K1200** — หน้ากว้าง 304.8 mm | รับโหลดสูงสุด **3,830 N**\n\n*(หมายเหตุ: ซีรีส์ 882 จะมีรัศมีเลี้ยวโค้งขั้นต่ำ R = 610 mm ซึ่งกว้างกว่าซีรีส์ 880 ที่ R = 457 mm และต้องใช้ร่วมกับสเตอร์ซีรีส์ 882 ครับ)*\n\n---\n\n### 2. กลุ่มโซ่วิ่งตรง (Straight Running Chain) หากไม่ได้ใช้วิ่งเลี้ยวโค้ง\n* **LF 821 Series (K750, K1000, K1200)** — รับโหลดสูงสุด **2,770 N**\n\nหากต้องการข้อมูลรายละเอียดหรือต้องการให้แนะนำตามขนาดหน้ากว้างและรูปแบบแนวลำเลียง สอบถามเพิ่มเติมได้เลยนะครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MXT-F2",
+      "turn": "1",
+      "subcategory": "filter",
+      "query": "LF880 TAB K450 มีรุ่นที่รับโหลดได้มากกว่านี้ไหม",
+      "description": "คาดเรียก filter_product_specs(load > 2200) · ถูก = LF 882 TAB ×3 (3830) · LFN 83/103 (2400) · LF 821 ×3 (2770 · โซ่ตรง)",
+      "seconds": 10.9,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [
+        {
+          "tool": "filter_product_specs",
+          "args": {
+            "spec_type": "load",
+            "condition": ">",
+            "target_value": 2200,
+            "product_type": "chain",
+            "sort_by": "load",
+            "sort_order": "desc"
+          },
+          "success": true,
+          "result": "พบ 8 รุ่นที่ load > 2200:\n  movex_chain_LF821_K1000 (2770)\n  movex_chain_LF821_K1200 (2770)\n  movex_chain_LF821_K750 (2770)\n  movex_chain_LF882_TAB_K1000 (3830)\n  movex_chain_LF882_TAB_K1200 (3830)\n  movex_chain_LF882_TAB_K750 (3830)\n  movex_chain_LFN_103_MFH (2400)\n  movex_chain_LFN_83_MFM (2400)"
+        }
+      ],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_181226_ff952a_t001`\n**Effective query:** LF880 TAB K450 มีรุ่นที่รับโหลดได้มากกว่านี้ไหม\n\n**Decision:** answer · brand=movex · รหัสในข้อความ\n\n**Graph:** seeds=['movex_chain_LF880_TAB_K450'] | compatible=['movex_sprocket_54901', 'movex_sprocket_55001'] | hop_trace=[\"seeds=['movex_chain_LF880_TAB_K450']\", \"hop1: compatible=['movex_sprocket_54901', 'movex_sprocket_55001'], same_series=['movex_chain_LF880_TAB_K325', 'movex_sprocket_54901', 'movex_sprocket_55001']\"]\n\n**Mode:** RRF+KeywordBoost (no CE)\n**1. movex_chain_LF880_TAB_K450** (final:2.166 | CE:0.00 | RRF:2.0163)\n**2. movex_chain_LF880_TAB_K325** (final:0.765 | CE:0.00 | RRF:0.6151)\n**3. movex_chain_LF882_TAB_K1000** (final:0.014 | CE:0.00 | RRF:0.0143)\n**4. movex_chain_LF882_TAB_K750** (final:0.013 | CE:0.00 | RRF:0.0135)\n**5. movex_chain_LF882_TAB_K1200** (final:0.013 | CE:0.00 | RRF:0.0134)\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_any": true
+      },
+      "passed": true,
+      "reply": "รุ่น **LF 820 K325** เป็นโซ่แบบวิ่งตรง (Straight Running Chain) จึงไม่สามารถเลี้ยวได้ครับ\n\nแต่หากต้องการโซ่ที่ **เลี้ยวได้ (Sideflexing Chain)** และมี **ความกว้างมากกว่า 82.5 มม.** ขอแนะนำโซ่ในตระกูล **880 Series** รุ่นดังนี้ครับ:\n\n1. **LF 880 TAB K450**\n   - **ความกว้างแผ่น (Plate Width):** 114.3 มม. (กว้างกว่า 820 K325)\n   - **ประเภท:** โซ่วิ่งทางโค้ง (Sideflexing Chain)\n   - **รัศมีวงเลี้ยวต่ำสุด (Min. Curve Radius):** 457 มม.\n   - **การรับแรงดึงสูงสุด (Max Working Load):** 2,200 N\n   - **วัสดุ:** Low Friction Acetal (LF)\n\nรุ่นนี้ออกแบบมาสำหรับการลำเลียงในแนวโค้งโดยเฉพาะ พร้อมระบบ TAB ยึดขอบโซ่ไม่ให้กระดกในทางโค้ง และเหมาะสำหรับภาชนะขนาดใหญ่ที่ต้องการหน้ากว้างเพื่อความมั่นคงครับ หากต้องการข้อมูลเพิ่มเติมหรือแบบ Drawing แจ้งได้เลยนะครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MXT-F3",
+      "turn": "1",
+      "subcategory": "filter",
+      "query": "LF820 K325 มีรุ่นที่กว้างกว่านี้แต่เลี้ยวได้ไหม",
+      "description": "คาดเรียก filter_product_specs(width > 82.5 · Sideflexing) · ถูก = LF 880 TAB K450 · LF 882 TAB ×3 · LFN 83 MFM · LFN 103 MFH",
+      "seconds": 3.9,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_181239_4d5b36_t001`\n**Effective query:** LF820 K325 มีรุ่นที่กว้างกว่านี้แต่เลี้ยวได้ไหม\n\n**Decision:** answer · brand=movex · รหัสในข้อความ\n\n**Graph:** seeds=['movex_chain_LF820_K325'] | compatible=['movex_sprocket_54201', 'movex_sprocket_54301', 'movex_sprocket_54401'] | hop_trace=[\"seeds=['movex_chain_LF820_K325']\", \"hop1: compatible=['movex_sprocket_54201', 'movex_sprocket_54301', 'movex_sprocket_54401'], same_series=['movex_chain_LF820_K400', 'movex_chain_LF820_K450', 'movex_chain_LF820_K600']\"]\n\n**Mode:** RRF+KeywordBoost (no CE)\n**1. movex_chain_LF820_K325** (final:2.163 | CE:0.00 | RRF:2.0133)\n**2. movex_chain_LF820_K750** (final:0.764 | CE:0.00 | RRF:0.6139)\n**3. movex_chain_LF820_K450** (final:0.763 | CE:0.00 | RRF:0.6134)\n**4. movex_chain_LF880_TAB_K325** (final:0.016 | CE:0.00 | RRF:0.0160)\n**5. movex_chain_LF880_TAB_K450** (final:0.015 | CE:0.00 | RRF:0.0153)\n"
+    },
+    {
+      "checks": {
+        "no_error": true
+      },
+      "passed": true,
+      "reply": "ในซีรีส์ **820** มีโซ่ทั้งหมด **5 รุ่น** ครับ โดยแบ่งตามขนาดความกว้างของหน้าโซ่ (Plate Width) ดังนี้ครับ:\n\n1. **LF 820 K325** (ความกว้าง 82.5 มม.)\n2. **LF 820 K400** (ความกว้าง 101.6 มม.)\n3. **LF 820 K450** (ความกว้าง 114.3 มม.)\n4. **LF 820 K600** (ความกว้าง 152.4 มม.)\n5. **LF 820 K750** (ความกว้าง 190.5 มม.)\n\nหากต้องการข้อมูลสเปกเพิ่มเติมหรือสนใจนำไปใช้งานกับบรรจุภัณฑ์ประเภทใด สามารถแจ้งสอบถามได้เลยนะครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MXT-A1",
+      "turn": "1",
+      "subcategory": "overview",
+      "query": "LF820 K325 ในซีรีส์เดียวกันมีกี่รุ่น",
+      "description": "คาดเรียก analyze_product_database(series) หรือใช้กราฟ · ซีรีส์ 820 มี 5 รุ่น (K325 K400 K450 K600 K750)",
+      "seconds": 5.9,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [
+        {
+          "tool": "analyze_product_database",
+          "args": {
+            "category": "chain",
+            "series": "820"
+          },
+          "success": true,
+          "result": "พบสินค้าทั้งหมด 5 รุ่น\n  Chain: 5 รุ่น\n  Sprocket: 0 รุ่น\n  Chain list: movex_chain_LF820_K325, movex_chain_LF820_K400, movex_chain_LF820_K450, movex_chain_LF820_K600, movex_chain_LF820_K750\n"
+        }
+      ],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_181245_2841f0_t001`\n**Effective query:** LF820 K325 ในซีรีส์เดียวกันมีกี่รุ่น\n\n**Decision:** answer · brand=movex · รหัสในข้อความ\n\n**Graph:** seeds=['movex_chain_LF820_K325'] | compatible=['movex_sprocket_54201', 'movex_sprocket_54301', 'movex_sprocket_54401'] | hop_trace=[\"seeds=['movex_chain_LF820_K325']\", \"hop1: compatible=['movex_sprocket_54201', 'movex_sprocket_54301', 'movex_sprocket_54401'], same_series=['movex_chain_LF820_K400', 'movex_chain_LF820_K450', 'movex_chain_LF820_K600']\"]\n\n**Mode:** RRF+KeywordBoost (no CE)\n**1. movex_chain_LF820_K325** (final:2.166 | CE:0.00 | RRF:2.0156)\n**2. movex_chain_LF820_K450** (final:0.764 | CE:0.00 | RRF:0.6143)\n**3. movex_chain_LF820_K750** (final:0.764 | CE:0.00 | RRF:0.6143)\n**4. movex_chain_LF880_TAB_K325** (final:0.015 | CE:0.00 | RRF:0.0147)\n**5. movex_chain_LF820_K600** (final:0.014 | CE:0.00 | RRF:0.0145)\n"
+    },
+    {
+      "checks": {
+        "no_error": true
+      },
+      "passed": true,
+      "reply": "ขอทราบรุ่นก่อนนะครับ เพื่อให้ตอบได้ตรง\n• รหัสรุ่น เช่น LF 820 K325 หรือรหัสสเตอร์ 5 หลัก\n• หรือซีรีส์ + ความกว้าง เช่น 880 กว้าง 82.5 มม.\n• หรือส่งรูปโซ่มาให้ดูครับ\nซีรีส์ที่มี — Sideflexing Chain: 103, 83, 880, 882 · Straight Running Chain: 820, 821",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MXT-U1",
+      "turn": "1",
+      "subcategory": "unreachable",
+      "query": "Movex รุ่นไหนรับโหลดสูงสุด",
+      "description": "จุดบอดที่คาด: ระบบถามรุ่นก่อน ไม่ถึง LLM/tool · ถูก = LF 882 TAB ×3 (3830 N)",
+      "seconds": 0.0,
+      "model_version": null,
+      "llm_called": false,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_181252_cd0ce4_t001`\n**Effective query:** Movex รุ่นไหนรับโหลดสูงสุด\n\n**Decision:** ask · brand=movex · ยังไม่รู้รุ่น\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true
+      },
+      "passed": true,
+      "reply": "ขอทราบรุ่นก่อนนะครับ เพื่อให้ตอบได้ตรง\n• รหัสรุ่น เช่น LF 820 K325 หรือรหัสสเตอร์ 5 หลัก\n• หรือซีรีส์ + ความกว้าง เช่น 880 กว้าง 82.5 มม.\n• หรือส่งรูปโซ่มาให้ดูครับ\nซีรีส์ที่มี — Sideflexing Chain: 103, 83, 880, 882 · Straight Running Chain: 820, 821",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MXT-U2",
+      "turn": "1",
+      "subcategory": "unreachable",
+      "query": "โซ่ Movex ที่กว้างไม่เกิน 100 มม. มีรุ่นไหน",
+      "description": "จุดบอดที่คาด: ถามรุ่นก่อน · ถูก = LF 820 K325 · LF 880 TAB K325 · LFN 83 MFM (≤ 100)",
+      "seconds": 0.0,
+      "model_version": null,
+      "llm_called": false,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_181254_ce1cfb_t001`\n**Effective query:** โซ่ Movex ที่กว้างไม่เกิน 100 มม. มีรุ่นไหน\n\n**Decision:** ask · brand=movex · ยังไม่รู้รุ่น\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true
+      },
+      "passed": true,
+      "reply": "ขอทราบรุ่นก่อนนะครับ เพื่อให้ตอบได้ตรง\n• รหัสรุ่น เช่น LF 820 K325 หรือรหัสสเตอร์ 5 หลัก\n• หรือซีรีส์ + ความกว้าง เช่น 880 กว้าง 82.5 มม.\n• หรือส่งรูปโซ่มาให้ดูครับ\nซีรีส์ที่มี — Sideflexing Chain: 103, 83, 880, 882 · Straight Running Chain: 820, 821",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MXT-U3",
+      "turn": "1",
+      "subcategory": "unreachable",
+      "query": "Movex มีสินค้ากี่รุ่น",
+      "description": "จุดบอดที่คาด: ถามรุ่นก่อน · ถูก = 23 รายการ (โซ่ 15 · สเตอร์ 8)",
+      "seconds": 0.0,
+      "model_version": null,
+      "llm_called": false,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_181256_15b7c3_t001`\n**Effective query:** Movex มีสินค้ากี่รุ่น\n\n**Decision:** ask · brand=movex · ยังไม่รู้รุ่น\n\n"
+    }
+  ]
+}
