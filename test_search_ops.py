@@ -48,5 +48,17 @@ check("ระบายน้ำ → เปียก", X("ระบายน้�
 check("โดนน้ำตลอด → เปียก", X("ไลน์โดนน้ำตลอด", []).get("wet_or_dry") == "wet")
 check("น้ำหนัก + ล้างน้ำ → เปียก", X("น้ำหนักเบา ล้างน้ำทุกวัน", []).get("wet_or_dry") == "wet")
 
+# ผิวยาง = Grip Top (Non Slip ไม่มียาง · ผู้ใช้ยืนยัน 30 ต.ค. · QI-D4)
+from brands.modutech.router import RUBBER_SURFACES
+q = S.parse("สายพาน Modutech ผิวยางกันลื่นรุ่นไหนแรงดึงสูงสุด")
+check(f"ผิวยางกันลื่น → กลุ่ม Grip Top ({q and q.surface_any})", q is not None and q.surface_any == RUBBER_SURFACES)
+r = S.search(q) if q else {"matches": [{"belt_code": "-"}]}
+check("ผิวยางกันลื่นแข็งแรงสุด → EC508 GT อันดับ 1 ไม่มี MD508 NS",
+      r["matches"][0]["belt_code"] == "EC508 GT" and all(m["belt_code"] != "MD508 NS" for m in r["matches"]))
+q = S.parse("สายพาน Modutech ผิวกันลื่นรุ่นไหนแรงดึงสูงสุด")
+check("ผิวกันลื่น (ไม่มีคำว่ายาง) → ทั้งกลุ่ม รวม Non Slip", q is not None and "Non Slip" in q.surface_any)
+check("'อย่าง' ไม่ใช่ยาง", S.parse("สายพาน Modutech อย่างไหนแข็งแรงสุด") is None
+      or not S.parse("สายพาน Modutech อย่างไหนแข็งแรงสุด").surface)
+
 print(f"\n{ok}/{ok+fail} ผ่าน")
 sys.exit(1 if fail else 0)

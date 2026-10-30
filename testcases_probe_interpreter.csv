@@ -2,7 +2,7 @@ id,category,subcategory,turn_type,turn_number,user_text,image,must_contain,must_
 QI-D1,probe_interpreter,modutech,single,1,สายพาน Modutech แบบที่แข็งแรงพิเศษ ๆ มีรุ่นไหน,,,HD635 C|MD508 C,,,,,,,กฎ regex ไม่จับ · ควรจัดอันดับแรงดึง · HD635 C 100000 · MD508 C 60000
 QI-D2,probe_interpreter,modutech,single,1,Modutech มีสายพานรุ่นที่น้ำหนักเบา ๆ ไหม,,MD127 GAP50%,,,,,,,,กฎ regex ไม่จับ ('เบา ๆ') · ควรเรียงน้ำหนักน้อย · MD127 GAP50% PP 2.8
 QI-D3,probe_interpreter,modutech,single,1,สายพาน Modutech ที่ระบายน้ำได้ดีที่สุด,,,EC508 R|EC508 TR,,,,,,,ควรเป็นพื้นที่เปิดสูงสุด · EC508 R/TR 58%
-QI-D4,probe_interpreter,modutech,single,1,สายพาน Modutech ผิวยางกันลื่นที่แข็งแรงสุด,,MD508 NS,,,,,,,,กลุ่มกันลื่น + แรงดึงสูงสุด · MD508 NS 56000 (รองลงมา XP254 EVO CR)
+QI-D4,probe_interpreter,modutech,single,1,สายพาน Modutech ผิวยางกันลื่นที่แข็งแรงสุด,,EC508 GT,,MD508 NS,,,,,,ผิวยาง = Grip Top (Non Slip ไม่มียาง · ผู้ใช้ยืนยัน 30 ต.ค.) · Grip Top แข็งแรงสุด EC508 GT 31000 (PP/POM)
 QI-D5,probe_interpreter,modutech,single,1,Modutech รุ่นไหนทนร้อนสุด ๆ,,,,,True,,,,,อุณหภูมิ → ต้องถามเปียก/แห้ง ห้ามค้นด้วยตัวตีความ
 QI-D6,probe_interpreter,modutech,single,1,แนะนำสายพาน Modutech หน่อย,,,,,True,,,,,ไม่มีเกณฑ์ → need_help → ถามงานเหมือนเดิม
 QI-X1,probe_interpreter,movex,single,1,Movex รุ่นไหนรับโหลดสูงสุด,,,LF 882|LF882,ขอทราบรุ่นก่อน,,,,,,เดิมถามรุ่น · ควรได้ LF 882 TAB ×3 (3830 N)

@@ -151,6 +151,9 @@ class ExploratoryQuery:
 
 
 SURFACE_GROUPS = {"Non Slip": ("Non Slip", "Grip Top", "Flush Grid Grip Top")}
+# "ผิวยาง" = ผิวที่มียางหุ้ม — Non Slip เป็นลายพลาสติก ไม่มียาง (ผู้ใช้ยืนยัน 30 ต.ค. · QI-D4)
+RUBBER_SURFACES = ("Grip Top", "Flush Grid Grip Top")
+_RUBBER = r"(?<!อ)ยาง|rubber"
 
 _FIELD_WORDS = {
     "strength": r"แรงดึง|ความแข็งแรง|รับแรง|strength|N\s*/\s*m|นิวตัน",
@@ -301,6 +304,8 @@ class CatalogueSearch:
                 break
         if q.surface is None and "กันลื่น" in t:
             q.surface, q.surface_any = "Non Slip", SURFACE_GROUPS["Non Slip"]
+        if re.search(_RUBBER, t, re.IGNORECASE) and (q.surface is None or q.surface_any == SURFACE_GROUPS["Non Slip"]):
+            q.surface, q.surface_any = "Grip Top", RUBBER_SURFACES
         for code, rx in _PIN_WORDS.items():
             if re.search(rx, t, re.IGNORECASE):
                 q.pin_material = code

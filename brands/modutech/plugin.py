@@ -429,7 +429,7 @@ class ModutechPlugin:
                         "open_area": QueryField("พื้นที่เปิด/ช่องเปิด/รู (ระบายน้ำ ระบายอากาศ) หน่วย %", 0, 100),
                         "pitch": QueryField("ระยะพิทช์ หน่วย มม.", 5, 80, allow_eq=True)},
                 enums={"surface": surfaces, "belt_material": mats, "pin_material": pins},
-                enum_desc_th={"surface": "ชนิดผิวสายพาน ('Non Slip' = กลุ่มกันลื่นทั้งหมด)",
+                enum_desc_th={"surface": "ชนิดผิวสายพาน ('Non Slip' = กลุ่มกันลื่นทั้งหมด · ผิวยาง/ยางกันลื่น = 'Grip Top' เพราะ Non Slip ไม่มียาง)",
                               "belt_material": "วัสดุตัวสายพาน", "pin_material": "วัสดุสลัก/พิน"},
                 notes_th="อุณหภูมิและความกว้างไม่ใช่ช่องค้นในที่นี้ ให้ตั้ง mentions_temperature / mentions_width แทน")
         return spec
