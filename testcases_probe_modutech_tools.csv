@@ -1,0 +1,13 @@
+id,category,subcategory,turn_type,turn_number,user_text,image,must_contain,must_contain_any,must_not_contain,must_ask_back,expected_value,expected_unit,reply_max_length,metrics,description
+MDT-C1,probe_modutech,compare,single,1,เปรียบเทียบ EC127 C กับ HC127 C,,18000|4700,,,,,,,,คู่กับ MXT-C1 · ทั้งคู่พิทช์ 12.7 Flat Top · แรงดึงสูงสุด 18000 (EC127 C) vs 4700 (HC127 C) · ต้องบอกเกรดกำกับ
+MDT-C2,probe_modutech,compare,single,1,MD508 C กับ HD635 C ต่างกันยังไง,,60000|100000,,,,,,,,คู่กับ MXT-C2 · พิทช์ 50.8 vs 63.5 · แรงดึงสูงสุด 60000 vs 100000 (HD635 C เกรด POM-NL/SS)
+MDT-C3,probe_modutech,compare,single,1,EC254 R กับ EC508 TR ต่างกันยังไง,,36|58,,,,,,,,คู่กับ MXT-C3 · สายพานโค้งทั้งคู่ · พื้นที่เปิด 36% vs 58% · ค่าแรงดึงเป็นค่าวิ่งตรง
+MDT-D1,probe_modutech,datasheet,single,1,ขอ datasheet HC508 C,,,,,,,,,,คู่กับ MXT-D1 · Modutech ไม่มี tool datasheet · ต้องไม่ทำเป็นว่ามีไฟล์ · ตอบสรุปสเปกได้
+MDT-D2,probe_modutech,datasheet,single,1,ขอดูแบบ EC254 C,,,,,,,,,,คู่กับ MXT-D2 · ไม่มี drawing · ควรบอกตรง ๆ หรือส่งฝ่ายขาย
+MDT-F1,probe_modutech,filter,single,1,MD127 GAP50% มีรุ่นที่เบากว่านี้ไหม,,,,,,,,,,คู่กับ MXT-F1 · มีรหัส → การ์ดรุ่นเดียว ต้องพึ่ง search_catalogue(weight · min) · ถูก = ไม่มี (MD127 GAP50% PP 2.8 kg/m2 เบาสุดของฐาน) · อ่านเอง
+MDT-F2,probe_modutech,filter,single,1,EC508 C มีรุ่นที่รับแรงดึงได้มากกว่านี้ไหม,,,HD635 C|MD508 C,,,,,,,คู่กับ MXT-F2 · EC508 C สูงสุด 30000 · ถูก = 13 รุ่นที่ > 30000 (HD635 C 100000 · MD508 C 60000 · MD508 NS 56000 · HP508 RR · MD508 C-RT · XP254 EVO FLT/CR · MD508 FG · MD508 PR25 · HD254 C · MD254 C · EC381 R · EC508 GT 31000)
+MDT-F3,probe_modutech,filter,single,1,EC254 C มีรุ่นที่ช่องเปิดมากกว่านี้แต่เลี้ยวได้ไหม,,,EC508 R|EC508 TR|EC254 TR|EC254 R|EC381 R,,,,,,,คู่กับ MXT-F3 · EC254 C พื้นที่เปิด 0% · ถูก = สายพานโค้ง 9 รุ่น (EC508 R/TR 58 · EC254 TR/TR-TAB 38 · EC254 R/R-GT/R-TABE/R-TABM 36 · EC381 R 30) · tool ไม่มีตัวกรองโค้ง
+MDT-A1,probe_modutech,overview,single,1,EC127 C ในซีรีส์เดียวกันมีกี่รุ่น,,,,,,,,,,คู่กับ MXT-A1 · ซีรีส์ 0.5 นิ้ว 9 รุ่น รวม EC127 C (อื่นอีก 8) · ใช้กราฟ BELONGS_TO
+MDT-U1,probe_modutech,no_code,single,1,Modutech รุ่นไหนรับแรงดึงสูงสุด,,HD635 C,,,,,,,,คู่กับ MXT-U1 · ไม่มีรหัส · หลังแก้: จัดอันดับด้วยโค้ด · HD635 C 100000 N/m
+MDT-U2,probe_modutech,no_code,single,1,สายพาน Modutech ที่ช่องเปิดไม่น้อยกว่า 50% มีรุ่นไหน,,MD127 GAP50%|SM254 FG50%|EC508 R|EC508 TR,,,,,,,,คู่กับ MXT-U2 · ไม่มีรหัส · ค้นทั้งฐาน 4 รุ่น
+MDT-U3,probe_modutech,no_code,single,1,Modutech มีสายพานกี่รุ่น,,68,,,,,,,,คู่กับ MXT-U3 · ไม่มีรหัส · นับด้วยโค้ด 68 รุ่น
