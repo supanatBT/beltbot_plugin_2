@@ -1,0 +1,13 @@
+id,category,subcategory,turn_type,turn_number,user_text,image,must_contain,must_contain_any,must_not_contain,must_ask_back,expected_value,expected_unit,reply_max_length,metrics,description
+MXT-C1,probe_movex,compare,single,1,เปรียบเทียบ LF820 K325 กับ LF880 TAB K325,,82.5,1625|1625 N,,,,,,,คาดเรียก compare_specific_products · LF820 ตรง 1625 N · LF880 TAB เลี้ยวได้ 2200 N · กว้าง 82.5 ทั้งคู่
+MXT-C2,probe_movex,compare,single,1,LF820 K325 กับ LF821 K750 ต่างกันยังไง,,1625|2770,,,,,,,,คาดเรียก compare_specific_products · กว้าง 82.5 vs 190.5 · โหลด 1625 vs 2770
+MXT-C3,probe_movex,compare,single,1,LF 882 TAB K750 กับ LFN 103 MFH ต่างกันยังไง,,3830|2400,,,,,,,,คาดเรียก compare_specific_products · กว้าง 190.5 vs 103 · โหลด 3830 vs 2400
+MXT-D1,probe_movex,datasheet,single,1,ขอ datasheet LF820 K325,,,,,,,,,,คาดเรียก generate_datasheet(product_id) · ก่อนแก้ส่ง product_id ไม่ได้ · ดูว่ามีรูป datasheet ในคำตอบ
+MXT-D2,probe_movex,datasheet,single,1,ขอดูแบบ LF880 TAB K450,,,,,,,,,,คาดเรียก generate_datasheet(product_id)
+MXT-F1,probe_movex,filter,single,1,LF820 K325 มีรุ่นที่เบากว่านี้ไหม,,,,LF 880 TAB K325|LFN 83 MFM,,,,,forbid_anywhere,คาดเรียก filter_product_specs(weight) · ไม่มีรุ่นที่เบากว่า (0.89 kg/m เบาสุด) · ระวัง key น้ำหนักใน filter เป็น weight_kg_m ตัวเล็ก ข้อมูลเป็น Weight_kg_m
+MXT-F2,probe_movex,filter,single,1,LF880 TAB K450 มีรุ่นที่รับโหลดได้มากกว่านี้ไหม,,,LF 882|LF882,,,,,,,คาดเรียก filter_product_specs(load > 2200) · ถูก = LF 882 TAB ×3 (3830) · LFN 83/103 (2400) · LF 821 ×3 (2770 · โซ่ตรง)
+MXT-F3,probe_movex,filter,single,1,LF820 K325 มีรุ่นที่กว้างกว่านี้แต่เลี้ยวได้ไหม,,,LF 880 TAB K450|LF880 TAB K450|LFN 83|LFN 103|LF 882,,,,,,,คาดเรียก filter_product_specs(width > 82.5 · Sideflexing) · ถูก = LF 880 TAB K450 · LF 882 TAB ×3 · LFN 83 MFM · LFN 103 MFH
+MXT-A1,probe_movex,overview,single,1,LF820 K325 ในซีรีส์เดียวกันมีกี่รุ่น,,,,,,,,,,คาดเรียก analyze_product_database(series) หรือใช้กราฟ · ซีรีส์ 820 มี 5 รุ่น (K325 K400 K450 K600 K750)
+MXT-U1,probe_movex,unreachable,single,1,Movex รุ่นไหนรับโหลดสูงสุด,,,,,,,,,,จุดบอดที่คาด: ระบบถามรุ่นก่อน ไม่ถึง LLM/tool · ถูก = LF 882 TAB ×3 (3830 N)
+MXT-U2,probe_movex,unreachable,single,1,โซ่ Movex ที่กว้างไม่เกิน 100 มม. มีรุ่นไหน,,,,,,,,,,จุดบอดที่คาด: ถามรุ่นก่อน · ถูก = LF 820 K325 · LF 880 TAB K325 · LFN 83 MFM (≤ 100)
+MXT-U3,probe_movex,unreachable,single,1,Movex มีสินค้ากี่รุ่น,,,,,,,,,,จุดบอดที่คาด: ถามรุ่นก่อน · ถูก = 23 รายการ (โซ่ 15 · สเตอร์ 8)
