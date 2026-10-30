@@ -1,0 +1,15 @@
+id,category,subcategory,turn_type,turn_number,user_text,image,must_contain,must_contain_any,must_not_contain,must_ask_back,expected_value,expected_unit,reply_max_length,metrics,description
+T2-B1,probe_tools,brand_digit,multi,1,สายพานรุ่นไหนรับแรงดึงสูงสุด,,,,,True,,,,,ถามแบรนด์ก่อน
+T2-B1,probe_tools,brand_digit,multi,2,2,,HD635 C,,,,,,,,บั๊กสงสัย: เลข 2 ที่ตอบแบรนด์ถูกอ่านเป็นแรงดึง >= 2 N/m · คำตอบที่ถูก HD635 C 100000 N/m
+T2-B4,probe_tools,brand_digit,multi,1,ขอสายพานที่ทนแรงได้เกินห้าหมื่นนิวตันต่อเมตร,,,,,True,,,,,ถามแบรนด์ก่อน
+T2-B4,probe_tools,brand_digit,multi,2,2,,HD635 C|MD508 C|MD508 NS,,HP508 RR,,,,,forbid_anywhere,บั๊กสงสัย: ค้น >= 2 N/m ได้ทุกรุ่น · ถูก = 3 รุ่น · HP508 RR (45500) ต้องไม่อยู่ในคำตอบ
+T2-B5,probe_tools,need_flow,multi,1,อยากได้สายพานรูเยอะ ๆ ระบายน้ำดี ๆ,,,,,True,,,,,ถามแบรนด์ก่อน
+T2-B5,probe_tools,need_flow,multi,2,2,,,EC508 R|EC508 TR,,,,,,,พื้นที่เปิดสูงสุด 58% · ดูว่าค้นตามการใช้งานแล้วได้อะไร
+T2-B2,probe_tools,need_flow,multi,1,สายพานที่เบาที่สุดคือรุ่นไหน,,,,,True,,,,,ถามแบรนด์ก่อน
+T2-B2,probe_tools,need_flow,multi,2,2,,,,,,,,,,คาดว่าถามงาน
+T2-B2,probe_tools,need_flow,multi,3,ไม่ได้ระบุงาน อยากรู้ว่ารุ่นไหนเบาที่สุดในแคตตาล็อก,,MD127 GAP50%,,,,,,,,คาดว่าถามพิทช์ต่อ ไม่ได้ตอบ · คำตอบที่ถูก MD127 GAP50% PP 2.8 kg/m2
+T2-E1,probe_tools,gated,multi,1,สายพานทนร้อน 90 องศาขึ้นไปมีรุ่นไหน,,,,,True,,,,,ถามแบรนด์ก่อน
+T2-E1,probe_tools,gated,multi,2,2,,,,,True,,,,,ต้องถามเปียก/แห้ง
+T2-E1,probe_tools,gated,multi,3,แห้ง,,,,,,,,,,ตอบแล้ว · อ่านเองว่าทุกรุ่นทน 90 °C แห้งจริงและมีเกรดกำกับ
+T2-D1,probe_tools,need_flow,multi,1,Modutech มีสายพานทั้งหมดกี่รุ่น,,,,,True,,,,,ถามงาน
+T2-D1,probe_tools,need_flow,multi,2,ไม่ได้ใช้งานเฉพาะ อยากรู้จำนวนรุ่นทั้งหมด,,68,,,,,,,,คาดว่าถามพิทช์ต่อ ไม่ได้ตอบ 68
