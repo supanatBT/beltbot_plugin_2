@@ -288,6 +288,14 @@ def analyze_product_database(
     return result
 
 
+def _spec(p: dict, *keys, default="-"):
+    """ค่าแรกที่มีจาก key หลายแบบ — ข้อมูลใช้ตัวใหญ่ (Plate_Width_mm) payload Qdrant ใช้ตัวเล็ก"""
+    for k in keys:
+        if p.get(k) is not None:
+            return p[k]
+    return default
+
+
 def compare_specific_products(product_ids: str) -> str:
     """
     เปรียบเทียบสินค้าหลายรุ่นแบบ side-by-side
@@ -311,16 +319,22 @@ def compare_specific_products(product_ids: str) -> str:
         if not p:
             results.append(f"{pid}: ไม่พบในระบบ")
             continue
+        # 30 ต.ค. (probe_movex_r1 MXT-C1–C3): เดิมอ่าน plate_width_mm / pitch_mm ตัวเล็ก แต่ข้อมูลเป็น
+        # Plate_Width_mm / Pitch_mm → ความกว้างขึ้น "-" ทุกรุ่น (ไม่เคยโผล่เพราะ tool ไม่เคยได้พารามิเตอร์)
         specs = {
             "series":         p.get("series", "-"),
             "product_type":   p.get("product_type", "-"),
-            "plate_width_mm": p.get("plate_width_mm", "-"),
-            "pitch_mm":       p.get("pitch_mm", "-"),
-            "max_load_n":     p.get("Max_Working_Load_N", p.get("max_load_n", "-")),
+            "plate_width_mm": _spec(p, "Plate_Width_mm", "plate_width_mm"),
+            "weight_kg_m":    _spec(p, "Weight_kg_m", "weight_kg_m"),
+            "pitch_mm":       _spec(p, "Pitch_mm", "pitch_mm"),
+            "max_load_n":     _spec(p, "Max_Working_Load_N", "max_load_n"),
             "material":       p.get("Material", "-"),
-            "min_curve_radius_mm": p.get("Min_curve_radius_mm", p.get("Radius_min_mm", "-")),
+            "min_curve_radius_mm": _spec(p, "Min_curve_radius_mm", "Radius_min_mm"),
             "Ref":            p.get("Ref", "-"),
         }
+        if "sprocket" in (p.get("product_type") or "").lower():
+            specs.update({"z_teeth": _spec(p, "Z_Teeth"), "bore_mm": _spec(p, "Bore_mm"),
+                          "compatible_chain": p.get("compatible_chain", "-")})
         lines = [f"=== {pid} ==="]
         for k, v in specs.items():
             lines.append(f"  {k}: {v}")
@@ -348,25 +362,45 @@ def filter_product_specs(
     target_value : ค่าตัวเลข เช่น 100.0
     """
     # ลอง Qdrant filter ก่อน — เร็วกว่า JSON loop มาก
+    # 30 ต.ค. (probe_movex_r1 MXT-F3): เดิมทางนี้ไม่สน product_type / sort_by — "เลี้ยวได้" (Sideflexing) หลุด
+    # กรองชนิดและเรียงต่อที่นี่ (ไม่แตะ retriever_v4)
     try:
         hits = _retriever_inner.filter_by_spec(spec_type, condition, target_value)
         if hits:
-            lines = [f"พบ {len(hits)} รุ่นที่ {spec_type} {condition} {target_value}:"]
-            for pid, val in sorted(hits, key=lambda x: str(x[0])):
+            seen, rows = set(), []
+            for pid, val in hits:
+                if pid in seen:
+                    continue
+                seen.add(pid)
+                if product_type and product_type.lower() not in \
+                        (product_db.get(pid, {}).get("product_type") or "").lower():
+                    continue
+                rows.append((pid, val))
+            if sort_by:
+                rows.sort(key=lambda x: float(x[1]), reverse=(sort_order == "desc"))
+            else:
+                rows.sort(key=lambda x: str(x[0]))
+            if not rows:
+                return f"ไม่พบสินค้าที่มี {spec_type} {condition} {target_value}" + \
+                       (f" ในกลุ่ม {product_type}" if product_type else "")
+            lines = [f"พบ {len(rows)} รุ่นที่ {spec_type} {condition} {target_value}"
+                     + (f" (เฉพาะ {product_type})" if product_type else "") + ":"]
+            for pid, val in rows:
                 lines.append(f"  {pid} ({val})")
             return "\n".join(lines)
     except Exception as e:
         print(f"⚠️ Qdrant filter fallback to JSON: {e}")
 
     # Fallback: JSON loop (compat กับ field ที่ยังไม่ได้ index ใน Qdrant)
+    # 30 ต.ค.: เพิ่มชื่อช่องตามข้อมูลจริง (ตัวใหญ่) — เดิม weight/teeth/bore/width หาไม่เจอในทางสำรองนี้
     key_map = {
-        "width":   ["plate_width_mm", "Width_mm"],
+        "width":   ["Plate_Width_mm", "plate_width_mm", "Width_mm"],
         "load":    ["Max_Working_Load_N", "max_load_n"],
         "radius":  ["Min_curve_radius_mm", "Radius_min_mm"],
-        "pitch":   ["pitch_mm", "Pitch_mm"],
-        "weight":  ["weight_kg_m"],
-        "teeth":   ["z_teeth"],
-        "bore":    ["bore_mm"],
+        "pitch":   ["Pitch_mm", "pitch_mm"],
+        "weight":  ["Weight_kg_m", "weight_kg_m"],
+        "teeth":   ["Z_Teeth", "z_teeth"],
+        "bore":    ["Bore_mm", "bore_mm"],
     }
     target_keys = key_map.get(spec_type.lower(), [spec_type])
     matched = []
