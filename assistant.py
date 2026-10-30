@@ -177,10 +177,19 @@ if ANSWER_INTERPRETER == "llm":
     answer_interpreter = AnswerInterpreter(llm_client.complete, log=print)
 print(f"✅ ตีความคำตอบ: {'LLM (' + GEMINI_MODEL + ') · สำรองด้วยกฎ' if answer_interpreter else 'กฎ regex'}")
 
+# ตัวตีความคำถาม (core/query_interpreter · 30 ต.ค.): QUERY_INTERPRETER=rules ปิด = กฎ regex + ทางเดิม (ถามงาน/ถามรุ่น/ค้นเวกเตอร์)
+QUERY_INTERPRETER = (os.getenv("QUERY_INTERPRETER") or "llm").strip().lower()
+query_interpreter = None
+if QUERY_INTERPRETER == "llm":
+    from core.query_interpreter import QueryInterpreter    # noqa: E402
+    query_interpreter = QueryInterpreter(llm_client.complete, log=print)
+print(f"✅ ตีความคำถาม: {'LLM (' + GEMINI_MODEL + ') เฉพาะจุดที่ต้องเดา · สำรองด้วยทางเดิม' if query_interpreter else 'ปิด (กฎ regex + ทางเดิม)'}")
+
 plugins = load_plugins(_configs, shared=dict(
     device=DEVICE, jina_tokenizer=jina_tokenizer, jina_model=jina_model,
     siglip_processor=siglip_processor, siglip_model=siglip_model,
-    vit=vit_models, logger=logger, tool_log=tool_log, answer_interpreter=answer_interpreter))
+    vit=vit_models, logger=logger, tool_log=tool_log, answer_interpreter=answer_interpreter,
+    query_interpreter=query_interpreter))
 DialogState = state_class(state_schema(_configs))
 _scorers = {k: s for k, s in ((k, p.image_scorer()) for k, p in plugins.items()) if s is not None}
 _gates = {k: g for k, g in ((k, getattr(p, "image_gate", lambda: None)()) for k, p in plugins.items())

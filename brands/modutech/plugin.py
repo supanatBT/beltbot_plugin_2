@@ -20,7 +20,8 @@ from typing import Optional
 
 from brands.modutech.detect import ModutechDetector
 from brands.modutech.gates import Catalogue
-from brands.modutech.router import CatalogueSearch, ExploratoryQuery
+from brands.modutech.router import SURFACE_GROUPS, CatalogueSearch, ExploratoryQuery
+from core.query_interpreter import QueryField, QuerySpec, looks_like_search
 from core.protocol import BrandInfo, BrandSignal, DecideInput, Decision
 from core.sales import attach_handoff, escalation_again_th, escalation_gate
 from core.text import any_word, has
@@ -382,6 +383,10 @@ class ModutechPlugin:
         has_need = bool(any_word(self.detector.weak_terms, text)) or bool(NF.visible_slots(slots)) \
             or bool(codes.sprocket_codes) or self._names_industry(text)
         if not focus and not has_need and has(MOD_RECOMMEND + r"|สายพาน", text):
+            # 30 ต.ค.: ก่อนถามงาน ให้ตัวตีความคำถาม (LLM) ดูว่าเป็นคำถามหารุ่นตามคุณสมบัติที่กฎ regex อ่านไม่ออกไหม
+            d = self._interpret_search(text, st, codes, answer)
+            if d is not None:
+                return d
             # 25 ต.ค.: ถามทีละข้อ งาน → พิทช์ → อุณหภูมิ (เดิม ASK_MODUTECH_NEED_TH ถามสามเรื่องในข้อความเดียว)
             slots[NF.FLOW_KEY] = "need"
             return Decision("ask", key, NF.ASK_NEED_TH, "ยังไม่รู้งานของลูกค้า",
@@ -398,10 +403,65 @@ class ModutechPlugin:
             if d is not None:
                 return d
 
+        if not focus and not codes.sprocket_codes and self.search.match_application(text) is None \
+                and self.search.match_industry(text) is None:
+            # 30 ต.ค.: จุดที่ตอนนี้ต้องค้นเวกเตอร์ 5 รุ่น (ไม่มีรหัส · จับงานใช้/อุตสาหกรรมไม่ได้) → ลองตีความก่อน
+            d = self._interpret_search(text, st, codes, answer)
+            if d is not None:
+                return d
         self._remember_need(text, st)
         return Decision("answer", key, reason="รหัสชัด" if focus else "ค้นตามการใช้งาน",
                         topic="temperature" if temp_topic else None, effective_text=text,
                         payload=dict(codes=st["codes"], slots=dict(slots)))
+
+    # ── ตัวตีความคำถาม (core/query_interpreter · 30 ต.ค.) ──
+    def _query_spec(self) -> QuerySpec:
+        spec = getattr(self, "_qspec", None)
+        if spec is None:
+            surfaces = sorted({en for _, en in self.search.surfaces})
+            mats = sorted(set(self.search.materials) | {b for b in self.search.base_polymer.values() if b})
+            pins = sorted({v["pin_material"] for p in self.mod.products for v in p["specifications"]["variants"]
+                           if v.get("pin_material")})
+            spec = self._qspec = QuerySpec(
+                brand_th="สายพานโมดูลาร์ Modutech",
+                fields={"strength": QueryField("แรงดึง/ความแข็งแรงของสายพาน หน่วย N/m", 100, 200_000),
+                        "weight": QueryField("น้ำหนักสายพาน หน่วย kg/m²", 0.5, 60),
+                        "open_area": QueryField("พื้นที่เปิด/ช่องเปิด/รู (ระบายน้ำ ระบายอากาศ) หน่วย %", 0, 100),
+                        "pitch": QueryField("ระยะพิทช์ หน่วย มม.", 5, 80, allow_eq=True)},
+                enums={"surface": surfaces, "belt_material": mats, "pin_material": pins},
+                enum_desc_th={"surface": "ชนิดผิวสายพาน ('Non Slip' = กลุ่มกันลื่นทั้งหมด)",
+                              "belt_material": "วัสดุตัวสายพาน", "pin_material": "วัสดุสลัก/พิน"},
+                notes_th="อุณหภูมิและความกว้างไม่ใช่ช่องค้นในที่นี้ ให้ตั้ง mentions_temperature / mentions_width แทน")
+        return spec
+
+    def _interpret_search(self, text: str, st: dict, codes, answer: str) -> Optional[Decision]:
+        """จุดที่ต้องเดา → LLM แปลงคำถามเป็นโครงสร้าง → โค้ดตรวจแล้วค้นทั้งฐาน · ไม่ได้ = None (ทางเดิม)
+        อุณหภูมิ/ความกว้าง → None เสมอ: ต้องผ่านการถามเปียก/แห้งและกฎความกว้างของทางเดิม"""
+        qi = getattr(self, "_query_interpreter", None)
+        if qi is None or answer or codes.belt_codes or codes.sprocket_codes or codes.candidates or st["codes"]:
+            return None
+        slots = st["slots"]
+        if slots.get(self.NEED_TEXT_KEY) or slots.get(self.OFFERED_KEY) or not looks_like_search(text):
+            # คุยงานไว้แล้ว / เพิ่งเสนอรุ่น = คำถามต่อเนื่อง ทางเดิมรู้บริบท (ค้นทั้งฐานจะลืมงานของลูกค้า)
+            return None
+        r = qi.interpret(text, self._query_spec())
+        if r is None or r.mentions_temperature or r.mentions_width:
+            return None
+        if r.intent == "overview":
+            q = ExploratoryQuery(rank="overview")
+        elif r.is_search():
+            f, surf = r.filters, r.filters.get("surface")
+            q = ExploratoryQuery(field=r.field, op=r.op, value=r.value, rank=r.rank, surface=surf,
+                                 surface_any=SURFACE_GROUPS.get(surf, ()) if surf else (),
+                                 pin_material=f.get("pin_material"), belt_material=f.get("belt_material"))
+            if q.is_empty():
+                return None
+        else:
+            return None
+        return Decision("search", self.info.key, reason=f"ตีความคำถาม (LLM {r.ms:.0f} ms) → ค้นทั้งฐาน",
+                        topic="explore", effective_text=text,
+                        payload=dict(codes=[], slots=dict(st["slots"]), search_query=q.as_dict(),
+                                     interpreted=r.raw))
 
     def _need_candidates(self, text: str) -> list[str]:
         """รุ่นที่งานนี้น่าจะใช้ — ไว้ตัดสินว่าต้องถามเปียก/แห้งไหม (ไม่ใช่รายชื่อที่ตอบลูกค้า)"""
@@ -864,6 +924,7 @@ def create(ctx):
             print(f"⚠️ Modutech retriever ปิดอยู่ (ไม่พบ {qpath}) — ยังตอบจากรหัสและค้นทั้งฐานได้")
         plugin.runtime = ModutechRuntime(cat, plugin.search, kg, retriever, sh["tool_log"])
         plugin._interpreter = sh.get("answer_interpreter")      # None = กฎเดิม (need_flow)
+        plugin._query_interpreter = sh.get("query_interpreter")  # None = กฎ regex + ทางเดิม (30 ต.ค.)
         if sh.get("device") is not None:
             from brands.modutech.image_gate import load_gate
             plugin._image_gate, why = load_gate(cfg["key"], d, cfg.get("image_gate"), sh["device"])

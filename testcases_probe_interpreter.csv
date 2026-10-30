@@ -1,0 +1,13 @@
+id,category,subcategory,turn_type,turn_number,user_text,image,must_contain,must_contain_any,must_not_contain,must_ask_back,expected_value,expected_unit,reply_max_length,metrics,description
+QI-D1,probe_interpreter,modutech,single,1,สายพาน Modutech แบบที่แข็งแรงพิเศษ ๆ มีรุ่นไหน,,,HD635 C|MD508 C,,,,,,,กฎ regex ไม่จับ · ควรจัดอันดับแรงดึง · HD635 C 100000 · MD508 C 60000
+QI-D2,probe_interpreter,modutech,single,1,Modutech มีสายพานรุ่นที่น้ำหนักเบา ๆ ไหม,,MD127 GAP50%,,,,,,,,กฎ regex ไม่จับ ('เบา ๆ') · ควรเรียงน้ำหนักน้อย · MD127 GAP50% PP 2.8
+QI-D3,probe_interpreter,modutech,single,1,สายพาน Modutech ที่ระบายน้ำได้ดีที่สุด,,,EC508 R|EC508 TR,,,,,,,ควรเป็นพื้นที่เปิดสูงสุด · EC508 R/TR 58%
+QI-D4,probe_interpreter,modutech,single,1,สายพาน Modutech ผิวยางกันลื่นที่แข็งแรงสุด,,MD508 NS,,,,,,,,กลุ่มกันลื่น + แรงดึงสูงสุด · MD508 NS 56000 (รองลงมา XP254 EVO CR)
+QI-D5,probe_interpreter,modutech,single,1,Modutech รุ่นไหนทนร้อนสุด ๆ,,,,,True,,,,,อุณหภูมิ → ต้องถามเปียก/แห้ง ห้ามค้นด้วยตัวตีความ
+QI-D6,probe_interpreter,modutech,single,1,แนะนำสายพาน Modutech หน่อย,,,,,True,,,,,ไม่มีเกณฑ์ → need_help → ถามงานเหมือนเดิม
+QI-X1,probe_interpreter,movex,single,1,Movex รุ่นไหนรับโหลดสูงสุด,,,LF 882|LF882,,,,,,,เดิมถามรุ่น · ควรได้ LF 882 TAB ×3 (3830 N)
+QI-X2,probe_interpreter,movex,single,1,โซ่ Movex ที่กว้างไม่เกิน 100 มม. มีรุ่นไหน,,LF 820 K325|LF 880 TAB K325|LFN 83,,LF 820 K400,,,,,forbid_anywhere,เดิมถามรุ่น · ถูก = LF 820 K325 · LF 880 TAB K325 · LFN 83 MFM · LF 820 K400 (101.6) ต้องไม่อยู่
+QI-X3,probe_interpreter,movex,single,1,Movex มีสินค้ากี่รุ่น,,23,,,,,,,,เดิมถามรุ่น · 23 รายการ (โซ่ 15 · สเตอร์ 8)
+QI-X4,probe_interpreter,movex,single,1,โซ่ Movex ตัวที่เบาที่สุด,,LF 820 K325,,,,,,,,เดิมถามรุ่น · LF 820 K325 0.89 kg/m
+QI-X5,probe_interpreter,movex,single,1,โซ่ Movex ที่เลี้ยวได้ หน้ากว้างที่สุด,,LF 882 TAB K1200,,,,,,,,เดิมถามรุ่น · Sideflexing กว้างสุด LF 882 TAB K1200 304.8 มม.
+QI-X6,probe_interpreter,movex,single,1,อยากได้โซ่ Movex สำหรับลำเลียงขวด,,,,,,,,,,ตัวควบคุม · งานใช้ → ทางเดิม (movex_application_block) ไม่ควรเรียกตัวตีความ

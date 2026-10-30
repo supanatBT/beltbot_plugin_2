@@ -18,6 +18,8 @@ import re
 from typing import Optional
 
 from brands.movex import detect as _detect
+from brands.movex.search import MovexSearch
+from core.query_interpreter import looks_like_search
 from core.protocol import BrandInfo, BrandSignal, DecideInput, Decision
 from core.sales import attach_handoff, escalation_gate
 from core.text import has, norm_code
@@ -300,9 +302,38 @@ class MovexPlugin:
                             f"{why} · ต้องรู้ความกว้าง", topic=topic, effective_text=text,
                             payload={**base, "level": "series"}, pending="movex_width")
         app = movex_application_block(text, self.mx)
+        if not app and not inp.has_image:
+            # 30 ต.ค. (probe_movex_r1 MXT-U1–U3): คำถามหารุ่นตามคุณสมบัติที่ไม่มีรหัส เดิมถามรุ่นกลับทุกครั้ง
+            # → ตัวตีความคำถาม (LLM) แปลงเป็นโครงสร้าง แล้วค้นทั้งฐานด้วยโค้ด · ไม่ได้ = ถามรุ่นแบบเดิม
+            d = self._interpret_search(text, topic)
+            if d is not None:
+                return d
         return Decision("ask", key, app or self.ask_movex_model_th(topic),
                         "ยังไม่รู้รุ่น",
                         topic=topic, effective_text=text, pending="movex_model")  # noqa: E128
+
+    def _interpret_search(self, text: str, topic: Optional[str]) -> Optional[Decision]:
+        qi = getattr(self, "_query_interpreter", None)
+        if qi is None or not looks_like_search(text):
+            return None
+        ms = getattr(self, "_mx_search", None) or MovexSearch(self.mx)
+        self._mx_search = ms
+        r = qi.interpret(text, ms.spec())
+        if r is None:
+            return None
+        f = r.filters
+        if r.intent == "overview":
+            sr = ms.search(overview=True, product_type=f.get("product_type"), series=f.get("series"))
+        elif r.is_search():
+            sr = ms.search(field=r.field, op=r.op, value=r.value, rank=r.rank,
+                           product_type=f.get("product_type"), series=f.get("series"))
+        else:
+            return None
+        pids = [m["product_id"] for m in sr["matches"]][:10]
+        return Decision("answer", self.info.key, reason=f"ตีความคำถาม (LLM {r.ms:.0f} ms) → ค้นทั้งฐาน",
+                        topic=topic, effective_text=text,
+                        payload={"pids": [], "series": None, "topic": topic, "level": "search",
+                                 "search_result": sr, "search_pids": pids, "interpreted": r.raw})
 
     def ask_movex_width_th(self, series: str, from_image: bool = False) -> str:
         members = self.mx_series_members.get(series, [])
@@ -416,6 +447,7 @@ def create(ctx):
     plugin.image_enabled = ctx.image_model is not None
 
     sh = ctx.shared
+    plugin._query_interpreter = sh.get("query_interpreter")    # None = ถามรุ่นแบบเดิม (30 ต.ค.)
     if sh.get("jina_model") is not None:
         from knowledge_graph import KnowledgeGraph
         from retriever_v4 import RetrieverV4, RetrieverV4Config

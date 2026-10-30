@@ -805,6 +805,22 @@ class MovexRuntime:
                                           if retrieval_result.graph_result else []), asks_spr)
             if added:
                 dbg.append(f"**Context (focus):** เพิ่ม {added}\n")
+        # 30 ต.ค.: คำถามหารุ่นที่ตัวตีความคำถามแปลงแล้ว (brands/movex/search.py) — ผลค้นทั้งฐานด้วยโค้ด
+        # วางไว้บนสุด แทนผลค้นข้อความ ซึ่งตอบคำถาม "รุ่นไหนสูงสุด" ไม่ได้
+        sr = (decision.payload or {}).get("search_result")
+        search_block = ""
+        if sr:
+            spids = [p for p in ((decision.payload or {}).get("search_pids") or []) if p in product_db]
+            have = {c.get("product_id") for c in llm_context}
+            for i, sp in enumerate(spids):
+                rec = _enrich_product(product_db[sp])
+                rec.update({"_rank": 0, "_note": "ผลค้นทั้งฐานตามเงื่อนไขของลูกค้า (เรียงตามผลค้น)"})
+                if sp in have:
+                    llm_context[:] = [c for c in llm_context if c.get("product_id") != sp]
+                llm_context.insert(i, rec)
+            search_block = ("\n[ผลค้นทั้งฐานด้วยโค้ด — ใช้ตอบคำถามนี้เป็นหลัก ตอบครบทุกรายการ ห้ามตัดออก "
+                            "ห้ามสรุปว่าไม่มีถ้า matched > 0]:\n" + json.dumps(sr, ensure_ascii=False))
+            dbg.append(f"**Search (ตีความคำถาม):** {sr.get('query')} → {sr.get('matched')}/{sr.get('scanned')}\n")
         if not llm_context:
             dbg.append("⚠️ ไม่พบข้อมูลสินค้าที่ตรงกัน")
 
@@ -835,7 +851,7 @@ class MovexRuntime:
             except Exception as _e:
                 print(f"[WARN] graph fallback failed: {_e}")
 
-        graph_summary = _build_graph_summary(retrieval_result.graph_result)
+        graph_summary = _build_graph_summary(retrieval_result.graph_result) + search_block
         _gr_final = retrieval_result.graph_result
         if _gr_final is not None and getattr(_gr_final, "compatible", None) and \
                 (SPROCKET_TOPIC_RX.search(effective_text or "") or SPROCKET_TOPIC_RX.search(user_text or "")):
