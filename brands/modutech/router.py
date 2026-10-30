@@ -166,6 +166,24 @@ _NEG_GE = r"ไม่\s*(?:ต่ำ|น้อย)\s*กว่า"
 _NEG_LE = r"ไม่\s*(?:เกิน|มาก|สูง)(?:\s*กว่า)?"
 
 
+CMP_OPS = (">=", "<=", ">", "<", "==")
+
+
+def compare(val: float, op: Optional[str], ref: float) -> bool:
+    """เทียบค่าตาม op ครบห้าแบบ — op ที่ไม่รู้จักถือว่าไม่ผ่าน (เดิม ">" ตกไปเป็น "<=" ผลกลับด้าน)"""
+    if op == ">=":
+        return val >= ref
+    if op == "<=":
+        return val <= ref
+    if op == ">":
+        return val > ref
+    if op == "<":
+        return val < ref
+    if op == "==":
+        return abs(val - ref) <= 0.05
+    return False
+
+
 def comparison_op(text: str) -> str:
     """">=" หรือ "<=" จากคำเปรียบเทียบ — คำปฏิเสธก่อน แล้วตัดออกก่อนดูคำธรรมดา"""
     if re.search(_NEG_GE, text):
@@ -456,8 +474,7 @@ class CatalogueSearch:
                 continue
             if q.field in ("open_area", "pitch") and q.value is not None:
                 val = spec.get("open_area_pct") if q.field == "open_area" else (spec.get("pitch") or {}).get("mm")
-                ok = (abs(val - q.value) <= 0.05 if q.op == "==" else      # พิทช์ที่ต้องการ (ไม่ใช่ช่วง)
-                      val >= q.value if q.op == ">=" else val <= q.value) if val is not None else False
+                ok = compare(val, q.op, q.value) if val is not None else False   # "==" = พิทช์ที่ต้องการ
                 if not ok:
                     continue
                 hits = [{"variant_id": v["variant_id"], "belt_material": v["belt_material"],
@@ -466,7 +483,7 @@ class CatalogueSearch:
                 hits = []
                 for v in vs:
                     val = self._variant_value(v, q.field)
-                    if val is not None and (val >= q.value if q.op == ">=" else val <= q.value):
+                    if val is not None and compare(val, q.op, q.value):
                         hits.append({"variant_id": v["variant_id"], "belt_material": v["belt_material"],
                                      "pin_material": v["pin_material"], "value": val})
                 if not hits:
@@ -494,7 +511,7 @@ class CatalogueSearch:
             matches = matches[:RANK_TOP]
         elif q.field in ("strength", "weight") and q.value is not None:
             matches.sort(key=lambda m: max(h["value"] for h in m["variants"]),
-                         reverse=(q.op == ">="))
+                         reverse=(q.op in (">=", ">")))
         if q.rank in ("max", "min"):
             word = "มากไปน้อย" if q.rank == "max" else "น้อยไปมาก"
             return {

@@ -64,7 +64,7 @@ def extract_modutech_slots(text: str, materials: list[str], mask_codes: tuple = 
         if code:
             t = re.sub(re.escape(code), " ", t, flags=re.IGNORECASE)
     out: dict = {}
-    if has(r"เปียก|ล้าง|ฉีดน้ำ|น้ำ|wet|washdown|ชื้น", t) and not has(r"ไม่เปียก|ไม่โดนน้ำ", t):
+    if has(r"เปียก|ล้าง|ฉีดน้ำ|น้ำ(?!หนัก)|wet|washdown|ชื้น", t) and not has(r"ไม่เปียก|ไม่โดนน้ำ", t):
         out["wet_or_dry"] = "wet"
     if has(r"แห้ง|\bdry\b|ไม่เปียก|ไม่โดนน้ำ", t):
         out["wet_or_dry"] = "dry"

@@ -1,0 +1,4692 @@
+{
+ "module": "assistant",
+ "llm": "google-genai · gemini-3.8-flash · thinking {'level': 'low'} · timeout 60.0 วิ",
+ "graph_apps": true,
+ "model_versions": {
+  "gemini-3.8-flash": 118
+ },
+ "testcases": "testcases_modutech_136.csv",
+ "total_turns": 172,
+ "graded": 172,
+ "passed": 172,
+ "failed": 0,
+ "skipped_no_image": 0,
+ "turns_with_image": 0,
+ "errors": 0,
+ "seconds": 682.8,
+ "by_category": {
+  "application": "10/10",
+  "code": "12/12",
+  "curve": "6/6",
+  "escalate": "24/24",
+  "explore": "11/11",
+  "material": "8/8",
+  "routing": "24/24",
+  "strength": "6/6",
+  "temp": "31/31",
+  "width_inch": "3/3",
+  "width_min": "8/8",
+  "width_pinned": "5/5",
+  "width_shown": "10/10",
+  "width_silent": "11/11",
+  "width_special": "3/3"
+ },
+ "by_check": {},
+ "leaks": {
+  "turns_with_leak": 0,
+  "per_word": {},
+  "turns": []
+ },
+ "results": [
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MP80 C** มีระยะพิทช์ (Pitch) อยู่ที่ **8.0 มม.** (0.3 นิ้ว) ครับ เป็นสายพานในกลุ่ม Micropitch ที่เหมาะสำหรับจุดถ่ายโอนแคบ (Nosebar / Knife edge) ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-001",
+   "turn": "1",
+   "category": "routing",
+   "query": "MP80 C พิทช์เท่าไหร่",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 2.2,
+   "llm_usage": {
+    "prompt_token_count": 3918,
+    "candidates_token_count": 66,
+    "total_token_count": 3984
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true
+   },
+   "passed": true,
+   "reply": "โซ่ Movex รุ่น **LF 820 K325** มีความกว้างหน้าโซ่ (Plate Width) อยู่ที่ **82.5 มม.** (3.25 นิ้ว) ครับ\n\nหากต้องการข้อมูลสเปกด้านอื่นเพิ่มเติม เช่น การรับโหลด หรือสเตอร์ที่ใช้งานร่วมกัน สามารถสอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-002",
+   "turn": "1",
+   "category": "routing",
+   "query": "LF 820 K325 กว้างเท่าไหร่",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 2.6,
+   "llm_usage": {
+    "prompt_token_count": 7322,
+    "candidates_token_count": 72,
+    "total_token_count": 7394
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สวัสดีครับ มีเรื่องโซ่ลำเลียงหรือสายพานให้ช่วยดู บอกได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-003",
+   "turn": "1",
+   "category": "routing",
+   "query": "สวัสดีครับ",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "ขออภัยครับ ผมตอบได้เฉพาะเรื่องสินค้าโซ่ลำเลียง Movex และสายพานโมดูลาร์ Modutech เช่น สเปก การเลือกรุ่น หรืออะไหล่ที่ใช้คู่กัน มีเรื่องไหนให้ช่วยไหมครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-004",
+   "turn": "1",
+   "category": "routing",
+   "query": "อากาศวันนี้เป็นยังไง",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "ขออภัยครับ ผมตอบได้เฉพาะเรื่องสินค้าโซ่ลำเลียง Movex และสายพานโมดูลาร์ Modutech เช่น สเปก การเลือกรุ่น หรืออะไหล่ที่ใช้คู่กัน มีเรื่องไหนให้ช่วยไหมครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-005",
+   "turn": "1",
+   "category": "routing",
+   "query": "ช่วยแปลภาษาอังกฤษให้หน่อย",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนครับว่าสายพานนี้จะใช้ลำเลียงอะไร เช่น ชิ้นไก่ ขนมปังเข้าเตาอบ หรือกล่องสินค้า",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-006",
+   "turn": "1",
+   "category": "routing",
+   "query": "อยากได้สายพาน Modutech แนะนำหน่อย",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนนะครับว่าถามถึงสินค้าแบบไหน\n1. โซ่ท็อปเชน Movex — ลำเลียงขวด กระป๋อง ลัง ในไลน์บรรจุเครื่องดื่ม\n2. สายพานโมดูลาร์ Modutech — งานอาหาร เช่น เนื้อสัตว์ สัตว์ปีก อาหารทะเล เบเกอรี่ ผักผลไม้\nตอบเป็นเลขข้อหรือชื่อแบรนด์ได้เลยครับ ถ้ามีรหัสรุ่นหรือรูปสินค้าก็ส่งมาแทนได้",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-007",
+   "turn": "1",
+   "category": "routing",
+   "query": "มีสายพานที่เลี้ยวได้ไหม",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สินค้าที่เกี่ยวกับสแตนเลส (SS) ของทั้งสองแบรนด์ครับ\n\n**Movex (โซ่ท็อปเชน)**\n• ไม่มีรุ่นที่ตัวโซ่ทำจากสแตนเลส — ตัวโซ่ผลิตจาก LF, LFN (LF = Low Friction Acetal)\n• ตารางวัสดุของ Movex ระบุ SS ไว้ว่า \"Standard for pins in all MF PRO chains\" แต่ข้อมูลรายรุ่นไม่ได้ระบุวัสดุพิน ต้องยืนยันกับฝ่ายขาย\n\n**Modutech (สายพานโมดูลาร์)**\n• มี 2 รุ่นที่ใช้ก้าน (พิน) สแตนเลส — ตัวสายพานเป็นพลาสติก:\n  – MD254 GAP48%-EHT (Flush Grid) เกรด EHT/SS\n  – HD635 C (Flat Top) เกรด POM-NL/SS\n\nสนใจแบรนด์ไหนหรือรุ่นไหน บอกได้เลยครับ จะให้รายละเอียดสเปกเพิ่ม",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-008",
+   "turn": "1",
+   "category": "routing",
+   "query": "สายพาน SS มีอะไรบ้าง",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **HC127 C** มีข้อมูลความกว้างตามแคตตาล็อกดังนี้ครับ\n\n**1. ความกว้างมาตรฐานที่มีระบุในตาราง (มม. / นิ้ว):**\n* 254.0 มม. (10 นิ้ว)\n* 304.8 มม. (12 นิ้ว)\n* 355.6 มม. (14 นิ้ว)\n* 406.4 มม. (16 นิ้ว)\n* 457.2 มม. (18 นิ้ว)\n* 508.0 มม. (20 นิ้ว)\n* 558.8 มม. (22 นิ้ว)\n* 609.6 มม. (24 นิ้ว)\n* 660.4 มม. (26 นิ้ว)\n* 711.2 มม. (28 นิ้ว)\n* 762.0 มม. (30 นิ้ว)\n* 812.8 มม. (32 นิ้ว)\n* 863.6 มม. (34 นิ้ว)\n* 914.4 มม. (36 นิ้ว)\n* 965.2 มม. (38 นิ้ว)\n* 1016.0 มม. (40 นิ้ว)\n* 1066.8 มม. (42 นิ้ว)\n* 1117.6 มม. (44 นิ้ว)\n* 1168.4 มม. (46 นิ้ว)\n* 1219.2 มม. (48 นิ้ว)\n* 1270.0 มม. (50 นิ้ว)\n\n*(หมายเหตุ: ยังไม่สามารถยืนยันค่าการเพิ่มทีละมาตรฐานของรุ่นนี้ได้ เนื่องจากข้อมูลหมายเหตุในเล่มและตารางความกว้างระบุไม่ตรงกัน จึงอ้างอิงได้เฉพาะรายการความกว้างที่มีในตารางข้างต้นครับ)*\n\n**2. ข้อกำหนดความกว้างอื่นๆ:**\n* **ความกว้างต่ำสุด:** ในเล่มระบุความกว้างต่ำสุดไว้ที่ 101.6 มม. (4 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งผลิตเฉพาะช่วง 101.6–254.0 มม. ไว้ หากต้องการใช้งานความกว้างช่วงดังกล่าว ต้องสอบถามและยืนยันกับทางฝ่ายขายก่อนครับ\n* **ขนาดนอกมาตรฐาน (Non-standard widths):** ในเล่มระบุว่าขนาดนอกมาตรฐานจะเพิ่มขึ้นทีละ 50.8 มม. (เป็นคนละส่วนกับค่าเพิ่มทีละของขนาดมาตรฐาน) ซึ่งหากสนใจขนาดนอกมาตรฐานสามารถสอบถามทางฝ่ายขายได้เช่นกันครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-009",
+   "turn": "1",
+   "category": "routing",
+   "query": "HC127 C กว้างเท่าไหร่",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 5.7,
+   "llm_usage": {
+    "prompt_token_count": 3717,
+    "candidates_token_count": 632,
+    "total_token_count": 4349
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **HC127 C** มีความหนาอยู่ที่ **8.0 มม.** (หรือประมาณ 0.315 นิ้ว) ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-009",
+   "turn": "2",
+   "category": "routing",
+   "query": "หนาเท่าไหร่",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 3.2,
+   "llm_usage": {
+    "prompt_token_count": 4356,
+    "candidates_token_count": 39,
+    "total_token_count": 4395
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **HC127 C** มีข้อมูลความกว้างตามแคตตาล็อกดังนี้ครับ\n\n* **ความกว้างมาตรฐานในตาราง:** มีตั้งแต่ **254.0 มม. ถึง 1270.0 มม.** (10 ถึง 50 นิ้ว) ได้แก่ขนาด:\n  254.0, 304.8, 355.6, 406.4, 457.2, 508.0, 558.8, 609.6, 660.4, 711.2, 762.0, 812.8, 863.6, 914.4, 965.2, 1016.0, 1066.8, 1117.6, 1168.4, 1219.2 และ 1270.0 มม.\n\n**ข้อควรทราบเพิ่มเติมเรื่องขนาดความกว้าง:**\n* แคตตาล็อกยังไม่สามารถยืนยันค่าการเพิ่มทีละมาตรฐาน (Standard Increment) ของรุ่นนี้ได้ เนื่องจากหมายเหตุในเล่มและตารางระบุไม่ตรงกัน จึงอ้างอิงได้เฉพาะขนาดความกว้างที่ระบุไว้ในตารางเท่านั้นครับ\n* ในเล่มระบุความกว้างต่ำสุดไว้ที่ 101.6 มม. (4 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งสำหรับช่วง 101.6–254.0 มม. หากต้องการความกว้างในช่วงดังกล่าว จำเป็นต้องสอบถามและยืนยันกับพนักงานฝ่ายขายก่อนครับ\n* สำหรับขนาดนอกมาตรฐาน เล่มระบุว่าจะเพิ่มทีละ 50.8 มม. (ซึ่งเป็นคนละส่วนกับค่าเพิ่มทีละมาตรฐาน) หากต้องการขนาดนอกเหนือจากตาราง ต้องสอบถามฝ่ายขายเช่นกันครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-010",
+   "turn": "1",
+   "category": "routing",
+   "query": "HC127 C กว้างเท่าไหร่",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 4.9,
+   "llm_usage": {
+    "prompt_token_count": 3717,
+    "candidates_token_count": 430,
+    "total_token_count": 4147
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **HC127 C** มีขนาดความกว้างมาตรฐานตามตารางตั้งแต่ **10 นิ้ว ถึง 50 นิ้ว** ครับ \n\nโดยมีขนาดในตารางดังนี้:\n* 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48 และ 50 นิ้ว\n\n**ข้อควรทราบเพิ่มเติม:**\n* ในเล่มระบุขนาดความกว้างต่ำสุดไว้ที่ **4 นิ้ว (101.6 มม.)** แต่ไม่ได้ระบุเงื่อนไขการสั่งสำหรับช่วง 4–10 นิ้ว (101.6–254 มม.) เอาไว้ หากต้องการขนาดในช่วงนี้ ต้องสอบถามและยืนยันกับพนักงานฝ่ายขายก่อนครับ\n* ขนาดที่เพิ่มทีละมาตรฐานยังไม่สามารถยืนยันได้เนื่องจากข้อมูลในเล่มระบุไม่ตรงกัน จึงอ้างอิงได้เฉพาะรายการขนาดในตารางข้างต้นครับ\n* หากต้องการขนาดนอกเหนือจากตาราง เล่มระบุว่าขนาดนอกมาตรฐานจะเพิ่มขึ้นทีละ 2 นิ้ว (50.8 มม.) ซึ่งต้องสอบถามทางฝ่ายขายเช่นกันครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-010",
+   "turn": "2",
+   "category": "routing",
+   "query": "กี่นิ้ว",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 3.7,
+   "llm_usage": {
+    "prompt_token_count": 4153,
+    "candidates_token_count": 309,
+    "total_token_count": 4462
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **HC127 C** มีข้อมูลความกว้างดังนี้ครับ\n\n* **ความกว้างมาตรฐานในตารางแคตตาล็อก:** \n  มีตั้งแต่ **254.0 มม. ถึง 1270.0 มม.** (10.0 ถึง 50.0 นิ้ว) โดยมีขนาดในตารางดังนี้ครับ\n  * 254.0 มม. (10.0\")\n  * 304.8 มม. (12.0\")\n  * 355.6 มม. (14.0\")\n  * 406.4 มม. (16.0\")\n  * 457.2 มม. (18.0\")\n  * 508.0 มม. (20.0\")\n  * 558.8 มม. (22.0\")\n  * 609.6 มม. (24.0\")\n  * 660.4 มม. (26.0\")\n  * 711.2 มม. (28.0\")\n  * 762.0 มม. (30.0\")\n  * 812.8 มม. (32.0\")\n  * 863.6 มม. (34.0\")\n  * 914.4 มม. (36.0\")\n  * 965.2 มม. (38.0\")\n  * 1016.0 มม. (40.0\")\n  * 1066.8 มม. (42.0\")\n  * 1117.6 มม. (44.0\")\n  * 1168.4 มม. (46.0\")\n  * 1219.2 มม. (48.0\")\n  * 1270.0 มม. (50.0\")\n\n**หมายเหตุเพิ่มเติม:**\n* ขณะนี้ยังไม่สามารถยืนยันค่าการเพิ่มทีละมาตรฐาน (standard increment) ของรุ่นนี้ได้ เนื่องจากหมายเหตุในเล่มกับตารางความกว้างระบุไม่ตรงกัน จึงอ้างอิงได้เฉพาะรายการความกว้างที่มีระบุในตารางข้างต้นครับ\n* แคตตาล็อกระบุความกว้างต่ำสุดไว้ที่ 101.6 มม. (4 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งผลิตเฉพาะช่วง 101.6–254.0 มม. ไว้ หากต้องการขนาดในช่วงดังกล่าว ต้องสอบถามและยืนยันกับพนักงานฝ่ายขายก่อนครับ\n* สำหรับขนาดนอกเหนือจากมาตรฐาน ในเล่มระบุว่าจะปรับเพิ่มทีละ 50.8 มม. (ซึ่งเป็นคนละค่ากับค่าเพิ่มทีละมาตรฐาน) หากสนใจขนาดนอกมาตรฐานสามารถสอบถามฝ่ายขายเพิ่มเติมได้ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-011",
+   "turn": "1",
+   "category": "routing",
+   "query": "HC127 C กว้างเท่าไหร่",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 6.0,
+   "llm_usage": {
+    "prompt_token_count": 3717,
+    "candidates_token_count": 664,
+    "total_token_count": 4381
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "ความกว้างมาตรฐานตามตารางแคตตาล็อกของสายพาน Modutech รุ่น **HC127 C** ในหน่วยนิ้ว มีดังนี้ครับ\n\n* **ช่วงความกว้างมาตรฐาน:** ตั้งแต่ **10.0 นิ้ว ถึง 50.0 นิ้ว** โดยมีขนาดในตารางดังนี้ครับ\n  * 10.0\"\n  * 12.0\"\n  * 14.0\"\n  * 16.0\"\n  * 18.0\"\n  * 20.0\"\n  * 22.0\"\n  * 24.0\"\n  * 26.0\"\n  * 28.0\"\n  * 30.0\"\n  * 32.0\"\n  * 34.0\"\n  * 36.0\"\n  * 38.0\"\n  * 40.0\"\n  * 42.0\"\n  * 44.0\"\n  * 46.0\"\n  * 48.0\"\n  * 50.0\"\n\n*(หมายเหตุ: ค่านิ้วคำนวณแปลงจากหน่วยมิลลิเมตรตามฐาน 1 นิ้ว = 25.4 มม. เนื่องจากค่านิ้วบางตัวที่พิมพ์ในเล่มแคตตาล็อกมีความคลาดเคลื่อนครับ)*\n\n**ข้อสังเกตเพิ่มเติม:**\n* ในเล่มระบุความกว้างต่ำสุดไว้ที่ 4.0 นิ้ว (101.6 มม.) แต่ไม่ได้ระบุเงื่อนไขการสั่งขนาดช่วง 4.0 ถึง 10.0 นิ้ว (101.6–254.0 มม.) ไว้ หากต้องการใช้งานช่วงนี้ ต้องสอบถามเพื่อยืนยันกับทางพนักงานฝ่ายขายก่อนครับ\n* ยังไม่สามารถยืนยันค่าเพิ่มทีละมาตรฐานของรุ่นนี้ได้ เนื่องจากข้อมูลหมายเหตุกับตารางในเล่มไม่ตรงกัน จึงอ้างอิงได้เฉพาะรายการในตารางข้างต้น\n* สำหรับขนาดนอกมาตรฐาน เล่มระบุว่าปรับเพิ่มทีละ 50.8 มม. (2.0 นิ้ว) ซึ่งเป็นคนละค่ากับค่าเพิ่มทีละมาตรฐานครับ หากต้องการขนาดนอกเหนือจากนี้ต้องสอบถามฝ่ายขายครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-011",
+   "turn": "2",
+   "category": "routing",
+   "query": "ขอให้ตอบเป็นหน่วยนิ้วได้ไหม",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 12.6,
+   "llm_usage": {
+    "prompt_token_count": 4392,
+    "candidates_token_count": 510,
+    "total_token_count": 4902
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MP80 C** สามารถใช้กับงานเบเกอรี่ได้ครับ โดยในแคตตาล็อกระบุการใช้งานในอุตสาหกรรมเบเกอรี่ไว้สำหรับวัสดุ **POM** ดังนี้ครับ:\n\n- **การลำเลียงแป้งดิบ** (Raw dough handling)\n- **ทางเข้า-ออกเตาอบ** (Oven infeed & outfeed)\n- **ทางเข้า-ออกสไปรัล** (Spiral infeed & outfeed)\n\n**จุดเด่นสำหรับการใช้งาน:**\n- เป็นสายพานผิวเรียบทึบ (Flat Top / Closed surface) ระยะพิทช์ละเอียด (Micropitch 8 มม.)\n- เหมาะอย่างยิ่งสำหรับจุดถ่ายโอนแคบ (Nosebar / Knife edge transfer) ช่วยให้ลำเลียงชิ้นงานข้ามรอยต่อได้ราบรื่น ไม่สะดุดหรือตกหล่น\n- ได้รับการรับรองมาตรฐานสัมผัสอาหาร FDA และ EU (สีน้ำเงิน)\n\n*หมายเหตุ:* รุ่นนี้เป็นผิวทึบ (Open area 0%) จึงเหมาะกับการลำเลียงทั่วไปที่ไม่ต้องการการระบายน้ำหรือระบายอากาศ หากต้องการฟังก์ชันระบายอากาศ/ความร้อน หรือผิวสัมผัสแบบอื่น ในซีรีส์เดียวกันยังมีตัวเลือกผิว Flush Grid, Non-Slip และ Negative Pyramid ให้เลือกใช้ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-012",
+   "turn": "1",
+   "category": "routing",
+   "query": "MP80 C ใช้กับเบเกอรี่ได้ไหม",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 5.5,
+   "llm_usage": {
+    "prompt_token_count": 3918,
+    "candidates_token_count": 291,
+    "total_token_count": 4209
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true
+   },
+   "passed": true,
+   "reply": "โซ่ Movex รุ่น **LF 820 K325** มีความกว้างหน้าโซ่ (Plate Width) อยู่ที่ **82.5 มม.** ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-012",
+   "turn": "2",
+   "category": "routing",
+   "query": "แล้ว LF820 K325 กว้างเท่าไหร่",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 2.3,
+   "llm_usage": {
+    "prompt_token_count": 7628,
+    "candidates_token_count": 38,
+    "total_token_count": 7666
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับงานไลน์ตัดแต่งและเลาะกระดูกในอุตสาหกรรมแปรรูปสัตว์ปีก (Cut-up / Deboning / Trim Lines) ในแคตตาล็อก Modutech มีระบุการใช้งานไว้ครบทั้ง 6 รุ่น พร้อมเกรดวัสดุที่แนะนำสำหรับงานนี้ ดังนี้ครับ:\n\n1. **EC254 C** — วัสดุ **PE** (ผิว Flat Top เรียบปิดทึบ พิทช์ 25.4 มม.)\n2. **EC508 C** — วัสดุ **PE** (ผิว Flat Top เรียบปิดทึบ หนา แข็งแรง พิทช์ 50.8 มม.)\n3. **EC508 PR11** — วัสดุ **PE** (ผิว Perforated Flat Top แบบมีรูระบาย พื้นที่เปิด 11% พิทช์ 50.8 มม.)\n4. **HC127 C** — วัสดุ **POM** (ผิว Flat Top เรียบปิดทึบ พิทช์เล็ก 12.7 มม.)\n5. **HC508 C** — วัสดุ **PE** (ผิว Flat Top เรียบปิดทึบ บานพับแบบเปิด พิทช์ 50.8 มม.)\n6. **MP80 C** — วัสดุ **POM** (ผิว Flat Top เรียบปิดทึบ micropitch พิทช์ 8.0 มม. เหมาะกับจุดถ่ายโอนแคบ/knife edge)\n\nหากต้องการดูรายละเอียดเรื่องขนาดหน้ากว้าง ความแข็งแรง หรือต้องการสเปกเพิ่มเติมในส่วนใด สามารถสอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-013",
+   "turn": "1",
+   "category": "routing",
+   "query": "สายพานเลาะกระดูกไก่",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 4.4,
+   "llm_usage": {
+    "prompt_token_count": 13883,
+    "candidates_token_count": 366,
+    "total_token_count": 14249
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true
+   },
+   "passed": true,
+   "reply": "ข้อมูล Movex ระบุงานขวด PET ไว้กับโซ่รุ่นเหล่านี้ครับ\n• LF 880 TAB K325 — โซ่เลี้ยวโค้งได้ (Sideflexing Chain) กว้าง 82.5 มม.\n• LFN 83 MFM — โซ่เลี้ยวโค้งได้ (Sideflexing Chain) กว้าง 83 มม.\n• LF 882 TAB K1200 — โซ่เลี้ยวโค้งได้ (Sideflexing Chain) กว้าง 304.8 มม.\n• LF 820 K325 — โซ่ไลน์ตรง (Straight Running Chain) กว้าง 82.5 มม.\nพิมพ์ชื่อรุ่นที่ตรงกับไลน์ (ไลน์ตรงหรือมีโค้ง) มาได้เลยครับ ถ้ามีรหัสรุ่นอื่นหรือรหัสสเตอร์ 5 หลักก็พิมพ์มาแทนได้ หรือส่งรูปโซ่มาให้ดูครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-014",
+   "turn": "1",
+   "category": "routing",
+   "query": "โซ่ลำเลียงขวด PET",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MP80 C** มีขนาดความกว้างมาตรฐานที่สั่งผลิตได้ดังนี้ครับ\n\n* **ช่วงความกว้าง:** สั่งได้ตั้งแต่ **101.6 มม. ถึง 2,133.6 มม.** (4.0 ถึง 84.0 นิ้ว) โดยความกว้างจะเพิ่มขึ้นทีละ **101.6 มม. (4.0 นิ้ว)** ตามระยะโมดูล\n\n**รายการความกว้างมาตรฐาน (มม.):**\n101.6, 203.2, 304.8, 406.4, 508.0, 609.6, 711.2, 812.8, 914.4, 1016.0, 1117.6, 1219.2, 1320.8, 1422.4, 1524.0, 1625.6, 1727.2, 1828.8, 1930.4, 2032.0 และ 2133.6 มม.\n\n*(หากต้องการความกว้างนอกเหนือจากระยะมาตรฐานนี้ ต้องสอบถามทางฝ่ายขายเพิ่มเติมครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-015",
+   "turn": "1",
+   "category": "routing",
+   "query": "MP80 C กว้างเท่าไหร่",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 4.1,
+   "llm_usage": {
+    "prompt_token_count": 3916,
+    "candidates_token_count": 297,
+    "total_token_count": 4213
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-015",
+   "turn": "2",
+   "category": "routing",
+   "query": "อันนี้ทนร้อนกี่องศา",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "ยินดีครับ มีเรื่องโซ่ลำเลียงหรือสายพานให้ช่วยดูเพิ่มเติม บอกได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-016",
+   "turn": "1",
+   "category": "routing",
+   "query": "ขอบคุณครับ",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **EC254 C** มีระยะพิทช์ (Pitch) อยู่ที่ **25.4 มม.** (หรือ 1 นิ้ว) ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-017",
+   "turn": "1",
+   "category": "routing",
+   "query": "EC254 C พิทช์เท่าไหร่",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 1.9,
+   "llm_usage": {
+    "prompt_token_count": 4329,
+    "candidates_token_count": 41,
+    "total_token_count": 4370
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **EC254 C** เป็นผิวหน้าเรียบแบบทึบ (**Flat Top / Closed Top**) โดยมีพื้นที่เปิด (Open Area) **0%** ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-017",
+   "turn": "2",
+   "category": "routing",
+   "query": "แล้วผิวแบบไหน",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 3.8,
+   "llm_usage": {
+    "prompt_token_count": 4376,
+    "candidates_token_count": 43,
+    "total_token_count": 4419
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "รหัสนี้มีหลายรุ่นครับ หมายถึงรุ่นไหนครับ\n• HC508 C — Flat Top\n• HC508 C-MTW — Flat Top\n• HC508 MR — Mini Rib\n• HC508 NT — Nub Top\n• HC508 PR22 — Perforated Flat Top",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "RT-018",
+   "turn": "1",
+   "category": "routing",
+   "query": "HC508 ใช้กับเนื้อสัตว์ได้ไหม",
+   "metrics": [
+    "routing"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MP80 C** มีระยะพิทช์อยู่ที่ **8.0 มม.** (0.3 นิ้ว) ครับ \n\nรุ่นนี้เป็นสายพาน micropitch ผิวหน้าเรียบทึบ (Flat Top) เหมาะสำหรับจุดถ่ายโอนสินค้าที่แคบ (nosebar / knife edge) ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "CD-001",
+   "turn": "1",
+   "category": "code",
+   "query": "mp80c พิทช์เท่าไหร่",
+   "metrics": [
+    "code"
+   ],
+   "seconds": 1.8,
+   "llm_usage": {
+    "prompt_token_count": 3918,
+    "candidates_token_count": 74,
+    "total_token_count": 3992
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MP80 C** (หรือ MP8 0 C) มีระยะพิทช์อยู่ที่ **8.0 มม. (0.3 นิ้ว)** ครับ\n\nเป็นสายพานซีรีส์ micropitch ผิวหน้าแบบ Flat Top (ผิวทึบ) ออกแบบมาสำหรับจุดถ่ายโอนแคบ (nosebar / knife edge) ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "CD-002",
+   "turn": "1",
+   "category": "code",
+   "query": "MP8 0 C พิทช์เท่าไหร่",
+   "metrics": [
+    "code"
+   ],
+   "seconds": 2.6,
+   "llm_usage": {
+    "prompt_token_count": 3919,
+    "candidates_token_count": 83,
+    "total_token_count": 4002
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MD254 RR** มีระยะพิทช์ (Pitch) อยู่ที่ **25.4 มม. (1 นิ้ว)** ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "CD-003",
+   "turn": "1",
+   "category": "code",
+   "query": "MD254-RR พิทช์เท่าไหร่",
+   "metrics": [
+    "code"
+   ],
+   "seconds": 2.1,
+   "llm_usage": {
+    "prompt_token_count": 3771,
+    "candidates_token_count": 39,
+    "total_token_count": 3810
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **EC254 R-GT** มีระยะพิทช์ (Pitch) อยู่ที่ **25.8 มม.** ครับ\n\nหากต้องการตรวจสอบสเปกด้านความแข็งแรงหรือการรับแรงดึง รบกวนสอบถามเพิ่มเติมได้นะครับ เนื่องจากรุ่นนี้เป็นสายพานที่สามารถวิ่งโค้งได้ ซึ่งค่าความแข็งแรงขณะวิ่งทางตรงและขณะเข้าโค้งจะแตกต่างกันมาก จึงจำเป็นต้องทราบลักษณะไลน์ลำเลียงว่าเป็นไลน์ตรงหรือมีช่วงโค้งด้วยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "CD-004",
+   "turn": "1",
+   "category": "code",
+   "query": "EC254 R-GT พิทช์เท่าไหร่",
+   "metrics": [
+    "code"
+   ],
+   "seconds": 2.0,
+   "llm_usage": {
+    "prompt_token_count": 3843,
+    "candidates_token_count": 112,
+    "total_token_count": 3955
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **EC254 R** มีระยะพิทช์ (Pitch) อยู่ที่ **25.8 มม.** ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "CD-005",
+   "turn": "1",
+   "category": "code",
+   "query": "EC254 R พิทช์เท่าไหร่",
+   "metrics": [
+    "code"
+   ],
+   "seconds": 1.6,
+   "llm_usage": {
+    "prompt_token_count": 3934,
+    "candidates_token_count": 34,
+    "total_token_count": 3968
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **XP254 PR22%** มีระยะพิทช์ (Pitch) อยู่ที่ **25.4 มม. (1 นิ้ว)** ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "CD-006",
+   "turn": "1",
+   "category": "code",
+   "query": "XP254 PR22% พิทช์เท่าไหร่",
+   "metrics": [
+    "code"
+   ],
+   "seconds": 2.6,
+   "llm_usage": {
+    "prompt_token_count": 3777,
+    "candidates_token_count": 42,
+    "total_token_count": 3819
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน **Modutech MD127 GAP50%** มีขนาดความกว้างตามที่ระบุในแคตตาล็อก ดังนี้ครับ:\n\n**ขนาดความกว้างมาตรฐาน (มม. / นิ้ว):**\n* 203.2 มม. (8.0 นิ้ว)\n* 254.0 มม. (10.0 นิ้ว)\n* 304.8 มม. (12.0 นิ้ว)\n* 355.6 มม. (14.0 นิ้ว)\n* 406.4 มม. (16.0 นิ้ว)\n* 457.2 มม. (18.0 นิ้ว)\n* 508.0 มม. (20.0 นิ้ว)\n* 558.8 มม. (22.0 นิ้ว)\n* 609.6 มม. (24.0 นิ้ว)\n* 660.4 มม. (26.0 นิ้ว)\n* 711.2 มม. (28.0 นิ้ว)\n* 762.0 มม. (30.0 นิ้ว)\n* 812.8 มม. (32.0 นิ้ว)\n* 863.6 มม. (34.0 นิ้ว)\n* 914.4 มม. (36.0 นิ้ว)\n* 965.2 มม. (38.0 นิ้ว)\n* 1016.0 มม. (40.0 นิ้ว)\n* 1066.8 มม. (42.0 นิ้ว)\n* 1117.6 มม. (44.0 นิ้ว)\n* 1168.4 มม. (46.0 นิ้ว)\n* 1219.2 มม. (48.0 นิ้ว)\n\n**ข้อเท็จจริงและข้อกำหนดเพิ่มเติมเกี่ยวกับความกว้าง:**\n* ยังยืนยันค่าเพิ่มทีละมาตรฐานของรุ่นนี้ไม่ได้ เนื่องจากหมายเหตุในเล่มกับตารางความกว้างระบุไม่ตรงกัน จึงต้องอ้างอิงเฉพาะรายการความกว้างตามตารางด้านบนครับ\n* ในเล่มระบุความกว้างต่ำสุดไว้ที่ 177.8 มม. (7 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งสำหรับช่วง 177.8 – 203.2 มม. หากต้องการความกว้างในช่วงนี้ จะต้องให้พนักงานฝ่ายขายยืนยันก่อนครับ\n* สำหรับขนาดนอกมาตรฐาน เล่มระบุว่าจะเพิ่มขึ้นทีละ 50.8 มม. (ซึ่งเป็นคนละค่ากับค่าเพิ่มทีละมาตรฐาน) หากต้องการความกว้างที่ไม่อยู่ในรายการ ต้องสอบถามฝ่ายขายครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "CD-007",
+   "turn": "1",
+   "category": "code",
+   "query": "MD127 GAP50% กว้างเท่าไหร่",
+   "metrics": [
+    "code"
+   ],
+   "seconds": 5.9,
+   "llm_usage": {
+    "prompt_token_count": 4460,
+    "candidates_token_count": 644,
+    "total_token_count": 5104
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "CD-008",
+   "turn": "1",
+   "category": "code",
+   "query": "HC508 C-MTW ทนร้อนไหม",
+   "metrics": [
+    "code"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **HC127 C** มีข้อมูลความกว้างตามแคตตาล็อกดังนี้ครับ\n\n**ความกว้างมาตรฐาน (Standard Widths):**\nมีขนาดตั้งแต่ 254.0 มม. ถึง 1,270.0 มม. (10 ถึง 50 นิ้ว) โดยมีขนาดในตารางดังนี้ครับ\n* **มิลลิเมตร (มม.):** 254.0, 304.8, 355.6, 406.4, 457.2, 508.0, 558.8, 609.6, 660.4, 711.2, 762.0, 812.8, 863.6, 914.4, 965.2, 1016.0, 1066.8, 1117.6, 1168.4, 1219.2, 1270.0\n* **นิ้ว:** 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50\n\n**หมายเหตุสำคัญเรื่องความกว้าง:**\n* ปัจจุบันยังยืนยันค่าการเพิ่มทีละมาตรฐาน (Standard Increment) ของรุ่นนี้ไม่ได้ เนื่องจากหมายเหตุในเล่มแคตตาล็อกและตารางความกว้างระบุไม่ตรงกัน จึงอ้างอิงได้เฉพาะรายการความกว้างในตารางมาตรฐานข้างต้นครับ\n* ในเล่มระบุความกว้างต่ำสุดไว้ที่ 101.6 มม. (4 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งสำหรับช่วง 101.6–254 มม. หากต้องการใช้งานความกว้างช่วงดังกล่าว ต้องสอบถามและให้พนักงานฝ่ายขายยืนยันก่อนครับ\n* สำหรับขนาดนอกมาตรฐาน เล่มระบุว่าจะเพิ่มขึ้นทีละ 50.8 มม. (ซึ่งเป็นคนละค่ากับค่าเพิ่มทีละมาตรฐาน) หากต้องการขนาดนอกเหนือจากในตาราง ต้องสอบถามฝ่ายขายเช่นกันครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "CD-009",
+   "turn": "1",
+   "category": "code",
+   "query": "hc127 c กว้างเท่าไหร่",
+   "metrics": [
+    "code"
+   ],
+   "seconds": 6.0,
+   "llm_usage": {
+    "prompt_token_count": 3717,
+    "candidates_token_count": 536,
+    "total_token_count": 4253
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "ค่าความแข็งแรงในการดึง (Belt Strength) ของสายพาน Modutech รุ่น **MD508 NS** ขึ้นอยู่กับวัสดุของพิน (Pin Material) โดยมีรายละเอียดตามเกรดวัสดุดังนี้ครับ\n\n* **สายพาน POM / พิน PA:** 56,000 N/m\n* **สายพาน POM / พิน POM:** 56,000 N/m\n* **สายพาน POM / พิน PP:** 33,000 N/m\n\n*(รุ่นนี้มีเฉพาะวัสดุสายพาน POM ครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "CD-010",
+   "turn": "1",
+   "category": "code",
+   "query": "MD508 NS แรงดึงเท่าไหร่",
+   "metrics": [
+    "code"
+   ],
+   "seconds": 2.7,
+   "llm_usage": {
+    "prompt_token_count": 3613,
+    "candidates_token_count": 133,
+    "total_token_count": 3746
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **HD635 C** มีความกว้างขนาดเดียวตามมาตรฐานคือ **100 มม.** (ประมาณ 3.937 นิ้ว) ครับ\n\nหากต้องการความกว้างนอกเหนือจากนี้ สามารถสอบถามเพิ่มเติมกับทางฝ่ายขายได้ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "CD-011",
+   "turn": "1",
+   "category": "code",
+   "query": "HD635 C กว้างเท่าไหร่",
+   "metrics": [
+    "code"
+   ],
+   "seconds": 2.6,
+   "llm_usage": {
+    "prompt_token_count": 2864,
+    "candidates_token_count": 62,
+    "total_token_count": 2926
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech ทั้งสองรุ่นมีความแตกต่างกันอย่างชัดเจนทั้งด้านโครงสร้าง ระยะพิทช์ ผิวหน้า และลักษณะการใช้งาน ดังนี้ครับ\n\n---\n\n### 1. **MP80 C**\n* **ซีรีส์ / ระยะพิทช์:** 0.3 นิ้ว (8.0 มม.) — กลุ่ม Micropitch\n* **รูปแบบผิวหน้า:** ผิวเรียบทึบ (Flat Top), พื้นที่เปิด 0%\n* **ความหนาสายพาน:** 6.0 มม.\n* **วัสดุ:** POM (พอลิอะซีทัล)\n* **ความแข็งแรงและน้ำหนัก:**\n  * POM (พิน PA): ความแข็งแรง 2,750 N/m | น้ำหนัก 5.4 kg/m²\n  * POM (พิน POM): ความแข็งแรง 2,750 N/m | น้ำหนัก 5.4 kg/m²\n* **จุดเด่นและการใช้งาน:** ออกแบบมาสำหรับจุดถ่ายโอนสินค้าที่แคบมาก (Nosebar / Knife edge) ช่วยลดช่องว่างระหว่างรอยต่อและลดอาการกระตุกขณะพันเฟือง (Polygon effect) นิยมใช้ตรงรอยต่อของไลน์ เช่น ไลน์ตัดแต่งเนื้อสัตว์ สัตว์ปีก อาหารทะเล เบเกอรี่ และจุดลำเลียงเข้าเครื่องตรวจจับโลหะ/เครื่องชั่ง\n\n---\n\n### 2. **MD254 RR**\n* **ซีรีส์ / ระยะพิทช์:** 1 นิ้ว (25.4 มม.)\n* **รูปแบบผิวหน้า:** ผิวนูนแบบสันครีบ (Raised Rib), พื้นที่เปิด 33%\n* **ความหนาสายพาน:** 16.0 มม.\n* **วัสดุ:** POM, PP, PPH\n* **ความแข็งแรงและน้ำหนัก (ตามเกรดวัสดุ):**\n  * POM (พิน PA / POM): ความแข็งแรง 27,000 N/m | น้ำหนัก 10.4 kg/m²\n  * POM (พิน PP): ความแข็งแรง 19,000 N/m | น้ำหนัก 10.4 kg/m²\n  * PP (พิน PP): ความแข็งแรง 16,000 N/m | น้ำหนัก 6.8 kg/m²\n  * PPH (พิน PPH): ความแข็งแรง 16,000 N/m | น้ำหนัก 6.8 kg/m²\n* **จุดเด่นและการใช้งาน:** โครงสร้างหนาและรับแรงดึงได้สูง ผิวครีบนูนช่วยลดพื้นที่สัมผัสและแรงเสียดทาน ทำงานร่วมกับแผ่นหวีถ่ายโอน (Finger plate/comb) เหมาะสำหรับการลำเลียงขวด แก้ว กระป๋อง งานสะสมชิ้นงาน (Accumulation) รวมถึงการจัดเรียง/รื้อพาเลท (Palletizing/Depalletizing)\n\n---\n\n**สรุปความต่างหลัก:**\n* **MP80 C** เป็นสายพานพิทช์ละเอียดขนาดเล็ก ผิวเรียบทึบ เหมาะกับงานถ่ายโอนสินค้าขนาดเล็กผ่านปลายแคบ (Knife edge)\n* **MD254 RR** เป็นสายพานพิทช์ 1 นิ้วที่แข็งแรงและหนากว่า ผิวครีบนูนมีช่องเปิด ออกแบบเฉพาะสำหรับลำเลียงบรรจุภัณฑ์ประเภทขวด/กระป๋องร่วมกับหวีถ่ายโอนครับ\n\n*(หมายเหตุ: หากต้องการตรวจสอบเรื่องช่วงอุณหภูมิใช้งานที่เหมาะสม รบกวนแจ้งเพิ่มเติมว่าหน้างานเป็นสภาวะ **ไลน์เปียกหรือแห้ง** นะครับ เนื่องจากอุณหภูมิใช้งานจะขึ้นอยู่กับสภาวะดังกล่าวและเกรดวัสดุครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "CD-012",
+   "turn": "1",
+   "category": "code",
+   "query": "MP80 C กับ MD254 RR ต่างกันยังไง",
+   "metrics": [
+    "code"
+   ],
+   "seconds": 8.7,
+   "llm_usage": {
+    "prompt_token_count": 5723,
+    "candidates_token_count": 834,
+    "total_token_count": 6557
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **HC127 C** มีข้อมูลความกว้างตามแคตตาล็อกดังนี้ครับ:\n\n* **ความกว้างมาตรฐาน (มม.):** 254.0, 304.8, 355.6, 406.4, 457.2, 508.0, 558.8, 609.6, 660.4, 711.2, 762.0, 812.8, 863.6, 914.4, 965.2, 1016.0, 1066.8, 1117.6, 1168.4, 1219.2 และ 1270.0 มม. (เทียบเท่า 10 ถึง 50 นิ้ว)\n\n**ข้อสังเกตและหมายเหตุสำคัญ:**\n* รุ่นนี้ยังไม่สามารถยืนยันค่าการเพิ่มทีละมาตรฐาน (standard increment) ได้ เนื่องจากหมายเหตุในเล่มและตารางความกว้างระบุไม่ตรงกัน จึงอ้างอิงได้เฉพาะรายการความกว้างมาตรฐานที่ระบุไว้ในตารางข้างต้นเท่านั้นครับ\n* ในแคตตาล็อกระบุความกว้างต่ำสุดของรุ่นนี้ไว้ที่ 101.6 มม. (4 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งผลิตสำหรับช่วง 101.6–254 มม. ไว้ หากต้องการใช้งานความกว้างในช่วงดังกล่าว จะต้องให้พนักงานฝ่ายขายยืนยันก่อนครับ\n* สำหรับขนาดนอกเหนือจากมาตรฐาน แคตตาล็อกระบุว่าจะเพิ่มทีละ 50.8 มม. (ซึ่งเป็นค่าของขนาดนอกมาตรฐาน ไม่ใช่ค่าเพิ่มทีละของขนาดมาตรฐานครับ) หากต้องการความกว้างนอกตารางแนะนำสอบถามทางฝ่ายขายเพิ่มเติมครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-S01",
+   "turn": "1",
+   "category": "width_silent",
+   "query": "HC127 C กว้างเท่าไหร่",
+   "metrics": [
+    "width_silent"
+   ],
+   "seconds": 4.6,
+   "llm_usage": {
+    "prompt_token_count": 3717,
+    "candidates_token_count": 421,
+    "total_token_count": 4138
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MD127 GAP50%** มีขนาดความกว้างตามที่ระบุในแคตตาล็อก ดังนี้ครับ\n\n* **ความกว้างมาตรฐานในตาราง:** \n  203.2 ถึง 1,219.2 มม. (8 ถึง 48 นิ้ว) \n  โดยมีขนาดตามตาราง ได้แก่ 203.2, 254.0, 304.8, 355.6, 406.4, 457.2, 508.0, 558.8, 609.6, 660.4, 711.2, 762.0, 812.8, 863.6, 914.4, 965.2, 1016.0, 1066.8, 1117.6, 1168.4 และ 1,219.2 มม.\n\n**ข้อเท็จจริงและหมายเหตุเพิ่มเติมเกี่ยวกับความกว้าง:**\n* ในแคตตาล็อกระบุความกว้างต่ำสุดไว้ที่ 177.8 มม. (7 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งผลิตสำหรับช่วง 177.8 – 203.2 มม. ไว้ หากต้องการใช้งานในช่วงขนาดดังกล่าว ต้องสอบถามและยืนยันกับพนักงานฝ่ายขายก่อนครับ\n* รุ่นนี้ยังไม่สามารถยืนยันค่าระยะเพิ่มทีละขั้นมาตรฐาน (Standard increment) ได้ เนื่องจากหมายเหตุและตารางในเล่มระบุไม่ตรงกัน จึงต้องอ้างอิงตามรายการความกว้างที่มีในตารางเป็นหลักครับ\n* สำหรับขนาดนอกมาตรฐาน แคตตาล็อกระบุว่าจะเพิ่มขึ้นทีละ 50.8 มม. (ซึ่งเป็นคนละส่วนกับค่าเพิ่มทีละขั้นของขนาดมาตรฐาน) หากต้องการขนาดนอกมาตรฐานต้องสอบถามฝ่ายขายเช่นกันครับ\n\nหากสนใจความกว้างขนาดใดเป็นพิเศษ สามารถแจ้งเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-S02",
+   "turn": "1",
+   "category": "width_silent",
+   "query": "MD127 GAP50% กว้างเท่าไหร่",
+   "metrics": [
+    "width_silent"
+   ],
+   "seconds": 21.8,
+   "llm_usage": {
+    "prompt_token_count": 4460,
+    "candidates_token_count": 458,
+    "total_token_count": 4918
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **XP254 EVO FLT** ข้อมูลความกว้างมาตรฐานจากแคตตาล็อกมีดังนี้ครับ:\n\n* **ความกว้างที่มีระบุในตาราง:** มีตั้งแต่ **76.2 มม. ถึง 1600.0 มม.** โดยมีขนาดเฉพาะดังต่อไปนี้ครับ\n  * 76.2, 152.4, 228.6, 304.8, 381.0, 457.2, 533.4, 609.6, 685.8, 762.0, 838.2, 914.4, 990.6, 1066.8, 1143.0, 1219.2, 1295.4, 1371.6, 1447.8, 1524.0 และ 1600.0 มม.\n\n**หมายเหตุ:** เนื่องจากหมายเหตุในเล่มและตารางความกว้างระบุไม่ตรงกัน จึงยังไม่สามารถยืนยันค่าการเพิ่มทีละมาตรฐาน (standard increment) ของรุ่นนี้ได้ และอ้างอิงได้เฉพาะรายการความกว้างที่มีในตารางข้างต้นเท่านั้นครับ หากต้องการความกว้างอื่นนอกเหนือจากนี้ แนะนำให้สอบถามทางฝ่ายขายครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-S03",
+   "turn": "1",
+   "category": "width_silent",
+   "query": "XP254 EVO FLT กว้างเท่าไหร่",
+   "metrics": [
+    "width_silent"
+   ],
+   "seconds": 3.2,
+   "llm_usage": {
+    "prompt_token_count": 3545,
+    "candidates_token_count": 315,
+    "total_token_count": 3860
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **XP254 GT** มีข้อมูลความกว้างดังนี้ครับ\n\n**ขนาดความกว้างมาตรฐาน (มม. / นิ้ว):**\nความกว้างมาตรฐานตามตารางในแคตตาล็อก มีตั้งแต่ 152.4 มม. ถึง 1168.4 มม. (6.0 ถึง 46.0 นิ้ว) ได้แก่:\n* 152.4 มม. (6.0\")\n* 203.2 มม. (8.0\")\n* 254.0 มม. (10.0\")\n* 304.8 มม. (12.0\")\n* 355.6 มม. (14.0\")\n* 406.4 มม. (16.0\")\n* 457.2 มม. (18.0\")\n* 508.0 มม. (20.0\")\n* 558.8 มม. (22.0\")\n* 609.6 มม. (24.0\")\n* 660.4 มม. (26.0\")\n* 711.2 มม. (28.0\")\n* 762.0 มม. (30.0\")\n* 812.8 มม. (32.0\")\n* 863.6 มม. (34.0\")\n* 914.4 มม. (36.0\")\n* 965.2 มม. (38.0\")\n* 1016.0 มม. (40.0\")\n* 1066.8 มม. (42.0\")\n* 1117.6 มม. (44.0\")\n* 1168.4 มม. (46.0\")\n\n**หมายเหตุสำคัญเรื่องความกว้าง:**\n* ปัจจุบันยังไม่สามารถยืนยันค่าการเพิ่มทีละมาตรฐาน (Standard Increment) ของรุ่นนี้ได้ เนื่องจากหมายเหตุและตารางในแคตตาล็อกระบุไม่ตรงกัน จึงต้องอ้างอิงตามรายการความกว้างข้างต้นเป็นหลักครับ\n* ในแคตตาล็อกระบุความกว้างต่ำสุดไว้ที่ 76.2 มม. (3.0 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งสำหรับช่วง 76.2 – 152.4 มม. หากต้องการความกว้างในช่วงนี้ จำเป็นต้องสอบถามและยืนยันกับฝ่ายขายก่อนครับ\n* สำหรับขนาดนอกมาตรฐาน (Non-standard width) แคตตาล็อกระบุว่าจะเพิ่มขึ้นทีละ 15.2 มม. (ซึ่งเป็นคนละค่ากับค่าเพิ่มทีละมาตรฐาน) หากต้องการขนาดนอกเหนือจากตาราง ต้องสอบถามกับทางฝ่ายขายเช่นกันครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-S04",
+   "turn": "1",
+   "category": "width_silent",
+   "query": "XP254 GT กว้างเท่าไหร่",
+   "metrics": [
+    "width_silent"
+   ],
+   "seconds": 6.5,
+   "llm_usage": {
+    "prompt_token_count": 3496,
+    "candidates_token_count": 655,
+    "total_token_count": 4151
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **EC508 TR** มีความกว้างมาตรฐานตามตารางสเปกดังนี้ครับ:\n\n* **ความกว้างที่มีระบุในตาราง (มิลลิเมตร):**\n  508.0, 558.8, 609.9, 660.4, 711.2, 762.0, 812.8, 863.6, 914.4, 965.2, 1016.0, 1066.8, 1117.6, 1168.4, 1219.2, 1270.0, 1320.8, 1371.6, 1422.4, 1473.2 และ 1524.0 มม. (ประมาณ 20 ถึง 60 นิ้ว)\n\n**หมายเหตุ:** \n* ในแคตตาล็อกยังไม่สามารถยืนยันค่าการเพิ่มขึ้นทีละมาตรฐาน (increment) ของรุ่นนี้ได้ เนื่องจากหมายเหตุและตารางความกว้างระบุไม่ตรงกัน จึงอ้างอิงได้เฉพาะรายการความกว้างที่มีระบุในตารางข้างต้นเท่านั้นครับ หากต้องการความกว้างนอกเหนือจากนี้จะต้องสอบถามฝ่ายขายเพิ่มเติมครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-S05",
+   "turn": "1",
+   "category": "width_silent",
+   "query": "EC508 TR กว้างเท่าไหร่",
+   "metrics": [
+    "width_silent"
+   ],
+   "seconds": 3.2,
+   "llm_usage": {
+    "prompt_token_count": 3871,
+    "candidates_token_count": 305,
+    "total_token_count": 4176
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **HC508 C** มีขนาดความกว้างตามตารางในแคตตาล็อก ดังนี้ครับ:\n\n* **ความกว้างที่มีระบุในตาราง (มม.):** \n  152.4, 228.6, 304.8, 381.0, 457.2, 533.4, 609.6, 685.8, 762.0, 838.2, 914.4, 990.6, 1066.8, 1143.0, 1219.2, 1295.4, 1371.6, 1447.8, 1524.0 และ 1600.2 มม.\n* **ความกว้างในหน่วยนิ้ว:** \n  ตั้งแต่ 6.0 ถึง 63.0 นิ้ว (เพิ่มทีละ 3 นิ้วตามรายการแปลงสัดส่วน)\n\n**หมายเหตุ:** ขณะนี้ยังไม่สามารถยืนยันระยะเพิ่มทีละมาตรฐาน (increment) ของรุ่นนี้ได้ เนื่องจากข้อมูลหมายเหตุและตารางความกว้างในแคตตาล็อกระบุไม่ตรงกัน จึงอ้างอิงได้เฉพาะขนาดความกว้างที่มีระบุไว้ในตารางข้างต้นเท่านั้น หากต้องการความกว้างนอกเหนือจากนี้ แนะนำให้สอบถามเพิ่มเติมกับทางฝ่ายขายครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-S06",
+   "turn": "1",
+   "category": "width_silent",
+   "query": "HC508 C กว้างเท่าไหร่",
+   "metrics": [
+    "width_silent"
+   ],
+   "seconds": 4.3,
+   "llm_usage": {
+    "prompt_token_count": 4788,
+    "candidates_token_count": 328,
+    "total_token_count": 5116
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **HC508 MR** มีความกว้างมาตรฐานที่ระบุไว้ในแคตตาล็อก ดังนี้ครับ:\n\n* **ความกว้างที่มีระบุในตาราง (มม.):**\n  152.4, 228.6, 304.8, 381.0, 457.2, 533.4, 609.6, 685.8, 762.0, 838.2, 914.4, 990.6, 1066.8, 1143.0, 1219.2, 1295.4, 1371.6, 1447.8, 1524.0 และ 1600.2 มม.\n* **ความกว้างเทียบเท่านิ้ว:** ตั้งแต่ 6.0 ถึง 63.0 นิ้ว (เพิ่มขึ้นช่วงละ 3.0 นิ้ว)\n\n**หมายเหตุ:** สำหรับรุ่นนี้ในเล่มแคตตาล็อกยังไม่สามารถยืนยันค่าการเพิ่มทีละมาตรฐาน (standard increment) ได้ เนื่องจากหมายเหตุกับตารางความกว้างระบุไม่ตรงกัน จึงอ้างอิงได้เฉพาะรายการขนาดความกว้างตามตารางข้างต้นนี้เท่านั้นครับ หากต้องการความกว้างนอกเหนือจากนี้ต้องสอบถามทางฝ่ายขายครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-S07",
+   "turn": "1",
+   "category": "width_silent",
+   "query": "HC508 MR กว้างเท่าไหร่",
+   "metrics": [
+    "width_silent"
+   ],
+   "seconds": 4.1,
+   "llm_usage": {
+    "prompt_token_count": 3506,
+    "candidates_token_count": 320,
+    "total_token_count": 3826
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **HC508 NT** มีความกว้างมาตรฐานตามตารางสเปกดังนี้ครับ:\n\n**ขนาดความกว้างที่มีระบุในตาราง (มม.):**\n304.8, 381.0, 457.2, 533.4, 609.6, 685.8, 762.0, 838.2, 914.4, 990.6, 1066.8, 1143.0, 1219.2, 1295.4, 1371.6, 1447.8, 1524.0 และ 1600.2 มม. (หรือตั้งแต่ 12 ถึง 63 นิ้ว)\n\n*หมายเหตุ:* ปัจจุบันยังไม่สามารถยืนยันค่าระยะเพิ่มทีละมาตรฐาน (width increment) ของรุ่นนี้ได้ เนื่องจากข้อมูลหมายเหตุและตารางความกว้างในเล่มระบุไม่ตรงกัน จึงสามารถอ้างอิงได้เฉพาะขนาดความกว้างตามรายการข้างต้น หากต้องการความกว้างนอกเหนือจากรายการนี้ ต้องสอบถามทางฝ่ายขายครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-S08",
+   "turn": "1",
+   "category": "width_silent",
+   "query": "HC508 NT กว้างเท่าไหร่",
+   "metrics": [
+    "width_silent"
+   ],
+   "seconds": 3.0,
+   "llm_usage": {
+    "prompt_token_count": 3547,
+    "candidates_token_count": 275,
+    "total_token_count": 3822
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน **Modutech HC508 PR22** มีความกว้างมาตรฐานที่ระบุไว้ในตารางแคตตาล็อก ดังนี้ครับ:\n\n* **ความกว้างที่มีระบุในตาราง (มม.):**\n  152.4, 228.6, 304.8, 381.0, 457.2, 533.4, 609.6, 685.8, 762.0, 838.2, 914.4, 990.6, 1,066.8, 1,143.0, 1,219.2, 1,295.4, 1,371.6, 1,447.8, 1,524.0 และ 1,600.2 มม.\n* **ความกว้างในหน่วยนิ้ว:**\n  ตั้งแต่ 6 นิ้ว ถึง 63 นิ้ว (เพิ่มขึ้นทีละ 3 นิ้ว)\n\n**หมายเหตุ:** \nความกว้างในตารางมีตั้งแต่ 152.4 ถึง 1,600.2 มม. (เฉพาะขนาดที่อยู่ในรายการนี้เท่านั้น) ปัจจุบันยังไม่สามารถยืนยันค่าการเพิ่มทีละมาตรฐานของรุ่นนี้ได้ เนื่องจากหมายเหตุในเล่มแคตตาล็อกกับตารางความกว้างระบุไม่ตรงกัน จึงอ้างอิงได้เฉพาะรายการขนาดที่ระบุไว้ข้างต้นครับ หากต้องการขนาดความกว้างอื่นนอกเหนือจากนี้ แนะนำให้สอบถามทางฝ่ายขายเพิ่มเติมครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-S09",
+   "turn": "1",
+   "category": "width_silent",
+   "query": "HC508 PR22 กว้างเท่าไหร่",
+   "metrics": [
+    "width_silent"
+   ],
+   "seconds": 3.8,
+   "llm_usage": {
+    "prompt_token_count": 3899,
+    "candidates_token_count": 365,
+    "total_token_count": 4264
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **XP254 EVO CR** มีรายละเอียดความกว้างมาตรฐานตามแคตตาล็อกดังนี้ครับ\n\n* **ความกว้างแคบสุดที่ยืนยันได้:** 76.2 มม. (3.0 นิ้ว)\n* **ความกว้างสูงสุดตามตาราง:** 1,524.0 มม. (60.0 นิ้ว)\n\n**รายการความกว้างมาตรฐานในแคตตาล็อก (มม. / นิ้ว):**\n* 76.2 มม. (3.0 นิ้ว)\n* 152.4 มม. (6.0 นิ้ว)\n* 228.6 มม. (9.0 นิ้ว)\n* 304.8 มม. (12.0 นิ้ว)\n* 381.0 มม. (15.0 นิ้ว)\n* 457.2 มม. (18.0 นิ้ว)\n* 533.4 มม. (21.0 นิ้ว)\n* 609.6 มม. (24.0 นิ้ว)\n* 685.8 มม. (27.0 นิ้ว)\n* 762.0 มม. (30.0 นิ้ว)\n* 838.2 มม. (33.0 นิ้ว)\n* 914.4 มม. (36.0 นิ้ว)\n* 990.6 มม. (39.0 นิ้ว)\n* 1,066.8 มม. (42.0 นิ้ว)\n* 1,143.0 มม. (45.0 นิ้ว)\n* 1,219.2 มม. (48.0 นิ้ว)\n* 1,295.4 มม. (51.0 นิ้ว)\n* 1,371.6 มม. (54.0 นิ้ว)\n* 1,447.8 มม. (57.0 นิ้ว)\n* 1,524.0 มม. (60.0 นิ้ว)\n\n**ข้อควรทราบ:**\n* ในแคตตาล็อกยังไม่สามารถยืนยันระยะเพิ่มทีละมาตรฐาน (increment) ของรุ่นนี้ได้ เนื่องจากหมายเหตุในเล่มและตารางความกว้างระบุไม่ตรงกัน จึงต้องอ้างอิงเฉพาะค่าความกว้างที่มีในรายการข้างต้น\n* ตารางในแคตตาล็อกมีระบุขนาด 50 มม. ไว้ด้วย แต่ขัดแย้งกับค่าขั้นต่ำที่ประกาศไว้ หากต้องการใช้งานที่ความกว้าง 50 มม. หรือขนาดที่แคบกว่า 76.2 มม. รวมถึงความกว้างนอกเหนือจากรายการ ต้องยืนยันและสอบถามกับพนักงานฝ่ายขายก่อนครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-S10",
+   "turn": "1",
+   "category": "width_silent",
+   "query": "XP254 EVO CR กว้างเท่าไหร่",
+   "metrics": [
+    "width_silent"
+   ],
+   "seconds": 7.3,
+   "llm_usage": {
+    "prompt_token_count": 3629,
+    "candidates_token_count": 646,
+    "total_token_count": 4275
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **HD635 C** มีความกว้างขนาดเดียวคือ **100 มม.** (3.937 นิ้ว) ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-N01",
+   "turn": "1",
+   "category": "width_silent",
+   "query": "HD635 C กว้างเท่าไหร่",
+   "metrics": [
+    "width_silent"
+   ],
+   "seconds": 1.8,
+   "llm_usage": {
+    "prompt_token_count": 2864,
+    "candidates_token_count": 38,
+    "total_token_count": 2902
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MP80 C** มีขนาดความกว้างมาตรฐานที่สั่งผลิตได้ดังนี้ครับ:\n\n* **ช่วงความกว้าง:** สั่งได้ตั้งแต่ **101.6 มม. ถึง 2,133.6 มม.** (เพิ่มขึ้นทีละ 101.6 มม. หรือ 4 นิ้ว)\n* **ขนาดความกว้างมาตรฐาน (มม.):** \n  101.6, 203.2, 304.8, 406.4, 508.0, 609.6, 711.2, 812.8, 914.4, 1,016.0, 1,117.6, 1,219.2, 1,320.8, 1,422.4, 1,524.0, 1,625.6, 1,727.2, 1,828.8, 1,930.4, 2,032.0 และ 2,133.6 มม.\n\n*(กรณีต้องการความกว้างนอกเหนือจากขนาดมาตรฐานข้างต้น ต้องสอบถามทางฝ่ายขายครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-P01",
+   "turn": "1",
+   "category": "width_shown",
+   "query": "MP80 C กว้างเท่าไหร่",
+   "metrics": [
+    "width_shown"
+   ],
+   "seconds": 4.1,
+   "llm_usage": {
+    "prompt_token_count": 3916,
+    "candidates_token_count": 290,
+    "total_token_count": 4206
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MP80 FG** มีขนาดความกว้างมาตรฐานที่สามารถสั่งได้ตั้งแต่ **101.6 มม. ถึง 2,133.6 มม.** (4 นิ้ว ถึง 84 นิ้ว) โดยขนาดความกว้างจะเพิ่มขึ้นทีละ **101.6 มม. (4 นิ้ว)** ครับ\n\nตัวอย่างขนาดความกว้างมาตรฐาน ได้แก่:\n- 101.6 มม. (4 นิ้ว)\n- 203.2 มม. (8 นิ้ว)\n- 304.8 มม. (12 นิ้ว)\n- 406.4 มม. (16 นิ้ว)\n- 508.0 มม. (20 นิ้ว)\n- ... เพิ่มขึ้นทีละ 101.6 มม. ไปจนถึง 2,133.6 มม. (84 นิ้ว)\n\n*(หมายเหตุ: ค่านิ้วคำนวณแปลงจากหน่วยมิลลิเมตร 1 นิ้ว = 25.4 มม. ครับ)* \n\nหากต้องการความกว้างนอกเหนือจากขนาดมาตรฐานข้างต้น แนะนำให้สอบถามข้อมูลเพิ่มเติมกับทางฝ่ายขายครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-P02",
+   "turn": "1",
+   "category": "width_shown",
+   "query": "MP80 FG กว้างเท่าไหร่",
+   "metrics": [
+    "width_shown"
+   ],
+   "seconds": 3.9,
+   "llm_usage": {
+    "prompt_token_count": 3635,
+    "candidates_token_count": 272,
+    "total_token_count": 3907
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MP80 NP** มีความกว้างมาตรฐานที่สามารถสั่งได้ดังนี้ครับ:\n\n* **ความกว้าง:** สั่งได้ตั้งแต่ **101.6 มม. ถึง 2,133.6 มม.** (เพิ่มขึ้นทีละ 101.6 มม.) หรือเท่ากับ **4 นิ้ว ถึง 84 นิ้ว** (เพิ่มขึ้นทีละ 4 นิ้ว)\n\n**ขนาดความกว้างมาตรฐาน (มม.):**\n101.6, 203.2, 304.8, 406.4, 508.0, 609.6, 711.2, 812.8, 914.4, 1016.0, 1117.6, 1219.2, 1320.8, 1422.4, 1524.0, 1625.6, 1727.2, 1828.8, 1930.4, 2032.0 และ 2,133.6 มม.\n\nหากต้องการความกว้างนอกเหนือจากขนาดมาตรฐานข้างต้น สามารถสอบถามทางฝ่ายขายเพิ่มเติมได้ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-P03",
+   "turn": "1",
+   "category": "width_shown",
+   "query": "MP80 NP กว้างเท่าไหร่",
+   "metrics": [
+    "width_shown"
+   ],
+   "seconds": 3.3,
+   "llm_usage": {
+    "prompt_token_count": 3302,
+    "candidates_token_count": 292,
+    "total_token_count": 3594
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **MP80 NS** มีความกว้างมาตรฐานที่สามารถสั่งได้ตั้งแต่ **101.6 มม. ถึง 2,133.6 มม.** (เพิ่มขึ้นทีละ 101.6 มม.) ครับ\n\nตัวอย่างขนาดความกว้างมาตรฐาน (มม. / นิ้ว) เช่น:\n- 101.6 มม. (4.0 นิ้ว)\n- 203.2 มม. (8.0 นิ้ว)\n- 304.8 มม. (12.0 นิ้ว)\n- 406.4 มม. (16.0 นิ้ว)\n- 508.0 มม. (20.0 นิ้ว)\n- 609.6 มม. (24.0 นิ้ว)\n- 711.2 มม. (28.0 นิ้ว)\n- 812.8 มม. (32.0 นิ้ว)\n- 914.4 มม. (36.0 นิ้ว)\n- 1,016.0 มม. (40.0 นิ้ว)\n- ... ไปจนถึงสูงสุด 2,133.6 มม. (84.0 นิ้ว)\n\nหากต้องการใช้งานที่ความกว้างนอกเหนือจากขนาดมาตรฐานเหล่านี้ แนะนำให้สอบถามทางฝ่ายขายเพิ่มเติมครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-P04",
+   "turn": "1",
+   "category": "width_shown",
+   "query": "MP80 NS กว้างเท่าไหร่",
+   "metrics": [
+    "width_shown"
+   ],
+   "seconds": 4.1,
+   "llm_usage": {
+    "prompt_token_count": 3501,
+    "candidates_token_count": 318,
+    "total_token_count": 3819
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **SM127 C** มีสเปกความกว้างมาตรฐานดังนี้ครับ\n\n* **ความกว้างมาตรฐานที่สั่งผลิตได้:** ตั้งแต่ 152.4 มม. ถึง 1600.2 มม. (โดยจะเพิ่มขึ้นทีละขั้น ขั้นละ 76.2 มม.)\n* **ตัวอย่างขนาดความกว้างมาตรฐาน (มม. / นิ้ว):**\n  * 152.4 มม. (6.0 นิ้ว)\n  * 228.6 มม. (9.0 นิ้ว)\n  * 304.8 มม. (12.0 นิ้ว)\n  * 381.0 มม. (15.0 นิ้ว)\n  * 457.2 มม. (18.0 นิ้ว)\n  * 533.4 มม. (21.0 นิ้ว)\n  * 609.6 มม. (24.0 นิ้ว)\n  * 685.8 มม. (27.0 นิ้ว)\n  * 762.0 มม. (30.0 นิ้ว)\n  * 838.2 มม. (33.0 นิ้ว)\n  * 914.4 มม. (36.0 นิ้ว)\n  * 990.6 มม. (39.0 นิ้ว)\n  * 1066.8 มม. (42.0 นิ้ว)\n  * 1143.0 มม. (45.0 นิ้ว)\n  * 1219.2 มม. (48.0 นิ้ว)\n  * 1295.4 มม. (51.0 นิ้ว)\n  * 1371.6 มม. (54.0 นิ้ว)\n  * 1447.8 มม. (57.0 นิ้ว)\n  * 1524.0 มม. (60.0 นิ้ว)\n  * 1600.2 มม. (63.0 นิ้ว)\n\nหากต้องการความกว้างนอกเหนือจากรายการมาตรฐานข้างต้น จะต้องสอบถามและยืนยันกับฝ่ายขายเพิ่มเติมครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-P05",
+   "turn": "1",
+   "category": "width_shown",
+   "query": "SM127 C กว้างเท่าไหร่",
+   "metrics": [
+    "width_shown"
+   ],
+   "seconds": 5.4,
+   "llm_usage": {
+    "prompt_token_count": 3718,
+    "candidates_token_count": 528,
+    "total_token_count": 4246
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **SM127 CRV** มีความกว้างมาตรฐานสั่งได้ตั้งแต่ **152.4 ถึง 1,600.2 มม.** (6.0 ถึง 63.0 นิ้ว) โดยเพิ่มขึ้นทีละ **76.2 มม.** (3.0 นิ้ว) ครับ\n\nขนาดความกว้างมาตรฐานในแคตตาล็อก ได้แก่:\n* **มิลลิเมตร (มม.):** 152.4, 228.6, 304.8, 381.0, 457.2, 533.4, 609.6, 685.8, 762.0, 838.2, 914.4, 990.6, 1066.8, 1143.0, 1219.2, 1295.4, 1371.6, 1447.8, 1524.0 และ 1600.2\n* **นิ้ว:** 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 33.0, 36.0, 39.0, 42.0, 45.0, 48.0, 51.0, 54.0, 57.0, 60.0 และ 63.0\n\nหากต้องการความกว้างนอกเหนือจากมาตรฐานนี้ ต้องสอบถามทางฝ่ายขายเพิ่มเติมครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-P06",
+   "turn": "1",
+   "category": "width_shown",
+   "query": "SM127 CRV กว้างเท่าไหร่",
+   "metrics": [
+    "width_shown"
+   ],
+   "seconds": 8.4,
+   "llm_usage": {
+    "prompt_token_count": 3772,
+    "candidates_token_count": 390,
+    "thoughts_token_count": 766,
+    "total_token_count": 4928
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน **Modutech SM127 FG** มีความกว้างมาตรฐานดังนี้ครับ:\n\n* **ช่วงความกว้าง:** สั่งได้ตั้งแต่ **152.4 มม. ถึง 1600.2 มม.** (เพิ่มขึ้นทีละ 76.2 มม.)\n* **ความกว้างมาตรฐาน (มม.):**\n  152.4, 228.6, 304.8, 381.0, 457.2, 533.4, 609.6, 685.8, 762.0, 838.2, 914.4, 990.6, 1066.8, 1143.0, 1219.2, 1295.4, 1371.6, 1447.8, 1524.0, 1600.2 มม.\n* **ความกว้างมาตรฐาน (นิ้ว):**\n  ตั้งแต่ 6 นิ้ว ถึง 63 นิ้ว (เพิ่มขึ้นทีละ 3 นิ้ว: 6\", 9\", 12\", 15\", 18\", 21\", 24\", 27\", 30\", 33\", 36\", 39\", 42\", 45\", 48\", 51\", 54\", 57\", 60\", 63\")\n\nหากต้องการความกว้างนอกเหนือจากขนาดมาตรฐานข้างต้น ต้องสอบถามทางฝ่ายขายเพิ่มเติมครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-P07",
+   "turn": "1",
+   "category": "width_shown",
+   "query": "SM127 FG กว้างเท่าไหร่",
+   "metrics": [
+    "width_shown"
+   ],
+   "seconds": 3.5,
+   "llm_usage": {
+    "prompt_token_count": 4026,
+    "candidates_token_count": 364,
+    "total_token_count": 4390
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **SM127 FG-GT** มีสเปกความกว้างมาตรฐานดังนี้ครับ\n\n* **ช่วงความกว้าง:** สั่งได้ตั้งแต่ **152.4 มม. ถึง 1,524.0 มม.** (เพิ่มทีละ 76.2 มม.)\n* **ความกว้างมาตรฐานในแคตตาล็อก:**\n  * 152.4 มม. (6.0 นิ้ว)\n  * 228.6 มม. (9.0 นิ้ว)\n  * 304.8 มม. (12.0 นิ้ว)\n  * 381.0 มม. (15.0 นิ้ว)\n  * 457.2 มม. (18.0 นิ้ว)\n  * 533.4 มม. (21.0 นิ้ว)\n  * 609.6 มม. (24.0 นิ้ว)\n  * 685.8 มม. (27.0 นิ้ว)\n  * 762.0 มม. (30.0 นิ้ว)\n  * 838.2 มม. (33.0 นิ้ว)\n  * 914.4 มม. (36.0 นิ้ว)\n  * 990.6 มม. (39.0 นิ้ว)\n  * 1,066.8 มม. (42.0 นิ้ว)\n  * 1,143.0 มม. (45.0 นิ้ว)\n  * 1,219.2 มม. (48.0 นิ้ว)\n  * 1,295.4 มม. (51.0 นิ้ว)\n  * 1,371.6 มม. (54.0 นิ้ว)\n  * 1,447.8 มม. (57.0 นิ้ว)\n  * 1,524.0 มม. (60.0 นิ้ว)\n\n*(หมายเหตุ: ค่านิ้วคำนวณแปลงจากหน่วยมิลลิเมตรตามมาตรา 1 นิ้ว = 25.4 มม. ครับ)* \n\nหากต้องการความกว้างนอกเหนือจากรายการมาตรฐานนี้ สามารถสอบถามเพิ่มเติมกับทางฝ่ายขายได้ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-P08",
+   "turn": "1",
+   "category": "width_shown",
+   "query": "SM127 FG-GT กว้างเท่าไหร่",
+   "metrics": [
+    "width_shown"
+   ],
+   "seconds": 6.0,
+   "llm_usage": {
+    "prompt_token_count": 3271,
+    "candidates_token_count": 538,
+    "total_token_count": 3809
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **EC127 C** มีความกว้างมาตรฐานที่สั่งผลิตได้ตั้งแต่ **50 ถึง 1,050 มม.** โดยจะเพิ่มขึ้นทีละ **50 มม.** ครับ \n\nความกว้างมาตรฐานทั้งหมดมีดังนี้ครับ:\n50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1,000 และ 1,050 มม.\n\n*(หากต้องการความกว้างนอกเหนือจากรายการนี้ ต้องสอบถามทางฝ่ายขายเพิ่มเติมครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-P09",
+   "turn": "1",
+   "category": "width_shown",
+   "query": "EC127 C กว้างเท่าไหร่",
+   "metrics": [
+    "width_shown"
+   ],
+   "seconds": 3.0,
+   "llm_usage": {
+    "prompt_token_count": 4341,
+    "candidates_token_count": 193,
+    "total_token_count": 4534
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **EC127 FG** มีความกว้างมาตรฐานที่สามารถสั่งได้ตั้งแต่ **50 มม. ถึง 1,050 มม. โดยเพิ่มขึ้นทีละ 50 มม.** ครับ\n\nตัวอย่างขนาดความกว้างมาตรฐาน (มม.):\n- 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1,000 และ 1,050 มม.\n\n(หรือเทียบเท่าประมาณ 1.97 นิ้ว ถึง 41.34 นิ้ว โดยเพิ่มขึ้นทีละประมาณ 1.97 นิ้ว)\n\nหากต้องการความกว้างนอกเหนือจากขนาดมาตรฐานนี้ สามารถสอบถามเพิ่มเติมกับทางฝ่ายขายได้ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-P10",
+   "turn": "1",
+   "category": "width_shown",
+   "query": "EC127 FG กว้างเท่าไหร่",
+   "metrics": [
+    "width_shown"
+   ],
+   "seconds": 3.3,
+   "llm_usage": {
+    "prompt_token_count": 4302,
+    "candidates_token_count": 234,
+    "total_token_count": 4536
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **HC127 C** มีข้อมูลความกว้างตามแคตตาล็อกดังนี้ครับ:\n\n* **ความกว้างมาตรฐาน (มม.):** 254.0, 304.8, 355.6, 406.4, 457.2, 508.0, 558.8, 609.6, 660.4, 711.2, 762.0, 812.8, 863.6, 914.4, 965.2, 1016.0, 1066.8, 1117.6, 1168.4, 1219.2 และ 1270.0 มม. (10–50 นิ้ว)\n\n**หมายเหตุสำคัญเรื่องความกว้าง:**\n* ในแคตตาล็อกระบุความกว้างต่ำสุดของรุ่นนี้ไว้ที่ 101.6 มม. (4 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งสำหรับช่วง 101.6–254 มม. หากต้องการความกว้างในช่วงดังกล่าว จำเป็นต้องให้พนักงานฝ่ายขายยืนยันก่อนครับ\n* รุ่นนี้ยังไม่สามารถยืนยันค่าการเพิ่มทีละมาตรฐาน (standard increment) ได้ เนื่องจากหมายเหตุและตารางในเล่มระบุไม่ตรงกัน จึงอ้างอิงได้เฉพาะขนาดตามตารางข้างต้น\n* สำหรับขนาดนอกมาตรฐาน แคตตาล็อกระบุว่าจะเพิ่มขึ้นทีละ 50.8 มม. (ซึ่งเป็นคนละค่ากับค่าเพิ่มทีละมาตรฐาน) หากต้องการขนาดนอกเหนือจากนี้ต้องสอบถามฝ่ายขายครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-M01",
+   "turn": "1",
+   "category": "width_min",
+   "query": "HC127 C กว้างเท่าไหร่",
+   "metrics": [
+    "width_min"
+   ],
+   "seconds": 4.5,
+   "llm_usage": {
+    "prompt_token_count": 3717,
+    "candidates_token_count": 391,
+    "total_token_count": 4108
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน **Modutech รุ่น MD127 GAP50%** มีข้อมูลความกว้างตามแคตตาล็อกดังนี้ครับ\n\n**ความกว้างมาตรฐานที่ระบุในตาราง (มม. / นิ้ว):**\n* 203.2 มม. (8.0 นิ้ว)\n* 254.0 มม. (10.0 นิ้ว)\n* 304.8 มม. (12.0 นิ้ว)\n* 355.6 มม. (14.0 นิ้ว)\n* 406.4 มม. (16.0 นิ้ว)\n* 457.2 มม. (18.0 นิ้ว)\n* 508.0 มม. (20.0 นิ้ว)\n* 558.8 มม. (22.0 นิ้ว)\n* 609.6 มม. (24.0 นิ้ว)\n* 660.4 มม. (26.0 นิ้ว)\n* 711.2 มม. (28.0 นิ้ว)\n* 762.0 มม. (30.0 นิ้ว)\n* 812.8 มม. (32.0 นิ้ว)\n* 863.6 มม. (34.0 นิ้ว)\n* 914.4 มม. (36.0 นิ้ว)\n* 965.2 มม. (38.0 นิ้ว)\n* 1016.0 มม. (40.0 นิ้ว)\n* 1066.8 มม. (42.0 นิ้ว)\n* 1117.6 มม. (44.0 นิ้ว)\n* 1168.4 มม. (46.0 นิ้ว)\n* 1219.2 มม. (48.0 นิ้ว)\n\n**ข้อเท็จจริงและหมายเหตุเพิ่มเติมเรื่องขนาดความกว้าง:**\n* ปัจจุบันยังไม่สามารถยืนยันค่าการเพิ่มทีละขั้นมาตรฐาน (Standard increment) ของรุ่นนี้ได้ เนื่องจากหมายเหตุในเล่มแคตตาล็อกกับตารางความกว้างระบุไม่ตรงกัน จึงแนะนำให้อ้างอิงเฉพาะรายการความกว้างที่มีระบุในตารางข้างต้น\n* แคตตาล็อกระบุความกว้างต่ำสุดไว้ที่ 177.8 มม. (7 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งผลิตเฉพาะช่วง 177.8 – 203.2 มม. เอาไว้ หากต้องการใช้งานความกว้างในช่วงดังกล่าว จะต้องให้พนักงานฝ่ายขายเป็นผู้ยืนยันก่อนครับ\n* สำหรับขนาดนอกเหนือจากรายการมาตรฐาน แคตตาล็อกระบุว่าขนาดนอกมาตรฐานจะเพิ่มขึ้นทีละ 50.8 มม. (ซึ่งเป็นคนละค่ากับค่าเพิ่มทีละมาตรฐาน) หากสนใจขนาดนอกมาตรฐานสามารถสอบถามทางฝ่ายขายได้ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-M02",
+   "turn": "1",
+   "category": "width_min",
+   "query": "MD127 GAP50% กว้างเท่าไหร่",
+   "metrics": [
+    "width_min"
+   ],
+   "seconds": 6.1,
+   "llm_usage": {
+    "prompt_token_count": 4460,
+    "candidates_token_count": 677,
+    "total_token_count": 5137
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **EC254 R** มีขนาดความกว้างดังนี้ครับ:\n\n* **ความกว้างมาตรฐาน:** เริ่มต้นตั้งแต่ **200 มม. ถึง 1,200 มม.** (7.87 ถึง 47.24 นิ้ว) โดยเพิ่มขึ้นทีละ **50 มม.**\n  *(ขนาดมาตรฐานได้แก่: 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1,000, 1,050, 1,100, 1,150 และ 1,200 มม.)*\n* **ขนาดนอกมาตรฐาน:** ในแคตตาล็อกระบุไว้ว่าจะเพิ่มขึ้นทีละ **16.6 มม.** (ซึ่งเป็นคนละค่ากับค่าเพิ่มทีละของขนาดมาตรฐาน)\n\n**ข้อสังเกตเพิ่มเติม:**\n* ในเล่มระบุความกว้างต่ำสุดไว้ที่ 100 มม. แต่ไม่ได้ระบุเงื่อนไขการสั่งผลิตสำหรับช่วง 100–200 มม. ไว้ หากต้องการใช้งานที่ความกว้างช่วงนี้ หรือต้องการขนาดนอกมาตรฐาน จะต้องสอบถามและยืนยันกับทางพนักงานฝ่ายขายก่อนครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-M03",
+   "turn": "1",
+   "category": "width_min",
+   "query": "EC254 R กว้างเท่าไหร่",
+   "metrics": [
+    "width_min"
+   ],
+   "seconds": 3.8,
+   "llm_usage": {
+    "prompt_token_count": 3932,
+    "candidates_token_count": 329,
+    "total_token_count": 4261
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **EC254 R-GT** มีรายละเอียดความกว้างดังนี้ครับ\n\n* **ความกว้างมาตรฐาน:** เริ่มต้นตั้งแต่ **200 มม. ถึง 1,200 มม.** (7.87 ถึง 47.24 นิ้ว) โดยจะเพิ่มขึ้นทีละ **50 มม.**  \n  *(ขนาดมาตรฐาน เช่น 200, 250, 300, 350, 400 ไปจนถึง 1,200 มม.)*\n* **ช่วงความกว้างต่ำสุด:** ในเล่มแคตตาล็อกมีระบุความกว้างต่ำสุดไว้ที่ 100 มม. (3.94 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งผลิตสำหรับช่วง 100–200 มม. ไว้ จึงต้องให้พนักงานฝ่ายขายยืนยันก่อนครับ\n* **ขนาดนอกมาตรฐาน:** มีระบุว่าหากเป็นขนาดนอกมาตรฐาน จะปรับเพิ่มขึ้นทีละ **16.6 มม.** (ไม่ใช่การเพิ่มทีละ 50 มม. เหมือนขนาดมาตรฐาน) ซึ่งต้องสอบถามทางฝ่ายขายเพิ่มเติมครับ\n\nหากต้องการทราบข้อมูลการรับแรงดึงหรือการคำนวณการใช้งาน เนื่องจากรุ่นนี้เป็นสายพานที่วิ่งโค้งได้และค่าความแข็งแรงตอนวิ่งโค้งจะต่ำกว่าวิ่งตรงมาก ไม่ทราบว่าเป็นไลน์วิ่งตรงหรือมีส่วนโค้งด้วยครับ?",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-M04",
+   "turn": "1",
+   "category": "width_min",
+   "query": "EC254 R-GT กว้างเท่าไหร่",
+   "metrics": [
+    "width_min"
+   ],
+   "seconds": 3.8,
+   "llm_usage": {
+    "prompt_token_count": 3841,
+    "candidates_token_count": 315,
+    "total_token_count": 4156
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **EC254 R-TABE** มีรายละเอียดความกว้างดังนี้ครับ:\n\n* **ความกว้างมาตรฐาน:** เริ่มต้นตั้งแต่ **200 ถึง 1,200 มม.** (7.87 ถึง 47.24 นิ้ว) โดยจะเพิ่มขึ้นทีละ **50 มม.** ครับ\n  * *ขนาดมาตรฐานที่มีระบุ:* 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1,000, 1,050, 1,100, 1,150 และ 1,200 มม.\n* **ช่วงความกว้าง 100–200 มม.:** แคตตาล็อกระบุความกว้างต่ำสุดไว้ที่ 100 มม. แต่ไม่ได้ระบุเงื่อนไขการสั่งผลิตสำหรับช่วง 100–200 มม. ไว้ จึงต้องให้พนักงานฝ่ายขายยืนยันก่อนครับ\n* **ขนาดนอกมาตรฐาน:** มีระบุว่าหากเป็นขนาดนอกมาตรฐาน จะปรับเพิ่มทีละ **16.6 มม.** (เป็นคนละค่ากับระยะเพิ่มทีละ 50 มม. ของขนาดมาตรฐาน) ซึ่งต้องสอบถามและยืนยันกับทางฝ่ายขายเช่นกันครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-M05",
+   "turn": "1",
+   "category": "width_min",
+   "query": "EC254 R-TABE กว้างเท่าไหร่",
+   "metrics": [
+    "width_min"
+   ],
+   "seconds": 4.0,
+   "llm_usage": {
+    "prompt_token_count": 3662,
+    "candidates_token_count": 345,
+    "total_token_count": 4007
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **EC254 R-TABM** มีรายละเอียดความกว้างดังนี้ครับ\n\n* **ความกว้างมาตรฐาน:** เริ่มต้นตั้งแต่ **200 ถึง 1,200 มม.** (7.87 ถึง 47.24 นิ้ว) โดยเพิ่มขึ้นทีละ **50 มม.** \n  *(ขนาดมาตรฐานได้แก่: 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1,000, 1,050, 1,100, 1,150 และ 1,200 มม.)*\n* **ความกว้างนอกมาตรฐาน:** จะมีระยะการเพิ่มขึ้นทีละ **16.6 มม.** (คนละค่ากับค่าเพิ่มทีละมาตรฐาน)\n* **หมายเหตุสำหรับขนาดต่ำกว่า 200 มม.:** ในแคตตาล็อกมีการระบุความกว้างต่ำสุดไว้ที่ 100 มม. (3.94 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งผลิตสำหรับช่วง 100–200 มม. ไว้ หากต้องการใช้งานที่ความกว้างช่วงดังกล่าว ต้องให้ทางพนักงานฝ่ายขายยืนยันก่อนครับ\n\nหากต้องการทราบความกว้างเฉพาะเจาะจง หรือข้อมูลด้านการใช้งานเพิ่มเติม สามารถสอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-M06",
+   "turn": "1",
+   "category": "width_min",
+   "query": "EC254 R-TABM กว้างเท่าไหร่",
+   "metrics": [
+    "width_min"
+   ],
+   "seconds": 4.2,
+   "llm_usage": {
+    "prompt_token_count": 3663,
+    "candidates_token_count": 356,
+    "total_token_count": 4019
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "ข้อมูลความกว้างของสายพาน Modutech รุ่น **EC254 TR** มีดังนี้ครับ\n\n* **ความกว้างมาตรฐาน:** เริ่มต้นตั้งแต่ **250 มม. ถึง 1,200 มม.** (9.84 ถึง 47.24 นิ้ว) โดยเพิ่มขึ้นทีละ **50 มม.** (เช่น 250, 300, 350, 400, ... จนถึง 1,200 มม.)\n* **ขนาดนอกมาตรฐาน:** เล่มระบุว่าขนาดนอกมาตรฐานจะเพิ่มขึ้นทีละ **16.6 มม.** (ซึ่งเป็นคนละค่ากับค่าเพิ่มทีละของขนาดมาตรฐาน)\n\n**ข้อสังเกตเพิ่มเติม:**\n* ในแคตตาล็อกระบุความกว้างต่ำสุดของรุ่นนี้ไว้ที่ 167 มม. (6.57 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งผลิตเฉพาะช่วง 167–250 มม. เอาไว้ หากต้องการใช้งานความกว้างในช่วงดังกล่าว จะต้องให้พนักงานฝ่ายขายยืนยันก่อนครับ\n\nหากต้องการให้คำนวณหรือตรวจสอบความกว้างเฉพาะเจาะจง หรือต้องการข้อมูลสเปกด้านอื่นเพิ่มเติม สามารถสอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-M07",
+   "turn": "1",
+   "category": "width_min",
+   "query": "EC254 TR กว้างเท่าไหร่",
+   "metrics": [
+    "width_min"
+   ],
+   "seconds": 3.7,
+   "llm_usage": {
+    "prompt_token_count": 4001,
+    "candidates_token_count": 274,
+    "total_token_count": 4275
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **EC254 TR-TAB** มีข้อมูลความกว้างดังนี้ครับ\n\n* **ความกว้างมาตรฐาน:** เริ่มต้นตั้งแต่ **250 มม. ถึง 1,200 มม.** (9.84 – 47.24 นิ้ว) โดยจะเพิ่มขึ้นทีละ **50 มม.**  \n  *(ขนาดมาตรฐาน ได้แก่: 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1,000, 1,050, 1,100, 1,150 และ 1,200 มม.)*\n* **ขนาดนอกมาตรฐาน:** เล่มระบุว่าจะเพิ่มขึ้นทีละ **16.6 มม.** (ซึ่งเป็นคนละค่ากับค่าเพิ่มทีละของขนาดมาตรฐาน)\n\n**ข้อสังเกตเพิ่มเติม:**\n* ในแคตตาล็อกระบุความกว้างต่ำสุดของรุ่นนี้ไว้ที่ 167 มม. (6.57 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งผลิตสำหรับช่วง 167–250 มม. หากต้องการขนาดในช่วงนี้ จำเป็นต้องตรวจสอบและยืนยันกับพนักงานฝ่ายขายก่อนครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-M08",
+   "turn": "1",
+   "category": "width_min",
+   "query": "EC254 TR-TAB กว้างเท่าไหร่",
+   "metrics": [
+    "width_min"
+   ],
+   "seconds": 4.3,
+   "llm_usage": {
+    "prompt_token_count": 3623,
+    "candidates_token_count": 325,
+    "total_token_count": 3948
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "ข้อมูลความกว้างของสายพาน Modutech รุ่น **MD254 RR** มีรายละเอียดดังนี้ครับ\n\n* **ความกว้างมาตรฐาน:** เริ่มต้นตั้งแต่ **150 ถึง 1,150 มม.** (เพิ่มขึ้นทีละช่วงละ **50 มม.**) \n  * ขนาดมาตรฐานได้แก่: 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1,000, 1,050, 1,100 และ 1,150 มม.\n* **ขนาดนอกมาตรฐาน (Non-standard widths):** ในแคตตาล็อกระบุไว้ชัดเจนว่าขนาดนอกมาตรฐานจะเพิ่มทีละ **16.6 มม.** (คนละค่ากับค่าเพิ่มทีละมาตรฐาน)\n* **หมายเหตุช่วงความกว้าง 50–150 มม.:** ในเล่มแคตตาล็อกระบุความกว้างต่ำสุดของรุ่นนี้ไว้ที่ 50 มม. แต่ไม่ได้ระบุเงื่อนไขการสั่งผลิตเฉพาะช่วง 50–150 มม. ไว้ หากต้องการใช้งานความกว้างในช่วงนี้ จะต้องสอบถามและยืนยันกับทางพนักงานฝ่ายขายก่อนครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-F01",
+   "turn": "1",
+   "category": "width_pinned",
+   "query": "MD254 RR กว้างเท่าไหร่",
+   "metrics": [
+    "width_pinned"
+   ],
+   "seconds": 3.6,
+   "llm_usage": {
+    "prompt_token_count": 3768,
+    "candidates_token_count": 329,
+    "total_token_count": 4097
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **SM127 C** มีความกว้างมาตรฐานที่สั่งผลิตได้ตั้งแต่ **152.4 มม. ถึง 1,600.2 มม.** โดยเพิ่มขึ้นทีละ **76.2 มม.** ครับ\n\nความกว้างมาตรฐานที่มีในแคตตาล็อก ได้แก่:\n- 152.4 มม. (6.0 นิ้ว)\n- 228.6 มม. (9.0 นิ้ว)\n- 304.8 มม. (12.0 นิ้ว)\n- 381.0 มม. (15.0 นิ้ว)\n- 457.2 มม. (18.0 นิ้ว)\n- 533.4 มม. (21.0 นิ้ว)\n- 609.6 มม. (24.0 นิ้ว)\n- 685.8 มม. (27.0 นิ้ว)\n- 762.0 มม. (30.0 นิ้ว)\n- 838.2 มม. (33.0 นิ้ว)\n- 914.4 มม. (36.0 นิ้ว)\n- 990.6 มม. (39.0 นิ้ว)\n- 1,066.8 มม. (42.0 นิ้ว)\n- 1,143.0 มม. (45.0 นิ้ว)\n- 1,219.2 มม. (48.0 นิ้ว)\n- 1,295.4 มม. (51.0 นิ้ว)\n- 1,371.6 มม. (54.0 นิ้ว)\n- 1,447.8 มม. (57.0 นิ้ว)\n- 1,524.0 มม. (60.0 นิ้ว)\n- 1,600.2 มม. (63.0 นิ้ว)\n\n*(หมายเหตุ: ค่านิ้วคำนวณจากหน่วยมิลลิเมตรตามอัตราส่วน 1 นิ้ว = 25.4 มม.)* \n\nหากต้องการความกว้างนอกเหนือจากรายการมาตรฐานนี้ สามารถสอบถามเพิ่มเติมกับทางฝ่ายขายได้ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-F02",
+   "turn": "1",
+   "category": "width_pinned",
+   "query": "SM127 C กว้างเท่าไหร่",
+   "metrics": [
+    "width_pinned"
+   ],
+   "seconds": 5.1,
+   "llm_usage": {
+    "prompt_token_count": 3718,
+    "candidates_token_count": 527,
+    "total_token_count": 4245
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **XP254 C** มีความกว้างมาตรฐานที่สามารถสั่งได้ตั้งแต่ **76.2 ถึง 1600.2 มม.** โดยเพิ่มขึ้นทีละ **76.2 มม.** ครับ\n\n**ตัวอย่างขนาดความกว้างมาตรฐาน (มม. / นิ้ว):**\n* 76.2 มม. (3.0 นิ้ว)\n* 152.4 มม. (6.0 นิ้ว)\n* 228.6 มม. (9.0 นิ้ว)\n* 304.8 มม. (12.0 นิ้ว)\n* 381.0 มม. (15.0 นิ้ว)\n* 457.2 มม. (18.0 นิ้ว)\n* 533.4 มม. (21.0 นิ้ว)\n* 609.6 มม. (24.0 นิ้ว)\n* 685.8 มม. (27.0 นิ้ว)\n* 762.0 มม. (30.0 นิ้ว)\n* 838.2 มม. (33.0 นิ้ว)\n* 914.4 มม. (36.0 นิ้ว)\n* 990.6 มม. (39.0 นิ้ว)\n* 1066.8 มม. (42.0 นิ้ว)\n* 1143.0 มม. (45.0 นิ้ว)\n* 1219.2 มม. (48.0 นิ้ว)\n* 1371.6 มม. (54.0 นิ้ว)\n* 1447.8 มม. (57.0 นิ้ว)\n* 1524.0 มม. (60.0 นิ้ว)\n* 1600.2 มม. (63.0 นิ้ว)\n\n*(หมายเหตุ: ค่านิ้วคำนวณแปลงจากหน่วยมิลลิเมตร 1 นิ้ว = 25.4 มม. ครับ)* \n\nหากต้องการความกว้างนอกเหนือจากรายการมาตรฐานนี้ สามารถสอบถามเพิ่มเติมกับทางฝ่ายขายได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-F03",
+   "turn": "1",
+   "category": "width_pinned",
+   "query": "XP254 C กว้างเท่าไหร่",
+   "metrics": [
+    "width_pinned"
+   ],
+   "seconds": 5.0,
+   "llm_usage": {
+    "prompt_token_count": 3669,
+    "candidates_token_count": 514,
+    "total_token_count": 4183
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MD254 GT** มีความกว้างมาตรฐานที่สั่งผลิตได้ดังนี้ครับ:\n\n* **ช่วงความกว้าง:** สั่งได้ตั้งแต่ **50 ถึง 1,050 มม.** (เพิ่มขึ้นทีละ 50 มม.)\n* **ความกว้างมาตรฐาน (มม.):** 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1,000 และ 1,050 มม.\n\n*(หากต้องการความกว้างนอกเหนือจากนี้ สามารถสอบถามกับทางพนักงานฝ่ายขายได้ครับ)*\n\nหากต้องการข้อมูลสเปกด้านอื่นเพิ่มเติม เช่น การรับแรง หรืออุณหภูมิการใช้งาน สอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-F04",
+   "turn": "1",
+   "category": "width_pinned",
+   "query": "MD254 GT กว้างเท่าไหร่",
+   "metrics": [
+    "width_pinned"
+   ],
+   "seconds": 3.4,
+   "llm_usage": {
+    "prompt_token_count": 3624,
+    "candidates_token_count": 234,
+    "total_token_count": 3858
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **HC127 C** มีขนาดความกว้างตามที่ระบุในแคตตาล็อก ดังนี้ครับ\n\n* **ขนาดความกว้างมาตรฐานในตาราง:**  \n  มีตั้งแต่ **254.0 มม. ถึง 1270.0 มม.** (10 ถึง 50 นิ้ว) ได้แก่  \n  254.0, 304.8, 355.6, 406.4, 457.2, 508.0, 558.8, 609.6, 660.4, 711.2, 762.0, 812.8, 863.6, 914.4, 965.2, 1016.0, 1066.8, 1117.6, 1168.4, 1219.2 และ 1270.0 มม.\n\n**หมายเหตุเพิ่มเติมเกี่ยวกับความกว้าง:**\n* แคตตาล็อกยังไม่สามารถยืนยันค่าเพิ่มทีละมาตรฐาน (standard increment) ของรุ่นนี้ได้ เนื่องจากหมายเหตุในเล่มและตารางระบุไม่ตรงกัน จึงอ้างอิงได้เฉพาะรายการความกว้างข้างต้นเท่านั้น\n* ในเล่มระบุความกว้างต่ำสุดไว้ที่ 101.6 มม. (4 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งผลิตสำหรับช่วง 101.6–254.0 มม. ไว้ หากต้องการใช้งานความกว้างช่วงดังกล่าว ต้องสอบถามและยืนยันกับพนักงานฝ่ายขายก่อนครับ\n* สำหรับขนาดนอกมาตรฐาน เล่มระบุว่าจะเพิ่มขึ้นทีละ 50.8 มม. (ซึ่งเป็นคนละค่ากับค่าเพิ่มทีละมาตรฐาน) หากต้องการขนาดนอกเหนือจากตาราง ต้องสอบถามฝ่ายขายเช่นกันครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-F05",
+   "turn": "1",
+   "category": "width_pinned",
+   "query": "HC127 C กว้างเท่าไหร่",
+   "metrics": [
+    "width_pinned"
+   ],
+   "seconds": 4.6,
+   "llm_usage": {
+    "prompt_token_count": 3717,
+    "candidates_token_count": 430,
+    "total_token_count": 4147
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **HC127 C** มีขนาดความกว้างมาตรฐานตามตารางในแคตตาล็อกดังนี้ครับ:\n\n* **ความกว้างมาตรฐาน (นิ้ว):** 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48 และ 50 นิ้ว (เทียบเท่า 254.0 ถึง 1270.0 มม.)\n\n**หมายเหตุเพิ่มเติม:**\n* ในแคตตาล็อกยังไม่สามารถยืนยันค่าการเพิ่มทีละมาตรฐานของรุ่นนี้ได้ เนื่องจากหมายเหตุในเล่มและตารางความกว้างระบุไม่ตรงกัน จึงต้องอ้างอิงเฉพาะรายการขนาดข้างต้นครับ\n* แคตตาล็อกระบุความกว้างต่ำสุดไว้ที่ 101.6 มม. (4 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งสำหรับช่วง 101.6–254 มม. หากต้องการขนาดในช่วงนี้จะต้องสอบถามทางฝ่ายขายเพื่อยืนยันก่อนครับ\n* สำหรับขนาดนอกมาตรฐาน เล่มระบุว่าจะเพิ่มขึ้นทีละ 50.8 มม. (ไม่ใช่ค่าเพิ่มทีละมาตรฐาน) ซึ่งหากสนใจขนาดนอกเหนือจากตารางจะต้องสอบถามฝ่ายขายเช่นกันครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-I01",
+   "turn": "1",
+   "category": "width_inch",
+   "query": "HC127 C กว้างกี่นิ้ว",
+   "metrics": [
+    "width_inch"
+   ],
+   "seconds": 3.7,
+   "llm_usage": {
+    "prompt_token_count": 3718,
+    "candidates_token_count": 326,
+    "total_token_count": 4044
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MP80 C** มีขนาดความกว้างมาตรฐานในหน่วยนิ้วดังนี้ครับ:\n\n* **ความกว้างมาตรฐาน:** เริ่มต้นที่ **4.0 นิ้ว** ถึง **84.0 นิ้ว** โดยเพิ่มขึ้นทีละ **4.0 นิ้ว** \n  *(ขนาดความกว้างทั้งหมด: 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 28.0, 32.0, 36.0, 40.0, 44.0, 48.0, 52.0, 56.0, 60.0, 64.0, 68.0, 72.0, 76.0, 80.0 และ 84.0 นิ้ว)*\n* เทียบเท่ากับขนาดมิลลิเมตรคือ **101.6 ถึง 2,133.6 มม.** (เพิ่มขึ้นทีละ 101.6 มม.)\n\nหากต้องการขนาดความกว้างอื่นนอกเหนือจากรายการมาตรฐานนี้ สามารถสอบถามเพิ่มเติมกับทางฝ่ายขายได้ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-I02",
+   "turn": "1",
+   "category": "width_inch",
+   "query": "MP80 C กว้างกี่นิ้ว",
+   "metrics": [
+    "width_inch"
+   ],
+   "seconds": 4.7,
+   "llm_usage": {
+    "prompt_token_count": 3917,
+    "candidates_token_count": 270,
+    "total_token_count": 4187
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **EC254 R** มีขนาดความกว้างตามมาตรฐานดังนี้ครับ\n\n* **ขนาดความกว้างมาตรฐาน:** เริ่มต้นตั้งแต่ **7.87 นิ้ว ถึง 47.24 นิ้ว** (200 ถึง 1,200 มม.) โดยขนาดมาตรฐานจะเพิ่มขึ้นทีละ 50 มม. (ประมาณ 1.97 นิ้ว)\n  * ตัวอย่างขนาดมาตรฐาน (แปลงจาก มม.): 7.87, 9.84, 11.81, 13.78, 15.75, 17.72, 19.69, 21.65, 23.62, 25.59, 27.56, 29.53, 31.50, 33.46, 35.43, 37.40, 39.37, 41.34, 43.31, 45.28 และ 47.24 นิ้ว\n\n**หมายเหตุเพิ่มเติม:**\n* ในแคตตาล็อกระบุความกว้างต่ำสุดไว้ที่ 100 มม. (3.94 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งสำหรับช่วง 100–200 มม. ไว้ หากต้องการใช้งานในช่วงความกว้างนี้ จะต้องสอบถามและยืนยันกับฝ่ายขายก่อนครับ\n* สำหรับขนาดนอกเหนือจากมาตรฐาน แคตตาล็อกระบุว่าจะเพิ่มขึ้นทีละ 16.6 มม. (ประมาณ 0.65 นิ้ว) ซึ่งเป็นคนละอัตรากับขนาดมาตรฐานครับ หากสนใจขนาดนอกมาตรฐานสามารถสอบถามรายละเอียดกับทางฝ่ายขายเพิ่มเติมได้ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-I03",
+   "turn": "1",
+   "category": "width_inch",
+   "query": "EC254 R กว้างกี่นิ้ว",
+   "metrics": [
+    "width_inch"
+   ],
+   "seconds": 4.4,
+   "llm_usage": {
+    "prompt_token_count": 3933,
+    "candidates_token_count": 394,
+    "total_token_count": 4327
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **HC127 C** ความกว้าง 150 มม. ไม่อยู่ในรายการความกว้างมาตรฐานในตารางครับ (ความกว้างมาตรฐานตามตารางเริ่มต้นที่ 254.0 มม. ถึง 1270.0 มม.)\n\nในเล่มแคตตาล็อกระบุความกว้างต่ำสุดของรุ่นนี้ไว้ที่ 101.6 มม. (4 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งสำหรับช่วง 101.6–254 มม. เอาไว้ จึงยังไม่สามารถยืนยันหรือรับปากได้ว่าผลิตขนาด 150 มม. ได้หรือไม่ แนะนำให้สอบถามและยืนยันความเป็นไปได้ในการสั่งผลิตกับทางพนักงานฝ่ายขายโดยตรงครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-X01",
+   "turn": "1",
+   "category": "width_special",
+   "query": "HC127 C ขอกว้าง 150 มม. ได้ไหม",
+   "metrics": [
+    "width_special"
+   ],
+   "seconds": 3.5,
+   "llm_usage": {
+    "prompt_token_count": 3724,
+    "candidates_token_count": 175,
+    "total_token_count": 3899
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **EC254 C** ความกว้างแคบสุดที่ยืนยันได้ตามมาตรฐานคือ **152.4 มม.** ครับ\n\nแม้ในตารางแคตตาล็อกจะมีระบุขนาด 76.2 มม. ไว้ แต่เนื่องจากขัดกับค่าความกว้างขั้นต่ำที่ประกาศไว้ จึง**ยังไม่สามารถรับปากหรือยืนยันขนาด 76.2 มม. ได้ทันที**ครับ หากต้องการใช้งานที่ความกว้าง 76.2 มม. จำเป็นต้องตรวจสอบและยืนยันกับพนักงานฝ่ายขายก่อนครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-X02",
+   "turn": "1",
+   "category": "width_special",
+   "query": "EC254 C กว้าง 76.2 มม. ได้ไหม",
+   "metrics": [
+    "width_special"
+   ],
+   "seconds": 2.9,
+   "llm_usage": {
+    "prompt_token_count": 4334,
+    "candidates_token_count": 131,
+    "total_token_count": 4465
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **XP254 EVO CR** มีขนาดความกว้างตามมาตรฐานในแคตตาล็อกดังนี้ครับ\n\n* **ความกว้างแคบสุดที่ยืนยันได้:** 76.2 มม. (3.0 นิ้ว)\n* **ความกว้างสูงสุด:** 1,524.0 มม. (60.0 นิ้ว)\n\n**รายการความกว้างมาตรฐานที่มีระบุไว้ (มม.):**\n76.2, 152.4, 228.6, 304.8, 381.0, 457.2, 533.4, 609.6, 685.8, 762.0, 838.2, 914.4, 990.6, 1,066.8, 1,143.0, 1,219.2, 1,295.4, 1,371.6, 1,447.8 และ 1,524.0 มม.\n\n**หมายเหตุเพิ่มเติม:**\n* ในแคตตาล็อกมีระบุขนาด 50 มม. ไว้ด้วย แต่ขัดแย้งกับค่าขั้นต่ำที่ประกาศไว้ หากต้องการใช้งานที่ความกว้าง 50 มม. หรือขนาดที่แคบกว่า 76.2 มม. จำเป็นต้องยืนยันกับทางพนักงานฝ่ายขายก่อนครับ\n* รุ่นนี้ยังไม่สามารถยืนยันระยะการเพิ่มความกว้างทีละมาตรฐาน (increment) ได้ เนื่องจากหมายเหตุและตารางในเล่มระบุไม่ตรงกัน จึงอ้างอิงได้เฉพาะขนาดตามรายการข้างต้นครับ หากต้องการความกว้างนอกเหนือจากนี้ต้องสอบถามฝ่ายขายครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "WD-X03",
+   "turn": "1",
+   "category": "width_special",
+   "query": "XP254 EVO CR กว้างเท่าไหร่",
+   "metrics": [
+    "width_special"
+   ],
+   "seconds": 4.9,
+   "llm_usage": {
+    "prompt_token_count": 3629,
+    "candidates_token_count": 401,
+    "total_token_count": 4030
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-001",
+   "turn": "1",
+   "category": "temp",
+   "query": "MD254 RR ทนร้อนกี่องศา",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-002",
+   "turn": "1",
+   "category": "temp",
+   "query": "MD254 RR ทนร้อนกี่องศา",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน **Modutech รุ่น MD254 RR** ในสภาวะแห้ง (Dry) อุณหภูมิสูงสุดที่ทนได้จะขึ้นอยู่กับวัสดุสายพานและหมุด (Pin) โดยแยกตามเกรดได้ดังนี้ครับ\n\n* **เกรด PP (สายพาน PP / หมุด PP):** ทนได้สูงสุด **105 °C** (ช่วงอุณหภูมิ 5 ถึง 105 °C)\n* **เกรด POM (พอลิอะซีทัล):** ทนได้สูงสุด **93 °C**\n  * หมุด PA: ช่วง -35 ถึง 93 °C\n  * หมุด POM: ช่วง -40 ถึง 93 °C\n  * หมุด PP: ช่วง 5 ถึง 93 °C\n* **เกรด PPH (สายพาน PPH / หมุด PPH):** ในตารางระบุไว้ที่ **93 °C** (ช่วง 5 ถึง 93 °C) \n  * *หมายเหตุ:* ค่าสูงสุด 93 °C ของเกรด PPH ยังไม่ยืนยัน เนื่องจากในแคตตาล็อกหน้า 165 พิมพ์ตัวเลข +5/+93 °C คู่กับ +40/+230 °F (ซึ่ง 230 °F เทียบเท่ากับ 110 °C ไม่ใช่ 93 °C) จึงแนะนำให้ยึดค่าที่เข้มงวดกว่าคือ 93 °C ไว้ก่อน หากงานจริงต้องใช้อุณหภูมิเกิน 93 °C แนะนำให้ยืนยันกับพนักงานฝ่ายขายก่อนสั่งซื้อและใช้งานจริงครับ\n\n*(หมายเหตุ: ค่าข้างต้นเป็นสเปกสำหรับสภาวะแห้งเท่านั้น หากไลน์มีน้ำหรือเป็นสภาวะเปียก สามารถสอบถามเพิ่มเติมได้ครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-002",
+   "turn": "2",
+   "category": "temp",
+   "query": "ไลน์แห้ง",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 4.1,
+   "llm_usage": {
+    "prompt_token_count": 4654,
+    "candidates_token_count": 402,
+    "total_token_count": 5056
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-003",
+   "turn": "1",
+   "category": "temp",
+   "query": "MD254 RR ทนร้อนกี่องศา",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **MD254 RR** ใน**สภาวะแห้ง (Dry)** อุณหภูมิสูงสุดที่ทนได้จะขึ้นอยู่กับวัสดุของสายพานและสลัก (Pin) โดยมีรายละเอียดแต่ละเกรดดังนี้ครับ\n\n* **เกรด PP (สายพาน PP / สลัก PP):** ทนได้สูงสุด **105 °C** (ช่วงการใช้งาน 5 ถึง 105 °C)\n* **เกรด POM (สายพาน POM):** ทนได้สูงสุด **93 °C**\n  * สลัก PA: -35 ถึง 93 °C\n  * สลัก POM: -40 ถึง 93 °C\n  * สลัก PP: 5 ถึง 93 °C\n* **เกรด PPH (สายพาน PPH / สลัก PPH):** ในตารางระบุไว้ที่ **93 °C** (ช่วงการใช้งาน 5 ถึง 93 °C) \n  * *หมายเหตุ:* ค่าสูงสุด 93 °C ของเกรด PPH นี้**ยังไม่ยืนยัน** เนื่องจากแคตตาล็อกระบุ +5/+93 °C คู่กับ +40/+230 °F (ซึ่ง 230 °F เทียบเท่ากับ 110 °C ไม่ใช่ 93 °C และ 93 °C ไปตรงกับค่าของเกรด POM) ขณะที่รุ่นอื่นที่เป็น PPH ระบุไว้ 110–118 °C ในเบื้องต้นจึงแนะนำให้ยึดค่าที่เข้มงวดกว่าคือ 93 °C ไว้ก่อน หากหน้างานจริงต้องใช้งานเกิน 93 °C แนะนำให้ยืนยันกับพนักงานฝ่ายขายก่อนสั่งซื้อครับ\n\nหากไลน์ผลิตของคุณลูกค้ามีจุดที่เป็นสภาวะเปียกด้วย สามารถสอบถามเพิ่มเติมได้นะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-003",
+   "turn": "2",
+   "category": "temp",
+   "query": "ไลน์แห้ง",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 4.0,
+   "llm_usage": {
+    "prompt_token_count": 4654,
+    "candidates_token_count": 417,
+    "total_token_count": 5071
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-004",
+   "turn": "1",
+   "category": "temp",
+   "query": "MD254 RR ทนร้อนกี่องศา",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **MD254 RR** ในสภาวะแห้ง (Dry) อุณหภูมิสูงสุดที่ทนได้จะขึ้นอยู่กับเกรดวัสดุของสายพานและพิน (Pin) โดยแยกตามแต่ละเกรดดังนี้ครับ\n\n* **เกรด PP (สายพาน PP / พิน PP):** ทนได้สูงสุด **105 °C** (ช่วงการใช้งาน 5 ถึง 105 °C)\n* **เกรด POM (สายพาน POM / พิน PA, POM หรือ PP):** ทนได้สูงสุด **93 °C** \n  * POM / PA: ช่วงการใช้งาน -35 ถึง 93 °C\n  * POM / POM: ช่วงการใช้งาน -40 ถึง 93 °C\n  * POM / PP: ช่วงการใช้งาน 5 ถึง 93 °C\n* **เกรด PPH (สายพาน PPH / พิน PPH):** ในตารางระบุไว้สูงสุด **93 °C** (ช่วงการใช้งาน 5 ถึง 93 °C) \n  * *หมายเหตุสำคัญ:* ค่าสูงสุด 93 °C ของเกรด PPH นี้ยังไม่ยืนยัน เนื่องจากในแคตตาล็อกหน้า 165 พิมพ์ค่า +5/+93 °C คู่กับ +40/+230 °F (ซึ่ง 230 °F คิดเป็น 110 °C ไม่ใช่ 93 °C) และ 93 °C ไปตรงกับค่าของเกรด POM ในแถวด้านบน ในขณะที่รุ่นอื่นเกรด PPH ระบุไว้ที่ 110 °C ถึง 118 °C เบื้องต้นแนะนำให้ยึดค่าที่ปลอดภัยและเข้มงวดกว่าคือ 93 °C ไว้ก่อนครับ หากงานจริงต้องใช้งานอุณหภูมิเกิน 93 °C แนะนำให้ยืนยันกับทางพนักงานฝ่ายขายก่อนสั่งซื้อครับ\n\n*(หมายเหตุ: ค่าข้างต้นเป็นข้อมูลสำหรับสภาวะแห้งเท่านั้น หากหน้างานจริงมีสภาวะเปียกหรือต้องการข้อมูลสภาวะเปียกเพิ่มเติม สามารถสอบถามได้เลยครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-004",
+   "turn": "2",
+   "category": "temp",
+   "query": "ไลน์แห้ง",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 4.6,
+   "llm_usage": {
+    "prompt_token_count": 4654,
+    "candidates_token_count": 475,
+    "total_token_count": 5129
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-005",
+   "turn": "1",
+   "category": "temp",
+   "query": "MP80 C ทนร้อนกี่องศา",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน **Modutech รุ่น MP80 C** ใน**สภาวะเปียก (Wet)** อุณหภูมิสูงสุดที่ทนได้จะขึ้นอยู่กับวัสดุของพิน (Pin) โดยมีรายละเอียดดังนี้ครับ:\n\n* **วัสดุสายพาน POM / พิน POM:** ทนอุณหภูมิได้สูงสุด **60 °C** (ช่วงอุณหภูมิใช้งาน -40 °C ถึง 60 °C)\n* **วัสดุสายพาน POM / พิน PA:** ทนอุณหภูมิได้สูงสุด **60 °C** (ช่วงอุณหภูมิตามข้อมูลที่มีคือ -35 °C ถึง 60 °C)\n  * *หมายเหตุ:* แคตตาล็อกไม่มีค่าสภาวะเปียกของวัสดุพิน PA โดยตรง (มีเฉพาะค่าแห้ง) ค่าสูงสุด 60 °C ในสภาวะเปียกจึงอ้างอิงมาจากตัวสายพาน POM แนะนำให้ยืนยันกับพนักงานฝ่ายขายก่อนนำไปใช้งานจริงครับ\n\nหากไลน์การผลิตมีช่วงที่เป็นสภาวะแห้ง หรือต้องการข้อมูลเพิ่มเติม สามารถสอบถามได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-005",
+   "turn": "2",
+   "category": "temp",
+   "query": "ไลน์เปียก",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 3.9,
+   "llm_usage": {
+    "prompt_token_count": 4257,
+    "candidates_token_count": 255,
+    "total_token_count": 4512
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-006",
+   "turn": "1",
+   "category": "temp",
+   "query": "MP80 C ทนร้อนกี่องศา",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน **Modutech รุ่น MP80 C** ใน**สภาวะแห้ง (Dry)** อุณหภูมิสูงสุดที่ทนได้จะขึ้นอยู่กับวัสดุของสายพานและสลัก (Pin) ดังนี้ครับ:\n\n* **วัสดุสายพาน POM / สลัก PA:** ทนอุณหภูมิได้สูงสุด **93 °C** (ช่วงการใช้งาน -35 °C ถึง 93 °C)\n* **วัสดุสายพาน POM / สลัก POM:** ทนอุณหภูมิได้สูงสุด **93 °C** (ช่วงการใช้งาน -40 °C ถึง 93 °C)\n\n*(หมายเหตุ: ค่านี้สำหรับสภาวะแห้งเท่านั้น หากเป็นไลน์สภาวะเปียกหรือมีการใช้น้ำ/สารเคมี สอบถามเพิ่มเติมได้ครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-006",
+   "turn": "2",
+   "category": "temp",
+   "query": "ไลน์แห้ง",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 3.6,
+   "llm_usage": {
+    "prompt_token_count": 4147,
+    "candidates_token_count": 185,
+    "total_token_count": 4332
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **SM254 FG50%** เกรดวัสดุ **PA6** (พิน PA6) แคตตาล็อกระบุว่า **ไม่แนะนำสำหรับสภาวะเปียก (Not Recommended)** ครับ\n\nเนื่องจากคุณสมบัติของวัสดุ Polyamide (PA6) จะดูดซับความชื้น ซึ่งอาจส่งผลต่อคุณสมบัติทางกายภาพของสายพาน หากหน้างานเป็นสถานีงานที่เปียกหรือมีการฉีดล้างด้วยน้ำเป็นหลัก แนะนำให้ตรวจสอบและปรึกษากับพนักงานฝ่ายขายเพื่อพิจารณาความเหมาะสมหรือเลือกใช้วัสดุอื่นที่ตอบโจทย์การใช้งานครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-007",
+   "turn": "1",
+   "category": "temp",
+   "query": "SM254 FG50% เกรด PA6 ใช้ไลน์เปียกได้ไหม",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 2.7,
+   "llm_usage": {
+    "prompt_token_count": 3362,
+    "candidates_token_count": 152,
+    "total_token_count": 3514
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน **Modutech รุ่น HC508 C-MTW** ใน**สภาวะเปียก (Wet)** ช่วงอุณหภูมิที่ทนได้จะขึ้นอยู่กับวัสดุสายพานและวัสดุพิน (Pin) โดยมีรายละเอียดแต่ละเกรดดังนี้ครับ\n\n* **POM (พิน POM):** -40 ถึง 60 °C (-40 ถึง 140 °F)\n* **POM (พิน PA):** -35 ถึง 60 °C (-31 ถึง 140 °F) *(หมายเหตุ: แคตตาล็อกไม่มีค่าสภาวะเปียกของพิน PA มีเฉพาะค่าแห้ง -35 ถึง 120 °C ค่าสูงสุด 60 °C มาจากวัสดุ POM ส่วนค่าต่ำสุด -35 °C มาจากค่าแห้งของพิน PA ต้องยืนยันกับฝ่ายขายก่อนใช้งานจริง)*\n* **PP (พิน PP):** 5 ถึง 105 °C (41 ถึง 221 °F)\n* **PP (พิน POM):** 5 ถึง 60 °C (41 ถึง 140 °F)\n* **PE (พิน POM):** -40 ถึง 60 °C (-40 ถึง 140 °F)\n* **ICR (พิน PBT):** -20 ถึง 58 °C (-4 ถึง 136.4 °F) *(หมายเหตุ: แคตตาล็อกไม่มีค่าสภาวะเปียกของพิน PBT ช่วงอุณหภูมินี้อ้างอิงจากตารางสเปกรุ่น ต้องยืนยันกับฝ่ายขายก่อนใช้งานจริง)*\n* **CR (พิน PBT) และ IMPR (พิน PBT):** ในสภาวะเปียกต้องยืนยันข้อมูลกับฝ่ายขายก่อนใช้งานครับ\n\n*(ทั้งนี้ หากไลน์การผลิตเป็นสภาวะแห้ง สามารถสอบถามข้อมูลอุณหภูมิเพิ่มเติมได้ครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-008",
+   "turn": "1",
+   "category": "temp",
+   "query": "HC508 C-MTW ไลน์เปียกทนได้กี่องศา",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 5.0,
+   "llm_usage": {
+    "prompt_token_count": 4794,
+    "candidates_token_count": 441,
+    "total_token_count": 5235
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน **Modutech EC254 C** ใน**สภาวะแห้ง (Dry)** อุณหภูมิต่ำสุดที่ทนได้จะขึ้นอยู่กับวัสดุของสายพานและหมุด (Pin) ดังนี้ครับ:\n\n* **สายพาน POM / หมุด POM:** ทนความเย็นได้ต่ำสุด **-40.0 °C** (-40.0 °F)\n* **สายพาน PE / หมุด POM:** ทนความเย็นได้ต่ำสุด **-40.0 °C** (-40.0 °F)\n* **สายพาน POM / หมุด PA:** ทนความเย็นได้ต่ำสุด **-35.0 °C** (-31.0 °F)\n* **สายพาน POM / หมุด PP:** ทนความเย็นได้ต่ำสุด **5.0 °C** (41.0 °F)\n* **สายพาน PP / หมุด PP:** ทนความเย็นได้ต่ำสุด **5.0 °C** (41.0 °F)\n* **สายพาน PP / หมุด POM:** ทนความเย็นได้ต่ำสุด **5.0 °C** (41.0 °F)\n\n*(หมายเหตุ: ค่าข้างต้นเป็นสเปกสำหรับการใช้งานในสภาวะแห้ง หากหน้างานมีสภาวะเปียกหรือต้องการข้อมูลสภาวะอื่นเพิ่มเติม สามารถสอบถามได้เลยครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-009",
+   "turn": "1",
+   "category": "temp",
+   "query": "EC254 C ไลน์แห้ง ทนเย็นกี่องศา",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 4.4,
+   "llm_usage": {
+    "prompt_token_count": 4822,
+    "candidates_token_count": 313,
+    "total_token_count": 5135
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน **Modutech EC254 C** ใน**สภาวะแห้ง (Dry)** อุณหภูมิต่ำสุดที่ทนได้จะขึ้นอยู่กับวัสดุของสายพานและหมุดร้อย (Pin) ดังนี้ครับ:\n\n* **สายพาน POM / หมุด POM:** ทนความเย็นได้ต่ำสุด **-40 °C** (-40 °F)\n* **สายพาน PE / หมุด POM:** ทนความเย็นได้ต่ำสุด **-40 °C** (-40 °F)\n* **สายพาน POM / หมุด PA:** ทนความเย็นได้ต่ำสุด **-35 °C** (-31 °F)\n* **สายพาน PP / หมุด PP:** ทนความเย็นได้ต่ำสุด **5 °C** (41 °F)\n* **สายพาน PP / หมุด POM:** ทนความเย็นได้ต่ำสุด **5 °C** (41 °F)\n* **สายพาน POM / หมุด PP:** ทนความเย็นได้ต่ำสุด **5 °C** (41 °F)\n\n*หมายเหตุ: ค่าความเย็นต่ำสุดข้างต้นเป็นค่าในสภาวะแห้งตามที่ระบุไว้ หากไลน์การผลิตเป็นสภาวะเปียกหรือต้องการข้อมูลสภาวะอื่นเพิ่มเติม สามารถสอบถามได้เลยนะครับ*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-010",
+   "turn": "1",
+   "category": "temp",
+   "query": "EC254 C ไลน์แห้ง ทนเย็นกี่องศา",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 6.7,
+   "llm_usage": {
+    "prompt_token_count": 4822,
+    "candidates_token_count": 297,
+    "total_token_count": 5119
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-011",
+   "turn": "1",
+   "category": "temp",
+   "query": "HP508 RR ทนร้อนกี่องศา",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน **Modutech HP508 RR** ใน**สภาวะแห้ง** อุณหภูมิสูงสุดที่ทนได้จะขึ้นอยู่กับเกรดวัสดุครับ:\n\n* **เกรด PPH (โพลิโพรพิลีนทนความร้อน):** ทนอุณหภูมิได้สูงสุด **115 °C** (ช่วงการใช้งาน 5 °C ถึง 115 °C)\n  *(หมายเหตุ: ในตารางสเปกรายรุ่นระบุสูงสุด 118 °C แต่คุณสมบัติวัสดุในแคตตาล็อกระบุ 115 °C จึงใช้ค่า 115 °C ไว้ก่อน แนะนำยืนยันกับพนักงานฝ่ายขายอีกครั้งครับ)*\n* **เกรด POM (พอลิอะซีทัล):** ทนอุณหภูมิได้สูงสุด **93 °C** (ช่วงการใช้งาน -40 °C ถึง 93 °C)\n\nทั้งนี้ หากหน้างานหรือกระบวนการผลิตเป็นสภาวะเปียก (เช่น การต้ม การล้าง หรือมีไอน้ำ) ค่าอุณหภูมิจะแตกต่างออกไป สามารถสอบถามข้อมูลเพิ่มเติมได้ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-011",
+   "turn": "2",
+   "category": "temp",
+   "query": "ไลน์แห้ง",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 3.0,
+   "llm_usage": {
+    "prompt_token_count": 3733,
+    "candidates_token_count": 258,
+    "total_token_count": 3991
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-012",
+   "turn": "1",
+   "category": "temp",
+   "query": "HC508 PR22 ทนร้อนกี่องศา",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **HC508 PR22** ใน**สภาวะแห้ง (Dry)** อุณหภูมิสูงสุดที่ทนได้จะขึ้นอยู่กับวัสดุของสายพานและสลัก (Pin) โดยแต่ละเกรดทนความร้อนได้ดังนี้ครับ:\n\n* **วัสดุ PPH (สลัก PPH):** ทนได้สูงสุด **110 °C** (ช่วงใช้งาน 5 ถึง 110 °C)\n* **วัสดุ PP (สลัก PP):** ทนได้สูงสุด **105 °C** (ช่วงใช้งาน 5 ถึง 105 °C)\n* **วัสดุ PP (สลัก POM):** ทนได้สูงสุด **93 °C** (ช่วงใช้งาน 5 ถึง 93 °C)\n* **วัสดุ POM (สลัก POM หรือ PA):** ทนได้สูงสุด **93 °C** (ช่วงใช้งาน -40 ถึง 93 °C สำหรับสลัก POM และ -35 ถึง 93 °C สำหรับสลัก PA)\n* **วัสดุ POM (สลัก PE):** ทนได้สูงสุด **65 °C** (ช่วงใช้งาน -40 ถึง 65 °C)\n* **วัสดุ PE (สลัก PE):** ทนได้สูงสุด **65 °C** (ช่วงใช้งาน -70 ถึง 65 °C)\n\n*(หมายเหตุ: ค่าความร้อนข้างต้นเป็นค่าในสภาวะแห้งเท่านั้น หากไลน์การผลิตมีสภาวะเปียกหรือมีการใช้น้ำ สามารถสอบถามเพิ่มเติมได้ครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-012",
+   "turn": "2",
+   "category": "temp",
+   "query": "ไลน์แห้ง",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 3.7,
+   "llm_usage": {
+    "prompt_token_count": 4548,
+    "candidates_token_count": 357,
+    "total_token_count": 4905
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **EC127 GT** ข้อมูลอุณหภูมิการใช้งานตามแคตตาล็อกมีดังนี้ครับ:\n\n* **วัสดุสายพาน PP (พิน PP หรือ POM):** ทนอุณหภูมิได้ **5°C ถึง 60°C** (41°F ถึง 140°F)\n\n*(ค่าอุณหภูมินี้ใช้ได้ทั้งสภาวะการทำงานแบบแห้งและแบบเปียกครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-013",
+   "turn": "1",
+   "category": "temp",
+   "query": "EC127 GT ทนร้อนกี่องศา",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 2.5,
+   "llm_usage": {
+    "prompt_token_count": 3410,
+    "candidates_token_count": 110,
+    "total_token_count": 3520
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน **Modutech MD254 RR** ในสภาวะไลน์แห้งที่อุณหภูมิ 100 °C มีรายละเอียดตามเกรดวัสดุดังนี้ครับ\n\n1. **เกรด PP (Pin PP): สามารถใช้งานได้ครับ**\n   - ช่วงอุณหภูมิใช้งาน (สภาวะแห้ง): **+5 °C ถึง +105 °C**\n   - ความแข็งแรงของสายพาน: 16,000 N/m\n   - น้ำหนักสายพาน: 6.8 kg/m²\n\n2. **เกรด PPH:**\n   - ปัจจุบันค่าที่ระบุอ้างอิงไว้คือทนได้สูงสุด **+93 °C** (จึงยังไม่ครอบคลุม 100 °C) \n   - อย่างไรก็ตาม ค่านี้ยังไม่ยืนยัน เนื่องจากข้อมูลในแคตตาล็อกระบุ +5/+93 °C คู่กับ +40/+230 °F (ซึ่ง 230 °F เทียบเท่ากับ 110 °C) และรุ่นอื่นที่ใช้เกรด PPH ระบุไว้ 110–118 °C\n   - ในเบื้องต้นจึง**ยังบอกไม่ได้ว่าเกรด PPH ใช้ได้หรือไม่** จนกว่าจะได้รับการยืนยันจากทางฝ่ายขาย แนะนำให้ยืนยันกับพนักงานฝ่ายขายก่อนตัดเกรดนี้ทิ้งครับ\n\n*(หมายเหตุ: ค่าอุณหภูมิดังกล่าวเป็นสภาวะแห้งเท่านั้น หากหน้างานจริงมีสภาวะเปียกหรือความชื้น ช่วงอุณหภูมิที่รองรับจะแตกต่างออกไป สามารถสอบถามเพิ่มเติมได้ครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-014",
+   "turn": "1",
+   "category": "temp",
+   "query": "MD254 RR ใช้ที่ 100 องศา ไลน์แห้ง ได้ไหม",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 4.7,
+   "llm_usage": {
+    "prompt_token_count": 3822,
+    "candidates_token_count": 370,
+    "total_token_count": 4192
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน **Modutech MD254 RR** ที่อุณหภูมิใช้งาน **100 °C ในสภาวะแห้ง** สามารถใช้งานได้ครับ โดยมีรายละเอียดของเกรดวัสดุดังนี้ครับ\n\n* **เกรด PP (Pin PP): สามารถใช้งานได้ครับ** \n  * อุณหภูมิใช้งานในสภาวะแห้งอยู่ที่ **+5 °C ถึง +105 °C** จึงครอบคลุมการใช้งานที่ 100 °C ครับ\n  * ความแข็งแรงของสายพาน: 16,000 N/m\n  * น้ำหนักสายพาน: 6.8 kg/m²\n\n**ข้อสังเกตเกี่ยวกับเกรด PPH:**\n* สำหรับเกรด **PPH** ปัจจุบันค่าในเอกสารที่ใช้อ้างอิงระบุไว้ที่ **93 °C** ซึ่งตามตัวเลขนี้จะไม่ครอบคลุมการใช้งานที่ 100 °C\n* อย่างไรก็ตาม ค่าอุณหภูมิของเกรด PPH ในแคตตาล็อกยังไม่ยืนยัน (เนื่องจากในเล่มระบุ +5/+93 °C คู่กับ +40/+230 °F ซึ่ง 230 °F เทียบเท่ากับ 110 °C และในรุ่นอื่นที่เป็นเกรด PPH ระบุไว้ 110–118 °C) \n* ดังนั้นในปัจจุบัน**ยังบอกไม่ได้ว่าเกรด PPH ใช้ได้** แนะนำให้ยึดค่า 93 °C ไว้ก่อน และรบกวนลูกค้ายืนยันกับทางพนักงานฝ่ายขายก่อนตัดสินใจตัดเกรดนี้ทิ้งครับ\n\n*(หมายเหตุ: ค่าอุณหภูมิข้างต้นเป็นค่าสำหรับสภาวะแห้งเท่านั้น หากไลน์การผลิตมีสภาวะเปียกหรือมีความชื้น สามารถสอบถามข้อมูลเพิ่มเติมได้ครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-015",
+   "turn": "1",
+   "category": "temp",
+   "query": "MD254 RR ใช้ที่ 100 องศา ไลน์แห้ง ได้ไหม",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 4.5,
+   "llm_usage": {
+    "prompt_token_count": 3822,
+    "candidates_token_count": 409,
+    "total_token_count": 4231
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **MP80 C** ในสภาวะเปียกที่อุณหภูมิ 80 °C **ไม่สามารถใช้งานได้ครับ**\n\nตามข้อมูลแคตตาล็อก รุ่นนี้ผลิตจากวัสดุ **POM** ซึ่งในสภาวะเปียกสามารถรองรับอุณหภูมิสูงสุดได้ที่ **60 °C** เท่านั้นครับ จึงไม่มีเกรดของรุ่นนี้ที่รองรับการใช้งานที่ 80 °C ในสภาวะเปียกได้ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-016",
+   "turn": "1",
+   "category": "temp",
+   "query": "MP80 C ใช้ที่ 80 องศา ไลน์เปียก ได้ไหม",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 2.8,
+   "llm_usage": {
+    "prompt_token_count": 3840,
+    "candidates_token_count": 110,
+    "total_token_count": 3950
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-017",
+   "turn": "1",
+   "category": "temp",
+   "query": "EC127 C ทนร้อนกี่องศา",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน **Modutech EC127 C** ใน**สภาวะแห้ง** อุณหภูมิสูงสุดที่ทนได้จะขึ้นอยู่กับวัสดุของสายพานและหมุด (Pin) ดังนี้ครับ:\n\n* **สายพาน PP (โพลิโพรพิลีน) / หมุด PP:** ทนความร้อนสูงสุดได้ **105 °C**\n* **สายพาน PP (โพลิโพรพิลีน) / หมุด POM:** ทนความร้อนสูงสุดได้ **93 °C**\n* **สายพาน POM (พอลิอะซีทัล) / หมุด PA:** ทนความร้อนสูงสุดได้ **93 °C**\n* **สายพาน POM (พอลิอะซีทัล) / หมุด POM:** ทนความร้อนสูงสุดได้ **93 °C**\n* **สายพาน POM (พอลิอะซีทัล) / หมุด PP:** ทนความร้อนสูงสุดได้ **93 °C**\n* **สายพาน PE (โพลิเอทิลีน) / หมุด POM:** ทนความร้อนสูงสุดได้ **65 °C**\n\n*(หมายเหตุ: ค่านี้สำหรับสภาวะแห้งเท่านั้น หากไลน์มีการใช้งานในสภาวะเปียกสามารถสอบถามข้อมูลเพิ่มเติมได้ครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-017",
+   "turn": "2",
+   "category": "temp",
+   "query": "แห้ง",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 3.7,
+   "llm_usage": {
+    "prompt_token_count": 4899,
+    "candidates_token_count": 280,
+    "total_token_count": 5179
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-018",
+   "turn": "1",
+   "category": "temp",
+   "query": "MD508 C ทนร้อนกี่องศา",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน **MD508 C** ใน**สภาวะเปียก** อุณหภูมิสูงสุดที่ทนได้จะขึ้นอยู่กับวัสดุของสายพานและพิน (Pin) ครับ โดยมีรายละเอียดดังนี้:\n\n* **สายพาน PP / พิน PP:** ทนร้อนได้สูงสุด **105 °C** (ช่วงอุณหภูมิ 5 ถึง 105 °C)\n* **สายพาน POM / พิน POM:** ทนร้อนได้สูงสุด **60 °C** (ช่วงอุณหภูมิ -40 ถึง 60 °C)\n* **สายพาน POM / พิน PP:** ทนร้อนได้สูงสุด **60 °C** (ช่วงอุณหภูมิ 5 ถึง 60 °C)\n* **สายพาน PP / พิน POM:** ทนร้อนได้สูงสุด **60 °C** (ช่วงอุณหภูมิ 5 ถึง 60 °C)\n* **สายพาน PE / พิน POM:** ทนร้อนได้สูงสุด **60 °C** (ช่วงอุณหภูมิ -40 ถึง 60 °C)\n* **สายพาน POM / พิน PA:** ทนร้อนได้สูงสุด **60 °C** (ช่วงอุณหภูมิ -35 ถึง 60 °C)*\n\n*\\*หมายเหตุสำหรับรุ่นสายพาน POM / พิน PA: แคตตาล็อกไม่มีค่าสภาวะเปียกของวัสดุพิน PA โดยตรง ค่าสูงสุด 60 °C มาจากสภาวะเปียกของสายพาน POM ส่วนค่าต่ำสุด -35 °C มาจากสภาวะแห้งของพิน PA จึงต้องยืนยันกับพนักงานฝ่ายขายก่อนนำไปใช้งานจริงครับ*\n\nหากต้องการข้อมูลของสภาวะแห้งเพิ่มเติม สามารถสอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-018",
+   "turn": "2",
+   "category": "temp",
+   "query": "ไลน์เปียก",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 4.7,
+   "llm_usage": {
+    "prompt_token_count": 4445,
+    "candidates_token_count": 396,
+    "total_token_count": 4841
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-019",
+   "turn": "1",
+   "category": "temp",
+   "query": "MD254 RR ทนร้อนกี่องศา",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **MD254 RR** ใน**สภาวะเปียก (Wet)** อุณหภูมิสูงสุดที่ทนได้จะขึ้นอยู่กับเกรดวัสดุของสายพานและพิน ดังนี้ครับ:\n\n* **สายพาน PP / พิน PP:** ทนร้อนได้สูงสุด **105 °C** (ช่วงอุณหภูมิ 5 ถึง 105 °C)\n* **สายพาน PPH / พิน PPH:** ทนร้อนได้สูงสุด **93 °C\\*** (ช่วงอุณหภูมิ 5 ถึง 93 °C)  \n  *\\*หมายเหตุ:* ค่าสูงสุด 93 °C ของเกรด PPH ยังไม่ได้รับการยืนยัน เนื่องจากแคตตาล็อกระบุ +5/+93 °C คู่กับ +40/+230 °F (ซึ่ง 230 °F แปลงได้เท่ากับ 110 °C ไม่ใช่ 93 °C) แนะนำให้ยึดค่าที่ปลอดภัยคือ 93 °C ไว้ก่อน หากหน้างานจริงต้องใช้อุณหภูมิสูงกว่า 93 °C จำเป็นต้องยืนยันกับพนักงานฝ่ายขายก่อนใช้งานจริงครับ\n* **สายพาน POM / พิน POM หรือ พิน PP:** ทนร้อนได้สูงสุด **60 °C**\n* **สายพาน POM / พิน PA:** ทนร้อนได้สูงสุด **60 °C\\***  \n  *\\*หมายเหตุ:* แคตตาล็อกไม่มีข้อมูลสภาวะเปียกของพิน PA โดยตรง ค่า 60 °C มาจากขีดจำกัดสภาวะเปียกของสายพาน POM ต้องยืนยันกับพนักงานฝ่ายขายก่อนใช้งานจริงครับ\n\n*(หากไลน์การผลิตเป็นสภาวะแห้ง สามารถสอบถามข้อมูลเพิ่มเติมได้นะครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-019",
+   "turn": "2",
+   "category": "temp",
+   "query": "ไลน์เปียก",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 5.3,
+   "llm_usage": {
+    "prompt_token_count": 4764,
+    "candidates_token_count": 396,
+    "total_token_count": 5160
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-020",
+   "turn": "1",
+   "category": "temp",
+   "query": "HC152 FG ทนร้อนกี่องศา",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **HC152 FG** ใน**สภาวะแห้ง (Dry)** อุณหภูมิสูงสุดที่ทนได้จะขึ้นอยู่กับวัสดุของสายพานและพิน (Pin) โดยมีรายละเอียดแต่ละเกรดดังนี้ครับ:\n\n* **สายพาน PA / พิน PA:** ทนอุณหภูมิได้สูงสุด **120 °C** (ช่วงการใช้งาน -35 ถึง 120 °C)*\n* **สายพาน PP / พิน PP:** ทนอุณหภูมิได้สูงสุด **105 °C** (ช่วงการใช้งาน 5 ถึง 105 °C)\n* **สายพาน PP / พิน POM:** ทนอุณหภูมิได้สูงสุด **93 °C** (ช่วงการใช้งาน 5 ถึง 93 °C)\n* **สายพาน POM / พิน PA:** ทนอุณหภูมิได้สูงสุด **93 °C** (ช่วงการใช้งาน -35 ถึง 93 °C)\n* **สายพาน POM / พิน POM:** ทนอุณหภูมิได้สูงสุด **93 °C** (ช่วงการใช้งาน -40 ถึง 93 °C)\n* **สายพาน POM / พิน PP:** ทนอุณหภูมิได้สูงสุด **93 °C** (ช่วงการใช้งาน 5 ถึง 93 °C)\n* **สายพาน PE / พิน PE:** ทนอุณหภูมิได้สูงสุด **65 °C** (ช่วงการใช้งาน -70 ถึง 65 °C)\n\n*\\*หมายเหตุสำหรับเกรด PA: ในตารางสเปกรายรุ่นมีการระบุสูงสุดไว้ที่ 150 °C แต่คุณสมบัติวัสดุในแคตตาล็อกระบุไว้ที่ 120 °C จึงแนะนำให้ยึดค่าความปลอดภัยที่ 120 °C ไว้ก่อน และควรยืนยันกับพนักงานฝ่ายขายอีกครั้งครับ*\n\nทั้งนี้ ค่าข้างต้นเป็นค่าในสภาวะแห้งเท่านั้น หากไลน์การผลิตมีสภาวะเปียกหรือต้องการสอบถามข้อมูลเพิ่มเติม สามารถสอบถามได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "TP-020",
+   "turn": "2",
+   "category": "temp",
+   "query": "แห้ง",
+   "metrics": [
+    "temp"
+   ],
+   "seconds": 5.2,
+   "llm_usage": {
+    "prompt_token_count": 5062,
+    "candidates_token_count": 465,
+    "total_token_count": 5527
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "รุ่นนี้วิ่งโค้งได้ครับ ขอทราบก่อนว่าไลน์เป็นแบบตรงอย่างเดียว หรือมีช่วงโค้ง เพราะค่าความแข็งแรงตอนวิ่งโค้งต่ำกว่าตอนวิ่งตรงมาก",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ST-C01",
+   "turn": "1",
+   "category": "curve",
+   "query": "EC254 R รับแรงดึงเท่าไหร่",
+   "metrics": [
+    "curve"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "รุ่นนี้วิ่งโค้งได้ครับ ขอทราบก่อนว่าไลน์เป็นแบบตรงอย่างเดียว หรือมีช่วงโค้ง เพราะค่าความแข็งแรงตอนวิ่งโค้งต่ำกว่าตอนวิ่งตรงมาก",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ST-C02",
+   "turn": "1",
+   "category": "curve",
+   "query": "EC254 R-GT รับแรงดึงเท่าไหร่",
+   "metrics": [
+    "curve"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "รุ่นนี้วิ่งโค้งได้ครับ ขอทราบก่อนว่าไลน์เป็นแบบตรงอย่างเดียว หรือมีช่วงโค้ง เพราะค่าความแข็งแรงตอนวิ่งโค้งต่ำกว่าตอนวิ่งตรงมาก",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ST-C03",
+   "turn": "1",
+   "category": "curve",
+   "query": "EC254 R-TABE รับแรงดึงเท่าไหร่",
+   "metrics": [
+    "curve"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "รุ่นนี้วิ่งโค้งได้ครับ ขอทราบก่อนว่าไลน์เป็นแบบตรงอย่างเดียว หรือมีช่วงโค้ง เพราะค่าความแข็งแรงตอนวิ่งโค้งต่ำกว่าตอนวิ่งตรงมาก",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ST-C04",
+   "turn": "1",
+   "category": "curve",
+   "query": "EC254 R-TABM รับแรงดึงเท่าไหร่",
+   "metrics": [
+    "curve"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "รุ่นนี้วิ่งโค้งได้ครับ ขอทราบก่อนว่าไลน์เป็นแบบตรงอย่างเดียว หรือมีช่วงโค้ง เพราะค่าความแข็งแรงตอนวิ่งโค้งต่ำกว่าตอนวิ่งตรงมาก",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ST-C05",
+   "turn": "1",
+   "category": "curve",
+   "query": "EC254 TR รับแรงดึงเท่าไหร่",
+   "metrics": [
+    "curve"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "รุ่นนี้วิ่งโค้งได้ครับ ขอทราบก่อนว่าไลน์เป็นแบบตรงอย่างเดียว หรือมีช่วงโค้ง เพราะค่าความแข็งแรงตอนวิ่งโค้งต่ำกว่าตอนวิ่งตรงมาก",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ST-C06",
+   "turn": "1",
+   "category": "curve",
+   "query": "EC254 TR-TAB รับแรงดึงเท่าไหร่",
+   "metrics": [
+    "curve"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "รุ่นนี้วิ่งโค้งได้ครับ ขอทราบก่อนว่าไลน์เป็นแบบตรงอย่างเดียว หรือมีช่วงโค้ง เพราะค่าความแข็งแรงตอนวิ่งโค้งต่ำกว่าตอนวิ่งตรงมาก",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ST-001",
+   "turn": "1",
+   "category": "strength",
+   "query": "EC254 R รับแรงดึงเท่าไหร่",
+   "metrics": [
+    "strength"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน **Modutech EC254 R** เมื่อใช้งานในไลน์ที่มีช่วงโค้ง ค่าความแข็งแรงในการรับแรงดึง (belt strength) จะต้องคิดจากค่าช่วงโค้งโดยเฉพาะ ซึ่งขึ้นอยู่กับวัสดุของสายพาน ดังนี้ครับ\n\n* **วัสดุสายพาน POM** (พิน PA หรือ POM): รับแรงดึงช่วงโค้งได้ **1,500 N/m**\n* **วัสดุสายพาน PP** (พิน PA หรือ POM): รับแรงดึงช่วงโค้งได้ **1,000 N/m**\n\n*(หมายเหตุ: ค่าความแข็งแรงเมื่อวิ่งในช่วงโค้งจะต่ำกว่าค่าวิ่งตรงมาก จำเป็นต้องใช้ค่านี้ในการคำนวณและออกแบบสายพานที่มีทางโค้งครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ST-001",
+   "turn": "2",
+   "category": "strength",
+   "query": "ไลน์มีโค้ง",
+   "metrics": [
+    "strength"
+   ],
+   "seconds": 3.3,
+   "llm_usage": {
+    "prompt_token_count": 4220,
+    "candidates_token_count": 174,
+    "total_token_count": 4394
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "รุ่นนี้วิ่งโค้งได้ครับ ขอทราบก่อนว่าไลน์เป็นแบบตรงอย่างเดียว หรือมีช่วงโค้ง เพราะค่าความแข็งแรงตอนวิ่งโค้งต่ำกว่าตอนวิ่งตรงมาก",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ST-002",
+   "turn": "1",
+   "category": "strength",
+   "query": "EC254 R รับแรงดึงเท่าไหร่",
+   "metrics": [
+    "strength"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **EC254 R** เมื่อใช้งานในแนวตรง ค่าความแข็งแรง (Belt Strength) จะขึ้นอยู่กับวัสดุของสายพานดังนี้ครับ:\n\n* **วัสดุสายพาน POM** (ทั้งสลัก PA และ POM): รับแรงดึงได้ **27,000 N/m**\n* **วัสดุสายพาน PP** (ทั้งสลัก PA และ POM): รับแรงดึงได้ **19,000 N/m**\n\n*(หมายเหตุ: หากในอนาคตมีการปรับเปลี่ยนรูปแบบไลน์ให้มีช่วงเลี้ยวโค้ง จะต้องคำนวณด้วยค่าความแข็งแรงตอนโค้ง ซึ่งจะต่ำกว่าค่าการวิ่งตรงครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ST-002",
+   "turn": "2",
+   "category": "strength",
+   "query": "ไลน์ตรง",
+   "metrics": [
+    "strength"
+   ],
+   "seconds": 3.1,
+   "llm_usage": {
+    "prompt_token_count": 4058,
+    "candidates_token_count": 161,
+    "total_token_count": 4219
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "ค่าความแข็งแรงในการรับแรงดึง (Belt Strength) ของสายพาน Modutech รุ่น **MD508 C** จะขึ้นอยู่กับวัสดุของสายพานและพิน (Pin) โดยมีค่าตามแต่ละเกรดดังนี้ครับ:\n\n* **สายพาน POM / พิน PA หรือ POM:** รับแรงดึงได้ **60,000 N/m**\n* **สายพาน PP / พิน PP หรือ POM:** รับแรงดึงได้ **37,400 N/m**\n* **สายพาน POM / พิน PP:** รับแรงดึงได้ **35,000 N/m**\n* **สายพาน PE / พิน POM:** รับแรงดึงได้ **26,400 N/m**",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ST-003",
+   "turn": "1",
+   "category": "strength",
+   "query": "MD508 C รับแรงดึงเท่าไหร่",
+   "metrics": [
+    "strength"
+   ],
+   "seconds": 3.1,
+   "llm_usage": {
+    "prompt_token_count": 3777,
+    "candidates_token_count": 173,
+    "total_token_count": 3950
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **HD635 C** มีค่าการรับแรงดึงตามเกรดวัสดุดังนี้ครับ:\n\n* **วัสดุสายพาน POM-NL (พิน SS):** รับแรงดึงได้ **100,000 N/m**\n\n*(หมายเหตุ: รุ่นนี้มีความกว้างขนาดเดียวคือ 100 มม. ครับ)*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ST-004",
+   "turn": "1",
+   "category": "strength",
+   "query": "HD635 C รับแรงดึงเท่าไหร่",
+   "metrics": [
+    "strength"
+   ],
+   "seconds": 2.4,
+   "llm_usage": {
+    "prompt_token_count": 2866,
+    "candidates_token_count": 89,
+    "total_token_count": 2955
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **SM127 FG** ในแคตตาล็อกปี 2026 **ไม่มีเกรด PE (Polyethylene)** ในตารางสเปกมาตรฐานครับ (แม้ในโบรชัวร์การใช้งานบางส่วนอาจมีระบุถึงไว้ ซึ่งอาจเป็นเกรดสั่งพิเศษหรือเลิกผลิตแล้ว จึงต้องยืนยันกับพนักงานฝ่ายขายอีกครั้งครับ)\n\nในแคตตาล็อกปัจจุบัน รุ่น SM127 FG มีระบุไว้ 2 วัสดุหลัก ได้แก่:\n1. **POM (พอลิอะซีทัล)** \n   - รับแรงดึงสูงสุด: 22,475 N/m\n   - น้ำหนักสายพาน: 6.1 kg/m²\n2. **PP (โพลิโพรพิลีน)**\n   - รับแรงดึงสูงสุด: 12,845 N/m\n   - น้ำหนักสายพาน: 4.2 kg/m²\n\nหากหน้างานมีความจำเป็นต้องใช้เกรด PE หรือต้องการตรวจสอบความเป็นไปได้ในการสั่งผลิตพิเศษ แนะนำสอบถามข้อมูลเพิ่มเติมกับทางฝ่ายขายโดยตรงครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-001",
+   "turn": "1",
+   "category": "material",
+   "query": "SM127 FG มีเกรด PE ไหม",
+   "metrics": [
+    "material"
+   ],
+   "seconds": 4.0,
+   "llm_usage": {
+    "prompt_token_count": 4069,
+    "candidates_token_count": 250,
+    "total_token_count": 4319
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **HC127 C** ในแคตตาล็อกปี 2026 **ไม่มีเกรด PP** ระบุไว้ครับ (แม้ในโบรชัวร์อาจมีกล่าวถึง) \n\nปัจจุบันตามเล่มแคตตาล็อก 2026 รุ่นนี้มีเฉพาะเกรด **POM (พอลิอะซีทัล)** เท่านั้นครับ หากต้องการใช้งานวัสดุ PP ในรุ่นนี้ อาจเป็นเกรดสั่งพิเศษหรือมีการเปลี่ยนแปลง แนะนำให้สอบถามและยืนยันกับทางฝ่ายขายโดยตรงครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-002",
+   "turn": "1",
+   "category": "material",
+   "query": "HC127 C มีเกรด PP ไหม",
+   "metrics": [
+    "material"
+   ],
+   "seconds": 2.7,
+   "llm_usage": {
+    "prompt_token_count": 3760,
+    "candidates_token_count": 121,
+    "total_token_count": 3881
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MP80 C** ผลิตจากวัสดุ **POM (พอลิอะซีทัล)** ครับ โดยมีตัวเลือกรุ่นย่อยตามวัสดุของสลัก (Pin) ดังนี้ครับ\n\n* **POM + สลัก PA (Polyamide):** รับแรงดึงได้ 2,750 N/m, น้ำหนัก 5.4 kg/m²\n* **POM + สลัก POM (Polyacetal):** รับแรงดึงได้ 2,750 N/m, น้ำหนัก 5.4 kg/m²\n\nทั้งสองรุ่นได้รับการรับรองมาตรฐาน FDA และ EU สำหรับงานอาหารครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-003",
+   "turn": "1",
+   "category": "material",
+   "query": "MP80 C ทำจากวัสดุอะไร",
+   "metrics": [
+    "material"
+   ],
+   "seconds": 2.8,
+   "llm_usage": {
+    "prompt_token_count": 3917,
+    "candidates_token_count": 148,
+    "total_token_count": 4065
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **HD635 C** ใช้วัสดุดังนี้ครับ\n\n* **วัสดุสายพาน (Belt Material):** POM-NL (สีดำ)\n* **วัสดุพิน (Pin Material):** SS (สแตนเลส)\n\nสำหรับรุ่นนี้ในแคตตาล็อกมีเฉพาะวัสดุเกรด POM-NL พิน SS เท่านั้นครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-004",
+   "turn": "1",
+   "category": "material",
+   "query": "HD635 C ทำจากวัสดุอะไร",
+   "metrics": [
+    "material"
+   ],
+   "seconds": 2.6,
+   "llm_usage": {
+    "prompt_token_count": 2865,
+    "candidates_token_count": 91,
+    "total_token_count": 2956
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MD254 GAP48%-EHT** มีรายละเอียดวัสดุตัวสายพานและสลัก (Pin) ดังนี้ครับ\n\n* **วัสดุสายพาน (Belt Material):** EHT (เกรดทนความร้อนสูงพิเศษ)\n* **วัสดุสลัก (Pin Material):** สเตนเลส (SS - Stainless Steel)\n\nรุ่นนี้ผลิตขึ้นมาเฉพาะเกรด EHT ร่วมกับสลักสเตนเลส เพื่อรองรับการใช้งานที่ต้องสัมผัสความร้อน เช่น ในอุโมงค์ฟิล์มหด (Shrink wrapping tunnels) ครับ หากต้องการข้อมูลสเปกด้านอื่นเพิ่มเติม สอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-005",
+   "turn": "1",
+   "category": "material",
+   "query": "MD254 GAP48%-EHT ทำจากวัสดุอะไร",
+   "metrics": [
+    "material"
+   ],
+   "seconds": 3.5,
+   "llm_usage": {
+    "prompt_token_count": 3223,
+    "candidates_token_count": 155,
+    "total_token_count": 3378
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **XP254 C** มีวัสดุสายพานและพินให้เลือกดังนี้ครับ:\n\n**1. วัสดุตัวสายพาน (Belt Material):**\n* **POM** (พอลิอะซีทัล)\n* **PP** (โพลิโพรพิลีน)\n* **PE** (โพลิเอทิลีน)\n\n**2. วัสดุพิน (Pin Material):**\n* **PA**\n* **POM**\n* **PP**\n\nโดยในแต่ละคู่เกรดวัสดุ (สายพาน + พิน) จะมีค่าความแข็งแรงและน้ำหนักต่างกัน ดังนี้ครับ:\n* **POM (พิน PA / POM / PP):** ความแข็งแรง 30,000 N/m | น้ำหนัก 8.7 kg/m²\n* **PP (พิน POM):** ความแข็งแรง 18,500 N/m | น้ำหนัก 5.7 kg/m²\n* **PP (พิน PP):** ความแข็งแรง 17,200 N/m | น้ำหนัก 5.7 kg/m²\n* **PE (พิน POM):** ความแข็งแรง 9,100 N/m | น้ำหนัก 6.0 kg/m²\n\nหากต้องการสอบถามเรื่องการทนอุณหภูมิหรือการใช้งานในสภาวะแห้ง/เปียก แจ้งเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-006",
+   "turn": "1",
+   "category": "material",
+   "query": "XP254 C ทำจากวัสดุอะไร",
+   "metrics": [
+    "material"
+   ],
+   "seconds": 3.6,
+   "llm_usage": {
+    "prompt_token_count": 3670,
+    "candidates_token_count": 320,
+    "total_token_count": 3990
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน **Modutech รุ่น MD508 FG-RT** มีวัสดุให้เลือกตามรายละเอียดดังนี้ครับ:\n\n* **วัสดุตัวสายพาน (Belt Material):** มีทั้ง **POM** (พอลิอะซีทัล) และ **PP** (โพลิโพรพิลีน)\n* **วัสดุสลักยึด (Pin Material):**\n  * รุ่นสายพาน **POM**: ใช้สลัก **PA** หรือ **POM**\n  * รุ่นสายพาน **PP**: ใช้สลัก **PP** หรือ **POM**\n\nทั้งนี้ สายพานรุ่นนี้ผ่านการรับรองมาตรฐาน FDA และ EU มีสี Blue, White และ Gray ครับ หากต้องการข้อมูลสเปกด้านอื่นเพิ่มเติมสอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-007",
+   "turn": "1",
+   "category": "material",
+   "query": "MD508 FG-RT ทำจากวัสดุอะไร",
+   "metrics": [
+    "material"
+   ],
+   "seconds": 2.8,
+   "llm_usage": {
+    "prompt_token_count": 3559,
+    "candidates_token_count": 166,
+    "total_token_count": 3725
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **SM254 FG50%** มีข้อมูลวัสดุดังนี้ครับ\n\n* **วัสดุสายพาน (Belt Material):** PA6 (ไนลอน 6)\n* **วัสดุพิน (Pin Material):** PA6 (ไนลอน 6)\n\nรุ่นนี้ผลิตจากวัสดุ PA6 ซึ่งเป็นวัสดุหน่วงไฟ (ผ่านการรับรอง UL94) เหมาะสำหรับงานที่มีความร้อน เช่น ทางเข้า-ออกเตาอบ หรือไลน์ทำความเย็น/พักเย็นในอุตสาหกรรมเบเกอรี่ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-008",
+   "turn": "1",
+   "category": "material",
+   "query": "SM254 FG50% ทำจากวัสดุอะไร",
+   "metrics": [
+    "material"
+   ],
+   "seconds": 3.0,
+   "llm_usage": {
+    "prompt_token_count": 3337,
+    "candidates_token_count": 129,
+    "total_token_count": 3466
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "เรื่องราคาของสายพาน MP80 C อยู่นอกข้อมูลที่ระบบมีครับ ต้องสอบถามฝ่ายขายโดยตรง เวลาติดต่อ แจ้งรุ่นสายพาน ความกว้าง ความยาว และจำนวนที่ต้องการไปด้วย จะได้คำตอบเร็วขึ้นครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-001",
+   "turn": "1",
+   "category": "escalate",
+   "query": "MP80 C ราคาเท่าไหร่",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "เรื่อง lead time ของสายพาน HC508 C อยู่นอกข้อมูลที่ระบบมีครับ ต้องสอบถามฝ่ายขายโดยตรง เวลาติดต่อ แจ้งรุ่นสายพาน ความกว้าง ความยาว และจำนวนที่ต้องการไปด้วย จะได้คำตอบเร็วขึ้นครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-002",
+   "turn": "1",
+   "category": "escalate",
+   "query": "HC508 C lead time กี่วัน",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "เรื่อง MOQ ของสายพาน MP80 C อยู่นอกข้อมูลที่ระบบมีครับ ต้องสอบถามฝ่ายขายโดยตรง เวลาติดต่อ แจ้งรุ่นสายพาน ความกว้าง ความยาว และจำนวนที่ต้องการไปด้วย จะได้คำตอบเร็วขึ้นครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-003",
+   "turn": "1",
+   "category": "escalate",
+   "query": "MP80 C สั่งขั้นต่ำเท่าไหร่",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "เรื่องสต็อกของสายพาน MD254 RR อยู่นอกข้อมูลที่ระบบมีครับ ต้องสอบถามฝ่ายขายโดยตรง เวลาติดต่อ แจ้งรุ่นสายพาน ความกว้าง ความยาว และจำนวนที่ต้องการไปด้วย จะได้คำตอบเร็วขึ้นครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-004",
+   "turn": "1",
+   "category": "escalate",
+   "query": "MD254 RR มีสต็อกไหม",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "เรื่องขนาดเพลาของสายพาน MP80 C อยู่นอกข้อมูลที่ระบบมีครับ ต้องสอบถามฝ่ายขายโดยตรง เวลาติดต่อ แจ้งรุ่นสายพาน ความกว้าง ความยาว และจำนวนที่ต้องการไปด้วย จะได้คำตอบเร็วขึ้นครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-005",
+   "turn": "1",
+   "category": "escalate",
+   "query": "สเตอร์ของ MP80 C รูเพลาขนาดเท่าไหร่",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "เรื่องอะไหล่ของสายพาน MP80 C อยู่นอกข้อมูลที่ระบบมีครับ ต้องสอบถามฝ่ายขายโดยตรง เวลาติดต่อ แจ้งรุ่นสายพาน ความกว้าง ความยาว และจำนวนที่ต้องการไปด้วย จะได้คำตอบเร็วขึ้นครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-006",
+   "turn": "1",
+   "category": "escalate",
+   "query": "MP80 C มีอะไหล่ขายไหม",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MP80 C** มีข้อมูลความกว้างตามสเปกดังนี้ครับ:\n\n* **ความกว้างมาตรฐานสูงสุด:** **2,133.6 มม.** (84.0 นิ้ว)\n* โดยรุ่นนี้สามารถสั่งความกว้างได้ตั้งแต่ 101.6 มม. ถึง 2,133.6 มม. (เพิ่มขึ้นทีละ 101.6 มม. หรือ 4 นิ้ว)\n\n*(สำหรับเรื่องราคาและใบเสนอราคา เจ้าหน้าที่ฝ่ายขายจะให้ข้อมูลและดูแลรายละเอียดส่วนนี้โดยตรงครับ)*\n\nส่วนเรื่องราคาของสายพาน MP80 C ต้องสอบถามฝ่ายขายโดยตรงครับ เวลาติดต่อแจ้งความกว้าง ความยาว และจำนวนที่ต้องการไปด้วยนะครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-007",
+   "turn": "1",
+   "category": "escalate",
+   "query": "MP80 C กว้างสุดเท่าไหร่ แล้วราคาเมตรละเท่าไหร่",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 2.9,
+   "llm_usage": {
+    "prompt_token_count": 3930,
+    "candidates_token_count": 132,
+    "total_token_count": 4062
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน **Modutech MD508 C** ข้อมูลสเปกแรงดึง (Belt Strength) จะขึ้นอยู่กับวัสดุของสายพานและพิน (Pin) โดยมีรายละเอียดตามเกรดวัสดุดังนี้ครับ:\n\n* **สายพาน POM / พิน PA:** แรงดึง **60,000 N/m**\n* **สายพาน POM / พิน POM:** แรงดึง **60,000 N/m**\n* **สายพาน POM / พิน PP:** แรงดึง **35,000 N/m**\n* **สายพาน PP / พิน PP:** แรงดึง **37,400 N/m**\n* **สายพาน PP / พิน POM:** แรงดึง **37,400 N/m**\n* **สายพาน PE / พิน POM:** แรงดึง **26,400 N/m**\n\n*(หมายเหตุ: สายพานรุ่นนี้มีระยะพิทช์ 50.8 มม. ผิวหน้าแบบเรียบทึบ Flat Top ความหนา 16 มม. ครับ)*\n\nส่วนเรื่องราคาของสายพาน MD508 C ต้องสอบถามฝ่ายขายโดยตรงครับ เวลาติดต่อแจ้งความกว้าง ความยาว และจำนวนที่ต้องการไปด้วยนะครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-008",
+   "turn": "1",
+   "category": "escalate",
+   "query": "MD508 C ราคาเท่าไหร่ แรงดึงเท่าไหร่",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 4.6,
+   "llm_usage": {
+    "prompt_token_count": 3786,
+    "candidates_token_count": 258,
+    "total_token_count": 4044
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C\n\nส่วนเรื่องราคาของสายพาน MP80 C ต้องสอบถามฝ่ายขายโดยตรงครับ เวลาติดต่อแจ้งความกว้าง ความยาว และจำนวนที่ต้องการไปด้วยนะครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-009",
+   "turn": "1",
+   "category": "escalate",
+   "query": "MP80 C ราคาเท่าไหร่ ทนร้อนกี่องศา",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "เรื่อง lead time ของสายพาน HC127 C อยู่นอกข้อมูลที่ระบบมีครับ ต้องสอบถามฝ่ายขายโดยตรง เวลาติดต่อ แจ้งรุ่นสายพาน ความกว้าง ความยาว และจำนวนที่ต้องการไปด้วย จะได้คำตอบเร็วขึ้นครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-010",
+   "turn": "1",
+   "category": "escalate",
+   "query": "HC127 C ส่งของกี่วัน",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "ติดต่อฝ่ายขายได้ตามนี้ครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-011",
+   "turn": "1",
+   "category": "escalate",
+   "query": "HC127 C ขอช่องทางติดต่อฝ่ายขาย",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "ติดต่อฝ่ายขายได้ตามนี้ครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-012",
+   "turn": "1",
+   "category": "escalate",
+   "query": "HC127 C ขอเบอร์โทรฝ่ายขาย",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "ติดต่อฝ่ายขายได้ตามนี้ครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-013",
+   "turn": "1",
+   "category": "escalate",
+   "query": "HC127 C ขออีเมลฝ่ายขาย",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "ถ้าสนใจสั่งซื้อสายพาน HC127 C ต้องติดต่อฝ่ายขายโดยตรงครับ ผมดูแลเฉพาะข้อมูลสเปก เวลาติดต่อเตรียมข้อมูลสี่อย่างนี้ไปด้วยจะได้ใบเสนอราคาเร็วขึ้น ความกว้างที่ต้องการ · ความยาวสายพาน · เกรดวัสดุ · อุปกรณ์ประกอบถ้ามี เช่น สเตอร์\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-014",
+   "turn": "1",
+   "category": "escalate",
+   "query": "HC127 C ถ้าอยากสั่งซื้อหล่ะ",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "ถ้าสนใจสั่งซื้อสายพาน HC127 C ต้องติดต่อฝ่ายขายโดยตรงครับ ผมดูแลเฉพาะข้อมูลสเปก เวลาติดต่อเตรียมข้อมูลสี่อย่างนี้ไปด้วยจะได้ใบเสนอราคาเร็วขึ้น ความกว้างที่ต้องการ · ความยาวสายพาน · เกรดวัสดุ · อุปกรณ์ประกอบถ้ามี เช่น สเตอร์\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-015",
+   "turn": "1",
+   "category": "escalate",
+   "query": "HC127 C อยากซื้อ ต้องทำยังไง",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "ถ้าสนใจสั่งซื้อสายพาน HC127 C ต้องติดต่อฝ่ายขายโดยตรงครับ ผมดูแลเฉพาะข้อมูลสเปก เวลาติดต่อเตรียมข้อมูลสี่อย่างนี้ไปด้วยจะได้ใบเสนอราคาเร็วขึ้น ความกว้างที่ต้องการ · ความยาวสายพาน · เกรดวัสดุ · อุปกรณ์ประกอบถ้ามี เช่น สเตอร์\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-016",
+   "turn": "1",
+   "category": "escalate",
+   "query": "HC127 C เปิด PO ยังไง",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "ติดต่อฝ่ายขายได้ตามนี้ครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-018",
+   "turn": "1",
+   "category": "escalate",
+   "query": "ขอช่องทางติดต่อฝ่ายขาย",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "ติดต่อฝ่ายขายได้ตามนี้ครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-019",
+   "turn": "1",
+   "category": "escalate",
+   "query": "ขอเบอร์ฝ่ายขาย",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "ติดต่อฝ่ายขายได้ตามนี้ครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-020",
+   "turn": "1",
+   "category": "escalate",
+   "query": "ติดต่อใครได้บ้าง",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "เรื่องราคาของสายพาน MP80 C อยู่นอกข้อมูลที่ระบบมีครับ ต้องสอบถามฝ่ายขายโดยตรง เวลาติดต่อ แจ้งรุ่นสายพาน ความกว้าง ความยาว และจำนวนที่ต้องการไปด้วย จะได้คำตอบเร็วขึ้นครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-021",
+   "turn": "1",
+   "category": "escalate",
+   "query": "MP80 C ราคาเท่าไหร่",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "ถ้าสนใจสั่งซื้อสายพาน HC127 C ต้องติดต่อฝ่ายขายโดยตรงครับ ผมดูแลเฉพาะข้อมูลสเปก เวลาติดต่อเตรียมข้อมูลสี่อย่างนี้ไปด้วยจะได้ใบเสนอราคาเร็วขึ้น ความกว้างที่ต้องการ · ความยาวสายพาน · เกรดวัสดุ · อุปกรณ์ประกอบถ้ามี เช่น สเตอร์\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-022",
+   "turn": "1",
+   "category": "escalate",
+   "query": "HC127 C ถ้าอยากสั่งซื้อหล่ะ",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "เรื่อง lead time ของสายพาน HC508 C อยู่นอกข้อมูลที่ระบบมีครับ ต้องสอบถามฝ่ายขายโดยตรง เวลาติดต่อ แจ้งรุ่นสายพาน ความกว้าง ความยาว และจำนวนที่ต้องการไปด้วย จะได้คำตอบเร็วขึ้นครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-023",
+   "turn": "1",
+   "category": "escalate",
+   "query": "HC508 C lead time กี่วัน",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MP80 C** มีข้อมูลความกว้างมาตรฐานดังนี้ครับ\n\n* **ความกว้างสูงสุด:** 2,133.6 มม. (84.0 นิ้ว)\n* **ช่วงความกว้างมาตรฐาน:** สั่งได้ตั้งแต่ 101.6 ถึง 2,133.6 มม. โดยเพิ่มขึ้นทีละ 101.6 มม. (4.0 นิ้ว)\n\nสำหรับเรื่องราคาและส่วนลด ทางผมจะไม่สามารถแจ้งเป็นตัวเลขได้ครับ ข้อมูลในส่วนนี้จะต้องให้ทางเจ้าหน้าที่ฝ่ายขายเป็นผู้ประเมินและเสนอราคาโดยตรงครับ\n\nส่วนเรื่องราคาของสายพาน MP80 C ต้องสอบถามฝ่ายขายโดยตรงครับ เวลาติดต่อแจ้งความกว้าง ความยาว และจำนวนที่ต้องการไปด้วยนะครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-024",
+   "turn": "1",
+   "category": "escalate",
+   "query": "MP80 C กว้างสุดเท่าไหร่ แล้วราคาเมตรละเท่าไหร่",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 2.9,
+   "llm_usage": {
+    "prompt_token_count": 3930,
+    "candidates_token_count": 141,
+    "total_token_count": 4071
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสายพาน Modutech รุ่น **HC127 C** มีข้อมูลความกว้างและรายละเอียดดังนี้ครับ\n\n### 1. ความกว้างของสายพาน\n* **ขนาดมาตรฐานในตาราง:** มีตั้งแต่ **254.0 มม. ถึง 1,270.0 มม.** (10 ถึง 50 นิ้ว) ได้แก่:\n  * 254.0, 304.8, 355.6, 406.4, 457.2, 508.0, 558.8, 609.6, 660.4, 711.2, 762.0, 812.8, 863.6, 914.4, 965.2, 1,016.0, 1,066.8, 1,117.6, 1,168.4, 1,219.2 และ 1,270.0 มม.\n* **หมายเหตุเรื่องความกว้าง:**\n  * ยังไม่สามารถยืนยันค่าเพิ่มทีละมาตรฐานของรุ่นนี้ได้ เนื่องจากข้อมูลหมายเหตุกับตารางในเล่มระบุไม่ตรงกัน จึงต้องอ้างอิงตามรายการความกว้างในตารางเป็นหลักครับ\n  * แคตตาล็อกระบุความกว้างต่ำสุดไว้ที่ 101.6 มม. (4 นิ้ว) แต่ไม่ได้ระบุเงื่อนไขการสั่งผลิตเฉพาะช่วง 101.6–254.0 มม. หากต้องการความกว้างในช่วงนี้ จะต้องให้พนักงานฝ่ายขายยืนยันก่อนครับ\n  * สำหรับขนาดนอกมาตรฐาน แคตตาล็อกระบุว่าจะเพิ่มขึ้นทีละ 50.8 มม. (ซึ่งเป็นคนละค่ากับค่าเพิ่มทีละมาตรฐาน)\n\n---\n\n### 2. ข้อมูลสเปกเบื้องต้นสำหรับสั่งซื้อ\n* **ประเภทพื้นผิว:** Flat Top (ผิวเรียบทึบ ไม่มีพื้นที่เปิด / Open area 0%)\n* **ระยะพิทช์:** 12.7 มม. (0.5 นิ้ว)\n* **ความหนาสายพาน:** 8.0 มม.\n* **วัสดุ:** แคตตาล็อก 2026 ระบุเฉพาะเกรด **POM** (สีน้ำเงิน, สลัก POM) รับแรงดึงได้ 4,700 N/m น้ำหนัก 5.7 kg/m² *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด PP สำหรับรุ่นนี้)*\n\nสำหรับการสั่งซื้อ เช็กสต็อก ราคา หรือต้องการสั่งทำความกว้างนอกมาตรฐาน สามารถติดต่อสอบถามกับทางเจ้าหน้าที่ฝ่ายขายได้โดยตรงตามช่องทางติดต่อด้านล่างนี้ได้เลยครับ\n\nส่วนเรื่องสั่งซื้อของสายพาน HC127 C ต้องสอบถามฝ่ายขายโดยตรงครับ เวลาติดต่อแจ้งความกว้าง ความยาว และจำนวนที่ต้องการไปด้วยนะครับ\nติดต่อฝ่ายขาย: โทร 086-3451403 · อีเมล Beltmactech@gmail.com",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "ES-017",
+   "turn": "1",
+   "category": "escalate",
+   "query": "HC127 C กว้างเท่าไหร่ แล้วสั่งซื้อยังไง",
+   "metrics": [
+    "escalate"
+   ],
+   "seconds": 7.0,
+   "llm_usage": {
+    "prompt_token_count": 3729,
+    "candidates_token_count": 627,
+    "total_token_count": 4356
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "จากการค้นหาสายพาน Modutech ทั้ง 68 รุ่นในฐานข้อมูล มีรุ่นที่รองรับแรงดึงตั้งแต่ 50,000 N/m ขึ้นไป ทั้งหมด 3 รุ่น (ผลการค้นหาสมบูรณ์ครบถ้วน) โดยค่าความแข็งแรงจะขึ้นอยู่กับเกรดของวัสดุสายพานและสลัก (Pin) ดังนี้ครับ:\n\n1. **HD635 C** (ผิวหน้า Flat Top)\n   - วัสดุสายพาน POM-NL / สลัก SS: รองรับแรงดึงได้ **100,000 N/m**\n\n2. **MD508 C** (ผิวหน้า Flat Top)\n   - วัสดุสายพาน POM / สลัก PA: รองรับแรงดึงได้ **60,000 N/m**\n   - วัสดุสายพาน POM / สลัก POM: รองรับแรงดึงได้ **60,000 N/m**\n\n3. **MD508 NS** (ผิวหน้า Non Slip)\n   - วัสดุสายพาน POM / สลัก PA: รองรับแรงดึงได้ **56,000 N/m**\n   - วัสดุสายพาน POM / สลัก POM: รองรับแรงดึงได้ **56,000 N/m**\n\nหากต้องการตรวจสอบขนาด สเตอร์ หรือข้อมูลการใช้งานเพิ่มเติม สามารถแจ้งรายละเอียดที่ต้องการได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "EX-001",
+   "turn": "1",
+   "category": "explore",
+   "query": "ต้องการสายพานรับแรงดึงอย่างน้อย 50000 N/m",
+   "metrics": [
+    "explore"
+   ],
+   "seconds": 4.3,
+   "llm_usage": {
+    "prompt_token_count": 2341,
+    "candidates_token_count": 323,
+    "total_token_count": 2664
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "จากการค้นหาข้อมูลสายพาน Modutech ทั้ง 68 รุ่นในแคตตาล็อก มีรุ่นผิวลูกกลิ้ง (Roller Top) ทั้งหมด 5 รุ่น ดังนี้ครับ:\n\n1. **MD254 C-RT** (Closed Roller Top)\n   - วัสดุสายพาน / พิน: POM/PA, POM/POM\n2. **MD254 FG-RT** (Flush Grid Roller Top)\n   - วัสดุสายพาน / พิน: POM/PA, POM/POM\n3. **EC508 C-RT** (Closed Roller Top)\n   - วัสดุสายพาน / พิน: POM/PA, POM/POM\n4. **MD508 C-RT** (Closed Roller Top)\n   - วัสดุสายพาน / พิน: POM/PA, POM/POM\n5. **MD508 FG-RT** (Flush Grid Roller Top)\n   - วัสดุสายพาน / พิน: POM/PA, POM/POM, PP/PP, PP/POM\n\nทุกรุ่นข้างต้นเป็นสายพานทางตรง (ไม่รองรับการเลี้ยวโค้ง) ครับ หากต้องการทราบสเปกเพิ่มเติม เช่น ระยะพิทช์ หรือการเลือกใช้วัสดุให้เหมาะกับลักษณะงาน สามารถสอบถามเพิ่มเติมได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "EX-002",
+   "turn": "1",
+   "category": "explore",
+   "query": "สายพาน Modutech ผิวลูกกลิ้งมีรุ่นไหนบ้าง",
+   "metrics": [
+    "explore"
+   ],
+   "seconds": 3.7,
+   "llm_usage": {
+    "prompt_token_count": 2619,
+    "candidates_token_count": 290,
+    "total_token_count": 2909
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "จากการค้นหาข้อมูลในแคตตาล็อกสายพาน Modutech ทั้ง 68 รุ่น มีสายพานที่ใช้พิน/ก้านสแตนเลส (SS) จำนวน 2 รุ่น ดังนี้ครับ:\n\n1. **MD254 GAP48%-EHT**\n   * **ประเภทผิว:** Flush Grid\n   * **วัสดุสายพาน:** EHT\n   * **วัสดุก้าน:** SS (สแตนเลส)\n   * *หมายเหตุ:* ในส่วนของสภาวะใช้งานแบบเปียก แคตตาล็อกไม่มีข้อมูลระบุไว้ครับ\n\n2. **HD635 C**\n   * **ประเภทผิว:** Flat Top\n   * **วัสดุสายพาน:** POM-NL\n   * **วัสดุก้าน:** SS (สแตนเลส)\n\nหากต้องการทราบข้อมูลสเปกด้านอื่นเพิ่มเติม สามารถสอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "EX-003",
+   "turn": "1",
+   "category": "explore",
+   "query": "สายพาน Modutech ที่ใช้ก้านสแตนเลสมีรุ่นไหนบ้าง",
+   "metrics": [
+    "explore"
+   ],
+   "seconds": 3.0,
+   "llm_usage": {
+    "prompt_token_count": 2164,
+    "candidates_token_count": 196,
+    "total_token_count": 2360
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "จากการค้นหาข้อมูลสายพาน Modutech ทั้ง 68 รุ่นในฐานข้อมูล มีรุ่นที่มีพื้นที่เปิด (Open Area) ตั้งแต่ 45% ขึ้นไป ทั้งหมด 6 รุ่นดังนี้ครับ (พื้นผิวเป็นแบบ Flush Grid ทั้งหมด):\n\n1. **EC508 R** — พื้นที่เปิด **58%** (สายพานวิ่งทางโค้งได้)\n2. **EC508 TR** — พื้นที่เปิด **58%** (สายพานวิ่งทางโค้งได้)\n3. **MD127 GAP50%** — พื้นที่เปิด **50%** (สายพานวิ่งตรง)\n4. **SM254 FG50%** — พื้นที่เปิด **50%** (สายพานวิ่งตรง)\n5. **MD254 GAP48%** — พื้นที่เปิด **48%** (สายพานวิ่งตรง)\n6. **MD254 GAP48%-EHT** — พื้นที่เปิด **48%** (สายพานวิ่งตรง)\n\nหากต้องการข้อมูลเพิ่มเติมเกี่ยวกับวัสดุ สเปกการใช้งาน หรือความกว้างของแต่ละรุ่น สามารถสอบถามเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "EX-004",
+   "turn": "1",
+   "category": "explore",
+   "query": "มีสายพานพื้นที่เปิดอย่างน้อย 45% ไหม",
+   "metrics": [
+    "explore"
+   ],
+   "seconds": 3.2,
+   "llm_usage": {
+    "prompt_token_count": 3178,
+    "candidates_token_count": 257,
+    "total_token_count": 3435
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนนะครับว่าถามถึงสินค้าแบบไหน\n1. โซ่ท็อปเชน Movex — ลำเลียงขวด กระป๋อง ลัง ในไลน์บรรจุเครื่องดื่ม\n2. สายพานโมดูลาร์ Modutech — งานอาหาร เช่น เนื้อสัตว์ สัตว์ปีก อาหารทะเล เบเกอรี่ ผักผลไม้\nตอบเป็นเลขข้อหรือชื่อแบรนด์ได้เลยครับ ถ้ามีรหัสรุ่นหรือรูปสินค้าก็ส่งมาแทนได้",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "EX-005",
+   "turn": "1",
+   "category": "explore",
+   "query": "มีสายพานพิทช์ไม่เกิน 10 มม. ไหม",
+   "metrics": [
+    "explore"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "จากการค้นหาข้อมูลสายพาน Modutech ทั้ง 68 รุ่นในแคตตาล็อก มีรุ่นที่มีขนาดพิทช์ (Pitch) ไม่เกิน 10 มม. ทั้งหมด 4 รุ่น ซึ่งเป็นรุ่นพิทช์ **8.0 มม.** ดังนี้ครับ:\n\n1. **MP80 C** (ผิว Flat Top, วิ่งตรง)\n   - พิทช์: 8.0 มม.\n   - วัสดุสายพาน / พิน: POM/PA, POM/POM\n\n2. **MP80 FG** (ผิว Flush Grid, วิ่งตรง)\n   - พิทช์: 8.0 มม.\n   - วัสดุสายพาน / พิน: POM/PA, POM/POM, PA/PA\n\n3. **MP80 NP** (ผิว Negative Pyramid, วิ่งตรง)\n   - พิทช์: 8.0 มม.\n   - วัสดุสายพาน / พิน: POM/PA, POM/POM\n\n4. **MP80 NS** (ผิว Non Slip, วิ่งตรง)\n   - พิทช์: 8.0 มม.\n   - วัสดุสายพาน / พิน: POM/PA, POM/POM\n\n*(ข้อมูลนี้เป็นการค้นหาครบทั้ง 68 รุ่นในฐานข้อมูลครับ)*\n\nหากต้องการทราบข้อมูลสเปกเพิ่มเติม เช่น ความกว้าง อุณหภูมิการใช้งาน หรือให้ช่วยเลือกรุ่นที่เหมาะกับลักษณะงาน สอบถามเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "EX-005",
+   "turn": "2",
+   "category": "explore",
+   "query": "Modutech",
+   "metrics": [
+    "explore"
+   ],
+   "seconds": 4.2,
+   "llm_usage": {
+    "prompt_token_count": 2614,
+    "candidates_token_count": 333,
+    "total_token_count": 2947
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "จากการค้นหาข้อมูลสายพาน Modutech ทั้ง 68 รุ่นในฐานข้อมูล พบรุ่นที่มีน้ำหนักไม่เกิน 5.0 kg/m² ทั้งหมด 17 รุ่น โดยน้ำหนักจะขึ้นอยู่กับเกรดวัสดุสายพานและพิน ดังนี้ครับ\n\n1. **MD127 GAP50%** (Flush Grid)\n   - PP / พิน POM: 2.8 kg/m²\n   - PP / พิน PA: 2.8 kg/m²\n   - PA / พิน POM: 3.3 kg/m² (แคตตาล็อกไม่มีข้อมูลสภาวะเปียก)\n   - PA / พิน PA: 3.3 kg/m² (แคตตาล็อกไม่มีข้อมูลสภาวะเปียก)\n   - POM / พิน PA: 3.6 kg/m²\n   - POM / พิน POM: 3.6 kg/m²\n2. **SM254 FG50%** (Flush Grid)\n   - PA6 / พิน PA6: 3.7 kg/m²\n3. **SM127 FG** (Flush Grid)\n   - PP / พิน PP: 4.2 kg/m²\n   - PP / พิน POM: 4.2 kg/m²\n4. **MD254 GAP48%** (Flush Grid)\n   - PP / พิน PP: 4.2 kg/m²\n   - PP / พิน POM: 4.2 kg/m²\n5. **SM127 C** (Flat Top)\n   - PP / พิน PP: 4.3 kg/m²\n   - PP / พิน POM: 4.3 kg/m²\n6. **MP80 FG** (Flush Grid)\n   - POM / พิน PA: 4.4 kg/m²\n   - POM / พิน POM: 4.4 kg/m²\n   - PA / พิน PA: 4.4 kg/m² (แคตตาล็อกไม่มีข้อมูลสภาวะเปียก)\n7. **SM127 CRV** (Curve Top)\n   - PP / พิน PP: 4.4 kg/m²\n   - PP / พิน POM: 4.4 kg/m²\n8. **MD254 FG** (Flush Grid)\n   - PP / พิน PP: 4.6 kg/m²\n   - PP / พิน POM: 4.6 kg/m²\n9. **EC254 PR16** (Perforated Flat Top)\n   - PP / พิน PP: 4.5 kg/m²\n   - PP / พิน POM: 4.5 kg/m²\n   - PE / พิน POM: 4.7 kg/m²\n10. **EC254 R** (Flush Grid - วิ่งโค้งได้)\n    - PP / พิน PA: 4.7 kg/m²\n    - PP / พิน POM: 4.7 kg/m²\n11. **EC254 R-TABE** (Flush Grid - วิ่งโค้งได้)\n    - PP / พิน PA: 4.7 kg/m²\n    - PP / พิน POM: 4.7 kg/m²\n12. **EC254 R-TABM** (Flush Grid - วิ่งโค้งได้)\n    - PP / พิน PA: 4.7 kg/m²\n    - PP / พิน POM: 4.7 kg/m²\n13. **HC152 C** (Flat Top)\n    - PP / พิน PP: 4.3 kg/m²\n    - PE / พิน PE: 4.4 kg/m²\n    - PP / พิน POM: 4.8 kg/m²\n14. **SM127 FG-GT** (Grip Top)\n    - PP / พิน PP: 4.87 kg/m²\n15. **HC152 FG** (Flush Grid)\n    - PP / พิน PP: 4.3 kg/m²\n    - PE / พิน PE: 4.6 kg/m²\n    - PP / พิน POM: 4.9 kg/m²\n16. **EC254 C** (Flat Top)\n    - PP / พิน PP: 4.9 kg/m²\n    - PP / พิน POM: 4.9 kg/m²\n17. **XP254 PR22%** (Flush Grid)\n    - PP / พิน PP: 4.9 kg/m²\n    - PP / พิน POM: 4.9 kg/m²\n\nหากมีลักษณะผิวสายพาน สภาพแวดล้อมการใช้งาน (เช่น อุณหภูมิ ไลน์แห้งหรือเปียก) หรือความกว้างที่ต้องการ สามารถแจ้งเพิ่มเติมเพื่อคัดเลือกรุ่นที่เหมาะสมที่สุดได้ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "EX-006",
+   "turn": "1",
+   "category": "explore",
+   "query": "ต้องการสายพานน้ำหนักไม่เกิน 5 kg/m2",
+   "metrics": [
+    "explore"
+   ],
+   "seconds": 8.1,
+   "llm_usage": {
+    "prompt_token_count": 4228,
+    "candidates_token_count": 1128,
+    "total_token_count": 5356
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "จากการค้นหาในสายพาน Modutech ทั้ง 68 รุ่น พบรุ่นที่มีพื้นผิวแบบ **Flush Grid** ทั้งหมด 20 รุ่น ดังนี้ครับ:\n\n**สายพานวิ่งทางตรง (Straight Running):**\n1. **MP80 FG**\n2. **SM127 FG**\n3. **EC127 FG**\n4. **MD127 GAP50%**\n5. **HC152 FG**\n6. **SM254 FG50%**\n7. **MD254 FG**\n8. **MD254 GAP48%**\n9. **MD254 GAP48%-EHT**\n10. **EC508 FG**\n11. **MD508 FG**\n12. **XP254 PR22%**\n\n**สายพานวิ่งทางโค้ง (Radius / Curve Capable):**\n1. **EC254 R**\n2. **EC254 R-TABE**\n3. **EC254 R-TABM**\n4. **EC254 TR**\n5. **EC254 TR-TAB**\n6. **EC381 R**\n7. **EC508 R**\n8. **EC508 TR**\n\nหากต้องการทราบรายละเอียดเพิ่มเติมของรุ่นใด เช่น วัสดุ ค่าพิตช์ หรือการนำไปใช้งาน สามารถสอบถามเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "EX-007",
+   "turn": "1",
+   "category": "explore",
+   "query": "สายพานผิว Flush Grid มีรุ่นไหนบ้าง",
+   "metrics": [
+    "explore"
+   ],
+   "seconds": 4.2,
+   "llm_usage": {
+    "prompt_token_count": 5844,
+    "candidates_token_count": 322,
+    "total_token_count": 6166
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "จากการตรวจสอบข้อมูลสายพาน Modutech ทั้ง 68 รุ่นในฐานข้อมูล **ไม่มีรุ่นที่สามารถรับแรงดึงได้ตั้งแต่ 200,000 N/m ขึ้นไปครับ**\n\nหากลูกค้าต้องการทราบรุ่นที่รับแรงดึงได้สูงสุดของ Modutech หรือมีโจทย์การใช้งาน สเปกแรงดึงที่ต้องการ หรือประเภทงานที่กำลังออกแบบ สามารถแจ้งรายละเอียดเพิ่มเติมเพื่อให้ผมตรวจสอบรุ่นที่เหมาะสมที่สุดให้ได้นะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "EX-008",
+   "turn": "1",
+   "category": "explore",
+   "query": "มีสายพานรับแรงดึงเกิน 200000 N/m ไหม",
+   "metrics": [
+    "explore"
+   ],
+   "seconds": 3.3,
+   "llm_usage": {
+    "prompt_token_count": 2029,
+    "candidates_token_count": 94,
+    "total_token_count": 2123
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "จากการค้นหาในฐานข้อมูลสายพาน Modutech ทั้ง 68 รุ่น มีสายพานที่มีผิวสัมผัสกันลื่นทั้งหมด 11 รุ่น (ครอบคลุมทั้งผิว Non Slip, Grip Top และ Flush Grid Grip Top) ดังนี้ครับ:\n\n**1. ผิว Non Slip (NS / CR)**\n* **MP80 NS** (สายพานตรง, วัสดุ POM / พิน PA, POM)\n* **XP254 EVO CR** (สายพานตรง, วัสดุ POM / พิน PA)\n* **MD508 NS** (สายพานตรง, วัสดุ POM / พิน PA, POM, PP)\n\n**2. ผิว Grip Top (GT)**\n* **EC127 GT** (สายพานตรง, วัสดุ PP / พิน PP, POM)\n* **EC254 GT** (สายพานตรง, วัสดุ PP / พิน PP, POM)\n* **EC254 R-GT** (สายพานเลี้ยว (Radius), วัสดุ PP / พิน POM, PA)\n* **MD254 GT** (สายพานตรง, วัสดุ PP / พิน PP, POM)\n* **XP254 GT** (สายพานตรง, วัสดุ PP / พิน PP, POM)\n* **EC508 GT** (สายพานตรง, วัสดุ PP / พิน PP, POM)\n\n**3. ผิว Grip Top ร่วมกับ Flush Grid (FG-GT)**\n* **SM127 FG-GT** (สายพานตรง, วัสดุ PP / พิน PP, POM)\n* **HC152 FG-GT** (สายพานตรง, วัสดุ PP / พิน PP, POM)\n\nหากมีลักษณะการลำเลียง สภาพแวดล้อม (เปียก/แห้ง) หรือความกว้างหน้าสายพานที่ต้องการใช้งาน สามารถแจ้งเพิ่มเติมเพื่อคัดเลือกรุ่นที่เหมาะสมได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "EX-009",
+   "turn": "1",
+   "category": "explore",
+   "query": "สายพานผิวกันลื่นมีรุ่นไหนบ้าง",
+   "metrics": [
+    "explore"
+   ],
+   "seconds": 4.7,
+   "llm_usage": {
+    "prompt_token_count": 3156,
+    "candidates_token_count": 439,
+    "total_token_count": 3595
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "จากการค้นหาข้อมูลสายพาน Modutech ทั้ง 68 รุ่นในแคตตาล็อก มีรุ่นที่รองรับแรงดึงตั้งแต่ 50,000 N/m ขึ้นไป ทั้งหมด 3 รุ่น ดังนี้ครับ (ค่าความแข็งแรงขึ้นอยู่กับเกรดวัสดุสายพานและพิน):\n\n1. **HD635 C** (ผิว Flat Top, วิ่งตรง)\n   - วัสดุสายพาน **POM-NL** / พิน **SS**: รับแรงดึงได้ **100,000 N/m**\n\n2. **MD508 C** (ผิว Flat Top, วิ่งตรง)\n   - วัสดุสายพาน **POM** / พิน **PA**: รับแรงดึงได้ **60,000 N/m**\n   - วัสดุสายพาน **POM** / พิน **POM**: รับแรงดึงได้ **60,000 N/m**\n\n3. **MD508 NS** (ผิว Non Slip, วิ่งตรง)\n   - วัสดุสายพาน **POM** / พิน **PA**: รับแรงดึงได้ **56,000 N/m**\n   - วัสดุสายพาน **POM** / พิน **POM**: รับแรงดึงได้ **56,000 N/m**\n\n*(หมายเหตุ: ผลการค้นหานี้ครอบคลุมครบถ้วนทั้ง 68 รุ่นในฐานข้อมูลแคตตาล็อกแล้วครับ)*\n\nหากต้องการข้อมูลเพิ่มเติมเกี่ยวกับลักษณะการใช้งาน อุณหภูมิ หรือสเปกด้านอื่น ๆ สอบถามเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "EX-010",
+   "turn": "1",
+   "category": "explore",
+   "query": "ต้องการสายพานรับแรงดึงอย่างน้อย 50000 N/m",
+   "metrics": [
+    "explore"
+   ],
+   "seconds": 4.0,
+   "llm_usage": {
+    "prompt_token_count": 2341,
+    "candidates_token_count": 358,
+    "total_token_count": 2699
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "ต้องการระยะพิทช์ประมาณเท่าไหร่ครับ เช่น 12.7 มม. (½ นิ้ว) 25.4 มม. (1 นิ้ว) หรือ 50.8 มม. (2 นิ้ว) ถ้ายังไม่ทราบ ตอบว่าไม่ทราบได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-001",
+   "turn": "1",
+   "category": "application",
+   "query": "สายพานสำหรับไลน์ตัดแต่งเลาะกระดูกไก่ ใช้รุ่นไหนดี",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "ไลน์นี้ใช้งานที่อุณหภูมิประมาณกี่องศาครับ ถ้าไม่แน่ใจ ตอบว่าไม่ทราบได้ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-001",
+   "turn": "2",
+   "category": "application",
+   "query": "ไม่ทราบ",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับไลน์ตัดแบ่ง เลาะกระดูก และตัดแต่งสัตว์ปีก (Cut-up / Deboning / Trim Lines) ในแคตตาล็อก Modutech มีระบุไว้ทั้งหมด 6 รุ่น โดยแบ่งตามระยะพิทช์และวัสดุที่ระบุสำหรับงานนี้ได้ดังนี้ครับ:\n\n**1. กลุ่มระยะพิทช์ 50.8 มม. (2 นิ้ว) — งานรับภาระหนัก**\n* **EC508 C** (ผิวเรียบ Flat Top) — วัสดุ **PE**\n* **HC508 C** (ผิวเรียบ Flat Top, โครงสร้างบานพับเปิดช่วยเรื่องสุขอนามัย) — วัสดุ **PE**\n* **EC508 PR11** (ผิวเรียบเจาะรู Perforated Flat Top, พื้นที่เปิด 11% ช่วยระบายน้ำ) — วัสดุ **PE**\n\n**2. กลุ่มระยะพิทช์ 25.4 มม. (1 นิ้ว) — ขนาดมาตรฐานทั่วไป**\n* **EC254 C** (ผิวเรียบ Flat Top) — วัสดุ **PE**\n\n**3. กลุ่มระยะพิทช์เล็ก / ละเอียด — เหมาะสำหรับจุดถ่ายโอนแคบ**\n* **HC127 C** (พิทช์ 12.7 มม. ผิวเรียบ Flat Top) — วัสดุ **POM**\n* **MP80 C** (พิทช์ 8.0 มม. ผิวเรียบ Flat Top ระดับ Micropitch สำหรับ Knife Edge) — วัสดุ **POM**\n\n*(หมายเหตุ: เกรดวัสดุข้างต้นเป็นเกรดที่แคตตาล็อก 2026 ระบุไว้สำหรับการใช้งานในไลน์นี้โดยเฉพาะ)*\n\nหากในอนาคตทราบข้อมูลเพิ่มเติม เช่น ระยะพิทช์ ความกว้างสายพานที่ต้องการ หรืออุณหภูมิและสภาวะการใช้งาน (เปียก/แห้ง) สามารถแจ้งเพิ่มเติมเพื่อช่วยคัดเลือกรุ่นที่เหมาะสมที่สุดให้แคบลงได้ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-001",
+   "turn": "3",
+   "category": "application",
+   "query": "ไม่ทราบ",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 5.4,
+   "llm_usage": {
+    "prompt_token_count": 14012,
+    "candidates_token_count": 451,
+    "total_token_count": 14463
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับงานทางเข้าเตาอบ (Oven Infeed / Outfeed) ในอุตสาหกรรมเบเกอรี่ (Bakery Processing) แคตตาล็อก Modutech 2026 ระบุรุ่นที่รองรับทั้งหมด 7 รุ่น พร้อมเกรดวัสดุดังนี้ครับ:\n\n1. **EC127 FG** — วัสดุ **PP**\n2. **MD127 GAP50%** — วัสดุ **POM**\n3. **MD254 GAP48%** — วัสดุ **POM**\n4. **MP80 C** — วัสดุ **POM**\n5. **MP80 FG** — วัสดุ **POM**\n6. **MP80 NS** — วัสดุ **POM**\n7. **SM254 FG50%** — วัสดุ **PA6** *(หมายเหตุ: หน้างานในเล่มแนะนำเกรด PA แต่ในตารางสเปกแคตตาล็อก 2026 ระบุเฉพาะเกรด PA6 โดยเกรด PA6 นี้แคตตาล็อกไม่แนะนำให้ใช้ในสภาวะเปียกครับ)*\n\nหากต้องการเจาะจงเลือกรุ่นที่เหมาะสมกับความกว้างสายพานหรือลักษณะผลิตภัณฑ์เพิ่มเติม สามารถสอบถามรายละเอียดสเปกได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-002",
+   "turn": "1",
+   "category": "application",
+   "query": "สายพานทางเข้าเตาอบขนมปัง ใช้รุ่นไหนได้บ้าง",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 4.3,
+   "llm_usage": {
+    "prompt_token_count": 13968,
+    "candidates_token_count": 285,
+    "total_token_count": 14253
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MP80 C** มีระบุการใช้งานในแคตตาล็อกครอบคลุม 5 กลุ่มอุตสาหกรรมหลัก ดังนี้ครับ:\n\n1. **อุตสาหกรรมแปรรูปเนื้อสัตว์**\n   - ไลน์ตัดและเลาะกระดูก\n   - ลำเลียงจุดถ่ายโอน\n   - เครื่องตรวจจับโลหะ\n   - ไลน์เนื้อบด\n   - การลำเลียงกล่อง\n\n2. **อุตสาหกรรมสัตว์ปีก**\n   - ไลน์ตัดแบ่ง เลาะกระดูก และตัดแต่ง\n   - การคัดเกรดและคัดขนาด\n   - เครื่องตรวจจับโลหะ\n   - การบรรจุและติดฉลาก\n\n3. **อุตสาหกรรมปลาและอาหารทะเล**\n   - โต๊ะตรวจสอบ\n   - การเคลือบน้ำแข็ง\n\n4. **อุตสาหกรรมเบเกอรี่**\n   - การลำเลียงแป้งดิบ\n   - ทางเข้า-ออกเตาอบ\n   - ทางเข้า-ออกสไปรัล\n\n5. **อุตสาหกรรมบรรจุภัณฑ์**\n   - เครื่องชั่งน้ำหนักตรวจสอบ\n   - ลำเลียงเข้าเครื่องติดฉลาก\n   - ลำเลียงกล่องแนวราบ\n\n*(ทุกการใช้งานข้างต้น แคตตาล็อกระบุเป็นวัสดุ **POM** ครับ)*\n\nจุดเด่นของรุ่นนี้คือเป็นโครงสร้าง Micropitch ผิวทึบเรียบ (Flat Top) เหมาะเป็นพิเศษสำหรับจุดถ่ายโอนแคบ งาน Nosebar หรือ Knife edge ที่ต้องการส่งต่อสินค้าระหว่างสายพานโดยไม่สะดุดหรือล้มครับ หากต้องการข้อมูลการใช้งานในจุดใดเพิ่มเติม สอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-003",
+   "turn": "1",
+   "category": "application",
+   "query": "MP80 C ใช้กับอุตสาหกรรมอะไรบ้าง",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 4.7,
+   "llm_usage": {
+    "prompt_token_count": 3920,
+    "candidates_token_count": 381,
+    "total_token_count": 4301
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true
+   },
+   "passed": true,
+   "reply": "สำหรับงานไลน์แล่ปลา ในแคตตาล็อก Modutech ไม่ได้ระบุงาน \"แล่ปลา\" ไว้โดยตรงครับ แต่ในกลุ่มอุตสาหกรรม **ปลาและอาหารทะเล (Fish & Seafood)** มีสายพานที่ระบุการใช้งานในไลน์แปรรูป โต๊ะตรวจสอบ และการตัดแต่ง โดยมีรุ่นที่มีเกรดทนการบาด (Cut Resistant) และรุ่นอื่น ๆ ที่เกี่ยวข้องดังนี้ครับ:\n\n**รุ่นที่มีเกรดทนการบาด (Cut Resistant):**\n* **HC508 C-MTW**: มีเกรด **CR (Cut Resistant)** และ **ICR** (รวมถึงเกรดมาตรฐาน POM, PP, PE) ในแคตตาล็อกระบุการใช้งานสำหรับไลน์แปรรูปและโต๊ะตรวจสอบ \n\n**รุ่นอื่น ๆ ที่ระบุสำหรับไลน์แปรรูปในอุตสาหกรรมปลาและอาหารทะเล (แคตตาล็อกไม่ได้ระบุเกรด CR สำหรับรุ่นเหล่านี้):**\n* **EC254 C**: แคตตาล็อกระบุงานโต๊ะตรวจสอบ, เครื่องตรวจจับโลหะ, ลำเลียงยกระดับแนวชัน (เกรด PE)\n* **EC508 C**: แคตตาล็อกระบุงานไลน์แปรรูป (เกรด PP, POM), โต๊ะตรวจสอบ (PE, PP)\n* **HC127 C**: แคตตาล็อกระบุงานไลน์แปรรูป และโต๊ะตรวจสอบ (เกรด POM)\n* **MD254 C**: แคตตาล็อกระบุงานไลน์แปรรูป (เกรด POM)\n\n*(รุ่นอื่น ๆ ที่ระบุในกลุ่มอุตสาหกรรมปลาและอาหารทะเล: MP80 C, MP80 FG, MP80 NP, MP80 NS, SM127 CRV, SM127 FG, EC127 C, EC127 FG, MD127 GAP50%, HC152 C, HC152 FG, EC254 NT, EC254 PR16, EC254 R, EC254 R-GT, EC254 TR, MD254 FG, MD254 GAP48%, MD254 GT, EC381 R, EC508 FG, EC508 FG-NT, EC508 NT, EC508 PR11, EC508 R, EC508 TR, HC508 C, MD508 C, MD508 FG)*\n\nหากต้องการเจาะจงเลือกรุ่นที่เหมาะสมกับหน้างานจริง สามารถสอบถามข้อมูลสเปกเพิ่มเติม เช่น ขนาดความกว้าง หรือสภาวะการใช้งานได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-004",
+   "turn": "1",
+   "category": "application",
+   "query": "สายพานสำหรับไลน์แล่ปลา",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 5.5,
+   "llm_usage": {
+    "prompt_token_count": 12562,
+    "candidates_token_count": 590,
+    "total_token_count": 13152
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับงานล้างผักและผลไม้ (Prewashing / Rinsing และ Washers) ในอุตสาหกรรมผักและผลไม้ (Fruit & Vegetable) แคตตาล็อก Modutech 2026 ระบุรุ่นสายพานที่รองรับการใช้งานไว้ครบทั้ง 10 รุ่น พร้อมเกรดวัสดุที่แนะนำดังนี้ครับ:\n\n1. **EC254 PR16** (ผิว Perforated Flat Top, ระยะพิทช์ 25.4 มม., พื้นที่เปิด 16%) — วัสดุ: **PE, PP**\n2. **EC508 FG** (ผิว Flush Grid, ระยะพิทช์ 50.8 มม., พื้นที่เปิด 35%) — วัสดุ: **PE, PP**\n3. **EC508 FG-NT** (ผิว Flush Grid Nub Top, ระยะพิทช์ 50.8 มม., พื้นที่เปิด 35%) — วัสดุ: **PE, PP**\n4. **EC508 PR11** (ผิว Perforated Flat Top, ระยะพิทช์ 50.8 มม., พื้นที่เปิด 11%) — วัสดุ: **PE, PP** *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด POM สำหรับรุ่นนี้)*\n5. **EC508 PR13** (ผิว Perforated Flat Top, ระยะพิทช์ 50.8 มม., พื้นที่เปิด 13%) — วัสดุ: **PE, PP**\n6. **EC508 PR22%** (ผิว Perforated Flat Top, ระยะพิทช์ 50.8 มม., พื้นที่เปิด 22%) — วัสดุ: **PE, PP**\n7. **HC508 PR22** (ผิว Perforated Flat Top, ระยะพิทช์ 50.8 มม., พื้นที่เปิด 22%) — วัสดุ: **PE, PP**\n8. **MD254 FG** (ผิว Flush Grid, ระยะพิทช์ 25.4 มม., พื้นที่เปิด 33%) — วัสดุ: **PP**\n9. **MD508 FG** (ผิว Flush Grid, ระยะพิทช์ 50.8 มม.) — วัสดุ: **POM, PP**\n10. **MD508 PR25** (ผิว Perforated Flat Top, ระยะพิทช์ 50.8 มม.) — วัสดุ: **PP**\n\n**แนวทางการเลือกเบื้องต้น:**\n* **ผักชิ้นเล็ก / ผักใบ / ชิ้นส่วนที่อาจตกร่อง:** แนะนำกลุ่มผิวเจาะรูเรียบ (Perforated Flat Top เช่น EC254 PR16 หรือ EC508 PR ต่าง ๆ) เพื่อช่วยพยุงสินค้าไม่ให้ร่วงหรือช้ำ พร้อมระบายน้ำได้ดี\n* **ผักชิ้นใหญ่ / ต้องการระบายน้ำและสิ่งสกปรกปริมาณมาก:** แนะนำกลุ่มตะแกรงเปิด (Flush Grid เช่น MD254 FG, EC508 FG) ที่เปิดพื้นที่ให้น้ำล้างผ่านได้สะดวก\n\nหากคุณลูกค้าต้องการทราบข้อมูลสเปกความกว้าง หรือช่วงอุณหภูมิการใช้งานของรุ่นและวัสดุใดเป็นพิเศษ สามารถสอบถามเพิ่มเติมได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-005",
+   "turn": "1",
+   "category": "application",
+   "query": "สายพานสำหรับล้างผัก",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 7.3,
+   "llm_usage": {
+    "prompt_token_count": 21934,
+    "candidates_token_count": 743,
+    "total_token_count": 22677
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับงานลำเลียงกล่องลูกฟูก (Corrugated) ในแคตตาล็อก Modutech มีสายพานที่ระบุการใช้งานครอบคลุมทั้งหมด 16 รุ่น พร้อมเกรดวัสดุที่แนะนำ ดังนี้ครับ:\n\n1. **EC127 C** (วัสดุ POM) – ผิวทึบ (Flat Top) พิทช์เล็ก 12.7 มม. เหมาะกับจุดถ่ายโอนปลายแคบ (nosebar/knife edge)\n2. **EC127 FG** (วัสดุ POM) – ผิวตะแกรง (Flush Grid)\n3. **EC127 GT** (วัสดุ PP) – ผิวยางกันลื่น (Grip Top) สำหรับทางลาดขึ้น-ลง หรือจุดถ่ายโอน 90 องศา\n4. **HC152 C** (วัสดุ POM) – ผิวทึบ (Flat Top) พิทช์ 15.24 มม. วิ่งนุ่ม ลด polygon effect\n5. **HC152 FG-GT** (วัสดุ PP) – ผิวตะแกรงกันลื่น (Flush Grid Grip Top)\n6. **HD254 C** (วัสดุ POM) – ผิวทึบ (Flat Top) โครงสร้างหนาแข็งแรง รับโหลดสูง (เช่น งานจัดเรียงพาเลท)\n7. **MD254 C** (วัสดุ POM) – ผิวทึบ (Flat Top) พิทช์ 25.4 มม. แข็งแรง รับโหลดได้ดี\n8. **MD508 C** (วัสดุ POM) – ผิวทึบ (Flat Top) พิทช์ 50.8 มม. โครงสร้างหนาพิเศษ รับโหลดสูง\n9. **MD508 NS** (วัสดุ POM)\n10. **SM127 C** (วัสดุ POM)\n11. **SM127 FG** (วัสดุ POM)\n12. **XP254 BT** (วัสดุ POM)\n13. **XP254 C** (วัสดุ POM)\n14. **XP254 EVO CR** (วัสดุ POM)\n15. **XP254 EVO FLT** (วัสดุ POM)\n16. **XP254 PR22%** (วัสดุ POM)\n\n*(หมายเหตุ: สายพานรุ่น HD254 C ความกว้างแคบสุดที่ยืนยันได้ตามสเปกคือ 170 มม. หากต้องการขนาด 85 มม. ต้องยืนยันกับฝ่ายขายก่อนครับ)*\n\nสายพานกลุ่มนี้รองรับหลากหลายตำแหน่งในไลน์ เช่น เครื่องเรียงกล่องลง (Down Stacker), รถลำเลียงถ่ายโอน (Transfer Car), การจัดการกองกล่อง (Stack Handling), จุดถ่ายโอน 90 องศา (90° Transfer), ชุดป้อนชิ้นงาน (Feeder) และเครื่องจัดเรียงพาเลท (Palletizer) หากต้องการเลือกรุ่นที่ตรงกับตำแหน่งการทำงานหรือขนาดความกว้างเฉพาะ สามารถแจ้งรายละเอียดเพิ่มเติมได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-006",
+   "turn": "1",
+   "category": "application",
+   "query": "สายพานสำหรับลำเลียงกล่องลูกฟูก",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 6.1,
+   "llm_usage": {
+    "prompt_token_count": 15348,
+    "candidates_token_count": 704,
+    "total_token_count": 16052
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับงานเข้า**เครื่องตรวจจับโลหะ (Metal Detection)** ในแคตตาล็อก Modutech มีสายพานที่ระบุการใช้งานครอบคลุมทั้งหมด 17 รุ่น พร้อมเกรดวัสดุที่แนะนำสำหรับงานนี้ ดังนี้ครับ:\n\n1. **EC127 C** — เกรด PE, PP\n2. **EC127 FG** — เกรด PE, PP\n3. **EC254 C** — เกรด PE, PP\n4. **EC254 NT** — เกรด PE\n5. **EC508 C** — เกรด PE\n6. **EC508 PR11** — เกรด PE *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด POM สำหรับรุ่นนี้)*\n7. **EC508 PR22%** — เกรด PE\n8. **HC127 C** — เกรด POM *(หมายเหตุ: แคตตาล็อก 2026 ไม่มีเกรด PP สำหรับรุ่นนี้)*\n9. **HC152 C** — เกรด PE, POM, PP\n10. **HC152 FG** — เกรด PE, PP\n11. **HC508 C** — เกรด PE\n12. **HC508 C-MTW** — เกรด PE\n13. **MD127 GAP50%** — เกรด POM, PP\n14. **MD254 C** — เกรด PE, PP\n15. **MD254 FG** — เกรด PE, PP\n16. **MP80 C** — เกรด POM\n17. **SM127 C** — เกรด PP\n\nทั้งนี้ การเลือกใช้งานจะขึ้นอยู่กับขนาดชิ้นงาน ลักษณะการลำเลียง (ผิวทึบหรือผิวเปิดระบายน้ำ) และสภาพแวดล้อมของไลน์ หากต้องการดูสเปกอย่างละเอียดของรุ่นใดเพิ่มเติม สามารถแจ้งสอบถามได้เลยครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-007",
+   "turn": "1",
+   "category": "application",
+   "query": "สายพานเข้าเครื่องตรวจจับโลหะ",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 5.0,
+   "llm_usage": {
+    "prompt_token_count": 19284,
+    "candidates_token_count": 448,
+    "total_token_count": 19732
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สายพาน Modutech รุ่น **MP80 C** สามารถใช้กับงานเบเกอรี่ได้ครับ โดยในแคตตาล็อกระบุการใช้งานในอุตสาหกรรมเบเกอรี่ไว้สำหรับงานดังนี้ครับ:\n\n* **การลำเลียงแป้งดิบ (Raw dough handling)**\n* **ทางเข้า-ออกเตาอบ (Oven infeed and outfeed)**\n* **ทางเข้า-ออกสไปรัล (Spiral infeed and outfeed)**\n\n**คุณสมบัติเด่นของรุ่น MP80 C:**\n* ผิวหน้าทึบเรียบ (Flat Top / Closed surface) \n* เป็นโครงสร้าง micropitch (ระยะพิทช์ 8 มม.) เหมาะอย่างยิ่งสำหรับจุดถ่ายโอนแคบ (nosebar / knife edge transfer) ช่วยให้สินค้าหรือแป้งชิ้นเล็กส่งผ่านได้ราบรื่น ไม่สะดุดหรือล้ม\n* วัสดุเป็น **POM** (มีสลักเชื่อมให้เลือกระหว่าง PA หรือ POM) แข็งแรงและยืดหยุ่น ติดตั้งและบำรุงรักษาง่าย ได้รับการรับรองมาตรฐาน FDA และ EU สำหรับสัมผัสอาหาร\n\n*หมายเหตุ: เนื่องจากรุ่นนี้เป็นผิวทึบ (Open area 0%) จึงเหมาะกับการลำเลียงทั่วไปหรือจุดรับส่ง หากกระบวนการต้องการการระบายความร้อน การสะเด็ดน้ำ หรือการไหลเวียนของลม ในซีรีส์เดียวกันจะมีตัวเลือกผิวเปิดอย่างรุ่น MP80 FG (Flush Grid) ด้วยครับ*",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "AP-008",
+   "turn": "1",
+   "category": "application",
+   "query": "MP80C ใช้กับเบเกอรี่ได้ไหม",
+   "metrics": [
+    "application"
+   ],
+   "seconds": 4.5,
+   "llm_usage": {
+    "prompt_token_count": 3918,
+    "candidates_token_count": 325,
+    "total_token_count": 4243
+   },
+   "model_version": "gemini-3.8-flash"
+  }
+ ]
+}

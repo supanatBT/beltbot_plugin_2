@@ -17,7 +17,7 @@ from typing import Callable, Optional
 from core.protocol import Decision   # ชนิดเท่านั้น — รับทั้ง Decision ของแกนกลางและรูปเดิม
 from brands.modutech import need_flow as NF
 from brands.modutech.gates import Catalogue, Slots, run_gates, sprocket_gate
-from brands.modutech.router import (INDUSTRY_KEYWORDS, CatalogueSearch, ExploratoryQuery, NO_ABSENCE_NOTE_TH,
+from brands.modutech.router import (CMP_OPS, INDUSTRY_KEYWORDS, CatalogueSearch, ExploratoryQuery, NO_ABSENCE_NOTE_TH,
                                      belt_grade_note_th)
 
 SPROCKET_TOPIC = r"สเตอร์|เฟือง|sprocket|จำนวนฟัน"
@@ -675,7 +675,7 @@ def make_search_tool(search: CatalogueSearch, tracked: Optional[Callable] = None
         Parameters
         ----------
         field         : "strength" (N/m) | "weight" (kg/m²) | "open_area" (%) | "pitch" (mm) | "" ไม่กรองตัวเลข
-        op            : ">=" | "<="
+        op            : ">=" | "<=" | ">" | "<"  (">" = มากกว่าโดยไม่รวมค่านั้นเอง)
         value         : ค่าตัวเลขของเงื่อนไข
         surface       : ชื่อผิวภาษาอังกฤษ เช่น "Roller Top", "Flush Grid" ("" = ไม่กรอง)
         pin_material  : เช่น "SS" ("" = ไม่กรอง)
@@ -685,6 +685,11 @@ def make_search_tool(search: CatalogueSearch, tracked: Optional[Callable] = None
         ไม่มีอุณหภูมิและความกว้าง — สองค่านี้ต้องผ่านการถามเปียก/แห้งและกฎความกว้างของระบบก่อน
         """
         rk = (rank or "").strip().lower() or None
+        op = (op or ">=").strip().replace("=>", ">=").replace("=<", "<=")
+        if op == "=":
+            op = "=="
+        if op not in CMP_OPS:
+            return f"op ไม่ถูกต้อง: {op!r} — ใช้ได้เฉพาะ >=, <=, >, <"
         ranked = rk in ("max", "min") and bool(field)
         q = ExploratoryQuery(field=field or None, op=None if ranked else (op or ">="),
                              value=None if (ranked or not field) else value, surface=surface or None,

@@ -12,6 +12,7 @@ test_core_decide.py — core/decide.py + brands/*/plugin.py (ชั้น 4)
 from __future__ import annotations
 
 import json
+import re
 import os
 import shutil
 import subprocess
@@ -228,6 +229,17 @@ def main() -> int:
               and b[k]["reply_th"] in _new_rej]
     diff = [k for k in diff if k not in reword]
     print(f"      27 ต.ค.: ข้อความปฏิเสธรูปเป็นถ้อยคำทางการ {len(reword)} เทิร์น (ต่างเฉพาะ reply_th)")
+    # 30 ต.ค. (c0e4d2c): ตอบเมนูแบรนด์ด้วยเลขข้อล้วน → ไม่ต่อเลขท้ายคำถามที่ค้าง
+    # ต่างได้เฉพาะ effective_text (เดิม = ใหม่ + " เลข") และ state ที่เก็บข้อความนั้น — action · reason · payload เท่าเดิม
+    def _menu_digit(k):
+        if not (isinstance(a[k], dict) and isinstance(b[k], dict)):
+            return False
+        fields = [f for f in a[k] if a[k].get(f) != b[k].get(f)]
+        old_t, new_t = a[k].get("effective_text") or "", b[k].get("effective_text") or ""
+        return set(fields) <= {"effective_text", "state"} and re.fullmatch(re.escape(new_t) + r" \d+", old_t) is not None
+    menu = [k for k in diff if _menu_digit(k)]
+    diff = [k for k in diff if k not in menu]
+    print(f"      30 ต.ค.: ตอบเมนูด้วยเลขล้วน ไม่ต่อท้ายคำถาม {len(menu)} เทิร์น (ต่างเฉพาะ effective_text · state)")
     print(f"      เฟส 2: ข้ามบทสนทนาที่ตั้งใจเลือกแบรนด์ต่าง {len(conv_changed)} บท ({len(skipped)} เทิร์น)")
     bad_skip = [k for k in skipped if isinstance(b.get(k), dict) and routing_changed(b[k].get("effective_text", ""))
                 and b[k]["brand"] not in ("modutech", None)]
@@ -257,7 +269,6 @@ def main() -> int:
 
     print("\n2) แกนกลางไม่รู้จักแบรนด์")
     sys.path.insert(0, ROOT)
-    import re
     for f in sorted(os.listdir(os.path.join(ROOT, "core"))):
         if f.endswith(".py"):
             src = open(os.path.join(ROOT, "core", f), encoding="utf-8").read()

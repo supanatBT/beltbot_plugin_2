@@ -1,0 +1,307 @@
+{
+  "module": "assistant",
+  "testcases": "testcases_probe_interpreter.csv",
+  "results": [
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_any": true
+      },
+      "passed": true,
+      "reply": "จากฐานข้อมูลสายพาน Modutech ทั้ง 68 รุ่น รุ่นที่มีค่าความแข็งแรง (Tensile Strength) สูงสุด 5 อันดับแรก (ค่าความแข็งแรงขึ้นอยู่กับเกรดวัสดุสายพานและพิน) มีดังนี้ครับ:\n\n1. **HD635 C** (Flat Top) — **แข็งแรงสูงสุดในฐานข้อมูล**\n   - วัสดุ POM-NL / พิน SS: **100,000 N/m**\n\n2. **MD508 C** (Flat Top)\n   - วัสดุ POM / พิน PA หรือ พิน POM: **60,000 N/m**\n   - วัสดุ PP / พิน PP หรือ พิน POM: 37,400 N/m\n   - วัสดุ POM / พิน PP: 35,000 N/m\n   - วัสดุ PE / พิน POM: 26,400 N/m\n\n3. **MD508 NS** (Non Slip)\n   - วัสดุ POM / พิน PA หรือ พิน POM: **56,000 N/m**\n   - วัสดุ POM / พิน PP: 33,000 N/m\n\n4. **HP508 RR** (Raised Rib)\n   - วัสดุ POM / พิน POM: **45,500 N/m**\n   - วัสดุ PPH / พิน PPH: 34,200 N/m\n\n5. **MD508 C-RT** (Roller Top)\n   - วัสดุ POM / พิน PA หรือ พิน POM: **42,000 N/m**\n\n*หมายเหตุ: ค่าความแข็งแรงของสายพานขึ้นอยู่กับเกรดของวัสดุสายพานและสลักยึด (Pin) ที่เลือกใช้ หากมีลักษณะการใช้งาน อุณหภูมิ หรือสภาวะหน้างานเฉพาะ สามารถแจ้งเพิ่มเติมเพื่อช่วยดูรุ่นที่เหมาะสมได้ครับ*",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "QI-D1",
+      "turn": "1",
+      "subcategory": "modutech",
+      "query": "สายพาน Modutech แบบที่แข็งแรงพิเศษ ๆ มีรุ่นไหน",
+      "description": "กฎ regex ไม่จับ · ควรจัดอันดับแรงดึง · HD635 C 100000 · MD508 C 60000",
+      "seconds": 7.2,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_182852_a79464_t001`\n**Effective query:** สายพาน Modutech แบบที่แข็งแรงพิเศษ ๆ มีรุ่นไหน\n\n**Decision:** search · brand=modutech · ตีความคำถาม (LLM 2535 ms) → ค้นทั้งฐาน\n\n**Modutech:** search: 68/68\n\n**State patch:** modutech {'slots': {'_offered': ['HD635 C', 'MD508 C', 'MD508 NS', 'HP508 RR', 'MD508 C-RT']}}\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "จากการค้นหาจากสายพาน Modutech ทั้ง 68 รุ่น 5 อันดับแรกที่มีน้ำหนักน้อยที่สุด (น้ำหนักขึ้นอยู่กับเกรดวัสดุของสายพานและพิน) มีดังนี้ครับ:\n\n1. **MD127 GAP50%** (Flush Grid) — น้ำหนักต่ำสุดในแคตตาล็อก\n   - สายพาน PP / พิน POM หรือ PA: **2.8 kg/m²**\n   - สายพาน PA / พิน POM หรือ PA: **3.3 kg/m²**\n   - สายพาน POM / พิน PA หรือ POM: **3.6 kg/m²**\n\n2. **SM254 FG50%** (Flush Grid)\n   - สายพาน PA6 / พิน PA6: **3.7 kg/m²**\n\n3. **SM127 FG** (Flush Grid)\n   - สายพาน PP / พิน PP หรือ POM: **4.2 kg/m²**\n   - สายพาน POM / พิน PA, POM หรือ PP: **6.1 kg/m²**\n\n4. **MD254 GAP48%** (Flush Grid)\n   - สายพาน PP / พิน PP หรือ POM: **4.2 kg/m²**\n   - สายพาน PA / พิน PA: **5.6 kg/m²**\n   - สายพาน POM / พิน PA, POM หรือ PP: **6.4 kg/m²**\n\n5. **SM127 C** (Flat Top)\n   - สายพาน PP / พิน PP หรือ POM: **4.3 kg/m²**\n   - สายพาน POM / พิน PA, POM หรือ PP: **6.2 kg/m²**\n\n*หมายเหตุ: ค่าน้ำหนักขึ้นอยู่กับเกรดวัสดุสายพานและพินที่เลือกใช้งานครับ* หากต้องการให้แนะนำเพิ่มเติมตามลักษณะหน้างาน (เช่น ความกว้าง อุณหภูมิ หรือสภาวะแห้ง/เปียก) แจ้งข้อมูลเพิ่มเติมได้เลยนะครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "QI-D2",
+      "turn": "1",
+      "subcategory": "modutech",
+      "query": "Modutech มีสายพานรุ่นที่น้ำหนักเบา ๆ ไหม",
+      "description": "กฎ regex ไม่จับ ('เบา ๆ') · ควรเรียงน้ำหนักน้อย · MD127 GAP50% PP 2.8",
+      "seconds": 7.6,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_182902_46edda_t001`\n**Effective query:** Modutech มีสายพานรุ่นที่น้ำหนักเบา ๆ ไหม\n\n**Decision:** search · brand=modutech · ตีความคำถาม (LLM 2538 ms) → ค้นทั้งฐาน\n\n**Modutech:** search: 68/68\n\n**State patch:** modutech {'slots': {'wet_or_dry': 'wet', '_offered': ['MD127 GAP50%', 'SM254 FG50%', 'SM127 FG', 'MD254 GAP48%', 'SM127 C']}}\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_any": true
+      },
+      "passed": true,
+      "reply": "จากการค้นหาข้อมูลสายพาน Modutech ทั้ง 68 รุ่น รุ่นที่มีพื้นที่เปิด (Open Area) สูงสุด ซึ่งช่วยในการระบายน้ำได้ดีที่สุด 5 อันดับแรก มีดังนี้ครับ:\n\n1. **EC508 R** — พื้นที่เปิด **58.0%** (ผิว Flush Grid, วิ่งโค้งได้)\n   - มีทั้งวัสดุสายพาน POM และ PP (พิน PA หรือ POM)\n2. **EC508 TR** — พื้นที่เปิด **58.0%** (ผิว Flush Grid, วิ่งโค้งได้)\n   - มีทั้งวัสดุสายพาน POM และ PP (พิน PA หรือ POM)\n3. **MD127 GAP50%** — พื้นที่เปิด **50.0%** (ผิว Flush Grid, สายพานตรง)\n   - มีวัสดุ POM, PP และ PA (พิน PA หรือ POM)\n4. **SM254 FG50%** — พื้นที่เปิด **50.0%** (ผิว Flush Grid, สายพานตรง)\n   - วัสดุ PA6 (พิน PA6)\n5. **MD254 GAP48%** — พื้นที่เปิด **48.0%** (ผิว Flush Grid, สายพานตรง)\n   - มีวัสดุ POM, PP และ PA (พิน PA, POM หรือ PP)\n\nรุ่นที่มีพื้นที่เปิดสูงสุดคือ **EC508 R** และ **EC508 TR** ที่ 58% ครับ ทั้งนี้ ค่าคุณสมบัติอื่นๆ เช่น ความแข็งแรง น้ำหนัก หรือการทนอุณหภูมิ จะขึ้นอยู่กับเกรดของวัสดุสายพานและพินที่เลือกใช้งาน หากมีข้อมูลลักษณะหน้างานเพิ่มเติมสามารถแจ้งเพื่อคัดกรองรุ่นที่เหมาะสมได้ครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "QI-D3",
+      "turn": "1",
+      "subcategory": "modutech",
+      "query": "สายพาน Modutech ที่ระบายน้ำได้ดีที่สุด",
+      "description": "ควรเป็นพื้นที่เปิดสูงสุด · EC508 R/TR 58%",
+      "seconds": 8.7,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_182911_802d1c_t001`\n**Effective query:** สายพาน Modutech ที่ระบายน้ำได้ดีที่สุด\n\n**Decision:** search · brand=modutech · ตีความคำถาม (LLM 2966 ms) → ค้นทั้งฐาน\n\n**Modutech:** search: 68/68\n\n**State patch:** modutech {'slots': {'wet_or_dry': 'wet', '_offered': ['EC508 R', 'EC508 TR', 'MD127 GAP50%', 'SM254 FG50%', 'MD254 GAP48%']}}\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": false
+      },
+      "passed": false,
+      "reply": "จากฐานข้อมูลสายพาน Modutech ทั้ง 68 รุ่น สำหรับผิว Grip Top (ผิวยางกันลื่น) รุ่นที่มีค่าความแข็งแรงดึงสูงสุด 5 อันดับแรก มีดังนี้ครับ (ค่าความแข็งแรงขึ้นอยู่กับเกรดวัสดุของสายพานและพิน):\n\n1. **EC508 GT** (แข็งแรงที่สุดในกลุ่มผิวยาง)\n   - วัสดุ PP / พิน POM: **31,000 N/m**\n   - วัสดุ PP / พิน PP: **29,000 N/m**\n\n2. **EC254 R-GT** (สายพานวิ่งโค้งได้)\n   - วัสดุ PP / พิน POM: **19,000 N/m**\n   - วัสดุ PP / พิน PA: **19,000 N/m**\n   *(หมายเหตุ: ค่าความแข็งแรงของรุ่นที่วิ่งโค้งได้นี้เป็นค่าสำหรับการวิ่งตรง)*\n\n3. **MD254 GT**\n   - วัสดุ PP / พิน POM: **18,000 N/m**\n   - วัสดุ PP / พิน PP: **14,000 N/m**\n\n4. **XP254 GT**\n   - วัสดุ PP / พิน PP: **16,200 N/m**\n   - วัสดุ PP / พิน POM: **16,200 N/m**\n\n5. **EC254 GT**\n   - วัสดุ PP / พิน PP: **14,000 N/m**\n   - วัสดุ PP / พิน POM: **14,000 N/m**\n\nดังนั้น รุ่นที่แข็งแรงที่สุดคือ **EC508 GT** (PP/POM) ที่ 31,000 N/m ครับ ทั้งนี้การเลือกใช้งานจริงขึ้นอยู่กับหน้ากว้างและสภาวะการใช้งาน หากต้องการข้อมูลหน้ากว้างหรือสเปกเพิ่มเติมสามารถสอบถามได้เลยครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "QI-D4",
+      "turn": "1",
+      "subcategory": "modutech",
+      "query": "สายพาน Modutech ผิวยางกันลื่นที่แข็งแรงสุด",
+      "description": "กลุ่มกันลื่น + แรงดึงสูงสุด · MD508 NS 56000 (รองลงมา XP254 EVO CR)",
+      "seconds": 7.9,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_182922_efc8c0_t001`\n**Effective query:** สายพาน Modutech ผิวยางกันลื่นที่แข็งแรงสุด\n\n**Decision:** search · brand=modutech · ตีความคำถาม (LLM 2296 ms) → ค้นทั้งฐาน\n\n**Modutech:** search: 7/68\n\n**State patch:** modutech {'slots': {'_offered': ['EC508 GT', 'EC254 R-GT', 'MD254 GT', 'XP254 GT', 'EC254 GT']}}\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "asked_back": true
+      },
+      "passed": true,
+      "reply": "ขอทราบก่อนครับว่าไลน์นี้เป็นสภาวะเปียก (มีน้ำ ล้างบ่อย) หรือแห้ง เพราะค่าอุณหภูมิที่ทนได้ต่างกันมาก บางเกรดต่างกันถึง 33 °C",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "QI-D5",
+      "turn": "1",
+      "subcategory": "modutech",
+      "query": "Modutech รุ่นไหนทนร้อนสุด ๆ",
+      "description": "อุณหภูมิ → ต้องถามเปียก/แห้ง ห้ามค้นด้วยตัวตีความ",
+      "seconds": 0.0,
+      "model_version": null,
+      "llm_called": false,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_182932_ef5b38_t001`\n**Effective query:** Modutech รุ่นไหนทนร้อนสุด ๆ\n\n**Decision:** ask · brand=modutech · ต้องรู้เปียก/แห้งก่อนตอบอุณหภูมิ\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "asked_back": true
+      },
+      "passed": true,
+      "reply": "ขอทราบก่อนครับว่าสายพานนี้จะใช้ลำเลียงอะไร เช่น ชิ้นไก่ ขนมปังเข้าเตาอบ หรือกล่องสินค้า",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "QI-D6",
+      "turn": "1",
+      "subcategory": "modutech",
+      "query": "แนะนำสายพาน Modutech หน่อย",
+      "description": "ไม่มีเกณฑ์ → need_help → ถามงานเหมือนเดิม",
+      "seconds": 0.0,
+      "model_version": null,
+      "llm_called": false,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_182934_8795af_t001`\n**Effective query:** แนะนำสายพาน Modutech หน่อย\n\n**Decision:** ask · brand=modutech · ยังไม่รู้งานของลูกค้า\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_any": true
+      },
+      "passed": true,
+      "reply": "โซ่ Movex รุ่นที่รับโหลดได้สูงสุด (Max Working Load) คือ **882 Series (Sideflexing Chain)** โดยรับแรงดึงได้สูงสุดถึง **3,830 N** ครับ\n\nรุ่นที่รับโหลดสูงสุด 3,830 N มีดังนี้ครับ:\n1. **LF 882 TAB K750** (ความกว้างหน้าโซ่ 190.5 mm) — รับโหลดได้สูงสุด **3,830 N**\n2. **LF 882 TAB K1000** (ความกว้างหน้าโซ่ 254.0 mm) — รับโหลดได้สูงสุด **3,830 N**\n3. **LF 882 TAB K1200** (ความกว้างหน้าโซ่ 304.8 mm) — รับโหลดได้สูงสุด **3,830 N**\n\n*(หมายเหตุ: หากเป็นโซ่แนวตรง Straight Running Chain รุ่นที่รับโหลดสูงสุดคือกลุ่ม **821 Series** เช่น LF 821 K750 / K1000 / K1200 รับโหลดได้สูงสุดที่ **2,770 N** ครับ)*\n\nหากต้องการดู drawing หรือสเปกเพิ่มเติมของรุ่นไหน แจ้งได้เลยนะครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "QI-X1",
+      "turn": "1",
+      "subcategory": "movex",
+      "query": "Movex รุ่นไหนรับโหลดสูงสุด",
+      "description": "เดิมถามรุ่น · ควรได้ LF 882 TAB ×3 (3830 N)",
+      "seconds": 11.5,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [
+        {
+          "tool": "filter_product_specs",
+          "args": {
+            "spec_type": "load",
+            "condition": ">=",
+            "target_value": 0,
+            "product_type": "chain",
+            "sort_by": "load",
+            "sort_order": "desc"
+          },
+          "success": true,
+          "result": "พบ 13 รุ่นที่ load >= 0 (เฉพาะ chain):\n  movex_chain_LF882_TAB_K750 (3830)\n  movex_chain_LF882_TAB_K1000 (3830)\n  movex_chain_LF882_TAB_K1200 (3830)\n  movex_chain_LF821_K750 (2770)\n  movex_chain_LF821_K1000 (2770)\n  movex_chain_LF821_K1200 (2770)\n  movex_chain_LF880_TAB_K325 (2200)\n  movex_chain_LF880_TAB_K450 (2200)\n  movex_chain_LF820_K325 (1625)\n  movex_chain_LF820_K400 (1625)\n  movex_chain_LF820_K450 (1625)\n  movex_chain_LF820_K600 (1625)\n  movex_chain_LF820_K750 (1625)"
+        }
+      ],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_182936_94057f_t001`\n**Effective query:** Movex รุ่นไหนรับโหลดสูงสุด\n\n**Decision:** answer · brand=movex · ตีความคำถาม (LLM 2303 ms) → ค้นทั้งฐาน\n\n**Graph:** seeds=['movex_sprocket_55001'] | compatible=['movex_chain_LF880_TAB_K325', 'movex_chain_LF880_TAB_K450'] | hop_trace=[\"seeds=['movex_sprocket_55001']\", \"hop1: compatible=['movex_chain_LF880_TAB_K325', 'movex_chain_LF880_TAB_K450'], same_series=['movex_chain_LF880_TAB_K325', 'movex_chain_LF880_TAB_K450', 'movex_sprocket_54901']\"]\n\n**Mode:** RRF+KeywordBoost (no CE)\n**1. movex_sprocket_55001** (final:0.566 | CE:0.00 | RRF:0.4155)\n**2. movex_sprocket_54901** (final:0.565 | CE:0.00 | RRF:0.4147)\n**3. movex_sprocket_55601** (final:0.565 | CE:0.00 | RRF:0.4147)\n**4. movex_chain_LFN_83_MFM** (final:0.564 | CE:0.00 | RRF:0.4141)\n**5. movex_sprocket_54301** (final:0.564 | CE:0.00 | RRF:0.4141)\n**Search (ตีความคำถาม):** {'field': 'load', 'op': None, 'value': None, 'rank': 'max', 'product_type': None, 'series': None} → 15/23\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true,
+        "answer_avoids_forbidden": true
+      },
+      "passed": true,
+      "reply": "จากฐานข้อมูลของ Movex โซ่สายพานลำเลียงที่มีความกว้างหน้าโซ่ **ไม่เกิน 100 มม.** มีทั้งหมด **3 รุ่น** ดังนี้ครับ:\n\n1. **LF 820 K325** (ซีรีส์ 820)\n   - **ความกว้างหน้าโซ่:** 82.5 มม.\n   - **ประเภท:** โซ่วิ่งทางตรง (Straight Running Chain)\n   - **วัสดุ:** LF (Low Friction Acetal)\n   - **การใช้งานเด่น:** งานลำเลียงแนวตรงแถวเดี่ยว เช่น ขวด PET, กระป๋องอลูมิเนียม\n\n2. **LF 880 TAB K325** (ซีรีส์ 880)\n   - **ความกว้างหน้าโซ่:** 82.5 มม.\n   - **ประเภท:** โซ่วิ่งโค้งได้ (Sideflexing Chain - ระบบ TAB)\n   - **วัสดุ:** LF (Low Friction Acetal)\n   - **การใช้งานเด่น:** งานลำเลียงเข้าโค้ง รัศมีเลี้ยวขั้นต่ำ 457 มม. มีปีก TAB ล็อกไม่ให้กระดก\n\n3. **LFN 83 MFM** (ซีรีส์ 83 MFM PRO)\n   - **ความกว้างหน้าโซ่:** 83.0 มม.\n   - **ประเภท:** โซ่วิ่งโค้งได้ (Sideflexing Chain - ระบบ Magnetic)\n   - **วัสดุ:** LFN (Low Friction White)\n   - **การใช้งานเด่น:** ความเร็วสูงพิเศษ ระยะพิตช์สั้น (33.5 มม.) เดินเรียบ เสียงเงียบ ยึดเกาะด้วยระบบแม่เหล็ก\n\nหากลูกค้าต้องการข้อมูลเพิ่มเติมของรุ่นใด หรือต้องการดูแบบ/drawing สามารถแจ้งได้เลยนะครับ!",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": true
+      },
+      "id": "QI-X2",
+      "turn": "1",
+      "subcategory": "movex",
+      "query": "โซ่ Movex ที่กว้างไม่เกิน 100 มม. มีรุ่นไหน",
+      "description": "เดิมถามรุ่น · ถูก = LF 820 K325 · LF 880 TAB K325 · LFN 83 MFM · LF 820 K400 (101.6) ต้องไม่อยู่",
+      "seconds": 7.8,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_182949_a2f22d_t001`\n**Effective query:** โซ่ Movex ที่กว้างไม่เกิน 100 มม. มีรุ่นไหน\n\n**Decision:** answer · brand=movex · ตีความคำถาม (LLM 2346 ms) → ค้นทั้งฐาน\n\n**Graph:** seeds=['movex_sprocket_55001'] | compatible=['movex_chain_LF880_TAB_K325', 'movex_chain_LF880_TAB_K450'] | hop_trace=[\"seeds=['movex_sprocket_55001']\", \"hop1: compatible=['movex_chain_LF880_TAB_K325', 'movex_chain_LF880_TAB_K450'], same_series=['movex_chain_LF880_TAB_K325', 'movex_chain_LF880_TAB_K450', 'movex_sprocket_54901']\"]\n\n**Mode:** RRF+KeywordBoost (no CE)\n**1. movex_sprocket_55001** (final:0.015 | CE:0.00 | RRF:0.0154)\n**2. movex_sprocket_54901** (final:0.015 | CE:0.00 | RRF:0.0151)\n**3. movex_sprocket_57801** (final:0.014 | CE:0.00 | RRF:0.0143)\n**4. movex_sprocket_58801** (final:0.013 | CE:0.00 | RRF:0.0130)\n**5. movex_chain_LF880_TAB_K450** (final:0.013 | CE:0.00 | RRF:0.0130)\n**Search (ตีความคำถาม):** {'field': 'width', 'op': '<=', 'value': 100.0, 'rank': None, 'product_type': None, 'series': None} → 3/23\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "ปัจจุบันในฐานข้อมูลของ Movex มีสินค้าทั้งหมด **23 รุ่น** ครับ โดยแบ่งออกเป็น 2 กลุ่มหลัก ดังนี้ครับ:\n\n### 1. กลุ่มโซ่ลำเลียง (Conveyor Chains) — ทั้งหมด 15 รุ่น\n* **Straight Running Chain (โซ่วิ่งตรง 8 รุ่น):**\n  * **820 Series:** LF820 K325, LF820 K400, LF820 K450, LF820 K600, LF820 K750\n  * **821 Series:** LF821 K750, LF821 K1000, LF821 K1200\n* **Sideflexing Chain (โซ่วิ่งแนวโค้ง/เลี้ยวได้ 7 รุ่น):**\n  * **880 Series:** LF880 TAB K325, LF880 TAB K450\n  * **882 Series:** LF882 TAB K750, LF882 TAB K1000, LF882 TAB K1200\n  * **MF PRO Series:** LFN 83 MFM, LFN 103 MFH\n\n---\n\n### 2. กลุ่มสเตอร์ (Sprockets) — ทั้งหมด 8 รุ่น\n* **Sprocket สำหรับโซ่วิ่งตรง (5 รุ่น):** รหัส 54201, 54301, 54401 (820 Series) รวมถึงซีรีส์ Heavy-Duty\n* **Sideflexing Sprocket สำหรับโซ่วิ่งแนวโค้ง (2 รุ่น):** รหัส 54901, 55001 (880 Series)\n* **Heavy-Duty Sprocket (1 รุ่น):** รหัส 57801 (103 MFH PRO) และรุ่นอื่นๆ เช่น 55601, 58801\n\nหากสนใจดูสเปก ข้อมูลทางเทคนิค หรือ Drawing ของรุ่นใดเป็นพิเศษ สอบถามเพิ่มเติมได้เลยนะครับ!",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "QI-X3",
+      "turn": "1",
+      "subcategory": "movex",
+      "query": "Movex มีสินค้ากี่รุ่น",
+      "description": "เดิมถามรุ่น · 23 รายการ (โซ่ 15 · สเตอร์ 8)",
+      "seconds": 10.1,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [
+        {
+          "tool": "analyze_product_database",
+          "args": {
+            "category": "all"
+          },
+          "success": true,
+          "result": "พบสินค้าทั้งหมด 23 รุ่น\n  Chain: 15 รุ่น\n  Sprocket: 8 รุ่น\n  Chain list: movex_chain_LF820_K325, movex_chain_LF820_K400, movex_chain_LF820_K450, movex_chain_LF820_K600, movex_chain_LF820_K750, movex_chain_LF821_K1000, movex_chain_LF821_K1200, movex_chain_LF821_K750, movex_chain_LF880_TAB_K325, movex_chain_LF880_TAB_K450, movex_chain_LF882_TAB_K1000, movex_chain_LF882_TAB_K1200, movex_chain_LF882_TAB_K750, movex_chain_LFN_103_MFH, movex_chain_LFN_83_MFM\n  Sprocket list: movex_sprocket_54201, movex_sprocket_54301, movex_sprocket_54401, movex_sprocket_54901, movex_sprocket_55001, movex_sprocket_55601, movex_sprocket_57801, movex_sprocket_58801\n"
+        }
+      ],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_182959_3aba09_t001`\n**Effective query:** Movex มีสินค้ากี่รุ่น\n\n**Decision:** answer · brand=movex · ตีความคำถาม (LLM 2455 ms) → ค้นทั้งฐาน\n\n**Graph:** seeds=['movex_sprocket_54901'] | compatible=['movex_chain_LF880_TAB_K325', 'movex_chain_LF880_TAB_K450'] | hop_trace=[\"seeds=['movex_sprocket_54901']\", \"hop1: compatible=['movex_chain_LF880_TAB_K325', 'movex_chain_LF880_TAB_K450'], same_series=['movex_chain_LF880_TAB_K325', 'movex_chain_LF880_TAB_K450', 'movex_sprocket_55001']\"]\n\n**Mode:** RRF+KeywordBoost (no CE)\n**1. movex_sprocket_54901** (final:0.566 | CE:0.00 | RRF:0.4156)\n**2. movex_sprocket_55001** (final:0.565 | CE:0.00 | RRF:0.4149)\n**3. movex_sprocket_54401** (final:0.564 | CE:0.00 | RRF:0.4139)\n**4. movex_sprocket_54301** (final:0.564 | CE:0.00 | RRF:0.4137)\n**5. movex_sprocket_57801** (final:0.564 | CE:0.00 | RRF:0.4137)\n**Search (ตีความคำถาม):** {'overview': True, 'product_type': None, 'series': None} → 23/23\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "โซ่ Movex รุ่นที่**เบาที่สุด**ในฐานข้อมูล คือ **LF 820 K325** ครับ\n\n### รายละเอียดสเปกของรุ่นที่เบาที่สุด:\n* **รุ่น:** **LF 820 K325** (820 Series)\n* **น้ำหนัก (Weight):** **0.89 kg/m**\n* **ประเภท:** โซ่วิ่งตรง (Straight Running Chain)\n* **ความกว้างหน้าโซ่ (Plate Width):** 82.5 มม.\n* **การรับแรงดึงสูงสุด (Max Working Load):** 1,625 N\n* **วัสดุ:** LF (Low Friction Acetal)\n\n---\n\n### อันดับโซ่ Movex ที่มีน้ำหนักเบาที่สุด (เรียงจากน้อยไปมาก):\n1. **LF 820 K325** — **0.89 kg/m** (โซ่วิ่งตรง, หน้ากว้าง 82.5 มม.)\n2. **LF 820 K400** — **0.95 kg/m** (โซ่วิ่งตรง, หน้ากว้าง 101.6 มม.)\n3. **LFN 83 MFM** — **0.955 kg/m** (โซ่เลี้ยวโค้ง Magnetic, หน้ากว้าง 83.0 มม.)\n4. **LF 820 K450** — **1.00 kg/m** (โซ่วิ่งตรง, หน้ากว้าง 114.3 มม.)\n5. **LF 880 TAB K325** — **1.015 kg/m** (โซ่เลี้ยวโค้ง TAB, หน้ากว้าง 82.5 มม.)\n\nหากต้องการข้อมูล Drawing/Datasheet หรือรายละเอียดการใช้งานเพิ่มเติม แจ้งได้เลยนะครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "QI-X4",
+      "turn": "1",
+      "subcategory": "movex",
+      "query": "โซ่ Movex ตัวที่เบาที่สุด",
+      "description": "เดิมถามรุ่น · LF 820 K325 0.89 kg/m",
+      "seconds": 7.3,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_183011_a3bd23_t001`\n**Effective query:** โซ่ Movex ตัวที่เบาที่สุด\n\n**Decision:** answer · brand=movex · ตีความคำถาม (LLM 2265 ms) → ค้นทั้งฐาน\n\n**Graph:** seeds=['movex_sprocket_55001'] | compatible=['movex_chain_LF880_TAB_K325', 'movex_chain_LF880_TAB_K450'] | hop_trace=[\"seeds=['movex_sprocket_55001']\", \"hop1: compatible=['movex_chain_LF880_TAB_K325', 'movex_chain_LF880_TAB_K450'], same_series=['movex_chain_LF880_TAB_K325', 'movex_chain_LF880_TAB_K450', 'movex_sprocket_54901']\"]\n\n**Mode:** RRF+KeywordBoost (no CE)\n**1. movex_sprocket_55001** (final:0.566 | CE:0.00 | RRF:0.4159)\n**2. movex_sprocket_54901** (final:0.565 | CE:0.00 | RRF:0.4151)\n**3. movex_sprocket_58801** (final:0.564 | CE:0.00 | RRF:0.4138)\n**4. movex_sprocket_57801** (final:0.564 | CE:0.00 | RRF:0.4137)\n**5. movex_sprocket_54401** (final:0.563 | CE:0.00 | RRF:0.4130)\n**Search (ตีความคำถาม):** {'field': 'weight', 'op': None, 'value': None, 'rank': 'min', 'product_type': None, 'series': None} → 15/23\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "โซ่ Movex ประเภทเลี้ยวได้ (Sideflexing Chain) ที่มีหน้ากว้างที่สุด คือรุ่น **LF 882 TAB K1200** ครับ\n\n**รายละเอียดสเปก:**\n* **รุ่น:** LF 882 TAB K1200 (882 Series)\n* **หน้ากว้างแผ่นโซ่ (Plate Width):** **304.8 มม.** (กว้างที่สุดในกลุ่มโซ่เลี้ยว)\n* **การรับโหลดสูงสุด (Max Working Load):** 3,830 N\n* **น้ำหนักโซ่ (Weight):** 3.40 kg/m\n* **วัสดุ (Material):** LF (Low Friction Acetal) สีน้ำตาล/เทา\n* **ลักษณะการใช้งาน:** ออกแบบมาสำหรับงานลำเลียงโค้งและสะสมงานปริมาณมาก (Bulk accumulation) เหมาะสำหรับบรรจุภัณฑ์ขวดแก้วหรือขวด PET แบบ Mass-flow ที่ต้องการหน้ากว้างพิเศษโดยใช้แนวน้อยสายครับ\n\n---\n\n**รุ่นหน้ากว้างอื่นๆ ในกลุ่ม Sideflexing Chain (เรียงตามลำดับ):**\n1. **LF 882 TAB K1200** — กว้าง **304.8 มม.**\n2. **LF 882 TAB K1000** — กว้าง **254.0 มม.**\n3. **LF 882 TAB K750** — กว้าง **190.5 มม.**\n4. **LF 880 TAB K450** — กว้าง **114.3 มม.**\n5. **LFN 103 MFH** — กว้าง **103.0 มม.**\n\nหากต้องการดูแบบ (Drawing) หรือต้องการสเปกเพิ่มเติมของรุ่นไหน แจ้งได้เลยนะครับ!",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "QI-X5",
+      "turn": "1",
+      "subcategory": "movex",
+      "query": "โซ่ Movex ที่เลี้ยวได้ หน้ากว้างที่สุด",
+      "description": "เดิมถามรุ่น · Sideflexing กว้างสุด LF 882 TAB K1200 304.8 มม.",
+      "seconds": 9.5,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [
+        {
+          "tool": "filter_product_specs",
+          "args": {
+            "spec_type": "width",
+            "condition": ">=",
+            "target_value": 0,
+            "product_type": "Sideflexing Chain",
+            "sort_by": "width",
+            "sort_order": "desc"
+          },
+          "success": true,
+          "result": "พบ 5 รุ่นที่ width >= 0 (เฉพาะ Sideflexing Chain):\n  movex_chain_LF882_TAB_K1200 (304.8)\n  movex_chain_LF882_TAB_K1000 (254.0)\n  movex_chain_LF882_TAB_K750 (190.5)\n  movex_chain_LF880_TAB_K450 (114.3)\n  movex_chain_LF880_TAB_K325 (82.5)"
+        }
+      ],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_183020_0a3dcf_t001`\n**Effective query:** โซ่ Movex ที่เลี้ยวได้ หน้ากว้างที่สุด\n\n**Decision:** answer · brand=movex · ตีความคำถาม (LLM 2548 ms) → ค้นทั้งฐาน\n\n**Graph:** seeds=['movex_chain_LFN_83_MFM'] | compatible=['movex_sprocket_58801'] | hop_trace=[\"seeds=['movex_chain_LFN_83_MFM']\", \"hop1: compatible=['movex_sprocket_58801'], same_series=['movex_sprocket_58801']\"]\n\n**Mode:** RRF+KeywordBoost (no CE)\n**1. movex_chain_LFN_83_MFM** (final:1.764 | CE:0.00 | RRF:1.6137)\n**2. movex_chain_LF880_TAB_K450** (final:1.763 | CE:0.00 | RRF:1.6132)\n**3. movex_chain_LF880_TAB_K325** (final:1.750 | CE:0.00 | RRF:1.6000)\n**4. movex_chain_LF882_TAB_K750** (final:1.750 | CE:0.00 | RRF:1.6000)\n**5. movex_chain_LF882_TAB_K1000** (final:1.750 | CE:0.00 | RRF:1.6000)\n**Search (ตีความคำถาม):** {'field': 'width', 'op': None, 'value': None, 'rank': 'max', 'product_type': 'Sideflexing Chain', 'series': None} → 7/23\n"
+    },
+    {
+      "checks": {
+        "no_error": true
+      },
+      "passed": true,
+      "reply": "ข้อมูล Movex ระบุงานขวด ไว้กับโซ่รุ่นเหล่านี้ครับ\n• LF 880 TAB K325 — โซ่เลี้ยวโค้งได้ (Sideflexing Chain) กว้าง 82.5 มม.\n• LFN 83 MFM — โซ่เลี้ยวโค้งได้ (Sideflexing Chain) กว้าง 83 มม.\n• LF 880 TAB K450 — โซ่เลี้ยวโค้งได้ (Sideflexing Chain) กว้าง 114.3 มม.\n• LF 882 TAB K1200 — โซ่เลี้ยวโค้งได้ (Sideflexing Chain) กว้าง 304.8 มม.\n• LF 820 K325 — โซ่ไลน์ตรง (Straight Running Chain) กว้าง 82.5 มม.\n• LF 820 K400 — โซ่ไลน์ตรง (Straight Running Chain) กว้าง 101.6 มม.\n• LF 820 K450 — โซ่ไลน์ตรง (Straight Running Chain) กว้าง 114.3 มม.\nพิมพ์ชื่อรุ่นที่ตรงกับไลน์ (ไลน์ตรงหรือมีโค้ง) มาได้เลยครับ ถ้ามีรหัสรุ่นอื่นหรือรหัสสเตอร์ 5 หลักก็พิมพ์มาแทนได้ หรือส่งรูปโซ่มาให้ดูครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "QI-X6",
+      "turn": "1",
+      "subcategory": "movex",
+      "query": "อยากได้โซ่ Movex สำหรับลำเลียงขวด",
+      "description": "ตัวควบคุม · งานใช้ → ทางเดิม (movex_application_block) ไม่ควรเรียกตัวตีความ",
+      "seconds": 0.0,
+      "model_version": null,
+      "llm_called": false,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_183032_86751d_t001`\n**Effective query:** อยากได้โซ่ Movex สำหรับลำเลียงขวด\n\n**Decision:** ask · brand=movex · ยังไม่รู้รุ่น\n\n"
+    }
+  ]
+}
