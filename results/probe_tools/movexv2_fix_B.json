@@ -1,0 +1,968 @@
+{
+ "module": "assistant",
+ "llm": "google-genai · gemini-3.8-flash · thinking {'level': 'low'} · timeout 60.0 วิ",
+ "graph_apps": true,
+ "model_versions": {
+  "gemini-3.8-flash": 28
+ },
+ "testcases": "testcases_v2.csv",
+ "total_turns": 33,
+ "graded": 33,
+ "passed": 33,
+ "failed": 0,
+ "skipped_no_image": 0,
+ "turns_with_image": 8,
+ "errors": 0,
+ "seconds": 162.0,
+ "by_category": {
+  "clarification": "4/4",
+  "graph": "5/5",
+  "image": "3/3",
+  "multi_turn": "14/14",
+  "spec": "7/7"
+ },
+ "by_check": {},
+ "leaks": {
+  "turns_with_leak": 0,
+  "per_word": {},
+  "turns": []
+ },
+ "results": [
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_avoids_forbidden": true
+   },
+   "passed": true,
+   "reply": "จากรูปภาพที่ส่งมา สินค้าตรงกับรุ่น **LF 820 K325** (820 Series) ครับ\n\nรายละเอียดสเปกของรุ่นนี้มีดังนี้ครับ:\n\n* **ประเภท (Product Type):** Straight Running Chain (โซ่วิ่งตรง เลี้ยวไม่ได้)\n* **ความกว้างหน้าโซ่ (Plate Width):** 82.5 มม.\n* **การรับแรงดึงสูงสุด (Max Working Load):** 1,625 N\n* **น้ำหนัก (Weight):** 0.89 กก./ม.\n* **วัสดุ (Material):** LF (Low Friction Acetal) สีน้ำตาล/เทา ทนแรงเสียดทานต่ำและทนต่อการสึกหรอได้ดี\n* **ลักษณะการใช้งาน (Usage):** เหมาะสำหรับการลำเลียงแบบแถวเดี่ยว (Single-line) เช่น ขวด PET (330–600 มล.), กระป๋องอะลูมิเนียม, กระปุกแก้ว ในไลน์บรรจุความเร็วต่ำถึงปานกลาง\n\nหากต้องการข้อมูล drawing สเตอร์ที่ใช้งานร่วมกัน หรือสอบถามด้านอื่นๆ เพิ่มเติม แจ้งได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": true,
+   "id": "IMG-001",
+   "turn": "1",
+   "category": "image",
+   "query": "",
+   "metrics": [
+    "series_correct",
+    "product_type_correct"
+   ],
+   "seconds": 7.6,
+   "llm_usage": {
+    "prompt_token_count": 8152,
+    "candidates_token_count": 255,
+    "total_token_count": 8407
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_avoids_forbidden": true
+   },
+   "passed": true,
+   "reply": "จากรูปภาพที่ส่งมา ระบบวิเคราะห์ระบุว่าเป็นโซ่รุ่น **LF 880 TAB K450** (880 Series) ครับ โดยมีรายละเอียดและสเปกทางเทคนิคดังนี้ครับ:\n\n* **รหัสสินค้า:** LF 880 TAB K450 (`movex_chain_LF880_TAB_K450`)\n* **ประเภท:** Sideflexing Chain (โซ่เลี้ยวโค้ง)\n* **ความกว้างหน้าโซ่ (Plate Width):** 114.3 มม.\n* **รัศมีการเลี้ยวขั้นต่ำ (Min. Curve Radius):** 457 มม.\n* **การรับแรงดึงสูงสุด (Max. Working Load):** 2,200 นิวตัน (N)\n* **น้ำหนัก (Weight):** 1.09 กก./เมตร\n* **วัสดุ:** LF (Low Friction Acetal) ทนการสึกหรอและแรงเสียดทานต่ำ\n\n**การใช้งานหลัก:**\nเหมาะสำหรับสายพานลำเลียงแบบเลี้ยวโค้งที่ต้องการหน้ากว้างเป็นพิเศษ เพื่อเพิ่มความมั่นคงให้กับสินค้าหรือบรรจุภัณฑ์ เช่น ขวดขนาด 2 ลิตร, กล่องน้ำผลไม้ทรงเหลี่ยม หรือขวดโหลแก้วกว้างครับ\n\nหากต้องการดู Datasheet/แบบ Drawing หรือข้อมูลสเตอร์ที่ใช้งานร่วมกัน สามารถแจ้งได้เลยนะครับ!",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": true,
+   "id": "IMG-002",
+   "turn": "1",
+   "category": "image",
+   "query": "",
+   "metrics": [
+    "series_correct",
+    "product_type_correct"
+   ],
+   "seconds": 5.2,
+   "llm_usage": {
+    "prompt_token_count": 8640,
+    "candidates_token_count": 305,
+    "total_token_count": 8945
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_avoids_forbidden": true
+   },
+   "passed": true,
+   "reply": "รูปนี้อาจถ่ายไกลเกินไป หรืออาจไม่ใช่โซ่หรือสายพานครับ หากเป็นโซ่หรือสายพาน กรุณาถ่ายใกล้กว่านี้ให้ตัวสินค้าเต็มกรอบและเห็นผิวด้านบนชัดเจน หรือแจ้งรหัสรุ่นที่ปั๊มบนตัวสินค้าครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": true,
+   "id": "IMG-003",
+   "turn": "1",
+   "category": "image",
+   "query": "",
+   "metrics": [
+    "rejection_correct"
+   ],
+   "seconds": 0.9,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "value_correct": true,
+    "unit_correct": true
+   },
+   "passed": true,
+   "reply": "โซ่ **LF 820 K325** มีค่าการรับน้ำหนักการทำงานสูงสุด (Max Working Load) ดังนี้ครับ:\n\n- **Max Working Load:** **1,625 N**\n\n**ข้อมูลสเปกเพิ่มเติม:**\n- **ความกว้างแผ่นโซ่ (Plate Width):** 82.5 มม.\n- **น้ำหนักโซ่ (Weight):** 0.89 กก./ม.\n- **ประเภท:** Straight Running Chain (สายพานวิ่งทางตรง)\n- **วัสดุ:** LF (Low Friction Acetal)\n\nหากต้องการสอบถามข้อมูลด้านการใช้งานเพิ่มเติม แจ้งได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "SPEC-001",
+   "turn": "1",
+   "category": "spec",
+   "query": "LF820 K325 workload เท่าไหร่",
+   "metrics": [
+    "spec_value_correct",
+    "unit_correct"
+   ],
+   "seconds": 10.4,
+   "llm_usage": {
+    "prompt_token_count": 7322,
+    "candidates_token_count": 143,
+    "total_token_count": 7465
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "value_correct": true,
+    "unit_correct": true
+   },
+   "passed": true,
+   "reply": "โซ่ Movex รุ่น **LF 820 K325** มีความกว้างหน้าโซ่ (Plate Width) อยู่ที่ **82.5 มม.** (หรือประมาณ 3.25 นิ้ว) ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "SPEC-002",
+   "turn": "1",
+   "category": "spec",
+   "query": "LF820 K325 กว้างเท่าไหร่",
+   "metrics": [
+    "spec_value_correct",
+    "unit_correct"
+   ],
+   "seconds": 4.6,
+   "llm_usage": {
+    "prompt_token_count": 7323,
+    "candidates_token_count": 49,
+    "total_token_count": 7372
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "value_correct": true,
+    "unit_correct": true
+   },
+   "passed": true,
+   "reply": "โซ่ Movex รุ่น **LF 880 TAB K450** มีค่าการรับแรงดึงใช้งานสูงสุด (Max Working Load) ดังนี้ครับ:\n\n* **Max Working Load:** **2,200 N** (นิวตัน)\n\n**ข้อมูลสเปกเพิ่มเติม:**\n* **ความกว้างหน้าโซ่ (Plate Width):** 114.3 มม. (4.5 นิ้ว)\n* **น้ำหนัก (Weight):** 1.09 กก./ม.\n* **รัศมีโค้งเลี้ยวขั้นต่ำ (Min Curve Radius):** 457 มม.\n* **ประเภทโซ่:** โซ่เลี้ยว (Sideflexing Chain) พร้อมปีกจับร่อง (TAB)\n* **วัสดุ:** LF (Low Friction Acetal) สีน้ำตาล/เทา\n\nหากต้องการสอบถามข้อมูลด้านการติดตั้ง การรับน้ำหนักของระบบ หรือดู Drawing เพิ่มเติม สามารถแจ้งได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "SPEC-003",
+   "turn": "1",
+   "category": "spec",
+   "query": "LF880 TAB K450 workload เท่าไหร่",
+   "metrics": [
+    "spec_value_correct",
+    "unit_correct"
+   ],
+   "seconds": 3.6,
+   "llm_usage": {
+    "prompt_token_count": 7105,
+    "candidates_token_count": 209,
+    "total_token_count": 7314
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "value_correct": true,
+    "unit_correct": true
+   },
+   "passed": true,
+   "reply": "โซ่ Movex รุ่น **LF 880 TAB K450** มีความกว้างหน้าโซ่ (Plate Width) อยู่ที่ **114.3 มม.** (4.5 นิ้ว) ครับ\n\n**ข้อมูลสเปกเพิ่มเติม:**\n- **ประเภท:** Sideflexing Chain (โซ่เลี้ยวโค้ง มีปีก TAB)\n- **รัศมีการเลี้ยวโค้งต่ำสุด (Min. Curve Radius):** 457 มม.\n- **การรับแรงดึงสูงสุด (Max. Working Load):** 2,200 N\n- **น้ำหนักโซ่:** 1.09 กก./ม.\n- **วัสดุ:** LF (Low Friction Acetal)\n\nหากต้องการสอบถามสเปกส่วนอื่นหรือต้องการดู drawing แจ้งได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "SPEC-004",
+   "turn": "1",
+   "category": "spec",
+   "query": "LF880 TAB K450 กว้างเท่าไหร่",
+   "metrics": [
+    "spec_value_correct",
+    "unit_correct"
+   ],
+   "seconds": 3.4,
+   "llm_usage": {
+    "prompt_token_count": 7173,
+    "candidates_token_count": 176,
+    "total_token_count": 7349
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "answer_avoids_forbidden": true
+   },
+   "passed": true,
+   "reply": "โซ่รุ่น **LF 820 K325** **ไม่สามารถเลี้ยวได้ครับ** \n\nเนื่องจากเป็นโซ่ประเภท **Straight Running Chain** (โซ่วิ่งตรงเท่านั้น) เหมาะสำหรับการลำเลียงในแนวเส้นตรง เช่น ลำเลียงขวด PET, กระป๋องอลูมิเนียม หรือขวดแก้วแถวเดี่ยว\n\nหากหน้างานของลูกค้าจำเป็นต้องใช้สายพานลำเลียงแบบมีทางโค้ง (เลี้ยวได้) แนะนำให้ใช้เป็นรุ่นกลุ่ม Sideflexing Chain เช่น ซีรีส์ **880 Series** (อาทิ รุ่น **LF 880 TAB K325** ซึ่งมีความกว้างหน้าโซ่ 82.5 mm เท่ากัน และมีรัศมีเลี้ยวต่ำสุดอยู่ที่ 457 mm) แทนครับ\n\nหากต้องการข้อมูลเพิ่มเติมหรือให้ช่วยจัดสเปก สอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": false
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "SPEC-005",
+   "turn": "1",
+   "category": "spec",
+   "query": "LF820 K325 เลี้ยวได้ไหม",
+   "metrics": [
+    "curve_answer_correct"
+   ],
+   "seconds": 4.4,
+   "llm_usage": {
+    "prompt_token_count": 7321,
+    "candidates_token_count": 192,
+    "total_token_count": 7513
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_avoids_forbidden": true
+   },
+   "passed": true,
+   "reply": "โซ่ Movex รุ่น **LF 880 TAB K450** **เลี้ยวได้ครับ**\n\nเนื่องจากเป็นโซ่ประเภท **Sideflexing Chain** (โซ่โค้ง/เลี้ยว) โดยมีรายละเอียดรัศมีการเลี้ยวดังนี้ครับ:\n\n- **รัศมีการเลี้ยวขั้นต่ำ (Min. Curve Radius):** **457 มม.**\n- **ความกว้างหน้าโซ่ (Plate Width):** 114.3 มม.\n- **ระบบยึดร่องโค้ง:** TAB (ช่วยป้องกันโซ่กระดกหรือยกตัวขณะเข้าโค้ง)\n- **การรับแรงดึงสูงสุด (Max. Working Load):** 2,200 N\n\nเหมาะสำหรับสายพานลำเลียงที่มีทางโค้งเพื่อลำเลียงบรรจุภัณฑ์ขนาดใหญ่ เช่น ขวดขนาด 2 ลิตร หรือกล่องเครื่องดื่มครับ หากต้องการข้อมูลหรือคำนวณด้านใดเพิ่มเติม สอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "SPEC-006",
+   "turn": "1",
+   "category": "spec",
+   "query": "LF880 TAB K450 เลี้ยวได้ไหม",
+   "metrics": [
+    "curve_answer_correct",
+    "radius_value_correct"
+   ],
+   "seconds": 4.3,
+   "llm_usage": {
+    "prompt_token_count": 7172,
+    "candidates_token_count": 208,
+    "total_token_count": 7380
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "value_correct": true,
+    "unit_correct": true
+   },
+   "passed": true,
+   "reply": "โซ่ **Movex LF 882 TAB K750** มีค่าการรับแรงดึงใช้งานสูงสุด (Max Working Load) อยู่ที่ **3,830 นิวตัน (N)** ครับ\n\n**ข้อมูลสเปกเพิ่มเติม:**\n* **ซีรีส์:** 882 Series (Sideflexing Chain)\n* **ความกว้างหน้าโซ่ (Plate Width):** 190.5 มม.\n* **น้ำหนักโซ่ (Weight):** 2.45 กก./ม.\n* **วัสดุ:** LF (Low Friction Acetal)\n\nหากต้องการสอบถามสเปกส่วนอื่นเพิ่มเติม หรือต้องการดู Drawing แจ้งได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "SPEC-007",
+   "turn": "1",
+   "category": "spec",
+   "query": "LF882 TAB K750 workload เท่าไหร่",
+   "metrics": [
+    "spec_value_correct",
+    "unit_correct"
+   ],
+   "seconds": 4.6,
+   "llm_usage": {
+    "prompt_token_count": 7166,
+    "candidates_token_count": 149,
+    "total_token_count": 7315
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สเตอร์ขับ (Drive Sprocket) รหัส **54901** (880 Series) สามารถใช้งานร่วมกับโซ่/สายพาน Movex ดังต่อไปนี้ครับ:\n\n* **LF 880 TAB K325** (`movex_chain_LF880_TAB_K325`)\n* **LF 880 TAB K450** (`movex_chain_LF880_TAB_K450`)\n\nทั้งสองรุ่นเป็นโซ่แบบเลี้ยวโค้ง (Sideflexing Chain) ซีรีส์ 880 ที่เข้าคู่กับระบบฟันของสเตอร์ 54901 ได้อย่างสมบูรณ์ครับ หากต้องการข้อมูลสเปกเพิ่มเติมของโซ่รุ่นใด แจ้งได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GRAPH-001",
+   "turn": "1",
+   "category": "graph",
+   "query": "54901 ใช้กับสายพานตัวไหน",
+   "metrics": [
+    "compatible_chain_correct"
+   ],
+   "seconds": 2.9,
+   "llm_usage": {
+    "prompt_token_count": 8093,
+    "candidates_token_count": 167,
+    "total_token_count": 8260
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "reply_within_limit": true
+   },
+   "passed": true,
+   "reply": "สำหรับโซ่รุ่น **LF 880 TAB K450** สเตอร์ (Sprocket) ที่สามารถใช้งานร่วมกันได้มีดังนี้ครับ:\n\n1. **รหัส 54901**: จำนวน 10 ฟัน, รูเพลา 25.0 มม. (Drive)\n2. **รหัส 55001**: จำนวน 12 ฟัน, รูเพลา 25.0 มม. (Drive)\n\nหากต้องการข้อมูลเพิ่มเติมหรือต้องการดูแบบ Drawing สามารถแจ้งได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": true,
+   "id": "GRAPH-002",
+   "turn": "1",
+   "category": "graph",
+   "query": "ใช้สเตอร์ตัวไหน",
+   "metrics": [
+    "compatible_sprocket_correct",
+    "all_items_listed",
+    "reply_concise"
+   ],
+   "seconds": 4.2,
+   "llm_usage": {
+    "prompt_token_count": 8797,
+    "candidates_token_count": 119,
+    "total_token_count": 8916
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "เฟืองขับ (Sprocket) Movex รหัส **54301** ผลิตด้วยกระบวนการ **ฉีดขึ้นรูป (Injection Molded / Stampata)** ครับ\n\n**รายละเอียดกระบวนการผลิตและวัสดุ:**\n* **กระบวนการผลิต:** Injection Molded (ผลิตโดยใช้แม่พิมพ์ฉีดพลาสติกแรงดันสูง) ซึ่งเป็นวิธีการผลิตมาตรฐานที่ให้ความคุ้มค่าสูง เหมาะสำหรับสายการผลิตทั่วไป\n* **วัสดุ:** โพลีอะไมด์เสริมแรง (Reinforced Polyamide / PA - สีดำ) แข็งแรง ทนทานต่อการสึกหรอและสารเคมีได้ดี\n* **ลักษณะการใช้งาน:** ออกแบบมาสำหรับระบบสายพานลำเลียงแนวตรง (Straight Running Conveyor) ในอุตสาหกรรมบรรจุภัณฑ์ อาหาร และเครื่องดื่มทั่วไปครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GRAPH-003",
+   "turn": "1",
+   "category": "graph",
+   "query": "54301 ผลิตยังไง",
+   "metrics": [
+    "process_correct"
+   ],
+   "seconds": 3.6,
+   "llm_usage": {
+    "prompt_token_count": 8158,
+    "candidates_token_count": 182,
+    "total_token_count": 8340
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สเตอร์ Movex รหัส **57801** (สำหรับซีรีส์ 103 MFH PRO) มีกระบวนการผลิตดังนี้ครับ:\n\n* **กระบวนการผลิต:** **Precision Machined (Fresata)** หรือการกลึง/กัดขึ้นรูปด้วยเครื่องจักร CNC จากบล็อกพลาสติกวิศวกรรมตัน (Solid engineering plastic blocks)\n* **วัสดุ:** **Polyamide (PA) / Nylon** คุณภาพสูง\n\n**จุดเด่นของกระบวนการผลิตแบบ Machined:**\n1. **ความแม่นยำสูง (High Precision):** ควบคุมด้วยระบบ CNC ทำให้โปรไฟล์ฟันสเตอร์มีความแม่นยำและผิวเรียบเนียน เข้าขบกับข้อโซ่ได้แนบสนิท\n2. **ลดการสึกหรอของโซ่:** ช่วยยืดอายุการใช้งานของระบบลำเลียง\n3. **ลดเสียงรบกวนและการสั่นสะเทือน (Low Noise & Vibration):** เหมาะมากสำหรับไลน์ลำเลียงความเร็วสูงหรือระบบที่ต้องการความเงียบ\n4. **ความแข็งแรงและทนทานสูง:** รองรับแรงบิดและงานโหลดหนัก (Heavy-duty) ได้เป็นอย่างดีครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GRAPH-004",
+   "turn": "1",
+   "category": "graph",
+   "query": "57801 ผลิตยังไง",
+   "metrics": [
+    "process_correct"
+   ],
+   "seconds": 4.0,
+   "llm_usage": {
+    "prompt_token_count": 7601,
+    "candidates_token_count": 258,
+    "total_token_count": 7859
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "โซ่ **Movex รุ่น LF 820 K325** ผลิตจากวัสดุ **LF (Low Friction Acetal)** ครับ\n\n**รายละเอียดวัสดุ:**\n* **ชื่อวัสดุ:** Low Friction Acetal (โพลีอะซีทัลชนิดแรงเสียดทานต่ำ)\n* **สี:** น้ำตาล / เทา (Brown / Grey)\n* **คุณสมบัติเด่น:** \n  * มีค่าสัมประสิทธิ์แรงเสียดทานต่ำ ทนทานต่อการสึกหรอได้ดี\n  * มีความแข็งแรงเชิงกลสูง คุ้มค่าสำหรับการใช้งานทั่วไป\n  * ได้รับมาตรฐานความปลอดภัยสัมผัสอาหารได้ (Food contact compliant)\n* **ช่วงอุณหภูมิการใช้งาน:**\n  * สภาวะแห้ง (Dry): -40°C ถึง +80°C\n  * สภาวะเปียก (Wet): -40°C ถึง +65°C\n\nเหมาะเป็นพิเศษสำหรับระบบลำเลียงทั่วไป เช่น สายพานลำเลียงขวดและบรรจุภัณฑ์มาตรฐานครับ หากต้องการสอบถามข้อมูลด้านอื่นเพิ่มเติมแจ้งได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "GRAPH-005",
+   "turn": "1",
+   "category": "graph",
+   "query": "LF820 K325 ทำจากวัสดุอะไร",
+   "metrics": [
+    "material_correct"
+   ],
+   "seconds": 4.4,
+   "llm_usage": {
+    "prompt_token_count": 7323,
+    "candidates_token_count": 241,
+    "total_token_count": 7564
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_avoids_forbidden": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนนะครับว่าถามถึงสินค้าแบบไหน\n1. โซ่ท็อปเชน Movex — ลำเลียงขวด กระป๋อง ลัง ในไลน์บรรจุเครื่องดื่ม\n2. สายพานโมดูลาร์ Modutech — งานอาหาร เช่น เนื้อสัตว์ สัตว์ปีก อาหารทะเล เบเกอรี่ ผักผลไม้\nตอบเป็นเลขข้อหรือชื่อแบรนด์ได้เลยครับ ถ้ามีรหัสรุ่นหรือรูปสินค้าก็ส่งมาแทนได้",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "CLARIF-001",
+   "turn": "1",
+   "category": "clarification",
+   "query": "มีสายพานที่เลี้ยวได้ไหม",
+   "metrics": [
+    "clarification_triggered"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_avoids_forbidden": true
+   },
+   "passed": true,
+   "reply": "ขออภัยครับ ผมตอบได้เฉพาะเรื่องสินค้าโซ่ลำเลียง Movex และสายพานโมดูลาร์ Modutech เช่น สเปก การเลือกรุ่น หรืออะไหล่ที่ใช้คู่กัน มีเรื่องไหนให้ช่วยไหมครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": true
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "CLARIF-002",
+   "turn": "1",
+   "category": "clarification",
+   "query": "อากาศวันนี้เป็นยังไง",
+   "metrics": [
+    "off_topic_handled"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "ขอทราบก่อนนะครับว่าถามถึงสินค้าแบบไหน\n1. โซ่ท็อปเชน Movex — ลำเลียงขวด กระป๋อง ลัง ในไลน์บรรจุเครื่องดื่ม\n2. สายพานโมดูลาร์ Modutech — งานอาหาร เช่น เนื้อสัตว์ สัตว์ปีก อาหารทะเล เบเกอรี่ ผักผลไม้\nตอบเป็นเลขข้อหรือชื่อแบรนด์ได้เลยครับ ถ้ามีรหัสรุ่นหรือรูปสินค้าก็ส่งมาแทนได้",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "CLARIF-003",
+   "turn": "1",
+   "category": "clarification",
+   "query": "อยากเปลี่ยนสายพาน",
+   "metrics": [
+    "clarification_triggered"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "asked_back": true
+   },
+   "passed": true,
+   "reply": "สินค้าที่เกี่ยวกับสแตนเลส (SS) ของทั้งสองแบรนด์ครับ\n\n**Movex (โซ่ท็อปเชน)**\n• ไม่มีรุ่นที่ตัวโซ่ทำจากสแตนเลส — ตัวโซ่ผลิตจาก LF, LFN (LF = Low Friction Acetal)\n• ตารางวัสดุของ Movex ระบุ SS ไว้ว่า \"Standard for pins in all MF PRO chains\" แต่ข้อมูลรายรุ่นไม่ได้ระบุวัสดุพิน ต้องยืนยันกับฝ่ายขาย\n\n**Modutech (สายพานโมดูลาร์)**\n• มี 2 รุ่นที่ใช้ก้าน (พิน) สแตนเลส — ตัวสายพานเป็นพลาสติก:\n  – MD254 GAP48%-EHT (Flush Grid) เกรด EHT/SS\n  – HD635 C (Flat Top) เกรด POM-NL/SS\n\nสนใจแบรนด์ไหนหรือรุ่นไหน บอกได้เลยครับ จะให้รายละเอียดสเปกเพิ่ม",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "CLARIF-004",
+   "turn": "1",
+   "category": "clarification",
+   "query": "สายพาน SS มีอะไรบ้าง",
+   "metrics": [
+    "clarification_triggered"
+   ],
+   "seconds": 0.0,
+   "llm_usage": null,
+   "model_version": null
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "จากภาพที่ส่งมา สินค้าคือโซ่คอนเวเยอร์ Movex รุ่น **LF 820 K325** ครับ\n\nรายละเอียดสเปกของรุ่นนี้มีดังนี้ครับ:\n\n* **รุ่น (Ref):** LF 820 K325\n* **ซีรีส์:** 820 Series\n* **ประเภท:** Straight Running Chain (โซ่วิ่งตรง เลี้ยวไม่ได้)\n* **ความกว้างหน้าโซ่ (Plate Width):** 82.5 มม.\n* **การรับโหลดสูงสุด (Max Working Load):** 1,625 N\n* **น้ำหนัก (Weight):** 0.89 กก./ม.\n* **วัสดุ:** LF (Low Friction Acetal) สีน้ำตาล/เทา ทนต่อการสึกหรอและมีค่าสัมประสิทธิ์แรงเสียดทานต่ำ\n* **การใช้งานที่เหมาะสม:** เหมาะสำหรับการลำเลียงแบบแถวเดี่ยว (single-line) เช่น ขวด PET (330–600 มล.), กระป๋องอลูมิเนียม หรือขวดโหลแก้ว ในไลน์บรรจุความเร็วปานกลาง\n\nหากต้องการข้อมูลสเตอร์ที่ใช้ร่วมกัน หรือ drawing/datasheet เพิ่มเติม สามารถแจ้งได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": true,
+   "id": "MT-001",
+   "turn": "1",
+   "category": "multi_turn",
+   "query": "",
+   "metrics": [
+    "series_correct"
+   ],
+   "seconds": 5.9,
+   "llm_usage": {
+    "prompt_token_count": 8152,
+    "candidates_token_count": 270,
+    "total_token_count": 8422
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "โซ่คอนเวเยอร์ Movex รุ่น **LF 820 K325** มีค่าการรับแรงดึงใช้งานสูงสุด (Max Working Load) อยู่ที่ **1,625 นิวตัน (N)** ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-001",
+   "turn": "2",
+   "category": "multi_turn",
+   "query": "workload เท่าไหร่",
+   "metrics": [
+    "spec_value_correct"
+   ],
+   "seconds": 8.8,
+   "llm_usage": {
+    "prompt_token_count": 8344,
+    "candidates_token_count": 49,
+    "total_token_count": 8393
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "โซ่คอนเวเยอร์ Movex รุ่น **LF 820 K325** มีความกว้างหน้าโซ่ (Plate Width) อยู่ที่ **82.5 มิลลิเมตร** (K325 = 3.25 นิ้ว) ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-001",
+   "turn": "3",
+   "category": "multi_turn",
+   "query": "กว้างเท่าไหร่",
+   "metrics": [
+    "spec_value_correct"
+   ],
+   "seconds": 2.0,
+   "llm_usage": {
+    "prompt_token_count": 8037,
+    "candidates_token_count": 58,
+    "total_token_count": 8095
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "จากรูปภาพที่ส่งมา เป็นโซ่สายพานลำเลียงรุ่น **LF 820 K325** (820 Series) ครับ โดยมีรายละเอียดสเปกดังนี้ครับ:\n\n* **รหัสสินค้า:** LF 820 K325 (ID: `movex_chain_LF820_K325`)\n* **ประเภทสินค้า:** Straight Running Chain (โซ่วิ่งตรง ไม่สามารถเลี้ยวโค้งได้)\n* **ความกว้างหน้าโซ่ (Plate Width):** 82.5 มม.\n* **การรับโหลดสูงสุด (Max Working Load):** 1,625 นิวตัน (N)\n* **น้ำหนัก (Weight):** 0.89 กก./ม.\n* **วัสดุ:** LF (Low Friction Acetal) สีเทา/น้ำตาล ทนทานต่อการสึกหรอและมีสัมประสิทธิ์แรงเสียดทานต่ำ\n* **การใช้งานหลัก:** เหมาะสำหรับไลน์ลำเลียงแบบแถวเดี่ยว เช่น ขวด PET (330–600 มล.), กระป๋องอะลูมิเนียม และขวดแก้ว ในไลน์บรรจุความเร็วต่ำถึงปานกลาง\n\nหากต้องการข้อมูลเพิ่มเติม สเตอร์ที่ใช้งานร่วมกัน หรือเอกสาร Drawing แจ้งได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": true,
+   "id": "MT-002",
+   "turn": "1",
+   "category": "multi_turn",
+   "query": "",
+   "metrics": [
+    "series_correct"
+   ],
+   "seconds": 5.7,
+   "llm_usage": {
+    "prompt_token_count": 8152,
+    "candidates_token_count": 283,
+    "total_token_count": 8435
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true,
+    "answer_avoids_forbidden": true
+   },
+   "passed": true,
+   "reply": "โซ่รุ่น **LF 820 K325** **เลี้ยวไม่ได้ครับ** \n\nเนื่องจากเป็นโซ่ประเภท **Straight Running Chain (โซ่วิ่งตรง)** ซึ่งถูกออกแบบมาสำหรับแนวทางตรงเท่านั้นครับ\n\nหากหน้างานของคุณลูกค้ามีช่วงทางโค้ง แนะนำให้เปลี่ยนไปใช้โซ่ประเภท Sideflexing เช่น **880 Series (เช่น LF 880 TAB K325)** ซึ่งหน้ากว้างเท่ากันที่ 82.5 มม. แต่สามารถเลี้ยวโค้งได้ (รัศมีเลี้ยวขั้นต่ำ 457 มม.) ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": false
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-002",
+   "turn": "2",
+   "category": "multi_turn",
+   "query": "เลี้ยวได้ไหม",
+   "metrics": [
+    "curve_answer_correct"
+   ],
+   "seconds": 2.9,
+   "llm_usage": {
+    "prompt_token_count": 8706,
+    "candidates_token_count": 128,
+    "total_token_count": 8834
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "โซ่รุ่น **LF 880 TAB K450** สามารถใช้งานร่วมกับเฟืองสเตอร์ (Sprocket) ของ Movex ได้ดังนี้ครับ:\n\n1. **รุ่น 54901**: จำนวน 10 ฟัน (Z=10), ขนาดรูเพลา 25 มม. (Bore 25.0 mm), ชนิด Drive\n2. **รุ่น 55001**: จำนวน 12 ฟัน (Z=12), ขนาดรูเพลา 25 มม. (Bore 25.0 mm), ชนิด Drive\n\nหากต้องการข้อมูล drawing หรือสเปกเพิ่มเติมส่วนไหน แจ้งได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": true,
+   "id": "MT-003",
+   "turn": "1",
+   "category": "multi_turn",
+   "query": "ใช้สเตอร์ตัวไหน",
+   "metrics": [
+    "compatible_sprocket_correct",
+    "all_items_listed"
+   ],
+   "seconds": 4.4,
+   "llm_usage": {
+    "prompt_token_count": 8797,
+    "candidates_token_count": 146,
+    "total_token_count": 8943
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สำหรับเฟืองสเตอร์ที่ใช้งานร่วมกันได้ทั้ง 2 รุ่น ผลิตด้วยกระบวนการเดียวกันดังนี้ครับ:\n\n1. **รุ่น 54901**: \n   - **กระบวนการผลิต**: ฉีดขึ้นรูป (Injection Molded / Molded)\n   - **วัสดุ**: Reinforced Polyamide (ไนลอนเสริมแรง สีดำ)\n\n2. **รุ่น 55001**: \n   - **กระบวนการผลิต**: ฉีดขึ้นรูป (Injection Molded / Molded)\n   - **วัสดุ**: Reinforced Polyamide (ไนลอนเสริมแรง สีดำ)\n\n**จุดเด่นของกระบวนการผลิตแบบ Molded (ฉีดขึ้นรูป):**\n- ผลิตด้วยแม่พิมพ์ฉีดแรงดันสูง ให้คุณภาพชิ้นงานที่สม่ำเสมอ\n- คุ้มค่าและประหยัดต้นทุน เหมาะสำหรับการใช้งานในสายการผลิตทั่วไป (General Conveyor) และอุตสาหกรรมอาหารและเครื่องดื่มมาตรฐาน\n- วัสดุ Polyamide แข็งแรงทนทาน ทนต่อแรงบิดและการสึกหรอได้ดีครับ\n\nหากต้องการดู drawing หรือสอบถามข้อมูลเพิ่มเติม ยินดีให้บริการครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-003",
+   "turn": "2",
+   "category": "multi_turn",
+   "query": "สเตอร์นั้นผลิตยังไง",
+   "metrics": [
+    "all_sprockets_answered",
+    "process_correct"
+   ],
+   "seconds": 5.6,
+   "llm_usage": {
+    "prompt_token_count": 11980,
+    "candidates_token_count": 255,
+    "total_token_count": 12235
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "โซ่ **Movex LF 820 K325** มีค่าการรับแรงดึงใช้งานสูงสุด (Max Working Load) อยู่ที่ **1,625 N** ครับ\n\n**ข้อมูลสเปกเพิ่มเติม:**\n* **ความกว้างแผ่นโซ่ (Plate Width):** 82.5 มม.\n* **น้ำหนัก (Weight):** 0.89 กก./ม.\n* **ประเภท (Product Type):** Straight Running Chain (โซ่ตรง)\n* **วัสดุ (Material):** LF (Low Friction Acetal)\n\nหากต้องการสอบถามข้อมูลด้านอื่นเพิ่มเติม ยินดีให้บริการครับ!",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-004",
+   "turn": "1",
+   "category": "multi_turn",
+   "query": "LF820 K325 workload เท่าไหร่",
+   "metrics": [
+    "spec_value_correct"
+   ],
+   "seconds": 3.0,
+   "llm_usage": {
+    "prompt_token_count": 7322,
+    "candidates_token_count": 139,
+    "total_token_count": 7461
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "โซ่ **Movex LF 820 K325** มีความกว้างแผ่นโซ่ (Plate Width) อยู่ที่ **82.5 มม.** ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-004",
+   "turn": "2",
+   "category": "multi_turn",
+   "query": "กว้างเท่าไหร่",
+   "metrics": [
+    "spec_value_correct"
+   ],
+   "seconds": 2.2,
+   "llm_usage": {
+    "prompt_token_count": 7790,
+    "candidates_token_count": 38,
+    "total_token_count": 7828
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "**เลี้ยวไม่ได้ครับ** \n\nเนื่องจาก **LF 820 K325** เป็นโซ่ประเภท **Straight Running Chain (โซ่สำหรับทางตรง)** จึงออกแบบมาให้วิ่งได้เฉพาะแนวเส้นตรงเท่านั้นครับ\n\nหากคุณลูกค้าต้องการใช้งานในแนวโค้ง (Sideflexing) แนะนำให้ใช้รุ่นที่เป็น **880 Series** แทน เช่น **LF 880 TAB K325** ซึ่งมีความกว้าง 82.5 มม. เท่ากัน และมีรัศมีเลี้ยวแคบสุดอยู่ที่ 457 มม. ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-004",
+   "turn": "3",
+   "category": "multi_turn",
+   "query": "เลี้ยวได้ไหม",
+   "metrics": [
+    "curve_answer_correct"
+   ],
+   "seconds": 3.2,
+   "llm_usage": {
+    "prompt_token_count": 8547,
+    "candidates_token_count": 122,
+    "total_token_count": 8669
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "จากรูปภาพที่ส่งมา ระบบได้ทำการวิเคราะห์และตรวจสอบแล้ว สินค้าคือรุ่น **LF 820 K325** (Movex 820 Series) ครับ\n\n**ข้อมูลสเปกของรุ่น LF 820 K325:**\n- **ประเภท (Product Type):** Straight Running Chain (โซ่วิ่งแนวตรง ไม่สามารถเลี้ยวโค้งได้)\n- **ซีรีส์:** 820 Series\n- **ความกว้างหน้าโซ่ (Plate Width):** 82.5 มม.\n- **การรับแรงดึงสูงสุด (Max Working Load):** 1,625 N\n- **น้ำหนัก (Weight):** 0.89 กก./ม.\n- **วัสดุ (Material):** LF (Low Friction Acetal สีน้ำตาล/เทา)\n- **ลักษณะการใช้งาน:** เหมาะสำหรับลำเลียงสินค้าแถวเดี่ยว เช่น ขวด PET (330–600 มล.), กระป๋องอลูมิเนียม และขวดแก้ว ในไลน์บรรจุทั่วไป\n\nหากต้องการข้อมูลเพิ่มเติมหรือต้องการสเตอร์ (Sprocket) ที่ใช้งานร่วมกัน สามารถสอบถามได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": true,
+   "id": "MT-005",
+   "turn": "1",
+   "category": "multi_turn",
+   "query": "",
+   "metrics": [
+    "series_correct"
+   ],
+   "seconds": 5.6,
+   "llm_usage": {
+    "prompt_token_count": 8152,
+    "candidates_token_count": 254,
+    "total_token_count": 8406
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับโซ่รุ่น **LF 820 K325** มีค่าการรับแรงดึงสูงสุด (**Max Working Load**) อยู่ที่ **1,625 N** (นิวตัน) ครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-005",
+   "turn": "2",
+   "category": "multi_turn",
+   "query": "workload เท่าไหร่",
+   "metrics": [
+    "spec_value_correct",
+    "vit_carryover_works"
+   ],
+   "seconds": 2.4,
+   "llm_usage": {
+    "prompt_token_count": 8328,
+    "candidates_token_count": 44,
+    "total_token_count": 8372
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_required": true
+   },
+   "passed": true,
+   "reply": "สำหรับสเตอร์ Movex รหัส **54901** (880 Series Sideflexing Sprocket) สามารถใช้งานร่วมกับโซ่/สายพานรุ่นที่เข้ากันได้ (Compatible Chains) ดังนี้ครับ:\n\n* **LF 880 TAB K325** (`movex_chain_LF880_TAB_K325`)\n* **LF 880 TAB K450** (`movex_chain_LF880_TAB_K450`)\n\nหากต้องการทราบรายละเอียดสเปกเพิ่มเติมหรือต้องการดูแบบ (Drawing) ของรุ่นใด แจ้งได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-006",
+   "turn": "1",
+   "category": "multi_turn",
+   "query": "54901 ใช้กับสายพานตัวไหน",
+   "metrics": [
+    "compatible_chain_correct"
+   ],
+   "seconds": 5.8,
+   "llm_usage": {
+    "prompt_token_count": 8093,
+    "candidates_token_count": 135,
+    "total_token_count": 8228
+   },
+   "model_version": "gemini-3.8-flash"
+  },
+  {
+   "checks": {
+    "no_error": true,
+    "answer_has_any": true
+   },
+   "passed": true,
+   "reply": "สเตอร์ Movex รหัส **54901** ผลิตจากวัสดุ **Polyamide (PA) / Nylon** (สีดำ) ครับ\n\nโดยมีกระบวนการผลิตแบบ **Injection Molded (หล่อขึ้นรูป)** ซึ่งวัสดุนี้มีจุดเด่นคือ:\n* มีความแข็งแรงเชิงกลสูงและเหนียวทนทาน\n* ทนทานต่อการสึกหรอและการเสียดสีได้ดีเยี่ยม\n* ทนทานต่อน้ำมัน จาระบี และสารเคมีในงานอุตสาหกรรมได้ดี\n\nหากต้องการสอบถามสเปกส่วนอื่นเพิ่มเติม แจ้งได้เลยนะครับ",
+   "error": null,
+   "info": {
+    "forbidden_absent_anywhere": null
+   },
+   "skipped": false,
+   "used_image": false,
+   "id": "MT-006",
+   "turn": "2",
+   "category": "multi_turn",
+   "query": "สเตอร์นั้นผลิตจากวัสดุอะไร",
+   "metrics": [
+    "material_correct",
+    "graph_carryover_works"
+   ],
+   "seconds": 2.7,
+   "llm_usage": {
+    "prompt_token_count": 11812,
+    "candidates_token_count": 136,
+    "total_token_count": 11948
+   },
+   "model_version": "gemini-3.8-flash"
+  }
+ ]
+}
