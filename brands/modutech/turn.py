@@ -667,7 +667,8 @@ def _system_prompt(context: dict, rules: dict[str, list[str]]) -> str:
 def make_search_tool(search: CatalogueSearch, tracked: Optional[Callable] = None):
     """เครื่องมือให้ Gemini เรียกค้นทั้งฐานเอง (function calling)"""
     def search_catalogue(field: str = "", op: str = ">=", value: float = 0.0,
-                         surface: str = "", pin_material: str = "", belt_material: str = "") -> str:
+                         surface: str = "", pin_material: str = "", belt_material: str = "",
+                         rank: str = "") -> str:
         """
         ค้นสายพาน Modutech ทั้ง 68 รุ่นตามเงื่อนไข คืนทุกรุ่นที่ตรง (ไม่ใช่แค่ 5 อันดับ)
 
@@ -678,11 +679,17 @@ def make_search_tool(search: CatalogueSearch, tracked: Optional[Callable] = None
         value         : ค่าตัวเลขของเงื่อนไข
         surface       : ชื่อผิวภาษาอังกฤษ เช่น "Roller Top", "Flush Grid" ("" = ไม่กรอง)
         pin_material  : เช่น "SS" ("" = ไม่กรอง)
-        belt_material : เช่น "POM", "PP", "PE" ("" = ไม่กรอง)
+        belt_material : เช่น "POM", "PP", "PE" ("" = ไม่กรอง · "POM" รวมเกรดตระกูล POM เช่น POM-NL)
+        rank          : "max" | "min" = เรียงตาม field ทั้งฐาน คืน 5 อันดับแรก (ไม่ใช้ value) ·
+                        "overview" = จำนวนรุ่นทั้งหมดแยกซีรีส์/ผิว · "" = กรองตามเงื่อนไข
+        ไม่มีอุณหภูมิและความกว้าง — สองค่านี้ต้องผ่านการถามเปียก/แห้งและกฎความกว้างของระบบก่อน
         """
-        q = ExploratoryQuery(field=field or None, op=op or ">=",
-                             value=value if field else None, surface=surface or None,
-                             pin_material=pin_material or None, belt_material=belt_material or None)
+        rk = (rank or "").strip().lower() or None
+        ranked = rk in ("max", "min") and bool(field)
+        q = ExploratoryQuery(field=field or None, op=None if ranked else (op or ">="),
+                             value=None if (ranked or not field) else value, surface=surface or None,
+                             pin_material=pin_material or None, belt_material=belt_material or None,
+                             rank=rk if rk in ("max", "min", "overview") else None)
         if q.is_empty():
             return "ต้องระบุเงื่อนไขอย่างน้อยหนึ่งข้อ"
         return json.dumps(search.search(q), ensure_ascii=False)

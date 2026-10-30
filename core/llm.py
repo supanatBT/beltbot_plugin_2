@@ -217,15 +217,7 @@ class GeminiClient:
 # หน้าตาที่ปลั๊กอินเห็นเหมือน GeminiClient: result.response (.text · .candidates) · result.session.send_message()
 # ═══════════════════════════════════════════════════════════════
 
-def _no_arg_tool(fn):
-    """tool ที่ ToolLog.track ห่อไว้มีลายเซ็น (*args, **kwargs) — SDK เดิมจึงประกาศเป็นฟังก์ชันไม่มีพารามิเตอร์
-    (ตรวจ 13 ต.ค.: function_declarations มีแค่ name + description) ห่ออีกชั้นให้ google-genai ประกาศแบบเดียวกัน
-    พฤติกรรมเท่าเดิมทุกอย่าง — ถ้าจะให้ LLM ส่งพารามิเตอร์ได้ ต้องแก้ ToolLog.track ทั้งสองทาง (เรื่องแยก)"""
-    def proxy() -> dict:
-        return fn()
-    proxy.__name__ = fn.__name__
-    proxy.__doc__ = fn.__doc__
-    return proxy
+# _no_arg_tool (13 ต.ค.) ลบแล้ว 30 ต.ค. — ToolLog.track คงลายเซ็นของ tool ไว้เอง จึงส่ง tool ตรง ๆ ได้ทั้งสอง SDK
 
 
 class _GenAISession:
@@ -288,7 +280,7 @@ class GenAIClient:
         history = [t.Content(role=h["role"], parts=[t.Part(text=x) for x in h["parts"]])
                    for h in history_for_llm(chat_history)]
         cfg = t.GenerateContentConfig(system_instruction=turn.system_prompt,
-                                      tools=[_no_arg_tool(f) for f in turn.tools] or None,
+                                      tools=list(turn.tools) or None,
                                       thinking_config=self.thinking_config)
         def attempt():
             chat = self.client.chats.create(model=self.model_name, config=cfg, history=history)

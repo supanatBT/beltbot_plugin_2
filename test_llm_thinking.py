@@ -139,7 +139,8 @@ if real is not None:
                 self.wfile.write(b)
                 return
             REQS.append(body)
-            parts = ([{"functionCall": {"name": "search_catalogue", "args": {}}}] if len(REQS) == 1
+            parts = ([{"functionCall": {"name": "search_catalogue",
+                                           "args": {"field": "strength", "value": 50000}}}] if len(REQS) == 1
                      else [{"text": f"ตอบ {len(REQS)}"}])
             b = json.dumps({"candidates": [{"content": {"role": "model", "parts": parts}}]}).encode()
             self.send_response(200)
@@ -180,10 +181,14 @@ if real is not None:
        first["contents"][0]["parts"][0]["text"] == "ก่อน"
        and [list(p)[0] for p in first["contents"][-1]["parts"]] == ["inlineData", "text"])
     decl = first["tools"][0]["functionDeclarations"][0]
-    ok("tool ไม่มีพารามิเตอร์ (เหมือน SDK เดิม)", decl["name"] == "search_catalogue" and "parameters" not in decl,
+    # 30 ต.ค.: เดิมตรวจว่า "ไม่มีพารามิเตอร์ (เหมือน SDK เดิม)" — นั่นคือบั๊ก (probe_tools r2) · ตอนนี้ต้องมีครบ
+    props = (decl.get("parameters") or {}).get("properties") or {}
+    ok("tool ประกาศพารามิเตอร์ครบ", decl["name"] == "search_catalogue" and set(props) == {"field", "op", "value"},
        str(decl))
     ok("เรียก tool อัตโนมัติแล้วได้ข้อความ", extract_text(res.response) == "ตอบ 2"
        and [c["tool_name"] for c in log.calls] == ["search_catalogue"])
+    ok("args ที่ LLM ส่งถึงฟังก์ชัน", log.calls and log.calls[0]["args"] == {"field": "strength", "value": 50000},
+       str(log.calls[:1]))
     ok("session.send_message ส่งต่อได้", extract_text(res.session.send_message("อีกที")) == "ตอบ 3")
     budget = GenAIClient(FakeModule, "m", "k", {"budget": 0}).thinking_config
     ok("ได้ 503 ครั้งแรกแล้วลองใหม่เองจนผ่าน", FAILED == [1])
