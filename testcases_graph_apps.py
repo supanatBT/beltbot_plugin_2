@@ -40,7 +40,7 @@ FIELDS = ["id", "category", "subcategory", "turn_type", "turn_number", "user_tex
           "metrics", "description"]
 SALES_WORDS = "ฝ่ายขาย|ติดต่อ|สอบถาม|ยืนยัน"
 # ไม่ใส่ "ฝ่ายขาย" — รอบแรก (graph_apps_r1) GN-01 ผ่านเพราะคำนี้โผล่ในหมายเหตุอื่น ทั้งที่ตอบผิด
-NOT_FOUND_WORDS = "ไม่มีข้อมูล|ไม่พบ|ไม่ได้ระบุ|ไม่ระบุ|ไม่มีในแคตตาล็อก"
+NOT_FOUND_WORDS = "ไม่มีข้อมูล|ไม่พบ|ไม่ได้ระบุ|ไม่ได้มีการระบุ|ไม่มีการระบุ|ไม่ระบุ|ไม่มีในแคตตาล็อก"
 
 
 def join_limit(tokens, limit: int = 600) -> str:

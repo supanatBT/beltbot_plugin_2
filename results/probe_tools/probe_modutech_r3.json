@@ -1,0 +1,308 @@
+{
+  "module": "assistant",
+  "testcases": "testcases_probe_modutech_tools.csv",
+  "results": [
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "เปรียบเทียบข้อมูลจำเพาะระหว่างสายพาน Modutech รุ่น **EC127 C** และ **HC127 C** ดังนี้ครับ\n\n---\n\n### 1. ข้อมูลพื้นฐานและโครงสร้าง\n* **ระยะพิทช์ (Pitch):** ทั้งสองรุ่นมีขนาด 12.7 มม. (0.5 นิ้ว) เท่ากัน ช่วยลดอาการยกตัว–ตกตัวขณะหมุนรอบสเตอร์ (Polygon effect) ได้ดี\n* **ลักษณะผิวหน้า (Surface):** แบบเรียบทึบ (Flat Top) พื้นที่เปิด 0% ทั้งคู่ เหมาะกับการลำเลียงที่ต้องการผิวสัมผัสเรียบต่อเนื่อง และเป็นสายพานสำหรับวิ่งทางตรงเท่านั้น\n* **ความหนาของสายพาน (Thickness):**\n  * **EC127 C:** หนา 10.0 มม. (0.394 นิ้ว)\n  * **HC127 C:** หนา 8.0 มม. (0.315 นิ้ว)\n* **การทำความสะอาด (Cleanability):**\n  * **EC127 C:** ระดับ Good\n  * **HC127 C:** ระดับ Excellent\n* **สีมาตรฐาน:**\n  * **EC127 C:** น้ำเงิน (Blue), ขาว (White), เทา (Gray)\n  * **HC127 C:** น้ำเงิน (Blue)\n* **การรับรอง:** ทั้งสองรุ่นผ่านมาตรฐาน FDA และ EU\n\n---\n\n### 2. วัสดุ ความแข็งแรง และน้ำหนัก\nค่าความแข็งแรงและน้ำหนักขึ้นอยู่กับเกรดวัสดุของสายพานและสลัก (Pin):\n\n* **รุ่น EC127 C มีให้เลือก 3 ตระกูลวัสดุ (POM, PP, PE):**\n  * **POM (สลัก PA):** รับแรงดึงได้ 18,000 N/m | น้ำหนัก 8.7 kg/m²\n  * **POM (สลัก POM):** รับแรงดึงได้ 17,500 N/m | น้ำหนัก 8.7 kg/m²\n  * **POM (สลัก PP):** รับแรงดึงได้ 16,000 N/m | น้ำหนัก 8.7 kg/m²\n  * **PP (สลัก POM):** รับแรงดึงได้ 13,000 N/m | น้ำหนัก 5.9 kg/m²\n  * **PP (สลัก PP):** รับแรงดึงได้ 11,000 N/m | น้ำหนัก 5.8 kg/m²\n  * **PE (สลัก POM):** รับแรงดึงได้ 10,000 N/m | น้ำหนัก 6.4 kg/m²\n* **รุ่น HC127 C มีข้อมูลจำเพาะเฉพาะวัสดุ POM:**\n  * **POM (สลัก POM):** รับแรงดึงได้ 4,700 N/m | น้ำหนัก 5.7 kg/m²\n  * *หมายเหตุ:* แคตตาล็อกปี 2026 ไม่มีเกรด PP สำหรับรุ่น HC127 C (แม้โบรชัวร์อาจมีกล่าวถึง) หากต้องการใช้งานเกรด PP ต้องยืนยันกับทางฝ่ายขายครับ\n\n---\n\n### 3. ขนาดความกว้างสายพาน\n* **EC127 C:** สั่งผลิตได้ตั้งแต่ 50 ถึง 1,050 มม. โดยเพิ่มขึ้นทีละ 50 มม.\n* **HC127 C:** ขนาดมาตรฐานในตารางแคตตาล็อกมีตั้งแต่ 254 ถึง 1,270 มม. (ยังไม่สามารถระบุค่าเพิ่มทีละมาตรฐานได้ชัดเจน เนื่องจากข้อมูลหมายเหตุและตารางไม่ตรงกัน) \n  * สำหรับความกว้างต่ำสุด 101.6 มม. ถึงก่อน 254 มม. ต้องสอบถามฝ่ายขายเพื่อยืนยันการสั่งผลิต\n  * ส่วนขนาดนอกมาตรฐานระบุว่าเพิ่มได้ทีละ 50.8 มม.\n\n---\n\n### 4. ลักษณะการใช้งาน\n* **EC127 C:** มักใช้ในงานลำเลียงทั่วไป การถ่ายโอนสินค้าระหว่างสถานี (Transfer points) โต๊ะตรวจสอบและคัดแยก งานตรวจจับโลหะ งานลำเลียงแป้ง/เบเกอรี่ และไลน์บรรจุภัณฑ์ต่างๆ (Checkweighers, ติดฉลาก, บรรจุกล่อง, ลำเลียงกล่องลูกฟูก) โดยส่วนใหญ่อยู่ในไลน์แห้ง\n* **HC127 C:** เน้นการใช้งานในไลน์แปรรูปอาหารที่สัมผัสสินค้าโดยตรง เช่น งานตัดแต่ง/เลาะกระดูก (Deboning/Trim), ไลน์คลุกเกล็ดขนมปัง, ไลน์หมักเนื้อสัตว์, งานคัดเกรดขนาดสัตว์ปีกหรือปลา และไลน์แช่แข็ง\n\n---\n\n*(หมายเหตุ: หากต้องการข้อมูลช่วงอุณหภูมิการใช้งานของแต่ละเกรดวัสดุ รบกวนแจ้งเพิ่มเติมว่าสภาพแวดล้อมหน้างานเป็นไลน์เปียกหรือไลน์แห้ง เพื่อให้ระบุค่าอุณหภูมิที่ถูกต้องตามสภาวะการใช้งานจริงครับ)*",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MDT-C1",
+      "turn": "1",
+      "subcategory": "compare",
+      "query": "เปรียบเทียบ EC127 C กับ HC127 C",
+      "description": "คู่กับ MXT-C1 · ทั้งคู่พิทช์ 12.7 Flat Top · แรงดึงสูงสุด 18000 (EC127 C) vs 4700 (HC127 C) · ต้องบอกเกรดกำกับ",
+      "seconds": 11.3,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_191805_ba7287_t001`\n**Effective query:** เปรียบเทียบ EC127 C กับ HC127 C\n\n**Decision:** answer · brand=modutech · รหัสชัด\n\n**Modutech:** material:HC127 C:strip · width:HC127 C:mismatch · width:HC127 C:rewrite · temperature:EC127 C:strip · temperature:HC127 C:strip\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "ข้อแตกต่างหลักระหว่างสายพาน **MD508 C** และ **HD635 C** สรุปได้ดังนี้ครับ:\n\n---\n\n### 1. ระยะพิทช์ (Pitch) และความหนา\n* **MD508 C:** \n  * ระยะพิทช์ **50.8 มม.** (2 นิ้ว)\n  * ความหนาสายพาน **16 มม.**\n* **HD635 C:** \n  * ระยะพิทช์ **63.5 มม.** (2.5 นิ้ว) เป็นระยะพิทช์ที่ใหญ่ที่สุด\n  * ความหนาสายพาน **30 มม.** (หนากว่าเกือบเท่าตัว ออกแบบมาสำหรับงานหนักมาก)\n\n---\n\n### 2. ความกว้างสายพานที่ผลิตได้\n* **MD508 C:** มีความกว้างให้เลือกสั่งได้หลากหลาย ตั้งแต่ **150 ถึง 1,725 มม.** (เพิ่มขึ้นทีละ 75 มม.)\n* **HD635 C:** มีขนาดความกว้างแบบตายตัวขนาดเดียวคือ **100 มม.**\n\n---\n\n### 3. ตัวเลือกวัสดุ (Material)\n* **MD508 C:** มีวัสดุสายพานให้เลือกทั้ง **POM, PP และ PE** \n* **HD635 C:** มีเฉพาะวัสดุสายพานเกรด **POM-NL** (พินสเตนเลส SS)\n\n---\n\n### 4. ความแข็งแรงและการรับแรงดึง (Belt Strength)\n* **MD508 C:** ขึ้นอยู่กับเกรดวัสดุสายพานและพิน\n  * POM (พิน PA หรือ POM): **60,000 N/m**\n  * POM (พิน PP): **35,000 N/m**\n  * PP (พิน PP หรือ POM): **37,400 N/m**\n  * PE (พิน POM): **26,400 N/m**\n* **HD635 C:**\n  * POM-NL (พิน SS): **100,000 N/m** (รับแรงดึงได้สูงมาก)\n\n---\n\n### 5. น้ำหนักสายพาน (Belt Weight)\n* **MD508 C:** \n  * POM: **13.5 kg/m²**\n  * PP: **8.7 kg/m²**\n  * PE: **9.3 kg/m²**\n* **HD635 C:** \n  * POM-NL: **35.4 kg/m²**\n\n---\n\n### 6. การรับรองมาตรฐานด้านอาหาร (Food Grade)\n* **MD508 C:** ได้รับการรับรองตามมาตรฐาน **FDA** และ **EU** (มีสี Blue, White, Gray)\n* **HD635 C:** **ไม่ระบุว่าผ่านการรับรอง** (No) ตามตาราง เหมาะกับงานอุตสาหกรรมทั่วไป/ท้ายไลน์ เช่น จัดเรียงพาเลท (มีสี Black)\n\n---\n\n### 7. ลักษณะการใช้งานทั่วไป\n* **MD508 C:** เหมาะสำหรับงานลำเลียงแนวราบทั่วไป เช่น การลำเลียงกล่อง ลัง ในอุตสาหกรรมบรรจุภัณฑ์ อาหารทะเล และกล่องลูกฟูก\n* **HD635 C:** เหมาะสำหรับงานลำเลียงที่มีภาระโหลดหนักมาก เช่น งาน Palletizing / Depalletizing และลำเลียงพาเลทหรือลังหนักที่ปลายไลน์\n\n---\n\n*(หมายเหตุ: ทั้งสองรุ่นเป็นสายพานผิวเรียบทึบแบบวิ่งตรง ไม่สามารถเลี้ยวโค้งได้ หากต้องการข้อมูลเรื่องช่วงอุณหภูมิการใช้งาน รบกวนแจ้งเพิ่มเติมว่าเป็นสภาวะการทำงานแบบแห้งหรือเปียก เพื่อให้ระบุค่าอุณหภูมิได้อย่างถูกต้องครับ)*",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MDT-C2",
+      "turn": "1",
+      "subcategory": "compare",
+      "query": "MD508 C กับ HD635 C ต่างกันยังไง",
+      "description": "คู่กับ MXT-C2 · พิทช์ 50.8 vs 63.5 · แรงดึงสูงสุด 60000 vs 100000 (HD635 C เกรด POM-NL/SS)",
+      "seconds": 8.9,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_191818_923605_t001`\n**Effective query:** MD508 C กับ HD635 C ต่างกันยังไง\n\n**Decision:** answer · brand=modutech · รหัสชัด\n\n**Modutech:** temperature:MD508 C:strip · temperature:HD635 C:strip\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "สายพาน Modutech รุ่น **EC254 R** และ **EC508 TR** เป็นสายพานในกลุ่มเลี้ยวโค้ง (Sideflexing/Radius Modular Belt) ผิวแบบตะแกรง (Flush Grid) ทั้งคู่ แต่มีจุดแตกต่างหลักด้านสเปกและลักษณะการใช้งานดังนี้ครับ\n\n---\n\n### 1. ระยะพิทช์ (Pitch) และความหนา (Thickness)\n* **EC254 R:** ระยะพิทช์ **25.8 มม.** ความหนาสายพาน **11.0 มม.** (พิทช์ละเอียด เหมาะกับการลำเลียงที่ต้องการความนุ่มนวลหรือขนาดระบบเล็กลงมา)\n* **EC508 TR:** ระยะพิทช์ **50.8 มม.** ความหนาสายพาน **16.0 มม.** (พิทช์ใหญ่ โครงสร้างหนาและแข็งแรง ออกแบบสำหรับระบบขนาดใหญ่และรับภาระหนักกว่า)\n\n---\n\n### 2. ช่องเปิดระบาย (Open Area)\n* **EC254 R:** พื้นที่เปิด **36%** (ขนาดช่องเปิดใหญ่สุด 7.5 x 12 มม.)\n* **EC508 TR:** พื้นที่เปิด **58%** (ขนาดช่องเปิดใหญ่สุด 15 x 17 มม.) มีช่องเปิดกว้างกว่า จึงระบายน้ำ ลม หรือความเย็นได้โปร่งกว่า\n\n---\n\n### 3. น้ำหนักสายพาน (Belt Weight)\n* **เกรด POM (พอลิอะซีทัล):**\n  * EC254 R: 7.0 กก./ตร.ม.\n  * EC508 TR: 7.5 กก./ตร.ม.\n* **เกรด PP (โพลิโพรพิลีน):**\n  * EC254 R: 4.7 กก./ตร.ม.\n  * EC508 TR: 5.2 กก./ตร.ม.\n\n---\n\n### 4. ช่วงความกว้างสายพานมาตรฐาน\n* **EC254 R:** \n  * ขนาดมาตรฐานในตารางเริ่มตั้งแต่ **200 ถึง 1,200 มม.** (เพิ่มทีละ 50 มม.) \n  * *ข้อควรทราบ:* ในเล่มระบุขนาดต่ำสุด 100 มม. แต่ไม่ได้ระบุเงื่อนไขการสั่งช่วง 100–200 มม. ไว้ ส่วนขนาดนอกมาตรฐานเพิ่มทีละ 16.6 มม.\n* **EC508 TR:** \n  * ความกว้างอ้างอิงตามรายการในตารางตั้งแต่ **508 ถึง 1,524 มม.** \n  * *ข้อควรทราบ:* รุ่นนี้ยังยืนยันค่าเพิ่มทีละมาตรฐานไม่ได้ เนื่องจากหมายเหตุในเล่มกับตารางความกว้างระบุไม่ตรงกัน จึงอ้างอิงได้เฉพาะขนาดที่มีในตารางเท่านั้น\n\n---\n\n### 5. สีที่ผลิต\n* **EC254 R:** สีน้ำเงิน (Blue), ขาว (White), เทา (Gray)\n* **EC508 TR:** สีน้ำเงิน (Blue), ขาว (White)\n\n---\n\n**ข้อมูลเพิ่มเติมที่จำเป็นในการเลือกสเปก/คำนวณการรับแรง:**\nเนื่องจากทั้งสองรุ่นเป็นสายพานที่สามารถวิ่งทางโค้งได้ ซึ่งค่าความแข็งแรงในการรับแรงดึงขณะเข้าโค้งจะต่ำกว่าการวิ่งตรงอย่างมาก หากต้องการให้ประเมินการรับแรงดึงหรืออุณหภูมิใช้งานที่เหมาะสม รบกวนขอข้อมูลเพิ่มเติม:\n1. **ลักษณะไลน์ลำเลียงเป็นไลน์ตรงล้วน หรือมีช่วงเลี้ยวโค้งครับ?**\n2. **สภาพแวดล้อมหน้างานเป็นไลน์แห้ง หรือไลน์เปียก/มีความชื้นครับ?**",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MDT-C3",
+      "turn": "1",
+      "subcategory": "compare",
+      "query": "EC254 R กับ EC508 TR ต่างกันยังไง",
+      "description": "คู่กับ MXT-C3 · สายพานโค้งทั้งคู่ · พื้นที่เปิด 36% vs 58% · ค่าแรงดึงเป็นค่าวิ่งตรง",
+      "seconds": 10.1,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_191829_2b4aca_t001`\n**Effective query:** EC254 R กับ EC508 TR ต่างกันยังไง\n\n**Decision:** answer · brand=modutech · รหัสชัด\n\n**Modutech:** width:EC254 R:rewrite · width:EC508 TR:mismatch · width:EC508 TR:strip · curve:EC254 R:strip · curve:EC508 TR:strip · temperature:EC254 R:strip · temperature:EC508 TR:strip\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true
+      },
+      "passed": true,
+      "reply": "ข้อมูลสเปก (Datasheet) ของสายพาน Modutech รุ่น **HC508 C** มีรายละเอียดดังนี้ครับ:\n\n### ข้อมูลทั่วไป\n* **ซีรีส์:** 2 inch – 50.8 mm Modular Belt Series\n* **ลักษณะพื้นผิว:** Flat Top (ผิวเรียบทึบ)\n* **ระยะพิทช์ (Pitch):** 50.8 มม. (2 นิ้ว)\n* **พื้นที่เปิด (Open Area):** 0.0%\n* **ความหนาสายพาน:** 16.0 มม. (0.63 นิ้ว)\n* **มาตรฐานรับรอง:** FDA, EU\n* **สีมาตรฐาน:** น้ำเงิน (Blue), ขาว (White)\n* **การเลี้ยว:** วิ่งแนวตรงเท่านั้น (ไม่รองรับการเลี้ยวโค้ง)\n\n---\n\n### ความแข็งแรงและน้ำหนักตามเกรดวัสดุ\nความแข็งแรงและน้ำหนักขึ้นอยู่กับการจับคู่วัสดุสายพานและหมุด (Pin):\n\n* **สายพาน POM / หมุด POM:** ความแข็งแรง 30,000 N/m | น้ำหนัก 13.3 kg/m²\n* **สายพาน POM / หมุด PA:** ความแข็งแรง 30,000 N/m | น้ำหนัก 13.3 kg/m²\n* **สายพาน POM / หมุด PE:** ความแข็งแรง 18,000 N/m | น้ำหนัก 13.3 kg/m²\n* **สายพาน PP / หมุด PP:** ความแข็งแรง 18,000 N/m | น้ำหนัก 8.01 kg/m²\n* **สายพาน PP / หมุด POM:** ความแข็งแรง 18,000 N/m | น้ำหนัก 8.2 kg/m²\n* **สายพาน PE / หมุด PE:** ความแข็งแรง 10,000 N/m | น้ำหนัก 9.2 kg/m²\n* **สายพาน PE / หมุด POM:** ความแข็งแรง 10,000 N/m | น้ำหนัก 9.88 kg/m²\n\n---\n\n### ความกว้างสายพานมาตรฐาน (Belt Widths)\nมีรายการความกว้างตามตารางมาตรฐานตั้งแต่ 152.4 ถึง 1600.2 มม. ได้แก่:\n152.4, 228.6, 304.8, 381.0, 457.2, 533.4, 609.6, 685.8, 762.0, 838.2, 914.4, 990.6, 1066.8, 1143.0, 1219.2, 1295.4, 1371.6, 1447.8, 1524.0 และ 1600.2 มม.\n*(หมายเหตุ: ยังไม่สามารถยืนยันค่าการเพิ่มทีละมาตรฐาน (increment) ของรุ่นนี้ได้ เนื่องจากข้อมูลในเล่มระบุไม่ตรงกัน จึงอ้างอิงได้เฉพาะขนาดที่มีในรายการข้างต้น)*\n\n---\n\n*หมายเหตุเรื่องอุณหภูมิการใช้งาน:* หากต้องการทราบช่วงอุณหภูมิที่รองรับ รบกวนแจ้งเพิ่มเติมว่าเป็น **ไลน์การผลิตแบบเปียกหรือแห้ง** และเลือกใช้วัสดุใดครับ เนื่องจากอุณหภูมิการใช้งานจะแตกต่างกันตามเกรดวัสดุและสภาวะความชื้นของไลน์ครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MDT-D1",
+      "turn": "1",
+      "subcategory": "datasheet",
+      "query": "ขอ datasheet HC508 C",
+      "description": "คู่กับ MXT-D1 · Modutech ไม่มี tool datasheet · ต้องไม่ทำเป็นว่ามีไฟล์ · ตอบสรุปสเปกได้",
+      "seconds": 7.0,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_191841_3726d0_t001`\n**Effective query:** ขอ datasheet HC508 C\n\n**Decision:** answer · brand=modutech · รหัสชัด\n\n**Modutech:** width:HC508 C:mismatch · width:HC508 C:strip · temperature:HC508 C:strip\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true
+      },
+      "passed": true,
+      "reply": "สายพาน Modutech รุ่น **EC254 C** มีรายละเอียดสเปกดังนี้ครับ:\n\n* **ซีรีส์:** 1 inch – 25.4 mm Modular Belt Series\n* **ลักษณะผิว:** Flat Top (ผิวเรียบ ทึบ)\n* **ระยะพิทช์ (Pitch):** 25.4 มม.\n* **พื้นที่เปิด (Open Area):** 0.0%\n* **ความหนาสายพาน:** 10.0 มม. (0.394 นิ้ว)\n* **การเลี้ยว:** วิ่งทางตรงเท่านั้น (ไม่รองรับการเลี้ยว)\n* **มาตรฐานรับรอง:** FDA, EU\n* **สีมาตรฐาน:** สีน้ำเงิน (Blue), สีขาว (White)\n* **ระดับความสะอาด (Cleanability):** ดีเยี่ยม (Excellent)\n\n---\n\n### ความแข็งแรงและน้ำหนัก (แยกตามเกรดวัสดุ)\n* **เกรด POM (พิน PA):** รับแรงดึงได้ 21,900 N/m | น้ำหนัก 7.3 kg/m²\n* **เกรด POM (พิน POM):** รับแรงดึงได้ 21,900 N/m | น้ำหนัก 7.3 kg/m²\n* **เกรด POM (พิน PP):** รับแรงดึงได้ 16,000 N/m | น้ำหนัก 7.3 kg/m²\n* **เกรด PP (พิน PP):** รับแรงดึงได้ 14,000 N/m | น้ำหนัก 4.9 kg/m²\n* **เกรด PP (พิน POM):** รับแรงดึงได้ 14,000 N/m | น้ำหนัก 4.9 kg/m²\n* **เกรด PE (พิน POM):** รับแรงดึงได้ 8,000 N/m | น้ำหนัก 5.2 kg/m²\n\n---\n\n### ความกว้างสายพานมาตรฐาน\n* **ความกว้างแคบสุดที่ยืนยันได้:** 152.4 มม. (6 นิ้ว) จนถึง 1,600.2 มม. (63 นิ้ว) โดยเพิ่มขึ้นทีละ 76.2 มม. (3 นิ้ว)\n* *หมายเหตุ:* ความกว้างที่แคบกว่าค่าขั้นต่ำที่ยืนยันได้ (เช่น ขนาด 76.2 มม. ที่มีในตารางแคตตาล็อก) ต้องยืนยันกับพนักงานฝ่ายขายก่อนครับ\n\nหากต้องการทราบข้อมูลช่วงอุณหภูมิการใช้งาน รบกวนแจ้งเพิ่มเติมว่าเป็น**ไลน์เปียกหรือไลน์แห้ง** และสนใจเป็นวัสดุตัวใด เพื่อให้ข้อมูลอุณหภูมิได้อย่างถูกต้องครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MDT-D2",
+      "turn": "1",
+      "subcategory": "datasheet",
+      "query": "ขอดูแบบ EC254 C",
+      "description": "คู่กับ MXT-D2 · ไม่มี drawing · ควรบอกตรง ๆ หรือส่งฝ่ายขาย",
+      "seconds": 6.2,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_191850_1684a0_t001`\n**Effective query:** ขอดูแบบ EC254 C\n\n**Decision:** answer · brand=modutech · รหัสชัด\n\n**Modutech:** width:EC254 C:strip · temperature:EC254 C:strip\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true
+      },
+      "passed": true,
+      "reply": "ในแคตตาล็อกสายพาน Modutech ทั้งหมด 68 รุ่น **ไม่มีรุ่นที่น้ำหนักเบากว่า MD127 GAP50% ครับ** โดยรุ่นนี้เป็นรุ่นที่มีน้ำหนักน้อยที่สุดในแคตตาล็อกแล้วครับ\n\nน้ำหนักของ **MD127 GAP50%** แยกตามเกรดวัสดุสายพาน มีดังนี้ครับ:\n* **วัสดุ PP (โพลิโพรพิลีน):** น้ำหนัก **2.8 kg/m²** *(เบาที่สุด)*\n* **วัสดุ PA (ไนลอน):** น้ำหนัก **3.3 kg/m²**\n* **วัสดุ POM (พอลิอะซีทัล):** น้ำหนัก **3.6 kg/m²**\n\nหากปัจจุบันใช้งานวัสดุ POM หรือ PA อยู่ แล้วต้องการลดน้ำหนักลง การเลือกใช้วัสดุ **PP** จะช่วยให้น้ำหนักเบาที่สุดอยู่ที่ 2.8 kg/m² ครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MDT-F1",
+      "turn": "1",
+      "subcategory": "filter",
+      "query": "MD127 GAP50% มีรุ่นที่เบากว่านี้ไหม",
+      "description": "คู่กับ MXT-F1 · มีรหัส → การ์ดรุ่นเดียว ต้องพึ่ง search_catalogue(weight · min) · ถูก = ไม่มี (MD127 GAP50% PP 2.8 kg/m2 เบาสุดของฐาน) · อ่านเอง",
+      "seconds": 10.7,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [
+        {
+          "tool": "search_catalogue",
+          "args": {
+            "field": "weight",
+            "op": "<",
+            "value": 2.8
+          },
+          "success": true,
+          "result": "{\"query\": {\"field\": \"weight\", \"op\": \"<\", \"value\": 2.8, \"surface\": null, \"pin_material\": null, \"belt_material\": null}, \"scanned\": 68, \"matched\": 0, \"matches\": [], \"note_th\": \"ค้นครบทั้ง 68 รุ่นในฐานข้อมูล ผลนี้สมบูรณ์ ไม่มีรุ่นที่ตรงเงื่อนไขจริง\"}"
+        },
+        {
+          "tool": "search_catalogue",
+          "args": {
+            "field": "weight",
+            "rank": "min"
+          },
+          "success": true,
+          "result": "{\"query\": {\"field\": \"weight\", \"op\": null, \"value\": null, \"surface\": null, \"pin_material\": null, \"belt_material\": null, \"rank\": \"min\"}, \"scanned\": 68, \"matched\": 68, \"matches\": [{\"belt_code\": \"MD127 GAP50%\", \"surface_type\": \"Flush Grid\", \"curve_capable\": false, \"blocking_for\": [\"wet\", \"width\"], \"variants\": [{\"variant_id\": \"md127-gap50pct--pom-pa\", \"belt_material\": \"POM\", \"pin_material\": \"PA\", \"value\": 3.6, \"wet_data\": \"partial_data\"}, {\"variant_id\": \"md127-gap50pct--pom-pom\", \"belt_material\": \"POM\", \"pin_material\": \"POM\", \"value\": 3.6, \"wet_data\": \"ok\"}, {\"variant_id\": \"md127-gap50pct--pp-pom\", \"belt_material\": \"PP\", \"pin_material\": \"POM\", \"value\": 2.8, \"wet_data\": \"ok\"}, {\"variant_id\": \"md127-gap50pct--pp-pa\", \"belt_material\": \"PP\", \"pin_material\": \"PA\", \"value\": 2.8, \"wet_data\": \"partial_ …(+2921)"
+        }
+      ],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_191858_bc12f6_t001`\n**Effective query:** MD127 GAP50% มีรุ่นที่เบากว่านี้ไหม\n\n**Decision:** answer · brand=modutech · รหัสชัด\n\n**Modutech:** width:MD127 GAP50%:mismatch · width:MD127 GAP50%:rewrite · temperature:MD127 GAP50%:strip\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_any": true
+      },
+      "passed": true,
+      "reply": "สำหรับสายพาน **Modutech EC508 C** มีค่าแรงดึงสูงสุดตามวัสดุอยู่ที่ **30,000 N/m** (ในเกรดวัสดุสายพาน POM พิน PA หรือ POM)\n\nในฐานข้อมูลสายพาน Modutech มีรุ่นที่รับแรงดึงได้สูงกว่า 30,000 N/m ทั้งหมด 13 รุ่น โดยรุ่นที่รับแรงดึงได้สูงโดดเด่นและเป็นประเภทผิวเรียบ (Flat Top) เช่นเดียวกัน ได้แก่:\n\n1. **HD635 C** (Flat Top)\n   - วัสดุสายพาน POM-NL / พิน SS: รับแรงดึงได้สูงสุดถึง **100,000 N/m**\n2. **MD508 C** (Flat Top – ซีรีส์ระยะพิทช์ 2 นิ้วเท่ากัน)\n   - วัสดุสายพาน POM / พิน PA หรือ POM: **60,000 N/m**\n   - วัสดุสายพาน PP / พิน PP หรือ POM: **37,400 N/m**\n   - วัสดุสายพาน POM / พิน PP: **35,000 N/m**\n3. **MD508 NS** (Non Slip)\n   - วัสดุสายพาน POM / พิน PA หรือ POM: **56,000 N/m**\n4. **HP508 RR** (Raised Rib)\n   - วัสดุสายพาน POM / พิน POM: **45,500 N/m**\n5. **MD508 C-RT** (Roller Top)\n   - วัสดุสายพาน POM / พิน PA หรือ POM: **42,000 N/m**\n\nนอกจากนี้ยังมีรุ่นอื่น ๆ ที่รับแรงดึงได้มากกว่า 30,000 N/m ได้แก่: **XP254 EVO FLT**, **XP254 EVO CR**, **MD508 FG**, **MD508 PR25**, **HD254 C**, **MD254 C**, **EC381 R** และ **EC508 GT** ครับ\n\nหากต้องการเลือกรุ่นที่เหมาะสมกับการใช้งานจริง (เช่น งานเปียกหรือแห้ง อุณหภูมิการใช้งาน หรือลักษณะการลำเลียง) สามารถแจ้งข้อมูลเพิ่มเติมเพื่อพิจารณาความเหมาะสมของแต่ละเกรดวัสดุได้ครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MDT-F2",
+      "turn": "1",
+      "subcategory": "filter",
+      "query": "EC508 C มีรุ่นที่รับแรงดึงได้มากกว่านี้ไหม",
+      "description": "คู่กับ MXT-F2 · EC508 C สูงสุด 30000 · ถูก = 13 รุ่นที่ > 30000 (HD635 C 100000 · MD508 C 60000 · MD508 NS 56000 · HP508 RR · MD508 C-RT · XP254 EVO FLT/CR · MD508 FG · MD508 PR25 · HD254 C · MD254 C · EC381 R · EC508 GT 31000)",
+      "seconds": 12.3,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [
+        {
+          "tool": "search_catalogue",
+          "args": {
+            "field": "strength",
+            "op": ">",
+            "value": 30000
+          },
+          "success": true,
+          "result": "{\"query\": {\"field\": \"strength\", \"op\": \">\", \"value\": 30000, \"surface\": null, \"pin_material\": null, \"belt_material\": null}, \"scanned\": 68, \"matched\": 13, \"matches\": [{\"belt_code\": \"HD635 C\", \"surface_type\": \"Flat Top\", \"curve_capable\": false, \"blocking_for\": [], \"variants\": [{\"variant_id\": \"hd635-c--pom-nl-ss\", \"belt_material\": \"POM-NL\", \"pin_material\": \"SS\", \"value\": 100000.0, \"wet_data\": \"partial_data\"}]}, {\"belt_code\": \"MD508 C\", \"surface_type\": \"Flat Top\", \"curve_capable\": false, \"blocking_for\": [], \"variants\": [{\"variant_id\": \"md508-c--pom-pa\", \"belt_material\": \"POM\", \"pin_material\": \"PA\", \"value\": 60000.0, \"wet_data\": \"partial_data\"}, {\"variant_id\": \"md508-c--pom-pom\", \"belt_material\": \"POM\", \"pin_material\": \"POM\", \"value\": 60000.0, \"wet_data\": \"ok\"}, {\"variant_id\": \"md508-c--pom-pp\",  …(+4207)"
+        }
+      ],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_191911_d38e7a_t001`\n**Effective query:** EC508 C มีรุ่นที่รับแรงดึงได้มากกว่านี้ไหม\n\n**Decision:** answer · brand=modutech · รหัสชัด\n\n**Modutech:** width:EC508 C:rewrite · temperature:EC508 C:strip\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_any": true
+      },
+      "passed": true,
+      "reply": "สำหรับสายพาน **Modutech** รุ่น **EC254 C** จะเป็นผิวแบบทึบ (Flat Top, ช่องเปิด 0%) และวิ่งทางตรงเท่านั้น ไม่สามารถเลี้ยวได้ครับ\n\nหากต้องการรุ่นที่มีช่องเปิด (Open Area > 0%) และสามารถเลี้ยวได้ (Curve Capable) จะมีรุ่นสายพาน Modutech ดังนี้ครับ:\n\n**ในซีรีส์เดียวกัน (ระยะพิทช์ 25.4 มม.):**\n* **EC254 R** (ผิว Flush Grid, ช่องเปิด 36%)\n* **EC254 R-GT** (ผิว Grip Top เลี้ยวได้, ช่องเปิด 36%)\n* **EC254 R-TABE** (ผิว Flush Grid, มีปีก TAB ชนิด E, ช่องเปิด 36%)\n* **EC254 R-TABM** (ผิว Flush Grid, มีปีก TAB ชนิด M, ช่องเปิด 36%)\n* **EC254 TR** (ผิว Flush Grid, ช่องเปิด 38%)\n* **EC254 TR-TAB** (ผิว Flush Grid, มีปีก TAB, ช่องเปิด 38%)\n\n**ซีรีส์อื่นที่เลี้ยวได้และมีช่องเปิด:**\n* **EC381 R** (พิทช์ 38.1 มม., ผิว Flush Grid, ช่องเปิด 30%)\n* **EC508 R** (พิทช์ 50.8 มม., ผิว Flush Grid, ช่องเปิด 58%)\n* **EC508 TR** (พิทช์ 50.8 มม., ผิว Flush Grid, ช่องเปิด 58%)\n\nหากมีข้อกำหนดเรื่องความกว้างสายพาน รัศมีวงเลี้ยว หรือสภาวะการใช้งาน (แห้ง/เปียก) สามารถแจ้งเพิ่มเติมเพื่อช่วยคัดเลือกรุ่นที่เหมาะสมได้ครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MDT-F3",
+      "turn": "1",
+      "subcategory": "filter",
+      "query": "EC254 C มีรุ่นที่ช่องเปิดมากกว่านี้แต่เลี้ยวได้ไหม",
+      "description": "คู่กับ MXT-F3 · EC254 C พื้นที่เปิด 0% · ถูก = สายพานโค้ง 9 รุ่น (EC508 R/TR 58 · EC254 TR/TR-TAB 38 · EC254 R/R-GT/R-TABE/R-TABM 36 · EC381 R 30) · tool ไม่มีตัวกรองโค้ง",
+      "seconds": 9.7,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [
+        {
+          "tool": "search_catalogue",
+          "args": {
+            "field": "open_area",
+            "op": ">",
+            "value": 0
+          },
+          "success": true,
+          "result": "{\"query\": {\"field\": \"open_area\", \"op\": \">\", \"value\": 0, \"surface\": null, \"pin_material\": null, \"belt_material\": null}, \"scanned\": 68, \"matched\": 35, \"matches\": [{\"belt_code\": \"MP80 FG\", \"surface_type\": \"Flush Grid\", \"curve_capable\": false, \"blocking_for\": [\"wet\"], \"variants\": [{\"variant_id\": \"mp80-fg--pom-pa\", \"belt_material\": \"POM\", \"pin_material\": \"PA\", \"value\": 34.0, \"wet_data\": \"partial_data\"}, {\"variant_id\": \"mp80-fg--pom-pom\", \"belt_material\": \"POM\", \"pin_material\": \"POM\", \"value\": 34.0, \"wet_data\": \"ok\"}, {\"variant_id\": \"mp80-fg--pa-pa\", \"belt_material\": \"PA\", \"pin_material\": \"PA\", \"value\": 34.0, \"wet_data\": \"no_data\"}]}, {\"belt_code\": \"SM127 CRV\", \"surface_type\": \"Curve Top\", \"curve_capable\": false, \"blocking_for\": [\"material\"], \"variants\": [{\"variant_id\": \"sm127-crv--pom-pa\", \"bel …(+22573)"
+        }
+      ],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_191925_eaf069_t001`\n**Effective query:** EC254 C มีรุ่นที่ช่องเปิดมากกว่านี้แต่เลี้ยวได้ไหม\n\n**Decision:** answer · brand=modutech · รหัสชัด\n\n**Modutech:** width:EC254 C:strip · temperature:EC254 C:strip\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true
+      },
+      "passed": true,
+      "reply": "สายพาน **EC127 C** จัดอยู่ในซีรีส์ **0.5 inch – 12.7 mm Modular Belt Series** ครับ\n\nในซีรีส์เดียวกันนี้มีรุ่นอื่นๆ อีก **8 รุ่น** (ใช้ระยะพิทช์เดียวกันและใช้สเตอร์ชุดเดียวกัน) ได้แก่:\n1. **EC127 FG**\n2. **EC127 GT**\n3. **HC127 C**\n4. **MD127 GAP50%**\n5. **SM127 C**\n6. **SM127 CRV**\n7. **SM127 FG**\n8. **SM127 FG-GT**\n\n*(รวม EC127 C ด้วยจะเป็นทั้งหมด 9 รุ่นในซีรีส์นี้ครับ)*\n\n**ข้อควรทราบ:** แม้จะอยู่ในซีรีส์เดียวกัน แต่ละรุ่นจะมีลักษณะผิวสัมผัส ความแข็งแรง พื้นที่เปิด (Open Area) และช่วงอุณหภูมิที่แตกต่างกัน จึงยังไม่สามารถสรุปได้ว่าใช้งานทดแทนกันได้ทันที หากสนใจนำรุ่นใดไปใช้งาน สามารถแจ้งเพื่อดึงสเปกมาเปรียบเทียบเพิ่มเติมได้ครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MDT-A1",
+      "turn": "1",
+      "subcategory": "overview",
+      "query": "EC127 C ในซีรีส์เดียวกันมีกี่รุ่น",
+      "description": "คู่กับ MXT-A1 · ซีรีส์ 0.5 นิ้ว 9 รุ่น รวม EC127 C (อื่นอีก 8) · ใช้กราฟ BELONGS_TO",
+      "seconds": 4.4,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_191937_2dd052_t001`\n**Effective query:** EC127 C ในซีรีส์เดียวกันมีกี่รุ่น\n\n**Decision:** answer · brand=modutech · รหัสชัด\n\n**Modutech:** same_series: 8 รุ่น · temperature:EC127 C:strip\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "จากการตรวจสอบข้อมูลสายพาน Modutech ทั้ง 68 รุ่น รุ่นที่รับแรงดึงได้สูงสุด 5 อันดับแรก มีดังนี้ครับ (ค่าความแข็งแรงจะขึ้นอยู่กับเกรดของวัสดุสายพานและพิน)\n\n**อันดับ 1 (สูงสุดในแคตตาล็อก):**\n* **HD635 C** (Flat Top): \n  - วัสดุ POM-NL / พิน SS รับแรงดึงได้สูงสุด **100,000 N/m**\n\n**อันดับ 2:**\n* **MD508 C** (Flat Top): \n  - วัสดุ POM / พิน PA หรือ POM: **60,000 N/m**\n  - วัสดุ PP / พิน PP หรือ POM: **37,400 N/m**\n  - วัสดุ POM / พิน PP: **35,000 N/m**\n  - วัสดุ PE / พิน POM: **26,400 N/m**\n\n**อันดับ 3:**\n* **MD508 NS** (Non Slip): \n  - วัสดุ POM / พิน PA หรือ POM: **56,000 N/m**\n  - วัสดุ POM / พิน PP: **33,000 N/m**\n\n**อันดับ 4:**\n* **HP508 RR** (Raised Rib): \n  - วัสดุ POM / พิน POM: **45,500 N/m**\n  - วัสดุ PPH / พิน PPH: **34,200 N/m**\n\n**อันดับ 5:**\n* **MD508 C-RT** (Roller Top): \n  - วัสดุ POM / พิน PA หรือ POM: **42,000 N/m**\n\n*หมายเหตุ: ค่าความแข็งแรงขึ้นอยู่กับเกรดวัสดุสายพานและสลัก (Pin) ที่เลือกใช้งานครับ*",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MDT-U1",
+      "turn": "1",
+      "subcategory": "no_code",
+      "query": "Modutech รุ่นไหนรับแรงดึงสูงสุด",
+      "description": "คู่กับ MXT-U1 · ไม่มีรหัส · หลังแก้: จัดอันดับด้วยโค้ด · HD635 C 100000 N/m",
+      "seconds": 4.7,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_191943_210cd9_t001`\n**Effective query:** Modutech รุ่นไหนรับแรงดึงสูงสุด\n\n**Decision:** search · brand=modutech · คำถามเชิงสำรวจ → ค้นทั้งฐาน\n\n**Modutech:** search: 68/68\n\n**State patch:** modutech {'slots': {'_offered': ['HD635 C', 'MD508 C', 'MD508 NS', 'HP508 RR', 'MD508 C-RT']}}\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "จากการค้นหาข้อมูลสายพาน Modutech ทั้ง 68 รุ่น พบว่ามีรุ่นที่มีพื้นที่ช่องเปิด (Open Area) ไม่น้อยกว่า 50% ทั้งหมด 4 รุ่น ดังนี้ครับ:\n\n1. **MD127 GAP50%** (Flush Grid, สายพานวิ่งตรง)\n   - พื้นที่ช่องเปิด: **50.0%**\n2. **SM254 FG50%** (Flush Grid, สายพานวิ่งตรง)\n   - พื้นที่ช่องเปิด: **50.0%**\n3. **EC508 R** (Flush Grid, สายพานโค้ง/ตรง Curve-capable)\n   - พื้นที่ช่องเปิด: **58.0%**\n4. **EC508 TR** (Flush Grid, สายพานโค้ง/ตรง Curve-capable)\n   - พื้นที่ช่องเปิด: **58.0%**\n\nหากต้องการทราบข้อมูลวัสดุ ความกว้าง หรือการใช้งานในสภาวะต่างๆ เพิ่มเติม สามารถสอบถามได้เลยนะครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MDT-U2",
+      "turn": "1",
+      "subcategory": "no_code",
+      "query": "สายพาน Modutech ที่ช่องเปิดไม่น้อยกว่า 50% มีรุ่นไหน",
+      "description": "คู่กับ MXT-U2 · ไม่มีรหัส · ค้นทั้งฐาน 4 รุ่น",
+      "seconds": 3.4,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_191950_3ba2a7_t001`\n**Effective query:** สายพาน Modutech ที่ช่องเปิดไม่น้อยกว่า 50% มีรุ่นไหน\n\n**Decision:** search · brand=modutech · คำถามเชิงสำรวจ → ค้นทั้งฐาน\n\n**Modutech:** search: 4/68\n\n**State patch:** modutech {'slots': {'_offered': ['MD127 GAP50%', 'SM254 FG50%', 'EC508 R', 'EC508 TR']}}\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "จากฐานข้อมูลแคตตาล็อก สายพาน Modutech มีทั้งหมด **68 รุ่น** ครับ โดยสามารถแบ่งตามซีรีส์และรูปแบบพื้นผิวได้ดังนี้ครับ\n\n**แบ่งตามซีรีส์ (ระยะพิทช์):**\n* **2 inch – 50.8 mm Modular Belt Series:** 22 รุ่น\n* **1 inch – 25.4 mm Modular Belt Series:** 20 รุ่น\n* **0.5 inch – 12.7 mm Modular Belt Series:** 9 รุ่น\n* **Sideflexing/Radius Modular Belt Series (สายพานทางโค้ง):** 9 รุ่น\n* **0.3 inch – 8 mm Modular Belt Series:** 4 รุ่น\n* **0.6 inch – 15.24 mm Modular Belt Series:** 3 รุ่น\n* **2.5 inch – 63.5 mm Modular Belt Series:** 1 รุ่น\n\n**แบ่งตามรูปแบบพื้นผิว (Surface):**\n* Flush Grid: 20 รุ่น\n* Flat Top: 15 รุ่น\n* Grip Top: 7 รุ่น\n* Perforated Flat Top: 6 รุ่น\n* Roller Top: 5 รุ่น\n* Non Slip: 3 รุ่น\n* Nub Top: 3 รุ่น\n* Raised Rib: 2 รุ่น\n* Curve Top: 1 รุ่น\n* Ball Top: 1 รุ่น\n* Diamond Top: 1 รุ่น\n* Negative Pyramid: 1 รุ่น\n* Mini Rib: 1 รุ่น\n* Flush Grid Grip Top: 1 รุ่น\n* Flush Grid Nub Top: 1 รุ่น\n\n*(ในจำนวนทั้งหมด 68 รุ่นนี้ มีรุ่นที่สามารถวิ่งทางโค้งได้ 9 รุ่นครับ)*\n\nหากสนใจการใช้งานประเภทใดหรือต้องการหารุ่นเฉพาะเจาะจง สามารถสอบถามรายละเอียดเพิ่มเติมได้เลยครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "MDT-U3",
+      "turn": "1",
+      "subcategory": "no_code",
+      "query": "Modutech มีสายพานกี่รุ่น",
+      "description": "คู่กับ MXT-U3 · ไม่มีรหัส · นับด้วยโค้ด 68 รุ่น",
+      "seconds": 4.2,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_191956_6dde2e_t001`\n**Effective query:** Modutech มีสายพานกี่รุ่น\n\n**Decision:** search · brand=modutech · คำถามเชิงสำรวจ → ค้นทั้งฐาน\n\n**Modutech:** search: 68/68\n\n"
+    }
+  ]
+}
