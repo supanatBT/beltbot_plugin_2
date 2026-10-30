@@ -333,6 +333,11 @@ class ModutechPlugin:
             # "เข้าเตาอบ … พิทช์ 1 นิ้ว" = บอกงานพร้อมพิทช์ → ทางงานใช้ แล้วกรองพิทช์/อุณหภูมิด้วยโค้ด (turn.py)
             # ไม่ใช่ค้นพิทช์ทั้งฐานซึ่งไม่สนงานที่ลูกค้าบอก (26 ต.ค. · OVEN-01/02)
             q = None
+        if q is not None and q.belt_material and not (q.field or q.surface or q.pin_material or q.rank) and \
+                self._need_in(text):
+            # "แนะนำสายพาน POM สำหรับไก่" = บอกงานพร้อมวัสดุ → ทางงานใช้ (วัสดุผ่านเกตเดิม)
+            # ไม่ใช่ค้น POM ทั้งฐาน — 30 ต.ค. ตอนเริ่มอ่านวัสดุสายพานในคำถามสำรวจ
+            q = None
         if q is not None and not codes.belt_codes:
             return Decision("search", key, reason="คำถามเชิงสำรวจ → ค้นทั้งฐาน", topic="explore",
                             effective_text=text,

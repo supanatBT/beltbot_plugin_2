@@ -136,15 +136,18 @@ class ExploratoryQuery:
     belt_material: Optional[str] = None
     # ลูกค้าพูดกลุ่มกว้าง ("ผิวกันลื่น") → ผิวทุกชนิดในกลุ่ม · ว่าง = ใช้ surface ตัวเดียว
     surface_any: tuple = ()
+    # 30 ต.ค. (probe_tools r1/r2): "รุ่นไหนรับแรงดึงสูงสุด" · "เบาที่สุด" · "มีกี่รุ่น" ไม่มีตัวเลขให้ค้น เดิมตกไปวนถามงาน
+    # "max" / "min" = เรียงตาม field แล้วตัดเหลือ RANK_TOP รุ่นแรก · "overview" = นับทั้งฐาน ไม่คืนรายรุ่น
+    rank: Optional[str] = None
 
     def as_dict(self) -> dict:
-        """surface_any ว่าง = ไม่ใส่ — ผลของคำถามที่ไม่เกี่ยวกับกลุ่มผิวเหมือนก่อนเฟส 2 ทุกตัวอักษร"""
+        """surface_any / rank ว่าง = ไม่ใส่ — ผลของคำถามเดิมเหมือนก่อนแก้ทุกตัวอักษร"""
         return {k: (list(v) if k == "surface_any" else v) for k, v in self.__dict__.items()
-                if k != "surface_any" or v}
+                if k not in ("surface_any", "rank") or v}
 
     def is_empty(self) -> bool:
         return not any([self.field and self.value is not None, self.surface,
-                        self.pin_material, self.belt_material])
+                        self.pin_material, self.belt_material, self.rank])
 
 
 SURFACE_GROUPS = {"Non Slip": ("Non Slip", "Grip Top", "Flush Grid Grip Top")}
@@ -157,6 +160,57 @@ _FIELD_WORDS = {
 }
 _GE = r"อย่างน้อย|ไม่ต่ำกว่า|ขึ้นไป|มากกว่า|เกินกว่า|สูงกว่า|>=|≥|>|at\s*least|minimum"
 _LE = r"ไม่เกิน|ต่ำกว่า|น้อยกว่า|ไม่ถึง|<=|≤|<|at\s*most|maximum"
+# คำปฏิเสธกลับทิศ — ต้องตรวจก่อน _LE/_GE เพราะ "ไม่ต่ำกว่า" มีคำว่า "ต่ำกว่า" อยู่ข้างใน
+# 30 ต.ค. (probe_tools r1 TL-C1): "พื้นที่เปิดไม่ต่ำกว่า 50%" ถูกค้นเป็น ≤ 50 แล้วบอทตอบว่าสูงสุด 50% (จริง 58%)
+_NEG_GE = r"ไม่\s*(?:ต่ำ|น้อย)\s*กว่า"
+_NEG_LE = r"ไม่\s*(?:เกิน|มาก|สูง)(?:\s*กว่า)?"
+
+
+def comparison_op(text: str) -> str:
+    """">=" หรือ "<=" จากคำเปรียบเทียบ — คำปฏิเสธก่อน แล้วตัดออกก่อนดูคำธรรมดา"""
+    if re.search(_NEG_GE, text):
+        return ">="
+    if re.search(_NEG_LE, text):
+        return "<="
+    return "<=" if re.search(_LE, text, re.IGNORECASE) else ">="
+
+
+# คำสูงสุด/ต่ำสุดต่อ field — คำกว้างอย่าง "หนัก" ("งานหนัก") นับเฉพาะเมื่อเป็นขั้นสุด
+_RANK_WORDS = {
+    "strength": (r"(?:แรงดึง|รับแรง|แข็งแรง|ทนแรง|strength)\S{0,6}(?:สูงสุด|มากสุด|มากที่สุด|ที่สุด)|strongest",
+                 r"(?:แรงดึง|รับแรง|แข็งแรง|ทนแรง)\S{0,6}(?:ต่ำสุด|น้อยสุด|น้อยที่สุด)"),
+    "weight": (r"หนัก(?:ที่สุด|สุด)|น้ำหนัก\S{0,4}(?:มากสุด|มากที่สุด|สูงสุด)|heaviest",
+               r"เบา(?:ที่สุด|สุด)|น้ำหนัก\S{0,4}(?:น้อยสุด|น้อยที่สุด|ต่ำสุด)|lightest"),
+    "open_area": (r"(?:ช่องเปิด|พื้นที่เปิด|open\s*area)\S{0,6}(?:มากสุด|มากที่สุด|สูงสุด|เยอะสุด|เยอะที่สุด)",
+                  r"(?:ช่องเปิด|พื้นที่เปิด|open\s*area)\S{0,6}(?:น้อยสุด|น้อยที่สุด|ต่ำสุด)"),
+}
+RANK_TOP = 5
+_OVERVIEW = r"(?:ทั้งหมด\s*)?(?:มี)?\s*กี่\s*(?:รุ่น|แบบ|ชนิด|ตัว)|how\s+many\s+(?:belts|models)"
+
+_TH_DIGIT = {"หนึ่ง": 1, "เอ็ด": 1, "สอง": 2, "ยี่": 2, "สาม": 3, "สี่": 4, "ห้า": 5, "หก": 6,
+             "เจ็ด": 7, "แปด": 8, "เก้า": 9}
+_TH_UNIT = {"ล้าน": 1_000_000, "แสน": 100_000, "หมื่น": 10_000, "พัน": 1_000, "ร้อย": 100, "สิบ": 10}
+_TH_NUM = re.compile(r"(?:(?:%s)?(?:%s))+(?:%s)?" % ("|".join(_TH_DIGIT), "|".join(_TH_UNIT), "|".join(_TH_DIGIT)))
+
+
+def thai_number(text: str) -> Optional[float]:
+    """เลขที่เขียนเป็นคำ ("ห้าหมื่น" · "สองหมื่นห้าพัน") หรือเลข + หน่วยคำ ("5 หมื่น") — ไม่เจอ = None"""
+    m = re.search(r"(\d+(?:\.\d+)?)\s*(แสน|หมื่น)", text)
+    if m:
+        return float(m.group(1)) * _TH_UNIT[m.group(2)]
+    for m in _TH_NUM.finditer(text):
+        word = m.group(0)
+        if not any(u in word for u in _TH_UNIT):
+            continue
+        total, pos = 0, 0
+        for tok in re.findall("|".join(list(_TH_UNIT) + list(_TH_DIGIT)), word):
+            if tok in _TH_DIGIT:
+                pos = _TH_DIGIT[tok]
+            else:
+                total += (pos or 1) * _TH_UNIT[tok]
+                pos = 0
+        return float(total + pos)
+    return None
 _EXPLORE = r"มี.*(?:ไหม|มั้ย|หรือเปล่า|บ้าง)|รุ่นไหน|ตัวไหน|อะไรบ้าง|ต้องการ|หา|แนะนำ|list|which"
 _PIN_WORDS = {"SS": r"สแตนเลส|stainless|(?<![A-Za-z])SS(?![A-Za-z])"}
 
@@ -173,6 +227,12 @@ class CatalogueSearch:
         self.surfaces.sort(key=lambda x: len(x[0]), reverse=True)
         self.materials = sorted({v["belt_material"] for p in cat.products
                                  for v in p["specifications"]["variants"]}, key=len, reverse=True)
+        # เกรดที่ตระกูลเดียวกัน (POM-NL · CR · IMPR = POM) — ลูกค้าพิมพ์ "POM" ต้องได้ HD635 C (POM-NL) ด้วย
+        self.base_polymer = {m.get("material_code"): m.get("base_polymer")
+                             for m in cat.data.get("material_registry") or []}
+
+    def _material_ok(self, have: str, want: str) -> bool:
+        return have == want or (self.base_polymer.get(have) or "") == want
 
     def parse(self, text: str) -> Optional[ExploratoryQuery]:
         t = text or ""
@@ -194,12 +254,24 @@ class CatalogueSearch:
         # เลขที่มีหน่วยอุณหภูมิไม่ใช่ค่าของ field ใด ๆ ในการค้นนี้
         t_num = re.sub(r"-?\d+(?:\.\d+)?\s*(?:°\s*C|องศา|℃)", " ", t)
         m = re.search(r"(\d[\d,]*(?:\.\d+)?)\s*(?:k\b|พัน)?", t_num.replace(" ,", ","))
-        if q.field and m and not pitch_eq:
+        # เลขคำใช้เมื่อไม่มีเลขอารบิกเท่านั้น — "ร้อยละ 50" ต้องได้ 50 ไม่ใช่ 100
+        th_val = thai_number(t_num) if q.field and not pitch_eq and not re.search(r"\d", t_num) else None
+        if q.field and th_val is not None:
+            q.value, q.op = th_val, comparison_op(t)          # "เกินห้าหมื่นนิวตัน" (probe r1 TL-B4)
+        elif q.field and m and not pitch_eq:
             val = float(m.group(1).replace(",", ""))
             if re.search(r"\d\s*(?:k\b|พัน)", t, re.IGNORECASE):
                 val *= 1000
             q.value = val
-            q.op = "<=" if re.search(_LE, t, re.IGNORECASE) else ">="
+            q.op = comparison_op(t)
+        if q.value is None and not pitch_eq:
+            for name, (hi, lo) in _RANK_WORDS.items():
+                if re.search(hi, t, re.IGNORECASE):
+                    q.field, q.rank = name, "max"
+                    break
+                if re.search(lo, t, re.IGNORECASE):
+                    q.field, q.rank = name, "min"
+                    break
         for th, en in self.surfaces:
             if th.lower() in t.lower():
                 q.surface = en
@@ -214,9 +286,19 @@ class CatalogueSearch:
         for code, rx in _PIN_WORDS.items():
             if re.search(rx, t, re.IGNORECASE):
                 q.pin_material = code
+        # วัสดุสายพาน — เดิมไม่เคยตั้ง ("POM สลักสแตนเลส" กรองแค่สลัก · probe r1 TL-C2)
+        # คำที่ยาวกว่าก่อน (POM-NL ก่อน POM) · ต้องไม่ติดตัวอักษร/ขีด/* ทั้งสองข้าง (EC127SQZ19*PA คือรหัสสเตอร์)
+        rest = re.sub(_PIN_WORDS["SS"], " ", t, flags=re.IGNORECASE)
+        rest = re.sub(r"(?:สลัก|พิน|pin)\s*\S+", " ", rest, flags=re.IGNORECASE)   # "พิน PA" คือวัสดุสลัก
+        for mat in self.materials:
+            if re.search(rf"(?<![A-Za-z0-9\-*/]){re.escape(mat)}(?![A-Za-z0-9\-*/])", rest, re.IGNORECASE):
+                q.belt_material = mat
+                break
+        if q.is_empty() and re.search(_OVERVIEW, t, re.IGNORECASE):
+            return ExploratoryQuery(rank="overview")
         if q.is_empty():
             return None
-        if not (re.search(_EXPLORE, t, re.IGNORECASE) or q.value is not None):
+        if not (re.search(_EXPLORE, t, re.IGNORECASE) or q.value is not None or q.rank):
             return None
         return q
 
@@ -341,7 +423,24 @@ class CatalogueSearch:
             return (v.get("belt_weight") or {}).get("kg_per_m2")
         return None
 
+    def overview(self) -> dict:
+        """จำนวนรุ่นทั้งฐาน แยกตามซีรีส์และผิว — นับจากไฟล์ ไม่ให้ LLM นับเอง"""
+        from collections import Counter
+        by_series = Counter(p.get("belt_series") or "-" for p in self.cat.products)
+        by_surface = Counter(p["retrieval_card"].get("surface_type") or "-" for p in self.cat.products)
+        curve = sum(1 for p in self.cat.products if p["specifications"].get("has_curve_rating"))
+        return {"query": {"rank": "overview"}, "scanned": len(self.cat.products), "matched": len(self.cat.products),
+                "overview": {"total_belts": len(self.cat.products), "by_series": dict(by_series.most_common()),
+                             "by_surface": dict(by_surface.most_common()), "curve_capable": curve},
+                "matches": [],
+                "note_th": f"นับจากฐานข้อมูลทั้ง {len(self.cat.products)} รุ่น ตัวเลขนี้สมบูรณ์"}
+
     def search(self, q: ExploratoryQuery) -> dict:
+        if q.rank == "overview":
+            return self.overview()
+        if q.rank in ("max", "min") and q.field and q.value is None:
+            # เรียงทั้งฐาน — ใช้ทางกรองเดิมด้วยขอบที่ทุกค่าผ่าน แล้วเรียง/ตัดด้านล่าง
+            q = ExploratoryQuery(**{**q.__dict__, "op": ">=", "value": float("-inf")})
         matches = []
         for p in self.cat.products:
             spec, rc = p["specifications"], p["retrieval_card"]
@@ -352,7 +451,7 @@ class CatalogueSearch:
             if q.pin_material:
                 vs = [v for v in vs if v.get("pin_material") == q.pin_material]
             if q.belt_material:
-                vs = [v for v in vs if v.get("belt_material") == q.belt_material]
+                vs = [v for v in vs if self._material_ok(v.get("belt_material"), q.belt_material)]
             if not vs:
                 continue
             if q.field in ("open_area", "pitch") and q.value is not None:
@@ -386,9 +485,29 @@ class CatalogueSearch:
             p = self.cat.by_code[m["belt_code"]]
             for h in m["variants"]:
                 h["wet_data"] = wet_data_status(p, h["variant_id"])
-        if q.field in ("strength", "weight") and q.value is not None:
+        total_matched = len(matches)
+        if q.rank in ("max", "min") and q.field in ("strength", "weight", "open_area"):
+            pick = max if q.rank == "max" else min
+            matches = [m for m in matches if any(h.get("value") is not None for h in m["variants"])]
+            matches.sort(key=lambda m: pick(h["value"] for h in m["variants"] if h.get("value") is not None),
+                         reverse=(q.rank == "max"))
+            matches = matches[:RANK_TOP]
+        elif q.field in ("strength", "weight") and q.value is not None:
             matches.sort(key=lambda m: max(h["value"] for h in m["variants"]),
                          reverse=(q.op == ">="))
+        if q.rank in ("max", "min"):
+            word = "มากไปน้อย" if q.rank == "max" else "น้อยไปมาก"
+            return {
+                "query": q.as_dict() | {"value": None, "op": None},
+                "scanned": len(self.cat.products),
+                "matched": total_matched,
+                "matches": matches,
+                "note_th": (f"เรียงรุ่นทั้ง {len(self.cat.products)} รุ่นตามค่า{word} แสดง {len(matches)} อันดับแรก "
+                            f"อันดับ 1 คือค่า{'สูง' if q.rank == 'max' else 'ต่ำ'}สุดของทั้งฐานข้อมูล "
+                            "ค่าขึ้นกับเกรดวัสดุ ต้องบอกเกรดกำกับ"
+                            + (" ค่าความแข็งแรงของรุ่นที่วิ่งโค้งได้เป็นค่าวิ่งตรง"
+                               if q.field == "strength" and any(m["curve_capable"] for m in matches) else "")),
+            }
         return {
             "query": q.as_dict(),
             "scanned": len(self.cat.products),
