@@ -1,0 +1,334 @@
+{
+  "module": "assistant",
+  "testcases": "testcases_probe_tools.csv",
+  "results": [
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "จากการค้นหาข้อมูลสายพาน Modutech ทั้ง 68 รุ่นในแคตตาล็อก มีรุ่นที่รองรับแรงดึงตั้งแต่ 50,000 N/m ขึ้นไป ทั้งหมด 3 รุ่น ดังนี้ครับ:\n\n1. **HD635 C** (ผิว Flat Top / ทางตรง)\n   - วัสดุสายพาน POM-NL / พิน SS: รับแรงดึงได้ **100,000 N/m**\n\n2. **MD508 C** (ผิว Flat Top / ทางตรง)\n   - วัสดุสายพาน POM / พิน PA: รับแรงดึงได้ **60,000 N/m**\n   - วัสดุสายพาน POM / พิน POM: รับแรงดึงได้ **60,000 N/m**\n\n3. **MD508 NS** (ผิว Non Slip / ทางตรง)\n   - วัสดุสายพาน POM / พิน PA: รับแรงดึงได้ **56,000 N/m**\n   - วัสดุสายพาน POM / พิน POM: รับแรงดึงได้ **56,000 N/m**\n\n*(หมายเหตุ: ค่าความแข็งแรงขึ้นอยู่กับเกรดวัสดุของสายพานและพินตามที่ระบุไว้ครับ)* หากต้องการทราบข้อมูลการใช้งานหรือสเปกด้านอื่นเพิ่มเติม สอบถามได้เลยนะครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "TL-A1",
+      "turn": "1",
+      "subcategory": "code_parser",
+      "query": "สายพานที่รับแรงดึงอย่างน้อย 50000 N/m มีรุ่นไหนบ้าง",
+      "description": "ตัวเทียบ · โค้ดจับได้ (strength >= 50000)",
+      "seconds": 4.1,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_171317_0b0cdc_t001`\n**Effective query:** สายพานที่รับแรงดึงอย่างน้อย 50000 N/m มีรุ่นไหนบ้าง\n\n**Decision:** search · brand=modutech · คำถามเชิงสำรวจ → ค้นทั้งฐาน\n\n**Modutech:** search: 3/68\n\n**State patch:** modutech {'slots': {'_offered': ['HD635 C', 'MD508 C', 'MD508 NS']}}\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "จากการค้นหาในฐานข้อมูลสายพาน Modutech ทั้ง 68 รุ่น มีสายพานที่เป็นผิวลูกกลิ้ง (Roller Top) ทั้งหมด 5 รุ่น ดังนี้ครับ:\n\n1. **MD254 C-RT** (Closed Roller Top)\n   - วัสดุสายพาน/พิน: POM/PA, POM/POM\n2. **MD254 FG-RT** (Flush Grid Roller Top)\n   - วัสดุสายพาน/พิน: POM/PA, POM/POM\n3. **EC508 C-RT** (Closed Roller Top)\n   - วัสดุสายพาน/พิน: POM/PA, POM/POM\n4. **MD508 C-RT** (Closed Roller Top)\n   - วัสดุสายพาน/พิน: POM/PA, POM/POM\n5. **MD508 FG-RT** (Flush Grid Roller Top)\n   - วัสดุสายพาน/พิน: POM/PA, POM/POM, PP/PP, PP/POM\n\nทุกรุ่นเป็นสายพานทางตรง (ไม่รองรับการเลี้ยวโค้ง) หากต้องการทราบสเปกด้านขนาด ความแข็งแรง หรืออุณหภูมิการใช้งานของรุ่นใดเพิ่มเติม สามารถสอบถามได้เลยครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "TL-A2",
+      "turn": "1",
+      "subcategory": "code_parser",
+      "query": "มีสายพานผิวลูกกลิ้งรุ่นไหนบ้าง",
+      "description": "ตัวเทียบ · โค้ดจับได้ (surface Roller Top)",
+      "seconds": 4.0,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_171323_b7ae9d_t001`\n**Effective query:** มีสายพานผิวลูกกลิ้งรุ่นไหนบ้าง\n\n**Decision:** search · brand=modutech · คำถามเชิงสำรวจ → ค้นทั้งฐาน\n\n**Modutech:** search: 5/68\n\n**State patch:** modutech {'slots': {'_offered': ['MD254 C-RT', 'MD254 FG-RT', 'EC508 C-RT', 'MD508 C-RT', 'MD508 FG-RT']}}\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": false
+      },
+      "passed": false,
+      "reply": "ขอทราบก่อนนะครับว่าถามถึงสินค้าแบบไหน\n1. โซ่ท็อปเชน Movex — ลำเลียงขวด กระป๋อง ลัง ในไลน์บรรจุเครื่องดื่ม\n2. สายพานโมดูลาร์ Modutech — งานอาหาร เช่น เนื้อสัตว์ สัตว์ปีก อาหารทะเล เบเกอรี่ ผักผลไม้\nตอบเป็นเลขข้อหรือชื่อแบรนด์ได้เลยครับ ถ้ามีรหัสรุ่นหรือรูปสินค้าก็ส่งมาแทนได้",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "TL-B1",
+      "turn": "1",
+      "subcategory": "llm_tool",
+      "query": "สายพานรุ่นไหนรับแรงดึงสูงสุด",
+      "description": "โค้ดไม่จับ · ต้องพึ่ง search_catalogue · คำตอบ HD635 C 100000 N/m",
+      "seconds": 0.0,
+      "model_version": null,
+      "llm_called": false,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_171329_9552be_t001`\n**Effective query:** สายพานรุ่นไหนรับแรงดึงสูงสุด\n\n**Decision:** ask · brand=None · ยังไม่รู้แบรนด์\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": false
+      },
+      "passed": false,
+      "reply": "ขอทราบก่อนนะครับว่าถามถึงสินค้าแบบไหน\n1. โซ่ท็อปเชน Movex — ลำเลียงขวด กระป๋อง ลัง ในไลน์บรรจุเครื่องดื่ม\n2. สายพานโมดูลาร์ Modutech — งานอาหาร เช่น เนื้อสัตว์ สัตว์ปีก อาหารทะเล เบเกอรี่ ผักผลไม้\nตอบเป็นเลขข้อหรือชื่อแบรนด์ได้เลยครับ ถ้ามีรหัสรุ่นหรือรูปสินค้าก็ส่งมาแทนได้",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "TL-B2",
+      "turn": "1",
+      "subcategory": "llm_tool",
+      "query": "สายพานที่เบาที่สุดคือรุ่นไหน",
+      "description": "โค้ดไม่จับ · คำตอบ MD127 GAP50% เกรด PP 2.8 kg/m2",
+      "seconds": 0.0,
+      "model_version": null,
+      "llm_called": false,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_171331_b49096_t001`\n**Effective query:** สายพานที่เบาที่สุดคือรุ่นไหน\n\n**Decision:** ask · brand=None · ยังไม่รู้แบรนด์\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": false
+      },
+      "passed": false,
+      "reply": "ขอทราบก่อนนะครับว่าถามถึงสินค้าแบบไหน\n1. โซ่ท็อปเชน Movex — ลำเลียงขวด กระป๋อง ลัง ในไลน์บรรจุเครื่องดื่ม\n2. สายพานโมดูลาร์ Modutech — งานอาหาร เช่น เนื้อสัตว์ สัตว์ปีก อาหารทะเล เบเกอรี่ ผักผลไม้\nตอบเป็นเลขข้อหรือชื่อแบรนด์ได้เลยครับ ถ้ามีรหัสรุ่นหรือรูปสินค้าก็ส่งมาแทนได้",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "TL-B3",
+      "turn": "1",
+      "subcategory": "llm_tool",
+      "query": "สายพานกันลื่นที่แข็งแรงที่สุด",
+      "description": "โค้ดไม่จับ · กลุ่มกันลื่นรวม Grip Top · คำตอบ MD508 NS 56000 N/m (รองลงมา XP254 EVO CR 40250)",
+      "seconds": 0.0,
+      "model_version": null,
+      "llm_called": false,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_171333_8c00d0_t001`\n**Effective query:** สายพานกันลื่นที่แข็งแรงที่สุด\n\n**Decision:** ask · brand=None · ยังไม่รู้แบรนด์\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": false
+      },
+      "passed": false,
+      "reply": "ขอทราบก่อนนะครับว่าถามถึงสินค้าแบบไหน\n1. โซ่ท็อปเชน Movex — ลำเลียงขวด กระป๋อง ลัง ในไลน์บรรจุเครื่องดื่ม\n2. สายพานโมดูลาร์ Modutech — งานอาหาร เช่น เนื้อสัตว์ สัตว์ปีก อาหารทะเล เบเกอรี่ ผักผลไม้\nตอบเป็นเลขข้อหรือชื่อแบรนด์ได้เลยครับ ถ้ามีรหัสรุ่นหรือรูปสินค้าก็ส่งมาแทนได้",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "TL-B4",
+      "turn": "1",
+      "subcategory": "llm_tool",
+      "query": "ขอสายพานที่ทนแรงได้เกินห้าหมื่นนิวตันต่อเมตร",
+      "description": "โค้ดไม่จับ (ตัวเลขเป็นคำ) · คำตอบเท่า TL-A1",
+      "seconds": 0.0,
+      "model_version": null,
+      "llm_called": false,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_171335_d7b675_t001`\n**Effective query:** ขอสายพานที่ทนแรงได้เกินห้าหมื่นนิวตันต่อเมตร\n\n**Decision:** ask · brand=None · ยังไม่รู้แบรนด์\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_any": false
+      },
+      "passed": false,
+      "reply": "ขอทราบก่อนนะครับว่าถามถึงสินค้าแบบไหน\n1. โซ่ท็อปเชน Movex — ลำเลียงขวด กระป๋อง ลัง ในไลน์บรรจุเครื่องดื่ม\n2. สายพานโมดูลาร์ Modutech — งานอาหาร เช่น เนื้อสัตว์ สัตว์ปีก อาหารทะเล เบเกอรี่ ผักผลไม้\nตอบเป็นเลขข้อหรือชื่อแบรนด์ได้เลยครับ ถ้ามีรหัสรุ่นหรือรูปสินค้าก็ส่งมาแทนได้",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "TL-B5",
+      "turn": "1",
+      "subcategory": "llm_tool",
+      "query": "อยากได้สายพานรูเยอะ ๆ ระบายน้ำดี ๆ",
+      "description": "โค้ดไม่จับ · พื้นที่เปิดสูงสุด EC508 R / EC508 TR 58%",
+      "seconds": 0.0,
+      "model_version": null,
+      "llm_called": false,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_171337_8173f7_t001`\n**Effective query:** อยากได้สายพานรูเยอะ ๆ ระบายน้ำดี ๆ\n\n**Decision:** ask · brand=None · ยังไม่รู้แบรนด์\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "จากการค้นหาข้อมูลสายพาน Modutech ทั้ง 68 รุ่นในแคตตาล็อก มีรุ่นที่มีพื้นที่เปิด (Open Area) ไม่ต่ำกว่า 50% ทั้งหมด 4 รุ่น ดังนี้ครับ:\n\n1. **MD127 GAP50%** (Flush Grid) — วิ่งแนวตรง (พื้นที่เปิด 50.0%)\n2. **SM254 FG50%** (Flush Grid) — วิ่งแนวตรง (พื้นที่เปิด 50.0%)\n3. **EC508 R** (Flush Grid) — วิ่งแนวโค้งได้ (พื้นที่เปิด 58.0%)\n4. **EC508 TR** (Flush Grid) — วิ่งแนวโค้งได้ (พื้นที่เปิด 58.0%)\n\nหากต้องการตรวจสอบเรื่องวัสดุสายพาน (เช่น POM, PP, PA) หรือการนำไปใช้งานในสภาวะแห้ง/เปียกและอุณหภูมิ สามารถสอบถามข้อมูลเพิ่มเติมได้เลยนะครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "TL-C1",
+      "turn": "1",
+      "subcategory": "parser_bug",
+      "query": "สายพานพื้นที่เปิดไม่ต่ำกว่า 50% มีรุ่นไหน",
+      "description": "บั๊กตัวตรวจ: อ่านเป็น <= 50 (คำว่า ต่ำกว่า ใน ไม่ต่ำกว่า)",
+      "seconds": 3.7,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_171339_ffae86_t001`\n**Effective query:** สายพานพื้นที่เปิดไม่ต่ำกว่า 50% มีรุ่นไหน\n\n**Decision:** search · brand=modutech · คำถามเชิงสำรวจ → ค้นทั้งฐาน\n\n**Modutech:** search: 4/68\n\n**State patch:** modutech {'slots': {'_offered': ['MD127 GAP50%', 'SM254 FG50%', 'EC508 R', 'EC508 TR']}}\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true,
+        "answer_avoids_forbidden": true
+      },
+      "passed": true,
+      "reply": "สินค้าที่เกี่ยวกับสแตนเลส (SS) ของทั้งสองแบรนด์ครับ\n\n**Movex (โซ่ท็อปเชน)**\n• ไม่มีรุ่นที่ตัวโซ่ทำจากสแตนเลส — ตัวโซ่ผลิตจาก LF, LFN (LF = Low Friction Acetal)\n• ตารางวัสดุของ Movex ระบุ SS ไว้ว่า \"Standard for pins in all MF PRO chains\" แต่ข้อมูลรายรุ่นไม่ได้ระบุวัสดุพิน ต้องยืนยันกับฝ่ายขาย\n\n**Modutech (สายพานโมดูลาร์)**\n• มี 2 รุ่นที่ใช้ก้าน (พิน) สแตนเลส — ตัวสายพานเป็นพลาสติก:\n  – MD254 GAP48%-EHT (Flush Grid) เกรด EHT/SS\n  – HD635 C (Flat Top) เกรด POM-NL/SS\n\nสนใจแบรนด์ไหนหรือรุ่นไหน บอกได้เลยครับ จะให้รายละเอียดสเปกเพิ่ม",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": true
+      },
+      "id": "TL-C2",
+      "turn": "1",
+      "subcategory": "parser_bug",
+      "query": "สายพาน POM สลักสแตนเลส มีรุ่นไหนบ้าง",
+      "description": "บั๊กตัวตรวจ: ไม่กรองวัสดุสายพาน · ถูก = HD635 C (POM-NL) · ผิด = MD254 GAP48%-EHT (EHT)",
+      "seconds": 0.0,
+      "model_version": null,
+      "llm_called": false,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_171345_e4b39d_t001`\n**Effective query:** สายพาน POM สลักสแตนเลส มีรุ่นไหนบ้าง\n\n**Decision:** cross_brand · brand=None · SS ไม่ระบุแบรนด์ → ตอบทั้งสองแบรนด์\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "จากข้อมูลสายพาน Modutech ทั้งหมด มีจำนวนทั้งสิ้น **68 รุ่น** ครับ (นับจากฐานข้อมูลทั้ง 68 รุ่น ตัวเลขนี้สมบูรณ์)\n\nโดยสามารถจำแนกรายละเอียดได้ดังนี้ครับ:\n\n**แบ่งตามซีรีส์ (Pitch):**\n* 2 inch – 50.8 mm Modular Belt Series: 22 รุ่น\n* 1 inch – 25.4 mm Modular Belt Series: 20 รุ่น\n* 0.5 inch – 12.7 mm Modular Belt Series: 9 รุ่น\n* Sideflexing/Radius Modular Belt Series (สายพานโค้ง): 9 รุ่น\n* 0.3 inch – 8 mm Modular Belt Series: 4 รุ่น\n* 0.6 inch – 15.24 mm Modular Belt Series: 3 รุ่น\n* 2.5 inch – 63.5 mm Modular Belt Series: 1 รุ่น\n\n**แบ่งตามลักษณะพื้นผิว (Surface):**\n* Flush Grid: 20 รุ่น\n* Flat Top: 15 รุ่น\n* Grip Top: 7 รุ่น\n* Perforated Flat Top: 6 รุ่น\n* Roller Top: 5 รุ่น\n* Non Slip: 3 รุ่น\n* Nub Top: 3 รุ่น\n* Raised Rib: 2 รุ่น\n* Negative Pyramid: 1 รุ่น\n* Curve Top: 1 รุ่น\n* Flush Grid Grip Top: 1 รุ่น\n* Ball Top: 1 รุ่น\n* Diamond Top: 1 รุ่น\n* Flush Grid Nub Top: 1 รุ่น\n* Mini Rib: 1 รุ่น\n\n*(หมายเหตุ: ในจำนวนทั้งหมดนี้ มีรุ่นที่รองรับการวิ่งแนวโค้งได้ 9 รุ่นครับ)*\n\nหากสนใจสเปกหรือการใช้งานของรุ่นใดเป็นพิเศษ สอบถามเพิ่มเติมได้เลยนะครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "TL-D1",
+      "turn": "1",
+      "subcategory": "movex_style",
+      "query": "Modutech มีสายพานทั้งหมดกี่รุ่น",
+      "description": "ภาพรวม · ไม่มีเครื่องมือเฉพาะ",
+      "seconds": 5.0,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_171347_b15f7a_t001`\n**Effective query:** Modutech มีสายพานทั้งหมดกี่รุ่น\n\n**Decision:** search · brand=modutech · คำถามเชิงสำรวจ → ค้นทั้งฐาน\n\n**Modutech:** search: 68/68\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "answer_has_required": true
+      },
+      "passed": true,
+      "reply": "สายพาน Modutech รุ่น **HC508 C** และ **EC508 C** เป็นสายพานวิ่งตรงแบบหน้าทึบ (Flat Top) ระยะพิทช์ 50.8 มม. (2 นิ้ว) และหนา 16.0 มม. เหมือนกันทั้งคู่ แต่มีจุดแตกต่างกันหลักๆ ในรายละเอียดดังนี้ครับ:\n\n---\n\n### 1. โครงสร้างและการออกแบบ (Design & Cleanability)\n* **HC508 C:** \n  * ออกแบบเน้นสุขอนามัยขั้นสูง (Cleanability: Excellent) โครงสร้างบานพับเป็นแบบเปิด (Open hinge design) ช่วยลดการสะสมและการเจริญเติบโตของแบคทีเรีย ทำความสะอาดง่าย เหมาะกับไลน์ที่เน้นความสะอาดเข้มงวด\n  * มีตัวเลือกขึ้นรูปเต็มหน้ากว้าง (Mold to Width: HC508 C-MTW) ได้สูงสุดถึง 24 นิ้ว (609.6 มม.)\n* **EC508 C:** \n  * ออกแบบโครงสร้างหนา แข็งแรง ทนทานเป็นพิเศษ เน้นการรับน้ำหนักและแรงกระแทกในงานอุตสาหกรรมหนักและการแปรรูปทั่วไป\n\n---\n\n### 2. ตัวเลือกสีมาตรฐาน (Colors)\n* **HC508 C:** มีสีน้ำเงิน (Blue) และสีขาว (White)\n* **EC508 C:** มีสีน้ำเงิน (Blue), สีขาว (White) และสีเทา (Gray)\n\n---\n\n### 3. น้ำหนักสายพาน (Belt Weight)\n*(น้ำหนักต่างกันเล็กน้อยตามรุ่นและโครงสร้าง)*\n* **เกรด POM (หมุด POM หรือ PA):**\n  * HC508 C: 13.3 kg/m²\n  * EC508 C: 13.5 kg/m²\n* **เกรด PP (หมุด PP):**\n  * HC508 C: 8.01 kg/m² (หมุด POM: 8.2 kg/m²)\n  * EC508 C: 9.0 kg/m² (ทั้งหมุด PP และ POM)\n* **เกรด PE (หมุด POM / PE):**\n  * HC508 C: 9.88 kg/m² (หมุด POM) / 9.2 kg/m² (หมุด PE)\n  * EC508 C: 9.4 kg/m² (ทั้งหมุด POM และ PE)\n\n*(หมายเหตุ: ความแข็งแรงดึงสูงสุดของทั้งสองรุ่นเท่ากันที่เกรด POM สูงสุด 30,000 N/m, PP 18,000 N/m และ PE 10,000 N/m ขึ้นอยู่กับวัสดุหมุด)*\n\n---\n\n### 4. ตัวเลือกความกว้าง (Belt Width)\n* **HC508 C:** \n  * มีความกว้างในตารางมาตรฐานตั้งแต่ 152.4 มม. ถึง 1600.2 มม. (อ้างอิงเฉพาะรายการขนาดตามตารางในเล่มแคตตาล็อก ยังไม่สามารถยืนยันค่าเพิ่มทีละมาตรฐานได้)\n* **EC508 C:** \n  * ขนาดมาตรฐานเริ่มตั้งแต่ 200 ถึง 2200 มม. (เพิ่มขึ้นทีละ 100 มม.)\n  * ในเล่มระบุความกว้างต่ำสุดไว้ที่ 100 มม. แต่ไม่ได้ระบุเงื่อนไขการสั่งช่วง 100–200 มม. (ต้องยืนยันกับฝ่ายขายก่อน) \n  * สำหรับขนาดนอกมาตรฐาน เล่มระบุว่าจะเพิ่มขึ้นทีละ 20 มม.\n\n---\n\nหากมีลักษณะงานหรือต้องการนำไปใช้งานกับไลน์ประเภทใดเป็นพิเศษ หรือต้องการข้อมูลเพิ่มเติมเรื่องวัสดุ สามารถสอบถามได้เลยนะครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "TL-D2",
+      "turn": "1",
+      "subcategory": "movex_style",
+      "query": "HC508 C กับ EC508 C ต่างกันยังไง",
+      "description": "เปรียบเทียบ · อ่านเองว่าตัวเลขมีเกรดกำกับ",
+      "seconds": 8.2,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_171354_c359fe_t001`\n**Effective query:** HC508 C กับ EC508 C ต่างกันยังไง\n\n**Decision:** answer · brand=modutech · รหัสชัด\n\n**Modutech:** width:HC508 C:mismatch · width:HC508 C:strip · width:EC508 C:rewrite · temperature:HC508 C:strip · temperature:EC508 C:strip\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true
+      },
+      "passed": true,
+      "reply": "ข้อมูลทางเทคนิค (Datasheet) ของสายพาน **Modutech HC508 C** มีรายละเอียดดังนี้ครับ:\n\n### ข้อมูลทั่วไป\n* **ซีรีส์:** 2 inch – 50.8 mm Modular Belt Series\n* **ระยะพิทช์ (Pitch):** 50.8 มม. (2 นิ้ว)\n* **ลักษณะพื้นผิว:** Flat Top (ผิวเรียบทึบ ไม่มีช่องเปิด)\n* **สัดส่วนพื้นที่เปิด (Open Area):** 0%\n* **ความหนาสายพาน:** 16.0 มม. (0.63 นิ้ว)\n* **มาตรฐานรับรอง:** FDA, EU\n* **สีมาตรฐาน:** ขาว (White), น้ำเงิน (Blue)\n* **คุณสมบัติการวิ่ง:** วิ่งทางตรงเท่านั้น (ไม่รองรับการเลี้ยว)\n* **ระดับความสะอาด (Cleanability):** ดีเยี่ยม (Excellent)\n\n---\n\n### ข้อมูลความแข็งแรงและน้ำหนักแยกตามเกรดวัสดุ\n\n| วัสดุสายพาน (Belt) | วัสดุสลัก (Pin) | ความแข็งแรง (Belt Strength) | น้ำหนักสายพาน |\n| :--- | :--- | :--- | :--- |\n| **POM** (พอลิอะซีทัล) | POM | 30,000 N/m | 13.3 kg/m² |\n| **POM** (พอลิอะซีทัล) | PA | 30,000 N/m | 13.3 kg/m² |\n| **POM** (พอลิอะซีทัล) | PE | 18,000 N/m | 13.3 kg/m² |\n| **PP** (โพลิโพรพิลีน) | PP | 18,000 N/m | 8.01 kg/m² |\n| **PP** (โพลิโพรพิลีน) | POM | 18,000 N/m | 8.2 kg/m² |\n| **PE** (โพลิเอทิลีน) | POM | 10,000 N/m | 9.88 kg/m² |\n| **PE** (โพลิเอทิลีน) | PE | 10,000 N/m | 9.2 kg/m² |\n\n*(หมายเหตุ: เรื่องช่วงอุณหภูมิการใช้งาน จะขึ้นอยู่กับทั้งเกรดวัสดุและสภาวะการทำงานว่าเป็นไลน์แห้งหรือไลน์เปียก หากต้องการทราบข้อมูลอุณหภูมิ รบกวนแจ้งเกรดวัสดุและสภาวะแห้ง/เปียกเพิ่มเติมได้ครับ)*\n\n---\n\n### ความกว้างสายพานมาตรฐาน (Belt Widths)\nรุ่นนี้มีขนาดความกว้างตามรายการในแคตตาล็อก ตั้งแต่ 152.4 มม. ถึง 1,600.2 มม. ดังนี้ครับ:\n* **มิลลิเมตร (มม.):** 152.4, 228.6, 304.8, 381.0, 457.2, 533.4, 609.6, 685.8, 762.0, 838.2, 914.4, 990.6, 1066.8, 1143.0, 1219.2, 1295.4, 1371.6, 1447.8, 1524.0, 1600.2\n* *(หมายเหตุ: ยังไม่สามารถยืนยันค่าการเพิ่มทีละมาตรฐานของรุ่นนี้ได้ เนื่องจากหมายเหตุในเล่มและตารางความกว้างระบุไม่ตรงกัน จึงอ้างอิงได้เฉพาะรายการความกว้างที่มีระบุในตารางนี้เท่านั้น)*\n\nหากต้องการข้อมูลเพิ่มเติมเกี่ยวกับสเตอร์ หรือการใช้งานในไลน์ผลิตเฉพาะด้าน สามารถสอบถามได้เลยนะครับ",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "TL-D3",
+      "turn": "1",
+      "subcategory": "movex_style",
+      "query": "ขอ datasheet ของ HC508 C",
+      "description": "Modutech ไม่มี datasheet · อ่านเองว่าไม่ทำเป็นว่ามี",
+      "seconds": 8.0,
+      "model_version": "gemini-3.8-flash",
+      "llm_called": true,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_171404_5631e5_t001`\n**Effective query:** ขอ datasheet ของ HC508 C\n\n**Decision:** answer · brand=modutech · รหัสชัด\n\n**Modutech:** width:HC508 C:mismatch · width:HC508 C:strip · temperature:HC508 C:strip\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true,
+        "asked_back": true
+      },
+      "passed": true,
+      "reply": "ขอทราบก่อนนะครับว่าถามถึงสินค้าแบบไหน\n1. โซ่ท็อปเชน Movex — ลำเลียงขวด กระป๋อง ลัง ในไลน์บรรจุเครื่องดื่ม\n2. สายพานโมดูลาร์ Modutech — งานอาหาร เช่น เนื้อสัตว์ สัตว์ปีก อาหารทะเล เบเกอรี่ ผักผลไม้\nตอบเป็นเลขข้อหรือชื่อแบรนด์ได้เลยครับ ถ้ามีรหัสรุ่นหรือรูปสินค้าก็ส่งมาแทนได้",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "TL-E1",
+      "turn": "1",
+      "subcategory": "gated",
+      "query": "สายพานทนร้อน 90 องศาขึ้นไปมีรุ่นไหน",
+      "description": "อุณหภูมิต้องผ่านกฎ · ต้องถามเปียก/แห้ง",
+      "seconds": 0.0,
+      "model_version": null,
+      "llm_called": false,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_171414_7f39d4_t001`\n**Effective query:** สายพานทนร้อน 90 องศาขึ้นไปมีรุ่นไหน\n\n**Decision:** ask · brand=None · ยังไม่รู้แบรนด์\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true
+      },
+      "passed": true,
+      "reply": "ขอทราบก่อนนะครับว่าถามถึงสินค้าแบบไหน\n1. โซ่ท็อปเชน Movex — ลำเลียงขวด กระป๋อง ลัง ในไลน์บรรจุเครื่องดื่ม\n2. สายพานโมดูลาร์ Modutech — งานอาหาร เช่น เนื้อสัตว์ สัตว์ปีก อาหารทะเล เบเกอรี่ ผักผลไม้\nตอบเป็นเลขข้อหรือชื่อแบรนด์ได้เลยครับ ถ้ามีรหัสรุ่นหรือรูปสินค้าก็ส่งมาแทนได้",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "TL-E2",
+      "turn": "1",
+      "subcategory": "gated",
+      "query": "สายพานที่กว้างได้ถึง 1500 มม. มีรุ่นไหน",
+      "description": "ความกว้างต้องผ่านกฎ · อ่านเองว่าไม่รับปากนอกมาตรฐาน",
+      "seconds": 0.0,
+      "model_version": null,
+      "llm_called": false,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_171416_6cef97_t001`\n**Effective query:** สายพานที่กว้างได้ถึง 1500 มม. มีรุ่นไหน\n\n**Decision:** ask · brand=None · ยังไม่รู้แบรนด์\n\n"
+    },
+    {
+      "checks": {
+        "no_error": true
+      },
+      "passed": true,
+      "reply": "ขอทราบรุ่นก่อนนะครับ เพื่อให้ตอบได้ตรง\n• รหัสรุ่น เช่น LF 820 K325 หรือรหัสสเตอร์ 5 หลัก\n• หรือซีรีส์ + ความกว้าง เช่น 880 กว้าง 82.5 มม.\n• หรือส่งรูปโซ่มาให้ดูครับ\nซีรีส์ที่มี — Sideflexing Chain: 103, 83, 880, 882 · Straight Running Chain: 820, 821",
+      "error": null,
+      "info": {
+        "forbidden_absent_anywhere": null
+      },
+      "id": "TL-M1",
+      "turn": "1",
+      "subcategory": "movex_tool",
+      "query": "โซ่ Movex รุ่นไหนเบาที่สุด",
+      "description": "prompt Movex สั่งเรียก filter_product_specs พร้อมพารามิเตอร์ · ดู args ในผล",
+      "seconds": 0.0,
+      "model_version": null,
+      "llm_called": false,
+      "tool_calls": [],
+      "route_debug": "### 🔍 ข้อมูลอ้างอิง (Debug v4)\n\n**follow-up:** False | **last_pids:** []\n**Turn:** `sess_171418_237a40_t001`\n**Effective query:** โซ่ Movex รุ่นไหนเบาที่สุด\n\n**Decision:** ask · brand=movex · ยังไม่รู้รุ่น\n\n"
+    }
+  ]
+}

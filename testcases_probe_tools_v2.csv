@@ -11,5 +11,5 @@ T2-B2,probe_tools,need_flow,multi,3,ไม่ได้ระบุงาน อ�
 T2-E1,probe_tools,gated,multi,1,สายพานทนร้อน 90 องศาขึ้นไปมีรุ่นไหน,,,,,True,,,,,ถามแบรนด์ก่อน
 T2-E1,probe_tools,gated,multi,2,2,,,,,True,,,,,ต้องถามเปียก/แห้ง
 T2-E1,probe_tools,gated,multi,3,แห้ง,,,,,,,,,,ตอบแล้ว · อ่านเองว่าทุกรุ่นทน 90 °C แห้งจริงและมีเกรดกำกับ
-T2-D1,probe_tools,need_flow,multi,1,Modutech มีสายพานทั้งหมดกี่รุ่น,,,,,True,,,,,ถามงาน
+T2-D1,probe_tools,need_flow,multi,1,Modutech มีสายพานทั้งหมดกี่รุ่น,,68,,,,,,,,หลังแก้ 30 ต.ค.: ตอบจำนวนทั้งฐาน (เดิมถามงาน)
 T2-D1,probe_tools,need_flow,multi,2,ไม่ได้ใช้งานเฉพาะ อยากรู้จำนวนรุ่นทั้งหมด,,68,,,,,,,,คาดว่าถามพิทช์ต่อ ไม่ได้ตอบ 68
