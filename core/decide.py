@@ -200,7 +200,11 @@ class Dialogue:
                                             payload={"image_carried": True})
                         carried = sc
             # ตอบ ใช่/ไม่ใช่ = คำตอบเรื่องแบรนด์ล้วน ไม่ใช่ส่วนของคำถาม
-            effective = st.pending_question.strip() if confirmed else f"{st.pending_question} {text}".strip()
+            # ตอบเลขเมนูล้วน ("2") = เลือกแบรนด์ ไม่ใช่ส่วนของคำถาม — 30 ต.ค. (probe_tools r2 T2-B1/B4):
+            # "ทนแรงเกินห้าหมื่นนิวตัน 2" ถูกอ่านเป็นแรงดึง ≥ 2 N/m ค้นได้ 68/68 รุ่น
+            menu_digit = answered_brand is not None and re.fullmatch(r"\s*\d+\s*", text or "") is not None
+            effective = (st.pending_question.strip() if (confirmed or (menu_digit and st.pending_question))
+                         else f"{st.pending_question} {text}".strip())
         pending_q_before = st.pending_question
         st.pending, pending_before, st.pending_question = None, st.pending, ""
 
