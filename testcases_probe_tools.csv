@@ -1,0 +1,16 @@
+id,category,subcategory,turn_type,turn_number,user_text,image,must_contain,must_contain_any,must_not_contain,must_ask_back,expected_value,expected_unit,reply_max_length,metrics,description
+TL-A1,probe_tools,code_parser,single,1,สายพานที่รับแรงดึงอย่างน้อย 50000 N/m มีรุ่นไหนบ้าง,,HD635 C|MD508 C|MD508 NS,,,,,,,,ตัวเทียบ · โค้ดจับได้ (strength >= 50000)
+TL-A2,probe_tools,code_parser,single,1,มีสายพานผิวลูกกลิ้งรุ่นไหนบ้าง,,MD254 C-RT|MD254 FG-RT|EC508 C-RT|MD508 C-RT|MD508 FG-RT,,,,,,,,ตัวเทียบ · โค้ดจับได้ (surface Roller Top)
+TL-B1,probe_tools,llm_tool,single,1,สายพานรุ่นไหนรับแรงดึงสูงสุด,,HD635 C,,,,,,,,โค้ดไม่จับ · ต้องพึ่ง search_catalogue · คำตอบ HD635 C 100000 N/m
+TL-B2,probe_tools,llm_tool,single,1,สายพานที่เบาที่สุดคือรุ่นไหน,,MD127 GAP50%,,,,,,,,โค้ดไม่จับ · คำตอบ MD127 GAP50% เกรด PP 2.8 kg/m2
+TL-B3,probe_tools,llm_tool,single,1,สายพานกันลื่นที่แข็งแรงที่สุด,,MD508 NS,,,,,,,,โค้ดไม่จับ · กลุ่มกันลื่นรวม Grip Top · คำตอบ MD508 NS 56000 N/m (รองลงมา XP254 EVO CR 40250)
+TL-B4,probe_tools,llm_tool,single,1,ขอสายพานที่ทนแรงได้เกินห้าหมื่นนิวตันต่อเมตร,,HD635 C|MD508 C|MD508 NS,,,,,,,,โค้ดไม่จับ (ตัวเลขเป็นคำ) · คำตอบเท่า TL-A1
+TL-B5,probe_tools,llm_tool,single,1,อยากได้สายพานรูเยอะ ๆ ระบายน้ำดี ๆ,,,EC508 R|EC508 TR,,,,,,,โค้ดไม่จับ · พื้นที่เปิดสูงสุด EC508 R / EC508 TR 58%
+TL-C1,probe_tools,parser_bug,single,1,สายพานพื้นที่เปิดไม่ต่ำกว่า 50% มีรุ่นไหน,,MD127 GAP50%|SM254 FG50%|EC508 R|EC508 TR,,,,,,,,บั๊กตัวตรวจ: อ่านเป็น <= 50 (คำว่า ต่ำกว่า ใน ไม่ต่ำกว่า)
+TL-C2,probe_tools,parser_bug,single,1,สายพาน POM สลักสแตนเลส มีรุ่นไหนบ้าง,,HD635 C,,MD254 GAP48%-EHT,,,,,forbid_anywhere,บั๊กตัวตรวจ: ไม่กรองวัสดุสายพาน · ถูก = HD635 C (POM-NL) · ผิด = MD254 GAP48%-EHT (EHT)
+TL-D1,probe_tools,movex_style,single,1,Modutech มีสายพานทั้งหมดกี่รุ่น,,68,,,,,,,,ภาพรวม · ไม่มีเครื่องมือเฉพาะ
+TL-D2,probe_tools,movex_style,single,1,HC508 C กับ EC508 C ต่างกันยังไง,,HC508 C|EC508 C,,,,,,,,เปรียบเทียบ · อ่านเองว่าตัวเลขมีเกรดกำกับ
+TL-D3,probe_tools,movex_style,single,1,ขอ datasheet ของ HC508 C,,,,,,,,,,Modutech ไม่มี datasheet · อ่านเองว่าไม่ทำเป็นว่ามี
+TL-E1,probe_tools,gated,single,1,สายพานทนร้อน 90 องศาขึ้นไปมีรุ่นไหน,,,,,True,,,,,อุณหภูมิต้องผ่านกฎ · ต้องถามเปียก/แห้ง
+TL-E2,probe_tools,gated,single,1,สายพานที่กว้างได้ถึง 1500 มม. มีรุ่นไหน,,,,,,,,,,ความกว้างต้องผ่านกฎ · อ่านเองว่าไม่รับปากนอกมาตรฐาน
+TL-M1,probe_tools,movex_tool,single,1,โซ่ Movex รุ่นไหนเบาที่สุด,,,,,,,,,,prompt Movex สั่งเรียก filter_product_specs พร้อมพารามิเตอร์ · ดู args ในผล
