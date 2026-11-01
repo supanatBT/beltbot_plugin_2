@@ -201,12 +201,45 @@ def temperature(belt_code: str, belt_material: str = "", pin_material: str = "")
 
 @lru_cache(maxsize=1)
 def _retriever():
+    """สร้าง RetrieverV4 ฝั่ง Modutech แบบเดียวกับ brands/modutech/plugin.create() ทุกค่า
+    (Jina v3 · SigLIP-224 · product_db · กราฟ · ชื่อ collection จาก alias ใน brand.yaml) — ViT ไม่ส่ง (ค้นข้อความอย่างเดียว)"""
+    import torch
+    import yaml
+    from transformers import AutoModel, AutoTokenizer, SiglipModel, SiglipProcessor
+    from core import model_lock
     from retriever_v4 import RetrieverV4, RetrieverV4Config
+    from brands.modutech.plugin import resolve_collection
     from brands.modutech.router import modutech_retriever_config_kwargs
+
+    jina_id, siglip_id = "jinaai/jina-embeddings-v3", "google/siglip-base-patch16-224"   # = assistant.py
+    device = os.environ.get("AGENT_DEVICE") or ("cuda" if torch.cuda.is_available() else "cpu")
+    model_lock.load()
+    tok = AutoTokenizer.from_pretrained(jina_id, trust_remote_code=True, **model_lock.pin(jina_id))
+    jina = AutoModel.from_pretrained(jina_id, trust_remote_code=True, **model_lock.pin(jina_id),
+                                     torch_dtype=torch.float16 if device == "cuda" else torch.float32,
+                                     attn_implementation="eager").to(device).eval()
+    sp = SiglipProcessor.from_pretrained(siglip_id, **model_lock.pin(siglip_id))
+    sm = SiglipModel.from_pretrained(siglip_id, **model_lock.pin(siglip_id)).to(device).eval()
+    if device == "cuda":
+        sm.half()
+
+    cat, _search, kg, *_ = _state()
+    mod_db = {p["belt_code_id"]: {"product_id": p["belt_code_id"], "Ref": p["belt_code"],
+                                  "belt_series": p.get("belt_series", ""),
+                                  "product_type": p["retrieval_card"].get("surface_type", ""),
+                                  "Material": ",".join(p["retrieval_card"].get("materials") or [])}
+              for p in cat.products}
+    bdir = os.path.join(ROOT, "brands", "modutech")
+    data = (yaml.safe_load(open(os.path.join(bdir, "brand.yaml"), encoding="utf-8")) or {}).get("data") or {}
+    qpath = os.path.normpath(os.path.join(bdir, data.get("qdrant_path") or "../../qdrant_modutech_db"))
     kw = modutech_retriever_config_kwargs()
-    kw["qdrant_path"] = os.path.join(ROOT, "qdrant_modutech_db")
-    kw["text_collection"] = os.environ.get("AGENT_MODUTECH_COLLECTION", "modutech_live")
-    return RetrieverV4(cfg=RetrieverV4Config(**kw))
+    kw["qdrant_path"] = qpath
+    info = resolve_collection(qpath, data.get("text_collection"),
+                              data.get("text_collection_fallback") or kw["text_collection"])
+    kw["text_collection"] = info["name"]
+    return RetrieverV4(cfg=RetrieverV4Config(**kw, device=device),
+                       jina_tokenizer=tok, jina_model=jina, vit_processor=None, vit_model=None,
+                       siglip_processor=sp, siglip_model=sm, product_db=mod_db, kg=kg)
 
 
 def vector_search(query: str, top_k: int = 5) -> str:
