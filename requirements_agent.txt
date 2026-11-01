@@ -1,0 +1,31 @@
+# requirements_agent.txt — venv แยกของ agent เทียบ (ADK + MCP) · ห้ามลงใน venv ของบอทหลัก
+#
+# เหตุที่ต้องแยก venv (ตรวจ 1 พ.ย. 2026)
+#   google-adk 2.13.0 ลาก google-genai 2.34 · บอทหลักต้องใช้ google-genai 2.8.0
+#   mcp 2.3.0 ต้องการ pydantic >= 2.12 · บอทหลักต้องใช้ pydantic < 2.12 (gradio 5.49)
+#
+# venv นี้รันทั้ง 3 ส่วน: ตัว agent (ADK) · MCP server (เครื่องมือ) · ตัวรันชุดทดสอบ (run_answer_eval.py)
+# ส่วนโมเดล (torch · transformers · qdrant) ปักรุ่นเดียวกับบอทหลัก ให้ embedding ตรงกันทุกตัวเลข
+# ถ้าบอทหลักในเครื่องใช้ torch รุ่น CUDA ให้ลง torch รุ่นเดียวกับใน venv บอทแทนสองบรรทัดนี้
+
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.5.1+cpu
+torchvision==0.20.1+cpu
+
+google-adk==2.13.0
+mcp==2.3.0
+
+transformers==4.44.2
+tokenizers==0.19.1
+safetensors==0.8.0
+accelerate==1.14.0
+peft==0.18.1
+huggingface_hub==0.36.2
+einops==0.8.2
+sentencepiece==0.2.2
+qdrant-client==1.17.0
+numpy==2.2.6
+networkx==3.4.2
+pillow==11.3.0
+PyYAML==6.0.3
+python-dotenv==1.2.1

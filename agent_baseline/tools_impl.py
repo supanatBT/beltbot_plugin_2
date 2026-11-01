@@ -1,0 +1,286 @@
+"""
+agent_baseline/tools_impl.py — เครื่องมือของ agent เทียบ (Modutech · ขั้นที่ 1)
+
+หลักของการเทียบ (claude/… แผน agent-baseline · 1 พ.ย. 2026)
+  · ข้อมูลชุดเดียวกับบอทหลัก: modutech_v30_3.json · กราฟจาก JSON · คอลเลกชัน modutech_live (อ่านอย่างเดียว)
+  · เครื่องมือคืน "ข้อมูลดิบ + ธง + กฎในข้อมูล" แต่ "ไม่บังคับกฎ"
+      เช่น temperature() คืนทั้งค่าเปียกและแห้ง ไม่ถามก่อน · lookup_belt() คืนค่าที่ติดธงด้วย
+    ถ้าเครื่องมือบังคับกฎเอง = เอาเกตของบอทหลักไปซ่อนในเครื่องมือ การเทียบจะไม่มีความหมาย
+  · search_catalogue = ตัวเดียวกับที่บอทหลักให้ LLM เรียก (make_search_tool) ห้ามเสริมตัวกรองให้ agent ฝ่ายเดียว
+  · ไม่แตะไฟล์ใดเลย (อ่านอย่างเดียว) · ไม่แตะ collection ของ Movex
+
+ฟังก์ชันในไฟล์นี้เป็น Python ล้วน — mcp_server.py ห่อเป็นเครื่องมือ MCP · ทดสอบได้โดยไม่ต้องมี MCP/ADK
+ส่วนที่ต้องโหลดโมเดล (ค้นเวกเตอร์ · เทียบรูป) โหลดตอนเรียกครั้งแรก ถ้าโหลดไม่ได้ คืนข้อความบอกเหตุ ไม่ล้ม
+"""
+from __future__ import annotations
+
+import json
+import os
+import sys
+from collections import Counter
+from functools import lru_cache
+from typing import Optional
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
+from brands.modutech.gates import Catalogue                      # noqa: E402
+from brands.modutech.kg import ModutechGraph                       # noqa: E402
+from brands.modutech.router import CatalogueSearch, CodeResolver   # noqa: E402
+from brands.modutech.turn import graph_application_match, make_search_tool  # noqa: E402
+
+CATALOGUE_PATH = os.environ.get("AGENT_MODUTECH_JSON", os.path.join(ROOT, "modutech_v30_3.json"))
+IMAGE_DIR = os.environ.get("AGENT_IMAGE_DIR", os.path.join(ROOT, "agent_baseline", "_images"))
+
+
+def _dump(obj) -> str:
+    return json.dumps(obj, ensure_ascii=False)
+
+
+@lru_cache(maxsize=1)
+def _state():
+    cat = Catalogue(CATALOGUE_PATH)
+    search = CatalogueSearch(cat)
+    kg = ModutechGraph.from_catalogue(cat)
+    return cat, search, kg, CodeResolver(cat), make_search_tool(search)
+
+
+def _resolve_belt(code: str) -> tuple[Optional[str], list[str]]:
+    cat, _s, _k, res, _t = _state()
+    if code in cat.by_code:
+        return code, []
+    m = res.resolve(code or "")
+    if m.belt_codes:
+        return m.belt_codes[0], []
+    return None, list(m.candidates)
+
+
+def _not_found(code: str, candidates: list[str]) -> str:
+    return _dump({"error": f"ไม่พบรหัสสายพาน {code!r} ในฐานข้อมูล Modutech",
+                  "candidates": candidates[:12],
+                  "hint": "ถ้ามี candidates ให้ถามลูกค้าว่าหมายถึงรุ่นไหน ห้ามเลือกเอง"})
+
+
+def _variants(p: dict, with_temp: bool = True) -> list[dict]:
+    out = []
+    for v in p["specifications"].get("variants") or []:
+        row = {"belt_material": v.get("belt_material"), "pin_material": v.get("pin_material"),
+               "strength_n_per_m": (v.get("belt_strength") or {}).get("n_per_m"),
+               "weight_kg_per_m2": (v.get("belt_weight") or {}).get("kg_per_m2")}
+        if with_temp:
+            te = v.get("temperature_effective") or {}
+            row["temperature_effective"] = {k: te.get(k) for k in ("dry", "wet") if k in te}
+            row["temperature_trust"] = v.get("temperature_trust")
+        out.append(row)
+    return out
+
+
+def _card(p: dict, full: bool) -> dict:
+    s = p["specifications"]
+    d = {
+        "belt_code": p["belt_code"],
+        "series": p.get("belt_series"),
+        "surface_type": p["retrieval_card"].get("surface_type"),
+        "pitch_mm": (s.get("pitch") or {}).get("mm"),
+        "open_area_pct": s.get("open_area_pct"),
+        "belt_thickness": s.get("belt_thickness"),
+        "curve_capable": bool(s.get("has_curve_rating")),
+        "approved": s.get("approved"),
+        "color": s.get("color"),
+        "variants": _variants(p),
+        "width_effective": s.get("width_effective"),
+        "data_quality": p.get("data_quality"),
+        "answering": p.get("answering"),
+        "catalogue_page": s.get("page"),
+    }
+    if full:
+        d.update({
+            "cleanability": s.get("cleanability"),
+            "min_nosebar_diameter": s.get("min_nosebar_diameter"),
+            "notes": s.get("notes"),
+            "sales_knowledge_th": p.get("sales_knowledge_th"),
+            "industries": [{"industry": i.get("industry"),
+                            "applications": [{"application_th": a.get("application_th") or a.get("application"),
+                                              "materials": a.get("materials")}
+                                             for a in i.get("applications") or []]}
+                           for i in p.get("industries") or []],
+            "derived": {k: (p.get("derived") or {}).get(k)
+                        for k in ("materials_manufactured", "materials_recommended", "pin_materials")},
+        })
+    return d
+
+
+# ─────────────────────────── เครื่องมือ ───────────────────────────
+
+def answering_policy() -> str:
+    """กฎการตอบระดับฐานข้อมูล (answering_policy ใน JSON) — agent ใช้ประกอบ system prompt"""
+    cat = _state()[0]
+    return _dump(cat.data.get("answering_policy") or {})
+
+
+def overview_catalogue() -> str:
+    _cat, search, *_ = _state()
+    return _dump(search.overview())
+
+
+def compare_belts(codes: str) -> str:
+    cat = _state()[0]
+    out, missing = [], []
+    for raw in [c.strip() for c in (codes or "").replace(";", ",").split(",") if c.strip()][:4]:
+        code, cands = _resolve_belt(raw)
+        if code:
+            out.append(_card(cat.by_code[code], full=False))
+        else:
+            missing.append({"input": raw, "candidates": cands[:8]})
+    return _dump({"belts": out, "not_found": missing,
+                  "note_th": "ค่าแรงดึง น้ำหนัก และอุณหภูมิเป็นค่าของแต่ละเกรด (วัสดุสายพาน × วัสดุพิน)"})
+
+
+def search_catalogue(field: str = "", op: str = ">=", value: float = 0.0, surface: str = "",
+                     pin_material: str = "", belt_material: str = "", rank: str = "") -> str:
+    tool = _state()[4]
+    return tool(field=field, op=op, value=value, surface=surface, pin_material=pin_material,
+                belt_material=belt_material, rank=rank)
+
+
+def lookup_belt(code: str) -> str:
+    cat = _state()[0]
+    belt, cands = _resolve_belt(code)
+    if not belt:
+        return _not_found(code, cands)
+    return _dump(_card(cat.by_code[belt], full=True))
+
+
+def find_by_application(text: str) -> str:
+    cat, search, kg, *_ = _state()
+    g = graph_application_match(text, cat, search, kg)
+    if g:
+        return _dump(g)
+    am = search.match_application(text)
+    if am is not None:
+        return _dump({"router_application_match": am.__dict__ if hasattr(am, "__dict__") else str(am)})
+    ind = search.match_industry(text)
+    if ind:
+        industry, by_belt = ind
+        return _dump({"industry": industry, "applications_by_belt": by_belt,
+                      "note_th": "ไม่พบชื่องานตรงตัว รายชื่อนี้คือรุ่นทั้งหมดของอุตสาหกรรมนี้"})
+    return _dump({"matches": [], "note_th": "ไม่พบงานใช้หรืออุตสาหกรรมที่ตรงกับข้อความนี้ในแคตตาล็อก"})
+
+
+def sprockets_for(belt_code: str) -> str:
+    cat, _s, kg, *_ = _state()
+    belt, cands = _resolve_belt(belt_code)
+    if not belt:
+        return _not_found(belt_code, cands)
+    sp = kg.sprockets_for_belt(belt)
+    return _dump({"belt_code": belt, "sprockets": sp, "same_series": kg.get_same_series(belt),
+                  "note_th": "รหัสเฟืองอนุมานจากซีรีส์ ต้องยืนยันกับฝ่ายขาย ขนาดเฟืองและรูเพลาไม่มีในข้อมูล"})
+
+
+def belts_for_sprocket(sprocket_code: str) -> str:
+    cat, _s, kg, res, _t = _state()
+    m = res.resolve(sprocket_code or "")
+    codes = m.sprocket_codes or ([sprocket_code] if sprocket_code in cat.sprockets else [])
+    if not codes:
+        return _dump({"error": f"ไม่พบรหัสเฟือง {sprocket_code!r}"})
+    return _dump({"sprocket_codes": codes, "belts": kg.resolve_sprocket_to_belts(codes)})
+
+
+def temperature(belt_code: str, belt_material: str = "", pin_material: str = "") -> str:
+    cat = _state()[0]
+    belt, cands = _resolve_belt(belt_code)
+    if not belt:
+        return _not_found(belt_code, cands)
+    rows = [v for v in _variants(cat.by_code[belt])
+            if (not belt_material or v["belt_material"] == belt_material)
+            and (not pin_material or v["pin_material"] == pin_material)]
+    return _dump({"belt_code": belt, "variants": rows,
+                  "note_th": "คืนค่าทั้งสภาวะแห้ง (dry) และเปียก (wet) ค่าเปียกมักต่ำกว่ามาก"})
+
+
+@lru_cache(maxsize=1)
+def _retriever():
+    from retriever_v4 import RetrieverV4, RetrieverV4Config
+    from brands.modutech.router import modutech_retriever_config_kwargs
+    kw = modutech_retriever_config_kwargs()
+    kw["qdrant_path"] = os.path.join(ROOT, "qdrant_modutech_db")
+    kw["text_collection"] = os.environ.get("AGENT_MODUTECH_COLLECTION", "modutech_live")
+    return RetrieverV4(cfg=RetrieverV4Config(**kw))
+
+
+def vector_search(query: str, top_k: int = 5) -> str:
+    cat = _state()[0]
+    try:
+        r = _retriever()
+        ranked = r.rank(r.search(query=query, query_image=None, query_type="general"))
+    except Exception as e:                                   # noqa: BLE001
+        return _dump({"error": f"ค้นเวกเตอร์ไม่ได้ ({type(e).__name__}: {e})"})
+    ids = [p.product_id for p in ranked.products][: max(1, min(int(top_k or 5), 10))]
+    return _dump({"belt_codes": [cat.by_id[i]["belt_code"] for i in ids if i in cat.by_id],
+                  "note_th": "ผลค้นเวกเตอร์เป็นเพียงรุ่นที่ใกล้เคียงที่สุดบางส่วน ไม่ใช่รายชื่อครบ"})
+
+
+@lru_cache(maxsize=1)
+def _gate():
+    import yaml
+    from brands.modutech.image_gate import load_gate
+    bdir = os.path.join(ROOT, "brands", "modutech")
+    cfg = (yaml.safe_load(open(os.path.join(bdir, "brand.yaml"), encoding="utf-8")) or {}).get("image_gate") or {}
+    try:
+        return load_gate("modutech", bdir, cfg, os.environ.get("AGENT_DEVICE", "cpu"))
+    except Exception as e:                                   # noqa: BLE001  (ไฟล์เป็นตัวชี้ LFS ฯลฯ)
+        return None, f"{type(e).__name__}: {e}"
+
+
+def match_catalogue_image(image_id: str, top_k: int = 5) -> str:
+    """เทียบรูปของลูกค้ากับแกลเลอรีภาพแคตตาล็อก Modutech ด้วย SigLIP (ตัวเดียวกับประตูรูปของบอทหลัก)"""
+    path = os.path.join(IMAGE_DIR, os.path.basename(image_id or ""))
+    if not os.path.isfile(path):
+        return _dump({"error": f"ไม่พบรูป {image_id!r}"})
+    gate, why = _gate()
+    if gate is None:
+        return _dump({"error": f"เครื่องมือเทียบรูปไม่พร้อม ({why})"})
+    import numpy as np
+    from PIL import Image
+    from brands.modutech.image_gate import prepare
+    im = Image.open(path).convert("RGB")
+    V = np.asarray(gate.embed(prepare(im)), dtype=np.float32)
+    sims = (V @ gate.data.G.T).max(axis=0)
+    full = V[0]
+    b, o = gate.data.belt_P @ full, gate.data.other_P @ full
+    out = {"best_score": round(float(sims.max()), 4),
+           "belt_vs_other_text_margin": round(float(b.max() - o.max()), 4),
+           "nearest_non_belt_concept": gate.data.other_names[int(o.argmax())],
+           "note_th": ("best_score คือความคล้ายสูงสุดกับภาพสายพาน Modutech ในแคตตาล็อก (0–1) "
+                       "belt_vs_other_text_margin > 0 แปลว่าใกล้คำว่าสายพาน/โซ่มากกว่าวัตถุอื่น "
+                       "ความคล้ายสูงไม่ได้แปลว่าเป็นแบรนด์ Modutech เสมอ โซ่ของแบรนด์อื่นก็อาจคล้ายได้")}
+    labels = gate.data.meta.get("gallery_labels") or gate.data.meta.get("labels")
+    if labels and len(labels) == len(sims):
+        best: dict[str, float] = {}
+        for lab, s in zip(labels, sims):
+            best[lab] = max(best.get(lab, -1.0), float(s))
+        out["nearest_belts"] = [{"belt_code": k, "score": round(v, 4)}
+                                for k, v in sorted(best.items(), key=lambda kv: -kv[1])[: int(top_k or 5)]]
+    else:
+        out["nearest_belts"] = None
+        out["note_th"] += " · แกลเลอรีชุดนี้ไม่มีป้ายรุ่น จึงบอกรุ่นที่ใกล้ที่สุดไม่ได้"
+    return _dump(out)
+
+
+def handoff_to_sales(topic: str) -> str:
+    try:
+        from sales_contact import sales_contact_line_th
+        contact = sales_contact_line_th()
+    except Exception:                                       # noqa: BLE001
+        contact = ""
+    return _dump({"topic": topic,
+                  "message_th": (f"เรื่อง {topic} อยู่นอกข้อมูลที่ระบบมี ต้องสอบถามฝ่ายขายโดยตรง "
+                                 "เวลาติดต่อแจ้งรุ่นสายพาน ความกว้าง ความยาว และจำนวนที่ต้องการไปด้วย"),
+                  "contact_line_th": contact,
+                  "note_th": "ให้ลูกค้าติดต่อเอง ห้ามรับปากว่าจะส่งเรื่องหรือให้ฝ่ายขายโทรกลับ"})
+
+
+TOOLS = [overview_catalogue, compare_belts, search_catalogue, lookup_belt, find_by_application,
+         sprockets_for, belts_for_sprocket, temperature, vector_search, match_catalogue_image,
+         handoff_to_sales]

@@ -1,0 +1,101 @@
+"""
+agent_baseline/mcp_server.py — MCP server (stdio) ของเครื่องมือ Modutech สำหรับ agent เทียบ
+
+มาตรฐาน: Model Context Protocol · SDK `mcp` 2.x (MCPServer) · ADK เปิดไฟล์นี้เองผ่าน stdio
+รันตรวจเอง: python agent_baseline/mcp_server.py   (รอรับ JSON-RPC ทาง stdin · Ctrl+C ออก)
+
+คำอธิบายเครื่องมือ (docstring) คือสิ่งที่ LLM เห็น — เขียนให้ตรงกับที่เครื่องมือทำจริง ไม่ชี้นำว่าต้องถามอะไรก่อน
+"""
+from __future__ import annotations
+
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from mcp.server.mcpserver import MCPServer  # noqa: E402
+
+from agent_baseline import tools_impl as T  # noqa: E402
+
+app = MCPServer("modutech-catalogue")
+
+
+@app.tool()
+def overview_catalogue() -> str:
+    """จำนวนสายพาน Modutech ทั้งฐานข้อมูล แยกตามซีรีส์ ชนิดผิว และจำนวนรุ่นที่วิ่งโค้งได้"""
+    return T.overview_catalogue()
+
+
+@app.tool()
+def compare_belts(codes: str) -> str:
+    """ตารางสเปกเทียบสายพาน 2–4 รุ่น (รหัสคั่นด้วยจุลภาค เช่น "EC127 C, HC127 C")
+    คืนพิทช์ ผิว พื้นที่เปิด ความหนา การวิ่งโค้ง ความกว้าง และค่าแรงดึง/น้ำหนัก/อุณหภูมิแยกตามเกรด
+    พร้อม data_quality (ธง blocking_for) และ answering (ช่องข้อมูลที่ต้องรู้ก่อนตอบ · หัวข้อที่ต้องส่งฝ่ายขาย)"""
+    return T.compare_belts(codes)
+
+
+@app.tool()
+def search_catalogue(field: str = "", op: str = ">=", value: float = 0.0, surface: str = "",
+                     pin_material: str = "", belt_material: str = "", rank: str = "") -> str:
+    """ค้นสายพาน Modutech ทั้ง 68 รุ่นตามเงื่อนไข คืนทุกรุ่นที่ตรง
+    field: "strength" (N/m) | "weight" (kg/m²) | "open_area" (%) | "pitch" (mm) | "" ไม่กรองตัวเลข
+    op: ">=" | "<=" | ">" | "<" · value: ค่าตัวเลขของเงื่อนไข
+    surface: ชื่อผิวภาษาอังกฤษ เช่น "Grip Top" · pin_material เช่น "SS" · belt_material เช่น "POM"
+    rank: "max" | "min" เรียงตาม field คืน 5 อันดับแรก · "overview" จำนวนรุ่นทั้งหมด · "" กรองตามเงื่อนไข"""
+    return T.search_catalogue(field, op, value, surface, pin_material, belt_material, rank)
+
+
+@app.tool()
+def lookup_belt(code: str) -> str:
+    """ข้อมูลเต็มของสายพาน 1 รุ่นจากรหัส (รับรหัสที่เขียนต่างกันได้ เช่น "MD508C")
+    สเปกทุกเกรด ความกว้าง งานใช้แยกอุตสาหกรรม ความรู้การขาย data_quality และ answering
+    ถ้ารหัสไม่ชัด คืน candidates ให้ถามลูกค้า"""
+    return T.lookup_belt(code)
+
+
+@app.tool()
+def find_by_application(text: str) -> str:
+    """หารุ่นสายพานจากงานใช้หรืออุตสาหกรรมที่ลูกค้าพิมพ์ (ภาษาไทยหรืออังกฤษ)
+    ใช้กราฟความรู้ (งานใช้ × อุตสาหกรรม × เกรดที่แคตตาล็อกแนะนำ) คืนรายชื่อครบ"""
+    return T.find_by_application(text)
+
+
+@app.tool()
+def sprockets_for(belt_code: str) -> str:
+    """รหัสเฟืองขับที่ใช้กับสายพานรุ่นนี้ และรุ่นอื่นในซีรีส์เดียวกัน"""
+    return T.sprockets_for(belt_code)
+
+
+@app.tool()
+def belts_for_sprocket(sprocket_code: str) -> str:
+    """สายพานที่ใช้กับรหัสเฟืองขับนี้ (เช่น "EC127SQZ19*PA")"""
+    return T.belts_for_sprocket(sprocket_code)
+
+
+@app.tool()
+def temperature(belt_code: str, belt_material: str = "", pin_material: str = "") -> str:
+    """ช่วงอุณหภูมิใช้งานของสายพานแยกตามเกรด ทั้งสภาวะแห้ง (dry) และเปียก (wet)"""
+    return T.temperature(belt_code, belt_material, pin_material)
+
+
+@app.tool()
+def vector_search(query: str, top_k: int = 5) -> str:
+    """ค้นสายพานที่ความหมายใกล้กับข้อความ (embedding Jina v3 · Qdrant) คืนรุ่นที่ใกล้ที่สุดไม่กี่รุ่น"""
+    return T.vector_search(query, top_k)
+
+
+@app.tool()
+def match_catalogue_image(image_id: str, top_k: int = 5) -> str:
+    """เทียบรูปที่ลูกค้าส่ง (image_id ตามที่ระบุในข้อความ) กับภาพสายพานจากแคตตาล็อก Modutech ด้วย SigLIP
+    คืนคะแนนความคล้ายสูงสุด ค่าความใกล้คำว่า "สายพาน/โซ่" เทียบกับวัตถุอื่น และรุ่นที่ใกล้ที่สุดถ้ามีป้ายรุ่น"""
+    return T.match_catalogue_image(image_id, top_k)
+
+
+@app.tool()
+def handoff_to_sales(topic: str) -> str:
+    """ข้อความส่งต่อฝ่ายขายพร้อมช่องทางติดต่อ สำหรับเรื่องที่อยู่นอกข้อมูลสเปก"""
+    return T.handoff_to_sales(topic)
+
+
+if __name__ == "__main__":
+    app.run()
