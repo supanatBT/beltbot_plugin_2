@@ -32,7 +32,7 @@ SNAP_DIR = Path(__file__).resolve().parent / "gate_snapshots"
 
 # ชื่อไฟล์ · regex ดึงคะแนน · คะแนนเต็มตามข้อ 6 (None = ไม่อยู่ในเกณฑ์ข้อ 6 แต่รันไว้ดู)
 SUITES = [
-    ("testsuite_120.py",        r"รวม\s+(\d+)/(\d+)",                150),
+    ("testsuite_120.py",        r"รวม\s+(\d+)/(\d+)",                152),  # 150 → 152 (1 พ.ย.): วลี "belt width increment" ทำให้ซ่อนเพิ่ม 2 รุ่น เคส WD-S สร้างจากข้อมูล
     ("test_sprocket_flow.py",   r"รวม\s+(\d+)/(\d+)",                45),   # 41 → 45 เฟส 2: แยกข้อเท็จจริง/คำสั่ง
     ("test_context_voice.py",   r"รวม\s+(\d+)/(\d+)",                15),     # เฟส 2 — Context ไม่มีคำสั่งถึง LLM · รอบ 4 AP-004/TP-014
     ("testcases_graph.py",      r"ตรวจแล้ว\s+(\d+)\s+เคสเป็นธรรม",      33),

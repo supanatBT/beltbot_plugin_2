@@ -406,10 +406,18 @@ def _loose(word: str) -> str:
 
 
 #   "Standa rd belt in crement s 50,8 mm ."   หน้า 215  แตกที่ crement|s ด้วย จึงต้องมี \s* หน้า s
-_STD_PHRASE = _loose("Standard") + r"\s*" + _loose("belt") + r"\s*" + _loose("increment") + r"\s*s?"
+#   "Standard belt width increment: 76,2 mm / 3 inch"   SM127 CRV · SM127 FG-GT  มีคำว่า width และโคลอน
+#   "Standard belt width increment 50,8mm (2")."        HC152 FG
+#   "Standard belt width increments 50,8 mm."           HC508 C-MTW
+# 1 พ.ย.: เดิมไม่รองรับคำว่า width สี่รุ่นนี้จึงถูกนับเป็น not_printed (เล่มไม่ได้พิมพ์) แล้วแสดงค่าจากตาราง
+#   สองรุ่นค่าตรงกับเล่ม (76.2) ไม่กระทบ · HC152 FG (ตาราง 25.4 · เล่ม 50.8) และ HC508 C-MTW (ตาราง 101.6 · เล่ม 50.8)
+#   บอทบอกค่าที่ขัดกับเล่ม — พบตอนจำลองกฎ prompt r2 ของ agent เทียบกับ gate ทั้ง 68 รุ่น
+#   โคลอนรับเพราะเล่มพิมพ์จริง (สองรุ่นแรก) ไม่ใช่การเดารูปแบบ · รูปแบบอื่นที่ไม่เคยเห็น (เช่น "=") ยังเป็น unreadable
+_STD_PHRASE = (_loose("Standard") + r"\s*" + _loose("belt") + r"\s*(?:" + _loose("width") + r"\s*)?"
+               + _loose("increment") + r"\s*s?")
 # ตัวเลขก็แตกได้เหมือนกัน หน้า 215/221/223 พิมพ์ "incre ments 5 0,8 mm" จึงยอมให้มีช่องว่างในตัวเลข
 # แล้วค่อยเอาช่องว่างออกก่อนแปลง ถ้าแปลงไม่ได้หรือได้ค่านอกช่วงที่เป็นไปได้ถือว่าอ่านไม่ออก
-_STD_INCREMENT_RE = re.compile(_STD_PHRASE + r"\s*([\d][\d,\.\s]*\d|\d)", re.IGNORECASE)
+_STD_INCREMENT_RE = re.compile(_STD_PHRASE + r"\s*:?\s*([\d][\d,\.\s]*\d|\d)", re.IGNORECASE)
 _INCREMENT_MIN_MM, _INCREMENT_MAX_MM = 1.0, 500.0
 
 # ตรวจว่า "หัวข้อ" ค่าเพิ่มทีละมาตรฐานมีอยู่ในหมายเหตุไหม โดยไม่บังคับว่าต้องอ่านตัวเลขออก

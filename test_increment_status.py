@@ -13,13 +13,19 @@ TOPIC_VARIANTS = [
     ("Standard belt increments 76.2 mm", "found", 76.2),
     ("Standard Belt Increments 76,2", "found", 76.2),
     ("- Standard belt increments 76,2 mm.", "found", 76.2),
-    ("Standard belt increments: 76.2 mm", "unreadable", None),
+    # โคลอน: เล่มพิมพ์จริง (SM127 CRV · SM127 FG-GT) จึงรับ (1 พ.ย.) · "=" ไม่เคยเห็นในเล่ม ยังเงียบ
+    ("Standard belt increments: 76.2 mm", "found", 76.2),
     ("Standard belt increments = 76,2 mm", "unreadable", None),
     # หน้า 157 (MD254 FG-RT) พิมพ์เอกพจน์จริง ต้องอ่านออก ไม่ใช่เงียบ
     ("Standard belt increment 50 mm.", "found", 50.0),
     ("Standard b elt increme nts 101,6 m m.", "found", 101.6),
     ("Standard belt increments are 76.2 mm", "unreadable", None),
     ("Non-standard belt increments 16,6 mm", "not_printed", None),
+    # มีคำว่า width (1 พ.ย.) — ข้อความจริงจากเล่ม
+    ("Curved top decreases contact area. - Standard belt width increment: 76,2 mm / 3 inch", "found", 76.2),
+    ("Belt provides optimal open area. - Standard belt width increment 50,8mm (2\").", "found", 50.8),
+    ("High clean & Food-Safe open hinge design, - Standard belt width increments 50,8 mm.", "found", 50.8),
+    ("Belt provides optimal open area. - Non-standard belt width increment: 12,7 mm / 0,5 inch", "not_printed", None),
     ("Belt is FDA approved", "not_printed", None),
 ]
 
@@ -95,7 +101,7 @@ def main():
     print(f"   แสดงค่าเพิ่มทีละ {len(shown)}: {', '.join(shown)}")
     print(f"   ซ่อนไว้ {len(hidden)}: {', '.join(hidden) if hidden else '(ไม่มี)'}")
 
-    print("\n4) จำลองวันที่ข้อความในเล่มเปลี่ยนรูป (เติมโคลอน)")
+    print("\n4) จำลองวันที่ข้อความในเล่มเปลี่ยนรูป (เติม =)")
     target = next((p for p in cat.products
                    if catalogue_increment_status(p)[0] == "found"
                    and (p.get("specifications", {}).get("width_effective") or {})
@@ -106,7 +112,7 @@ def main():
 
     code = target["belt_code"]
     before_val = catalogue_standard_increment(target)
-    # แทรกโคลอนตรงตำแหน่งที่ตัวอ่านจับได้จริง ไม่ใช่ replace ข้อความตรง ๆ
+    # แทรก = ตรงตำแหน่งที่ตัวอ่านจับได้จริง (เดิมแทรกโคลอน แต่ 1 พ.ย. เล่มพิมพ์โคลอนจริงจึงรับแล้ว) ไม่ใช่ replace ข้อความตรง ๆ
     # เพราะหมายเหตุในเล่มมีคำแตก เช่น "Standard b elt increme nts 101,6 m m."
     import re as _re
     from modutech_gates import _STD_INCREMENT_RE
@@ -115,12 +121,12 @@ def main():
     for i, n in enumerate(notes):
         m = _STD_INCREMENT_RE.search(n)
         if m:
-            notes[i] = n[:m.start(1)] + ": " + n[m.start(1):]
+            notes[i] = n[:m.start(1)] + "= " + n[m.start(1):]
             break
     broken["specifications"]["notes"] = notes
     st, _ = catalogue_increment_status(broken)
     print(f"   ใช้รุ่น {code} (เดิมอ่านได้ {before_val})")
-    print(f"   หลังเติมโคลอน สถานะ = {st}")
+    print(f"   หลังเติม = สถานะ = {st}")
     old_behaviour = "แสดง (เพราะ None ถูกตีความว่าเล่มไม่ได้ระบุ)"
     new_behaviour = "แสดง" if shows_increment(broken) else "ไม่แสดง"
     print(f"   โค้ดเดิมจะ : {old_behaviour}")
