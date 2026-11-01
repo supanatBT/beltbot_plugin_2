@@ -1,0 +1,5 @@
+﻿id,category,subcategory,turn_type,turn_number,user_text,image,must_contain,must_contain_any,must_not_contain,must_ask_back,expected_value,expected_unit,reply_max_length,metrics,description
+WD-S11,width_silent,silent,single,1,HC152 FG กว้างเท่าไหร่,,HC152 FG | 76.2,ยืนยัน | ไม่ตรงกัน | ไม่ได้ระบุ,ทีละ 25.4 | ทีละ 50.8,,,,,width_silent,"HC152 FG: เล่มพิมพ์ Standard belt width increment 50,8 แต่ตาราง 25.4 ต้องไม่ประกาศขั้นมาตรฐาน (แก้วลี width 1 พ.ย.)"
+WD-S12,width_silent,silent,single,1,HC508 C-MTW กว้างเท่าไหร่,,HC508 C-MTW | 406.4,ยืนยัน | ไม่ตรงกัน | ไม่ได้ระบุ,ทีละ 101.6 | ทีละ 50.8,,,,,width_silent,"HC508 C-MTW: เล่มพิมพ์ 50,8 แต่ตาราง 101.6 ต้องไม่ประกาศขั้นมาตรฐาน (แก้วลี width 1 พ.ย.)"
+WD-P11,width_shown,shown,single,1,SM127 CRV กว้างเท่าไหร่,,SM127 CRV | 76.2,,,,,,,width_shown,วลี width + โคลอน ค่าตรงกับเล่ม 76.2 ต้องยังแสดงขั้นมาตรฐาน (กันพังจากการแก้)
+WD-P12,width_shown,shown,single,1,SM127 FG-GT กว้างเท่าไหร่,,SM127 FG-GT | 76.2,,,,,,,width_shown,เหมือน WD-P11
