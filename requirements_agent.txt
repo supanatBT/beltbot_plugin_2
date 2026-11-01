@@ -1,18 +1,19 @@
-# requirements_agent.txt — venv แยกของ agent เทียบ (ADK + MCP) · ห้ามลงใน venv ของบอทหลัก
-#
-# เหตุที่ต้องแยก venv (ตรวจ 1 พ.ย. 2026)
-#   google-adk 2.13.0 ลาก google-genai 2.34 · บอทหลักต้องใช้ google-genai 2.8.0
-#   mcp 2.3.0 ต้องการ pydantic >= 2.12 · บอทหลักต้องใช้ pydantic < 2.12 (gradio 5.49)
-#
-# venv นี้รันทั้ง 3 ส่วน: ตัว agent (ADK) · MCP server (เครื่องมือ) · ตัวรันชุดทดสอบ (run_answer_eval.py)
-# ส่วนโมเดล (torch · transformers · qdrant) ปักรุ่นเดียวกับบอทหลัก ให้ embedding ตรงกันทุกตัวเลข
-# ถ้าบอทหลักในเครื่องใช้ torch รุ่น CUDA ให้ลง torch รุ่นเดียวกับใน venv บอทแทนสองบรรทัดนี้
+# requirements_agent.txt - separate venv for the agent baseline (ADK + MCP)
+# DO NOT install into the main bot venv:
+#   google-adk pulls google-genai 2.3x (bot pins 2.8.0)
+#   mcp 2.x needs pydantic >= 2.12 (bot pins < 2.12 for gradio 5.49)
+# This venv runs the agent (ADK), the MCP server (tools) and run_answer_eval.py.
+# Python 3.10 (same as the bot venv): google-adk 2.11.0 is the last release that supports 3.10
+#   (2.12+ needs 3.11). Tested 2026-11-01 on 3.10.20: test_agent_baseline.py 13/13.
+# Model packages are pinned to the bot's versions so embeddings match.
+# If the bot venv uses a CUDA build of torch, install that same build instead of the +cpu lines.
+# Keep this file ASCII-only: old pip (21.x) on Windows decodes it with the cp874 locale.
 
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.5.1+cpu
 torchvision==0.20.1+cpu
 
-google-adk==2.13.0
+google-adk==2.11.0
 mcp==2.3.0
 
 transformers==4.44.2

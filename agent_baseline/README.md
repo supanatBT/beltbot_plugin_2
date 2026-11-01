@@ -5,7 +5,7 @@ agent ที่ใช้โมเดล ข้อมูล และชุดท
 
 | ชั้น | ใช้ |
 |---|---|
-| agent | Google ADK 2.13 · `LlmAgent` · session ในหน่วยความจำ |
+| agent | Google ADK 2.11 (รุ่นสุดท้ายที่รองรับ Python 3.10 เท่ากับบอทหลัก) · `LlmAgent` · session ในหน่วยความจำ |
 | เครื่องมือ | MCP server (`mcp` 2.3 · stdio) 11 ตัว · `agent_baseline/mcp_server.py` |
 | ข้อมูล | `modutech_v30_3.json` · กราฟจาก JSON · Qdrant `modutech_live` (อ่านอย่างเดียว) · แกลเลอรีรูป `image_gate.npz` |
 | โมเดล | `GEMINI_MODEL` · `GEMINI_THINKING` (ค่าเดียวกับบอทหลัก) |
