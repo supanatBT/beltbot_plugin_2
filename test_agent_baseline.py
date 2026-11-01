@@ -18,7 +18,7 @@ from google.adk.models.llm_response import LlmResponse  # noqa: E402
 from google.genai import types                          # noqa: E402
 
 import agent_assistant as A                             # noqa: E402
-from agent_baseline.agent import INSTRUCTION_TH, build_agent  # noqa: E402
+from agent_baseline.agent import INSTRUCTION_TH, INSTRUCTION_TH_R2, build_agent  # noqa: E402
 
 ok = fail = 0
 
@@ -69,7 +69,7 @@ ag = build_agent(model=FakeLlm())
 txt = ag.static_instruction.parts[0].text
 check("ไม่มี {policy} ค้าง", "{policy}" not in txt)
 check("มีกฎ answering_policy จากฐานข้อมูล", "temperature_effective" in txt and "ถามลูกค้าว่าไลน์เปียกหรือแห้ง" in txt)
-check("ไม่มีวงเล็บปีกกาที่ ADK จะตีความเป็นตัวแปร (static_instruction ไม่แทนค่า แต่กันไว้)", "{" not in INSTRUCTION_TH.replace("{policy}", ""))
+check("ไม่มีวงเล็บปีกกาที่ ADK จะตีความเป็นตัวแปร (static_instruction ไม่แทนค่า แต่กันไว้)", "{" not in INSTRUCTION_TH.replace("{policy}", "") and "{" not in INSTRUCTION_TH_R2.replace("{policy}", ""))
 
 print("2) ADK ↔ MCP ↔ ฐานข้อมูลจริง")
 A.engine = A._Engine(model=FakeLlm())

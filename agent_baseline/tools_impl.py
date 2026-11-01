@@ -68,6 +68,9 @@ def _variants(p: dict, with_temp: bool = True) -> list[dict]:
         row = {"belt_material": v.get("belt_material"), "pin_material": v.get("pin_material"),
                "strength_n_per_m": (v.get("belt_strength") or {}).get("n_per_m"),
                "weight_kg_per_m2": (v.get("belt_weight") or {}).get("kg_per_m2")}
+        # ค่าวิ่งโค้ง — รอบ r1 ไม่ได้ส่งค่านี้ agent จึงตอบความแข็งแรงช่วงโค้งไม่ได้ (ST-001) ทั้งที่บอทหลักเห็น
+        if v.get("belt_strength_curve"):
+            row["strength_curve_n_per_m"] = v["belt_strength_curve"].get("n_per_m")
         if with_temp:
             te = v.get("temperature_effective") or {}
             row["temperature_effective"] = {k: te.get(k) for k in ("dry", "wet") if k in te}

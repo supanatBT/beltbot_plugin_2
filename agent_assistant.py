@@ -31,7 +31,7 @@ from google.adk.runners import Runner                         # noqa: E402
 from google.adk.sessions import InMemorySessionService        # noqa: E402
 from google.genai import types                                # noqa: E402
 
-from agent_baseline.agent import build_agent                  # noqa: E402
+from agent_baseline.agent import build_agent, prompt_version  # noqa: E402
 from agent_baseline.tools_impl import IMAGE_DIR               # noqa: E402
 
 APP, USER = "modutech_agent_baseline", "eval"
@@ -44,7 +44,7 @@ class _LLMInfo:
 
     def describe(self) -> str:
         return (f"ADK agent · {os.environ.get('GEMINI_MODEL') or 'gemini-3.8-flash'} · "
-                f"thinking {os.environ.get('GEMINI_THINKING') or 'low'} · เครื่องมือผ่าน MCP (stdio)")
+                f"thinking {os.environ.get('GEMINI_THINKING') or 'low'} · prompt {prompt_version()} · เครื่องมือผ่าน MCP (stdio)")
 
 
 class _Engine:
