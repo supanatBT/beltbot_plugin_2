@@ -8,6 +8,7 @@ resolve รหัสแบบ exact ก่อน vector search · ค้นท�
 """
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import dataclass, field
 from typing import Optional
@@ -359,6 +360,11 @@ class CatalogueSearch:
                     if use_industry and industry and industry not in (e.get("industries") or []):
                         continue
                     for c in e["belt_codes"]:
+                        # 3 พ.ย. (หลังเห็น blind BL-023): แถวของดัชนีรวม belt_codes ของทุกอุตสาหกรรมในแถว
+                        # ("จัดเรียงพาเลท" ผักผลไม้ ได้รุ่นของบรรจุภัณฑ์ปนมา 7 รุ่น) → ตรวจคู่ รุ่น×อุตสาหกรรม×งาน รายรุ่น
+                        # เปิดพร้อม FRONT_INTERPRETER=llm · ปิด = ผลเดิมทุกตัวอักษร
+                        if use_industry and industry and _strict_industry() and not self._belt_app_in(c, industry, app):
+                            continue
                         # ตรวจรายรุ่นทุกแถว — เดิมเชื่อธง manufactured ของแถว แต่ธงเป็น "mixed" ได้
                         # (ทั้งแถวผลิต-ไม่ผลิตปนกัน) ผลคือบอกเกรดที่รุ่นนั้นไม่ได้ผลิต แล้ว note_th ยังบอก
                         # LLM ว่า "ผลิตจริง" (AP-006 MD254 GT POM · AP-007 SM127 FG PE — 10 ต.ค.)
@@ -388,6 +394,12 @@ class CatalogueSearch:
         return ApplicationMatch(apps, industry, sorted(by_belt),
                                 {k: sorted(v) for k, v in sorted(by_belt.items())}, filtered,
                                 {k: v for k, v in sorted(notes.items()) if k in by_belt})
+
+    def _belt_app_in(self, code: str, industry: str, app: str) -> bool:
+        """เล่มผูกรุ่นนี้กับงานนี้ในอุตสาหกรรมนี้จริง (industries[].applications[].application)"""
+        p = self.cat.by_code.get(code) or {}
+        return any(i.get("industry") == industry and any(a.get("application") == app for a in i.get("applications") or [])
+                   for i in p.get("industries") or [])
 
     def match_industry(self, text: str) -> Optional[tuple[str, dict[str, list[dict]]]]:
         """อุตสาหกรรมจากคำในคำถาม → ทุกรุ่นที่เล่มผูกกับอุตสาหกรรมนั้น พร้อมงานใช้ + เกรดตามเล่ม
@@ -594,6 +606,11 @@ APPLICATION_KEYWORDS: dict[str, list[str]] = {
     "dressing": ["ตกแต่งชิ้นเนื้อ"], "conditioning": ["ปรับสภาพ"], "filling": ["เข้าเครื่องบรรจุ", "filling"],
     "warehouse": ["คลังสินค้า", "warehouse"],
 }
+def _strict_industry() -> bool:
+    """กรองรายรุ่นด้วยคู่ รุ่น×อุตสาหกรรม×งาน (3 พ.ย.) — เปิดพร้อม FRONT_INTERPRETER=llm"""
+    return (os.getenv("FRONT_INTERPRETER") or "rules").strip().lower() == "llm"
+
+
 INDUSTRY_KEYWORDS: dict[str, list[str]] = {
     "Poultry": ["ไก่", "สัตว์ปีก", "เป็ด", "poultry", "chicken"],
     "Meat Processing": ["หมู", "เนื้อวัว", "เนื้อสัตว์", "meat", "pork", "beef"],

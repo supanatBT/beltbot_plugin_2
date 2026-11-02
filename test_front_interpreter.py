@@ -208,5 +208,35 @@ ok("ปิด FRONT_INTERPRETER → ผลค้นเดิม (ไม่กร
    ctx is None or ("matched_before_temperature" not in ctx["search_result"] and "need_filter" not in ctx),
    d.action)
 
+print("8) งานใช้ × อุตสาหกรรม กรองรายรุ่น (3 พ.ย. · router.match_application)")
+S8 = CatalogueSearch(cat)
+
+
+def app_codes(text, on):
+    os.environ["FRONT_INTERPRETER"] = "llm" if on else "rules"
+    try:
+        m = S8.match_application(text)
+        return (m.industry, m.belt_codes) if m else (None, [])
+    finally:
+        os.environ.pop("FRONT_INTERPRETER", None)
+
+
+def truth(industry_th, app_th):
+    return sorted(p["belt_code"] for p in cat.products for i in p.get("industries") or []
+                  if i.get("industry_th") == industry_th
+                  and any(a.get("application_th") == app_th for a in i.get("applications") or []))
+
+
+T8 = "งานจัดเรียงพาเลท ผักผลไม้ ใช้สายพานรุ่นไหน"
+ind_off, off = app_codes(T8, False)
+ind_on, on = app_codes(T8, True)
+want = truth("ผักและผลไม้", "การจัดเรียงและรื้อพาเลท")
+ok("ปิด: ได้รุ่นของอุตสาหกรรมอื่นปน (พฤติกรรมเดิม)", set(want) < set(off), (len(want), len(off)))
+ok("เปิด: ได้เฉพาะรุ่นที่เล่มผูกกับงานนี้ในผักผลไม้", ind_on == "Fruit & Vegetable" and sorted(on) == want, (on, want))
+_, pk = app_codes("สายพานจัดเรียงพาเลท บรรจุภัณฑ์", True)
+# ทุกรุ่นต้องเป็นของบรรจุภัณฑ์จริง (router ตัดรุ่นที่ไม่ผลิตเกรดที่เล่มแนะนำออกอีกชั้น เช่น XP254 EVO FLT)
+pk_truth = sorted(set(truth("บรรจุภัณฑ์", "การจัดเรียงและรื้อพาเลท")) | set(truth("บรรจุภัณฑ์", "เครื่องจัดเรียงพาเลท")))
+ok("อุตสาหกรรมอื่นยังได้รายชื่อของตัวเอง (ทุกรุ่นเป็นของบรรจุภัณฑ์)", pk and set(pk) <= set(pk_truth), (pk, pk_truth))
+
 print(f"\nรวม {passed}/{passed + failed}")
 sys.exit(1 if failed else 0)
