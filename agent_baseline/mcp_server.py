@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from mcp.server.mcpserver import MCPServer  # noqa: E402
 
+from agent_baseline import movex_tools as M  # noqa: E402
 from agent_baseline import tools_impl as T  # noqa: E402
 
 app = MCPServer("modutech-catalogue")
@@ -95,6 +96,59 @@ def match_catalogue_image(image_id: str, top_k: int = 5) -> str:
 def handoff_to_sales(topic: str) -> str:
     """ข้อความส่งต่อฝ่ายขายพร้อมช่องทางติดต่อ สำหรับเรื่องที่อยู่นอกข้อมูลสเปก"""
     return T.handoff_to_sales(topic)
+
+
+# ─────────────── Movex (ขั้นที่ 2) — ฟังก์ชันเดิมของเทอมที่แล้วใน brands/movex/runtime.py ───────────────
+# เปิดเมื่อ AGENT_PROMPT=r2m (ค่าเริ่มต้น) หรือสั่งตรงด้วย AGENT_BRANDS=modutech,movex
+# prompt r1/r2 = ขั้นที่ 1 → เครื่องมือ 11 ตัวเท่าเดิม ผลรอบก่อนจึงเทียบได้
+_DEFAULT_BRANDS = "modutech,movex" if (os.environ.get("AGENT_PROMPT") or "").strip().lower() == "r2m" else "modutech"
+if "movex" in (os.environ.get("AGENT_BRANDS") or _DEFAULT_BRANDS).lower():
+
+    @app.tool()
+    def movex_overview(category: str = "all", series: str = "") -> str:
+        """ภาพรวมสินค้า Movex ทั้งฐาน (โซ่ท็อปเชนและสเตอร์) จำนวนรุ่นและรายชื่อ
+        category: "all" | "chain" | "sprocket" · series: กรองซีรีส์ เช่น "820" "880" (ว่าง = ทั้งหมด)"""
+        return M.movex_overview(category, series)
+
+    @app.tool()
+    def movex_compare(product_ids: str) -> str:
+        """เทียบสเปกสินค้า Movex หลายรุ่น (รหัสคั่นด้วยจุลภาค เช่น "LF820 K325, LF820 K750")
+        คืนซีรีส์ ชนิด ความกว้างแผ่น น้ำหนัก พิทช์ โหลดใช้งานสูงสุด วัสดุ รัศมีเลี้ยว · สเตอร์: จำนวนฟัน รูเพลา โซ่ที่ใช้คู่"""
+        return M.movex_compare(product_ids)
+
+    @app.tool()
+    def movex_filter(spec_type: str, condition: str, target_value: float, product_type: str = "",
+                     sort_by: str = "", sort_order: str = "asc") -> str:
+        """กรองสินค้า Movex ตามสเปกตัวเลข (Qdrant payload filter)
+        spec_type: "width" | "load" | "radius" | "pitch" | "weight" | "teeth" | "bore"
+        condition: "<" | "<=" | ">" | ">=" | "==" · target_value: ค่าตัวเลข
+        product_type: กรองชนิด เช่น "chain" "Sideflexing" (ว่าง = ทุกชนิด)
+        sort_by: ชื่อ spec ที่ใช้เรียง (ว่าง = เรียงตามรหัส) · sort_order: asc หรือ desc"""
+        return M.movex_filter(spec_type, condition, target_value, product_type, sort_by, sort_order)
+
+    @app.tool()
+    def movex_datasheet(product_id: str) -> str:
+        """สร้าง datasheet (แบบ drawing + ตารางสเปก) ของสินค้า Movex แล้วแสดงให้ลูกค้า"""
+        return M.movex_datasheet(product_id)
+
+    @app.tool()
+    def movex_lookup(product_id: str) -> str:
+        """ข้อมูลเต็มของสินค้า Movex 1 รุ่นจากรหัส (เช่น "LF820 K325" · "LF 880 TAB K450" · "54901")
+        สเปก การใช้งาน วัสดุ กระบวนการผลิต และ graph_context (สินค้าที่ใช้คู่กัน · รุ่นอื่นในซีรีส์)
+        ถ้ารหัสไม่ชัด คืน candidates ให้ถามลูกค้า"""
+        return M.movex_lookup(product_id)
+
+    @app.tool()
+    def movex_search(query: str, top_k: int = 5) -> str:
+        """ค้นสินค้า Movex จากข้อความ (Jina v3 + keyword · Qdrant) คืนรุ่นเรียงตาม final_score พร้อมข้อมูลรุ่น
+        และ graph_context ของรุ่นที่พบ"""
+        return M.movex_search(query, top_k)
+
+    @app.tool()
+    def movex_match_image(image_id: str, top_k: int = 5) -> str:
+        """เทียบรูปที่ลูกค้าส่ง (image_id ตามที่ระบุในข้อความ) กับโซ่ Movex ด้วย ViT LoRA + SigLIP
+        คืน vit_signal (series · confidence · dominant · top_pid) ระยะห่างคะแนนอันดับ 1–2 และรุ่นที่ใกล้ที่สุด"""
+        return M.movex_match_image(image_id, top_k)
 
 
 if __name__ == "__main__":

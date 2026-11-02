@@ -203,16 +203,11 @@ def temperature(belt_code: str, belt_material: str = "", pin_material: str = "")
 
 
 @lru_cache(maxsize=1)
-def _retriever():
-    """สร้าง RetrieverV4 ฝั่ง Modutech แบบเดียวกับ brands/modutech/plugin.create() ทุกค่า
-    (Jina v3 · SigLIP-224 · product_db · กราฟ · ชื่อ collection จาก alias ใน brand.yaml) — ViT ไม่ส่ง (ค้นข้อความอย่างเดียว)"""
+def shared_models() -> dict:
+    """Jina v3 + SigLIP-224 ชุดเดียว ใช้ร่วมกันทั้งตัวค้น Modutech และ Movex (= assistant.py โหลดครั้งเดียว)"""
     import torch
-    import yaml
     from transformers import AutoModel, AutoTokenizer, SiglipModel, SiglipProcessor
     from core import model_lock
-    from retriever_v4 import RetrieverV4, RetrieverV4Config
-    from brands.modutech.plugin import resolve_collection
-    from brands.modutech.router import modutech_retriever_config_kwargs
 
     jina_id, siglip_id = "jinaai/jina-embeddings-v3", "google/siglip-base-patch16-224"   # = assistant.py
     device = os.environ.get("AGENT_DEVICE") or ("cuda" if torch.cuda.is_available() else "cpu")
@@ -225,6 +220,21 @@ def _retriever():
     sm = SiglipModel.from_pretrained(siglip_id, **model_lock.pin(siglip_id)).to(device).eval()
     if device == "cuda":
         sm.half()
+    return {"device": device, "jina_tokenizer": tok, "jina_model": jina,
+            "siglip_processor": sp, "siglip_model": sm}
+
+
+@lru_cache(maxsize=1)
+def _retriever():
+    """สร้าง RetrieverV4 ฝั่ง Modutech แบบเดียวกับ brands/modutech/plugin.create() ทุกค่า
+    (Jina v3 · SigLIP-224 · product_db · กราฟ · ชื่อ collection จาก alias ใน brand.yaml) — ViT ไม่ส่ง (ค้นข้อความอย่างเดียว)"""
+    import yaml
+    from retriever_v4 import RetrieverV4, RetrieverV4Config
+    from brands.modutech.plugin import resolve_collection
+    from brands.modutech.router import modutech_retriever_config_kwargs
+
+    m = shared_models()
+    device, tok, jina, sp, sm = m["device"], m["jina_tokenizer"], m["jina_model"], m["siglip_processor"], m["siglip_model"]
 
     cat, _search, kg, *_ = _state()
     mod_db = {p["belt_code_id"]: {"product_id": p["belt_code_id"], "Ref": p["belt_code"],
