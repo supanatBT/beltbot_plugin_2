@@ -84,6 +84,9 @@ ASK_MOVEX_UNCLEAR_IMAGE_TH = ("จากรูปยังระบุรุ่�
 
 class MovexPlugin:
     gate_chain = ("escalation", "image_confidence", "code_or_series", "series_uniform_or_ask_width")
+    # ตัวตีความด่านหน้า (core/front_interpreter · FRONT_INTERPRETER=llm) อ่านข้อนี้ — ไม่มีผลเมื่อปิด
+    brand_hint_th = ("โซ่ท็อปเชนและสเตอร์ · ลำเลียงขวด กระป๋อง ลัง ในไลน์บรรจุเครื่องดื่ม · "
+                     "รหัส LF / LFN / K ตามด้วยตัวเลข · ค่ารับโหลด workload เป็นนิวตัน (N)")
 
     def __init__(self, info: BrandInfo, products: dict, materials: Optional[dict] = None,
                  thresholds: Optional[dict] = None, reject_th: str = "", state_defaults: Optional[dict] = None):

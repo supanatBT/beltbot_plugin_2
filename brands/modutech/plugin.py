@@ -105,6 +105,14 @@ class ModutechPlugin:
     gate_chain = ("escalation", "explore_search", "ambiguous_code", "wet_or_dry",
                   "line_shape", "need", "answer")
     image_reject_th = ""                 # ยังไม่มีรูปจริงสักใบ — brand.yaml › image.enabled: auto ปิดเอง
+    # ตัวตีความด่านหน้า (core/front_interpreter · FRONT_INTERPRETER=llm) อ่านข้อนี้ — ไม่มีผลเมื่อปิด
+    brand_hint_th = ("สายพานโมดูลาร์สำหรับงานอาหาร (เนื้อสัตว์ สัตว์ปีก อาหารทะเล เบเกอรี่ ผักผลไม้) "
+                     "และจุดในไลน์อาหาร เช่น ตัดแต่ง เลาะกระดูก เตาอบ ฟรีซเซอร์ ไลน์แช่แข็ง ล้างผัก · "
+                     "คุณสมบัติที่มีเฉพาะสายพานโมดูลาร์: พื้นที่เปิดหรือรูให้น้ำ/อากาศผ่าน (%) · "
+                     "แรงดึงหน่วย N/m (นิวตันต่อเมตร) · น้ำหนักต่อตารางเมตร · ชื่อผิวสายพาน (Flush Grid · Flat Top ฯลฯ)")
+    _front = None                        # core/decide.Dialogue ใส่ให้เมื่อเปิดตัวตีความด่านหน้า
+    WET_ASKED_KEY = "_wet_asked"         # ถามเปียก/แห้งจากด่านอุณหภูมิไปแล้วหนึ่งครั้ง (กันวน · ด่านหน้าเท่านั้น)
+    WET_ASSUMED_KEY = "_wet_assumed"     # ลูกค้าไม่ตอบเปียก/แห้ง → ใช้ค่าเปียก (ต่ำกว่า) แล้วบอกลูกค้า
 
     def __init__(self, info: BrandInfo, cat: Catalogue, state_defaults: Optional[dict] = None):
         self.info = info
@@ -184,7 +192,7 @@ class ModutechPlugin:
     # slot ที่ decide รู้จัก — ค่าอื่นทิ้ง (ย้ายมาจาก webapi/bot.py _SLOT_KEYS ชั้น 6)
     SLOT_KEYS = ("wet_or_dry", "material", "line_shape", "operating_temp_c",
                  "pitch_mm", "temp_c", NF.FLOW_KEY, NF.PITCH_SAID_KEY,   # สี่ตัวนี้: ถามทีละข้อ (need_flow.py)
-                 "_need_text", "_reask", "_esc_last")
+                 "_need_text", "_reask", "_esc_last", "_wet_asked", "_wet_assumed")
     ESC_LAST_KEY = "_esc_last"    # หัวข้อส่งฝ่ายขายของเทิร์นก่อน — ถามซ้ำทันทีได้ข้อความอีกแบบ (redteam r4 R09#2)
     REASK_KEY = "_reask"          # ขั้นที่ถามซ้ำไปแล้วหนึ่งครั้งเพราะอ่านคำตอบไม่ออก (กันวน)
     NEED_TEXT_KEY = "_need_text"  # ข้อความที่บอกงาน/อุตสาหกรรมล่าสุด — ใช้กับคำถามต่อที่เปลี่ยนแค่พิทช์/อุณหภูมิ
@@ -377,9 +385,13 @@ class ModutechPlugin:
         closing = bool(re.search(r"ขอบคุณ|ขอบใจ|thank", text, re.IGNORECASE)) and not NF._QUESTION_RX.search(text) \
             and not re.search(r"ไหม|มั้ย|หรือเปล่า|บ้าง", text)
         temp_topic = has(MOD_TEMP_TOPIC, text) or ("operating_temp_c" in slots and not st["codes"] and not closing)
+        if self._front is not None:
+            temp_topic = self._front_temp_gate(text, st, focus, temp_topic, answer)
         if temp_topic and not slots.get("wet_or_dry"):
             needs = (not focus) or any("wet_or_dry" in (p["answering"].get("required_slots") or []) for p in focus)
             if needs:
+                if self._front is not None:
+                    slots[self.WET_ASKED_KEY] = True
                 return Decision("ask", key, ASK_WET_DRY_TH, "ต้องรู้เปียก/แห้งก่อนตอบอุณหภูมิ",
                                 topic="temperature", effective_text=text,
                                 payload=dict(codes=st["codes"], slots=dict(slots)), pending="wet_or_dry")
@@ -431,6 +443,51 @@ class ModutechPlugin:
         return Decision("answer", key, reason="รหัสชัด" if focus else "ค้นตามการใช้งาน",
                         topic="temperature" if temp_topic else None, effective_text=text,
                         payload=dict(codes=st["codes"], slots=dict(slots)))
+
+    # ── ตัวตีความด่านหน้า (core/front_interpreter · FRONT_INTERPRETER=llm · 2 พ.ย.) ──
+    def _front_temp_gate(self, text: str, st: dict, focus: list, temp_topic: bool, answer: str) -> bool:
+        """คืน temp_topic ใหม่ · แก้ 3 อย่างของด่านเปียก/แห้ง (เขียนตามเอกสาร NOTES_ch3 ที่โค้ดเดิมไม่ตรง)
+        1. regex เห็นคำอุณหภูมิ แต่ LLM บอกว่าไม่ได้ถามเรื่องอุณหภูมิ (ชื่องาน "ฟรีซเซอร์") → ไม่ถาม
+        2. ทุกเกรดที่เกี่ยวข้องค่าเปียก = ค่าแห้ง → ไม่ต้องถาม ("ถามเฉพาะเมื่อผลต่างกัน")
+        3. ถามไปแล้วหนึ่งครั้ง ลูกค้าตอบเรื่องอื่น → ไม่ถามซ้ำ ใช้ค่าเปียก (ต่ำกว่า) แล้วบอกลูกค้า (ทางเดียวกับ need_flow)"""
+        slots = st["slots"]
+        asked = slots.pop(self.WET_ASKED_KEY, None) if not answer else slots.get(self.WET_ASKED_KEY)
+        if slots.get("wet_or_dry"):
+            slots.pop(self.WET_ASKED_KEY, None)
+            if slots.get(self.WET_ASSUMED_KEY) and extract_modutech_slots(answer or text, ()).get("wet_or_dry"):
+                slots.pop(self.WET_ASSUMED_KEY, None)      # ลูกค้าบอกเองแล้ว = ไม่ใช่ค่าที่สมมติ
+            return temp_topic
+        if not temp_topic:
+            return False
+        fr = self._front.read(text)
+        if fr is not None:
+            if fr.wet_or_dry:
+                slots["wet_or_dry"] = fr.wet_or_dry
+                slots.pop(self.WET_ASKED_KEY, None)
+                return temp_topic
+            if not fr.asks_temperature:
+                return False
+        if focus and not self._wet_dry_differs(focus, slots.get("material")):
+            return False
+        if asked and answer:
+            slots["wet_or_dry"] = "wet"
+            slots[self.WET_ASSUMED_KEY] = True
+            slots.pop(self.WET_ASKED_KEY, None)
+        return temp_topic
+
+    @staticmethod
+    def _wet_dry_differs(focus: list, material: Optional[str]) -> bool:
+        """มีเกรดไหนของรุ่นในโฟกัสที่ช่วงเปียกต่างจากแห้งไหม (เฉพาะวัสดุที่ลูกค้าบอก ถ้าบอก) · ข้อมูลไม่ครบ = ต่าง"""
+        for p in focus:
+            if "wet_or_dry" not in (p["answering"].get("required_slots") or []):
+                continue
+            for v in p["specifications"].get("variants") or []:
+                if material and (v.get("belt_material") or "").upper() != material.upper():
+                    continue
+                eff = v.get("temperature_effective") or {}
+                if eff.get("wet") != eff.get("dry") or eff.get("wet_status") not in (None, "ok"):
+                    return True
+        return False
 
     # ── ตัวตีความคำถาม (core/query_interpreter · 30 ต.ค.) ──
     def _query_spec(self) -> QuerySpec:

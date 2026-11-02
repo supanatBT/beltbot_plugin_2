@@ -98,7 +98,8 @@ class Dialogue:
     """
 
     def __init__(self, plugins: Sequence[BrandPlugin], state_cls: type,
-                 image_brands: Sequence[str] = ()):
+                 image_brands: Sequence[str] = (), front=None):
+        """front = core.front_interpreter.FrontInterpreter (FRONT_INTERPRETER=llm) · None = บอทเดิมทุกตัวอักษร"""
         self.plugins = {p.info.key: p for p in sorted(plugins, key=lambda p: p.info.order)}
         self.infos = [p.info for p in self.plugins.values()]
         self.state_cls = state_cls
@@ -108,6 +109,14 @@ class Dialogue:
         self.smalltalk_th = T.smalltalk(self.infos)
         self.greeting_th = T.greeting(self.infos)
         self._domain_extra = [w for p in self.plugins.values() for w in p.domain_terms()]
+        self.front = front
+        if front is not None:
+            from core.front_interpreter import BrandHint
+            front.brands = [BrandHint(p.info.key, p.info.name, p.info.kind_th,
+                                      getattr(p, "brand_hint_th", "") or p.info.menu_line_th)
+                            for p in self.plugins.values()]
+            for p in self.plugins.values():
+                p._front = front                # ปลั๊กอินถามข้อความเดียวกันได้ (ผลจำไว้ ไม่เรียก LLM ซ้ำ)
 
     # ─────────────────────────── API หลัก ───────────────────────────
 
@@ -263,6 +272,14 @@ class Dialogue:
                    else f"เจอรหัสของ{T.all_brands_th(len(conflict))}")
             return Decision("ask", None, T.clarify_conflict(conflict), why,
                             topic="brand", effective_text=effective, state=st)
+        # ── ตัวตีความด่านหน้า (FRONT_INTERPRETER=llm · 2 พ.ย.): regex ไม่เจอสัญญาณแบรนด์เลย → ให้ LLM อ่าน ──
+        # ใช้เฉพาะเมื่อยังไม่รู้แบรนด์และไม่มีรูป · สัญญาณจาก regex มาก่อนเสมอ · สแตนเลสคงทางข้ามแบรนด์เดิม
+        if self.front is not None and route.kind == "none" and st.brand is None and not has_image \
+                and not has(STAINLESS_RX, effective):
+            fr = self.front.read(effective)
+            if fr is not None and fr.brand in self.plugins:
+                route = _router.RouteResult(fr.brand, "weak", [], {fr.brand: f"ตัวตีความด่านหน้า: {fr.note}"},
+                                            route.signals)
         brand = route.brand if route.brand else st.brand
         if route.brand and st.brand and route.brand != st.brand:
             # เปลี่ยนแบรนด์กลางบทสนทนา — แต่ละแบรนด์เลือกเองว่าล้างอะไร

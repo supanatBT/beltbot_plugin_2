@@ -277,6 +277,10 @@ def system_info(bot, module_name: str) -> dict:
             "gemini_thinking": os.getenv("GEMINI_THINKING") or "",
             "search_engine": (os.getenv("MODUTECH_SEARCH_ENGINE") or "qdrant").strip().lower(),
             "graph_apps": os.getenv("MODUTECH_GRAPH_APPS", "1").strip() != "0"}
+    if info["system"] == "bot":       # 2 พ.ย.: ตัวตีความของบอท (ค่าเริ่มต้นตาม assistant.py)
+        info.update({"front_interpreter": (os.getenv("FRONT_INTERPRETER") or "rules").strip().lower(),
+                     "query_interpreter": (os.getenv("QUERY_INTERPRETER") or "llm").strip().lower(),
+                     "answer_interpreter": (os.getenv("ANSWER_INTERPRETER") or "llm").strip().lower()})
     info.update(code_fingerprint())
     if hasattr(bot, "system_info"):
         try:

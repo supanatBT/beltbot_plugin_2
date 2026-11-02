@@ -185,6 +185,15 @@ if QUERY_INTERPRETER == "llm":
     query_interpreter = QueryInterpreter(llm_client.complete, log=print)
 print(f"✅ ตีความคำถาม: {'LLM (' + GEMINI_MODEL + ') เฉพาะจุดที่ต้องเดา · สำรองด้วยทางเดิม' if query_interpreter else 'ปิด (กฎ regex + ทางเดิม)'}")
 
+# ตัวตีความด่านหน้า (core/front_interpreter · 2 พ.ย. · branch bot-qi-first): FRONT_INTERPRETER=llm เปิด
+# อ่านแบรนด์ / ถามอุณหภูมิจริงไหม / เปียก-แห้ง ก่อนด่าน regex · ค่าเริ่มต้นปิด = บอทเดิมทุกตัวอักษร
+FRONT_INTERPRETER = (os.getenv("FRONT_INTERPRETER") or "rules").strip().lower()
+front_interpreter = None
+if FRONT_INTERPRETER == "llm":
+    from core.front_interpreter import FrontInterpreter    # noqa: E402
+    front_interpreter = FrontInterpreter(llm_client.complete, log=print)
+print(f"✅ ตีความด่านหน้า: {'LLM (' + GEMINI_MODEL + ') · สำรองด้วยกฎ' if front_interpreter else 'ปิด (บอทเดิม)'}")
+
 plugins = load_plugins(_configs, shared=dict(
     device=DEVICE, jina_tokenizer=jina_tokenizer, jina_model=jina_model,
     siglip_processor=siglip_processor, siglip_model=siglip_model,
@@ -194,7 +203,7 @@ DialogState = state_class(state_schema(_configs))
 _scorers = {k: s for k, s in ((k, p.image_scorer()) for k, p in plugins.items()) if s is not None}
 _gates = {k: g for k, g in ((k, getattr(p, "image_gate", lambda: None)()) for k, p in plugins.items())
           if g is not None}
-dialogue = Dialogue(list(plugins.values()), DialogState, image_brands=tuple(_scorers))
+dialogue = Dialogue(list(plugins.values()), DialogState, image_brands=tuple(_scorers), front=front_interpreter)
 engine = TurnEngine(dialogue, llm_client, logger, tool_log, image_scorers=_scorers, image_gates=_gates)
 _dialog_states = engine.dialog_states            # session_id → DialogState.to_dict() (webapi/bot.py ใช้ชื่อนี้)
 

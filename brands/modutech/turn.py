@@ -533,6 +533,10 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
         trim_card_industries(gated.products, context, cat)
     context["products"] = gated.products
     context["slots_known"] = NF.visible_slots(md.get("slots") or {})
+    if (md.get("slots") or {}).get("_wet_assumed"):
+        # ตัวตีความด่านหน้า (2 พ.ย.): ถามเปียก/แห้งแล้วลูกค้าไม่ตอบ → ใช้ค่าเปียก (ต่ำกว่า) ไม่ถามซ้ำ (ทางเดียวกับ need_flow)
+        context["note_th"] = ("ลูกค้ายังไม่ได้บอกว่าไลน์เปียกหรือแห้ง ค่าอุณหภูมิในคำตอบนี้เป็นของสภาวะเปียก "
+                              "ซึ่งต่ำกว่าและปลอดภัยกว่า ถ้าไลน์แห้งบางเกรดทนได้สูงกว่านี้")
     if decision.sales_topics:
         context["sales_topics"] = decision.sales_topics
     if gated.ask_back:
