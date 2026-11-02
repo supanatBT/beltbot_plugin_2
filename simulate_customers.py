@@ -55,6 +55,10 @@ sys.path.insert(0, ROOT)
 DONE, GIVEUP = "[จบ]", "[ยอมแพ้]"
 OFFTOPIC_TH = "ผมตอบได้เฉพาะเรื่องสินค้า"
 NONE_WORDS = re.compile(r"ไม่มีรุ่นที่|ไม่มีสายพาน.*ที่ตรง|ไม่พบรุ่น|ไม่มีรุ่นใด")
+# ชุด blind (goal มี accept_codes): รวมสำนวนอื่นที่แปลว่า "ไม่มีรุ่นเข้าเงื่อนไข" — NONE_WORDS เดิมมาจากถ้อยคำของบอท
+# ใช้เฉพาะเส้นทาง goal เพื่อให้ผลชุดเดิมเทียบกับรอบก่อนได้
+NONE_WORDS_NEUTRAL = re.compile(NONE_WORDS.pattern + r"|ไม่มีรุ่นไหน|ไม่มีตัวไหน|ยังไม่มีรุ่น|ไม่มีสายพานรุ่นไหน"
+                                r"|ไม่มี(?:สายพาน)?รุ่น\S{0,20}(?:ผ่าน|เหมาะ|ตรง|รองรับ|ทน)|ไม่มีในแคตตาล็อก")
 
 SIM_SYSTEM = """คุณเล่นเป็นลูกค้าที่กำลังแชทกับบอทขายสายพาน/โซ่ลำเลียง เขียนเฉพาะข้อความของลูกค้าหนึ่งข้อความ
 ลักษณะลูกค้า: {persona}
@@ -94,6 +98,11 @@ class Judge:
         self.need_in = mgr.modutech_plugin._need_in
 
     def acceptable(self, g: dict) -> dict:
+        # 2 พ.ย. (ผู้ใช้ตกลง ชุด blind): goal ที่ให้ accept_codes/hard_ok_codes มาเอง = คำตอบที่ถูกคำนวณแยกจากโค้ดบอท
+        # (blind/compute_truth.py) → ใช้ตามนั้น ไม่ผ่าน need_flow ของบอท เพื่อไม่ให้บอทเป็นผู้ตัดสินตัวเอง
+        if "accept_codes" in g:
+            ok = list(g["accept_codes"])
+            return dict(ok=ok, hard_ok=list(g.get("hard_ok_codes", ok)), source="goal", n_candidates=len(ok))
         t = g.get("application", "")
         am = self.search.match_application(t)
         if am is not None:
@@ -126,6 +135,12 @@ class Judge:
         return seen
 
     def hard_ok_stated(self, g: dict, stated: set) -> list[str]:
+        if "accept_codes" in g:
+            # goal ที่เป็นกลาง: ใช้ชุดตามเงื่อนไขที่ลูกค้าพูดแล้ว ถ้า goal ให้มา (key = "pitch+temp+wet" เรียงตามนี้)
+            # ไม่ให้มา → ใช้ hard_ok_codes ของเงื่อนไขครบ (เข้มกว่าเดิม — รายงานในผลว่า source=goal)
+            key = "+".join(k for k in ("pitch", "temp", "wet") if k in stated)
+            by = g.get("hard_ok_by_stated") or {}
+            return list(by.get(key, g.get("hard_ok_codes", g["accept_codes"])))
         return self.NF.filter_by_need(self.cat, [p["belt_code"] for p in self.cat.products],
                                       g.get("pitch_mm") if "pitch" in stated else None,
                                       g.get("temp_c") if "temp" in stated else None,
@@ -167,6 +182,10 @@ def score(g: dict, transcript: list[dict], judge: Judge, ended: str) -> dict:
     explained = [c for c in mentioned if c not in acc["hard_ok"] and c not in recommended_codes]
     if acc["ok"]:
         hit = any(c in acc["ok"] for c in mentioned)
+    elif acc["source"] == "goal":
+        # goal ที่ลูกค้าเปลี่ยนใจกลางทาง (blind B09: 1 นิ้ว → 2 นิ้ว): รุ่นที่แนะนำถูกต้องก่อนเปลี่ยนใจไม่ใช่ความผิด
+        # ตัดสินจากจุดยืนสุดท้าย: บอทบอกว่าไม่มีรุ่นที่เข้าเงื่อนไข หลังเทิร์นสุดท้ายที่แนะนำรุ่น (final_i)
+        hit = any(NONE_WORDS_NEUTRAL.search(b) for b in bot[final_i + 1:])
     else:
         hit = any(NONE_WORDS.search(b) for b in bot) and not violations
     return {**out, "reached": bool(mentioned), "hit": hit, "violations": violations, "mentioned": mentioned,
