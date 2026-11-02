@@ -65,6 +65,10 @@ def _not_found(code: str, candidates: list[str]) -> str:
                   "hint": "ถ้ามี candidates ให้ถามลูกค้าว่าหมายถึงรุ่นไหน ห้ามเลือกเอง"})
 
 
+def _send_conflict() -> bool:
+    return (os.environ.get("AGENT_PROMPT") or "").strip().lower() not in ("", "r1", "r2", "r2m")
+
+
 def _variants(p: dict, with_temp: bool = True) -> list[dict]:
     out = []
     for v in p["specifications"].get("variants") or []:
@@ -78,6 +82,11 @@ def _variants(p: dict, with_temp: bool = True) -> list[dict]:
             te = v.get("temperature_effective") or {}
             row["temperature_effective"] = {k: te.get(k) for k in ("dry", "wet") if k in te}
             row["temperature_trust"] = v.get("temperature_trust")
+            # r3 (2 พ.ย.): ส่งข้อขัดแย้งตารางสเปก vs คุณสมบัติวัสดุ (ข้อมูลดิบในฐาน · ไม่บังคับกฎ)
+            # r1/r2/r2m ไม่ส่ง — ให้ผลของรอบเดิมรันซ้ำได้เท่าเดิม
+            if _send_conflict() and te.get("conflict"):
+                row["temperature_conflict"] = te.get("conflict")
+                row["temperature_conflict_note_th"] = te.get("conflict_note_th")
         out.append(row)
     return out
 

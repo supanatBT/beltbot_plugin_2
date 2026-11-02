@@ -117,7 +117,9 @@ try:
     only = asyncio.run(_names({"AGENT_BRANDS": "modutech"}))
     r2 = asyncio.run(_names({"AGENT_BRANDS": "", "AGENT_PROMPT": "r2"}))
     r2m = asyncio.run(_names({"AGENT_BRANDS": "", "AGENT_PROMPT": "r2m"}))
+    r3 = asyncio.run(_names({"AGENT_BRANDS": "", "AGENT_PROMPT": "r3"}))
     check("prompt r2 (ขั้นที่ 1) ได้ 11 เครื่องมือเท่าเดิม · r2m ได้ 18", len(r2) == 11 and len(r2m) == 18, (len(r2), len(r2m)))
+    check("prompt r3 ได้ 18 เครื่องมือเท่า r2m (2 พ.ย.)", r3 == r2m, (len(r3), len(r2m)))
     check("สองแบรนด์ = 18 เครื่องมือ", len(both) == 18, both)
     check("AGENT_BRANDS=modutech = 11 เครื่องมือ (เท่าขั้นที่ 1)", len(only) == 11, only)
     check("ชื่อเครื่องมือ Movex ครบ 7", sorted(n for n in both if n.startswith("movex_")) ==

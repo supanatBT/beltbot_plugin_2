@@ -106,5 +106,32 @@ _s = _T._state()[1]
 check("search_catalogue ของ agent ใช้ QdrantCatalogueSearch เหมือนบอท",
       type(_s).__name__ == "QdrantCatalogueSearch" or os.environ.get("MODUTECH_SEARCH_ENGINE") == "python", type(_s).__name__)
 
+print("6) prompt r3 (2 พ.ย.) = r2m + แก้ 4 จุดเท่านั้น · ข้อขัดแย้งอุณหภูมิส่งเฉพาะ r3")
+import difflib  # noqa: E402
+from agent_baseline import agent as _AG  # noqa: E402
+_r2m, _r3 = _AG.instruction_r2m(), _AG.instruction_r3()
+_added = [l[1:] for l in difflib.unified_diff(_r2m.splitlines(), _r3.splitlines(), lineterm="", n=0)
+          if l.startswith("+") and not l.startswith("+++")]
+_removed = [l for l in difflib.unified_diff(_r2m.splitlines(), _r3.splitlines(), lineterm="", n=0)
+            if l.startswith("-") and not l.startswith("---")]
+check("r3 ลบจาก r2m 2 บรรทัด (สัญญาณแบรนด์ · ถามแบรนด์) ที่เหลือเหมือนเดิม", len(_removed) == 2, _removed)
+check("r3 เพิ่มกฎ 'สายพาน' ไม่ใช่สัญญาณแบรนด์ · ถามก่อนเรียกเครื่องมือ · เลขลำดับ · ข้อขัดแย้งอุณหภูมิ",
+      any("ไม่ใช่สัญญาณแบรนด์" in l for l in _added) and any("ก่อนเรียกเครื่องมือ" in l for l in _added)
+      and any("ถามยืนยันว่าหมายถึงข้อไหน" in l for l in _added) and any("temperature_conflict" in l for l in _added))
+_codes = {p["belt_code"] for p in json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "modutech_v30_3.json"), encoding="utf-8"))["products"]}
+check("บรรทัดที่เพิ่มใน r3 ไม่มีรหัสรุ่น Modutech", not [c for c in _codes for l in _added if c in l])
+check("r3 ไม่มีวงเล็บปีกกาค้าง", "{" not in _r3.replace("{policy}", ""))
+_old = os.environ.get("AGENT_PROMPT")
+for _v, _want in (("r2m", False), ("r3", True)):
+    os.environ["AGENT_PROMPT"] = _v
+    _rows = json.loads(_T.temperature("MD254 GAP48%-EHT"))["variants"]
+    check(f"AGENT_PROMPT={_v}: temperature ส่ง temperature_conflict = {_want}",
+          any("temperature_conflict" in r for r in _rows) == _want
+          and (not _want or "ตารางสเปกระบุสูงกว่า" in (_rows[0].get("temperature_conflict_note_th") or "")), _rows[:1])
+if _old is None:
+    os.environ.pop("AGENT_PROMPT", None)
+else:
+    os.environ["AGENT_PROMPT"] = _old
+
 print(f"\nรวม {ok}/{ok + fail}")
 os._exit(1 if fail else 0)

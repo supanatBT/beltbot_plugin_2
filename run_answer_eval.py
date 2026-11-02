@@ -134,7 +134,11 @@ def norm_text(text: str) -> str:
     # (escape ของ markdown — หน้าเว็บแสดงเป็น *) ตัด \ หน้าอักขระ markdown ก่อนเทียบ ไม่งั้นรหัสถูกแต่ตรวจไม่เจอ
     text = re.sub(r"\\([*_~`])", r"\1", text)
     text = re.sub(r"(?<=\d),(?=\d{3}\b)", "", text)
-    return re.sub(r"\s+", " ", text)
+    text = re.sub(r"\s+", " ", text)
+    # 2 พ.ย. (ผู้ใช้สั่ง · QI-X2 agent_probe_qi_r2m): รหัสรุ่นเขียนได้ทั้ง "LF 820 K325" และ "LF820 K325"
+    # ตัดช่องว่างระหว่างตัวอักษรละตินกับตัวเลข (ทั้งสองทิศ) ทั้งฝั่งคำตอบและฝั่งเกณฑ์ → ใช้กับบอทและ agent เท่ากัน
+    # คำต้องห้ามก็เข้มขึ้นตามกัน ("LF820 K400" ในคำตอบนับเป็นเอ่ย "LF 820 K400")
+    return re.sub(r"(?<=[a-z])\s(?=\d)|(?<=\d)\s(?=[a-z])", "", text)
 
 
 def number_in_text(value: str, text: str) -> bool:
