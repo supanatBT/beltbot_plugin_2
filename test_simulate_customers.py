@@ -172,5 +172,11 @@ ok("ยังไม่บอกพิทช์ → ใช้ hard_ok_by_stated['
 _s4 = SC.score(_gb, _tr2, judge, "done")
 ok("บอกครบแล้ว → EC254 C ไม่อยู่ใน hard_ok_codes", _s4["final_violations"] == ["EC254 C"], _s4["final_violations"])
 
+_gn = dict(_g, accept_codes=[], hard_ok_codes=["EC508 C"], pitch_mm=50.8)
+_trn = [{"role": "customer", "text": "ไลน์แช่แข็ง พิทช์ 1 นิ้ว แห้ง"}, {"role": "bot", "text": "แนะนำ EC254 NT ครับ"},
+        {"role": "customer", "text": "เดี๋ยวครับ พิทช์ 2 นิ้ว"}, {"role": "bot", "text": "พิทช์ 2 นิ้วไม่มีรุ่นที่แคตตาล็อกระบุงานนี้ครับ"}]
+_s5 = SC.score(_gn, _trn, judge, "done")
+ok("เปลี่ยนใจกลางทาง: แนะนำถูกก่อนเปลี่ยน + บอกไม่มีหลังเปลี่ยน → hit", _s5["hit"] is True, (_s5["hit"], _s5["final_violations"]))
+
 print(f"\nรวม {passed}/{passed + failed}")
 sys.exit(1 if failed else 0)

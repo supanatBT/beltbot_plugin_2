@@ -55,6 +55,10 @@ sys.path.insert(0, ROOT)
 DONE, GIVEUP = "[จบ]", "[ยอมแพ้]"
 OFFTOPIC_TH = "ผมตอบได้เฉพาะเรื่องสินค้า"
 NONE_WORDS = re.compile(r"ไม่มีรุ่นที่|ไม่มีสายพาน.*ที่ตรง|ไม่พบรุ่น|ไม่มีรุ่นใด")
+# ชุด blind (goal มี accept_codes): รวมสำนวนอื่นที่แปลว่า "ไม่มีรุ่นเข้าเงื่อนไข" — NONE_WORDS เดิมมาจากถ้อยคำของบอท
+# ใช้เฉพาะเส้นทาง goal เพื่อให้ผลชุดเดิมเทียบกับรอบก่อนได้
+NONE_WORDS_NEUTRAL = re.compile(NONE_WORDS.pattern + r"|ไม่มีรุ่นไหน|ไม่มีตัวไหน|ยังไม่มีรุ่น|ไม่มีสายพานรุ่นไหน"
+                                r"|ไม่มี(?:สายพาน)?รุ่น\S{0,20}(?:ผ่าน|เหมาะ|ตรง|รองรับ|ทน)|ไม่มีในแคตตาล็อก")
 
 SIM_SYSTEM = """คุณเล่นเป็นลูกค้าที่กำลังแชทกับบอทขายสายพาน/โซ่ลำเลียง เขียนเฉพาะข้อความของลูกค้าหนึ่งข้อความ
 ลักษณะลูกค้า: {persona}
@@ -178,6 +182,10 @@ def score(g: dict, transcript: list[dict], judge: Judge, ended: str) -> dict:
     explained = [c for c in mentioned if c not in acc["hard_ok"] and c not in recommended_codes]
     if acc["ok"]:
         hit = any(c in acc["ok"] for c in mentioned)
+    elif acc["source"] == "goal":
+        # goal ที่ลูกค้าเปลี่ยนใจกลางทาง (blind B09: 1 นิ้ว → 2 นิ้ว): รุ่นที่แนะนำถูกต้องก่อนเปลี่ยนใจไม่ใช่ความผิด
+        # ตัดสินจากจุดยืนสุดท้าย: บอทบอกว่าไม่มีรุ่นที่เข้าเงื่อนไข หลังเทิร์นสุดท้ายที่แนะนำรุ่น (final_i)
+        hit = any(NONE_WORDS_NEUTRAL.search(b) for b in bot[final_i + 1:])
     else:
         hit = any(NONE_WORDS.search(b) for b in bot) and not violations
     return {**out, "reached": bool(mentioned), "hit": hit, "violations": violations, "mentioned": mentioned,
