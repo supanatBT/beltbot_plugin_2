@@ -163,5 +163,14 @@ _tr2 = _tr[:2] + [{"role": "customer", "text": "ครึ่งนิ้ว แ�
 _s2 = SC.score(_g, _tr2, judge, "done")
 ok("ลูกค้าบอกครึ่งนิ้วแล้ว → EC254 C ผิดเงื่อนไข", _s2["final_violations"] == ["EC254 C"], _s2["final_violations"])
 
+print("\nชุด blind (2 พ.ย.) goal ให้คำตอบที่ถูกมาเอง → ไม่ใช้ need_flow ของบอท")
+_gb = dict(_g, accept_codes=["EC127 C"], hard_ok_codes=["EC127 C", "HC127 C"],
+           hard_ok_by_stated={"temp+wet": ["EC127 C", "EC254 C"]})
+ok("acceptable ใช้ชุดจาก goal", judge.acceptable(_gb)["ok"] == ["EC127 C"] and judge.acceptable(_gb)["source"] == "goal")
+_s3 = SC.score(_gb, _tr, judge, "done")
+ok("ยังไม่บอกพิทช์ → ใช้ hard_ok_by_stated['temp+wet']", _s3["final_violations"] == [], _s3["final_violations"])
+_s4 = SC.score(_gb, _tr2, judge, "done")
+ok("บอกครบแล้ว → EC254 C ไม่อยู่ใน hard_ok_codes", _s4["final_violations"] == ["EC254 C"], _s4["final_violations"])
+
 print(f"\nรวม {passed}/{passed + failed}")
 sys.exit(1 if failed else 0)

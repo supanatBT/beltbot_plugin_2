@@ -94,6 +94,11 @@ class Judge:
         self.need_in = mgr.modutech_plugin._need_in
 
     def acceptable(self, g: dict) -> dict:
+        # 2 พ.ย. (ผู้ใช้ตกลง ชุด blind): goal ที่ให้ accept_codes/hard_ok_codes มาเอง = คำตอบที่ถูกคำนวณแยกจากโค้ดบอท
+        # (blind/compute_truth.py) → ใช้ตามนั้น ไม่ผ่าน need_flow ของบอท เพื่อไม่ให้บอทเป็นผู้ตัดสินตัวเอง
+        if "accept_codes" in g:
+            ok = list(g["accept_codes"])
+            return dict(ok=ok, hard_ok=list(g.get("hard_ok_codes", ok)), source="goal", n_candidates=len(ok))
         t = g.get("application", "")
         am = self.search.match_application(t)
         if am is not None:
@@ -126,6 +131,12 @@ class Judge:
         return seen
 
     def hard_ok_stated(self, g: dict, stated: set) -> list[str]:
+        if "accept_codes" in g:
+            # goal ที่เป็นกลาง: ใช้ชุดตามเงื่อนไขที่ลูกค้าพูดแล้ว ถ้า goal ให้มา (key = "pitch+temp+wet" เรียงตามนี้)
+            # ไม่ให้มา → ใช้ hard_ok_codes ของเงื่อนไขครบ (เข้มกว่าเดิม — รายงานในผลว่า source=goal)
+            key = "+".join(k for k in ("pitch", "temp", "wet") if k in stated)
+            by = g.get("hard_ok_by_stated") or {}
+            return list(by.get(key, g.get("hard_ok_codes", g["accept_codes"])))
         return self.NF.filter_by_need(self.cat, [p["belt_code"] for p in self.cat.products],
                                       g.get("pitch_mm") if "pitch" in stated else None,
                                       g.get("temp_c") if "temp" in stated else None,
