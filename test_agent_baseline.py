@@ -100,5 +100,11 @@ has_blob = any(p.inline_data for c in (req.contents if req else []) for p in c.p
 check("รูปส่งให้ LLM ดูโดยตรงด้วย (inline image)", has_blob)
 check("เครื่องมือเทียบรูปตอบกลับ (ไม่มีโมเดลในเครื่องนี้ = ข้อความเหตุผล ไม่ล้ม)", "ผลจากเครื่องมือ" in h4[-1]["content"], h4[-1])
 
+print("5) ค้นทั้งฐานตัวเดียวกับบอท (Qdrant Range Filter · 2 พ.ย.)")
+from agent_baseline import tools_impl as _T   # noqa: E402
+_s = _T._state()[1]
+check("search_catalogue ของ agent ใช้ QdrantCatalogueSearch เหมือนบอท",
+      type(_s).__name__ == "QdrantCatalogueSearch" or os.environ.get("MODUTECH_SEARCH_ENGINE") == "python", type(_s).__name__)
+
 print(f"\nรวม {ok}/{ok + fail}")
 os._exit(1 if fail else 0)

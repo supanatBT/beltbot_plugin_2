@@ -41,7 +41,10 @@ def _dump(obj) -> str:
 @lru_cache(maxsize=1)
 def _state():
     cat = Catalogue(CATALOGUE_PATH)
-    search = CatalogueSearch(cat)
+    # ค้นทั้งฐานตัวเดียวกับบอทหลัก (brands/modutech/plugin.make_catalogue_search):
+    # กรองด้วย Payload/Range Filter ของ Qdrant · MODUTECH_SEARCH_ENGINE=python = แบบเดิม · ผลเท่ากันทุกตัวอักษร
+    from brands.modutech.plugin import make_catalogue_search
+    search = make_catalogue_search(cat)
     kg = ModutechGraph.from_catalogue(cat)
     return cat, search, kg, CodeResolver(cat), make_search_tool(search)
 
