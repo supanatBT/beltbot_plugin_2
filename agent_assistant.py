@@ -31,7 +31,7 @@ from google.adk.runners import Runner                         # noqa: E402
 from google.adk.sessions import InMemorySessionService        # noqa: E402
 from google.genai import types                                # noqa: E402
 
-from agent_baseline.agent import build_agent, prompt_version  # noqa: E402
+from agent_baseline.agent import build_agent, enabled_brands, instruction_text, prompt_version  # noqa: E402
 from agent_baseline.tools_impl import IMAGE_DIR               # noqa: E402
 
 APP, USER = "modutech_agent_baseline", "eval"
@@ -121,6 +121,15 @@ def chat_interaction(user_text, image, history, last_pids, session_id, vit_signa
                                      {"role": "assistant", "content": reply}]
     refs = {"tool_calls": (eng.llm.last_usage or {}).get("tool_calls", [])}
     return history, None, refs, [], session_id, None, None
+
+
+def system_info() -> dict:
+    """ค่าตั้งของระบบสำหรับ run_answer_eval → MLflow (param + prompt ฉบับเต็ม)"""
+    import hashlib
+    text = instruction_text()
+    return {"system": "agent", "prompt_version": prompt_version(),
+            "prompt_sha": hashlib.sha256(text.encode("utf-8")).hexdigest()[:12], "prompt_text": text,
+            "brands": ",".join(enabled_brands()), "framework": "google-adk + mcp (stdio)"}
 
 
 # run_answer_eval อ่าน getattr(bot, "engine").llm ก่อนเรียกเทิร์นแรก → สร้างตอน import

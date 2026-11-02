@@ -268,6 +268,19 @@ def mcp_toolset() -> McpToolset:
         timeout=float(os.environ.get("AGENT_MCP_TIMEOUT", "180"))))
 
 
+def instruction_text() -> str:
+    """ข้อความคำสั่งเต็มที่ส่งให้โมเดลจริง (รวมกฎจากฐานข้อมูล) — บันทึกเข้า MLflow ด้วยตัวเดียวกันนี้"""
+    v = prompt_version()
+    return (instruction_r2m() if v == "r2m" else PROMPTS[v]).replace("{policy}", _policy_rules())
+
+
+def enabled_brands() -> list[str]:
+    """แบรนด์ที่ MCP server เปิดเครื่องมือ — กติกาเดียวกับ mcp_server.py"""
+    default = "modutech,movex" if prompt_version() == "r2m" else "modutech"
+    raw = (os.environ.get("AGENT_BRANDS") or default).lower()
+    return [b for b in ("modutech", "movex") if b in raw]
+
+
 def build_agent(model=None, toolset=None) -> LlmAgent:
     """model: ชื่อโมเดล (ค่าเริ่มต้น GEMINI_MODEL) หรือ BaseLlm (ใช้ในเทสต์ออฟไลน์)"""
     model = model or os.environ.get("GEMINI_MODEL") or "gemini-3.8-flash"
@@ -276,8 +289,7 @@ def build_agent(model=None, toolset=None) -> LlmAgent:
         name="modutech_agent",
         model=model,
         static_instruction=types.Content(role="user", parts=[types.Part(
-            text=(instruction_r2m() if prompt_version() == "r2m" else PROMPTS[prompt_version()])
-            .replace("{policy}", _policy_rules()))]),
+            text=instruction_text())]),
         tools=[toolset or mcp_toolset()],
         generate_content_config=types.GenerateContentConfig(thinking_config=tc) if tc else None,
     )

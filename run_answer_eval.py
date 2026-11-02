@@ -244,6 +244,40 @@ def extract_reply(chat_history: list) -> str:
     return ""
 
 
+def code_fingerprint() -> dict:
+    """commit + hash ของโค้ดที่สร้าง prompt และตัดสิน (brands/ core/ agent_baseline/) ตอนรัน
+    prompt ของบอทหลักประกอบใหม่ทุกเทิร์นจากโค้ดชุดนี้ จึงใช้ hash ของโค้ดแทนข้อความ prompt ก้อนเดียว"""
+    import hashlib
+    import subprocess
+    root = Path(__file__).resolve().parent
+    h = hashlib.sha256()
+    for sub in ("brands", "core", "agent_baseline"):
+        for p in sorted((root / sub).rglob("*")):
+            if p.is_file() and p.suffix in (".py", ".yaml", ".json") and "__pycache__" not in p.parts:
+                h.update(str(p.relative_to(root)).replace("\\", "/").encode())
+                h.update(p.read_bytes().replace(b"\r\n", b"\n"))
+    git = lambda *a: subprocess.run(["git", *a], cwd=root, capture_output=True, text=True,   # noqa: E731
+                                    encoding="utf-8", errors="replace").stdout.strip()
+    return {"code_sha": h.hexdigest()[:12], "commit": git("rev-parse", "--short", "HEAD"),
+            "branch": git("rev-parse", "--abbrev-ref", "HEAD"), "dirty": bool(git("status", "--porcelain", "--", *("brands", "core", "agent_baseline")))}
+
+
+def system_info(bot, module_name: str) -> dict:
+    """ค่าตั้งของระบบที่วัด (บันทึกใน JSON ผล และเป็น param ของ MLflow)"""
+    info = {"system": "agent" if module_name.startswith("agent") else "bot",
+            "gemini_model": os.getenv("GEMINI_MODEL") or "",
+            "gemini_thinking": os.getenv("GEMINI_THINKING") or "",
+            "search_engine": (os.getenv("MODUTECH_SEARCH_ENGINE") or "qdrant").strip().lower(),
+            "graph_apps": os.getenv("MODUTECH_GRAPH_APPS", "1").strip() != "0"}
+    info.update(code_fingerprint())
+    if hasattr(bot, "system_info"):
+        try:
+            info.update(bot.system_info())
+        except Exception as e:                          # noqa: BLE001
+            info["system_info_error"] = f"{type(e).__name__}: {e}"
+    return info
+
+
 def run(module_name: str, testcases: str, only: set[str] | None,
         sleep: float, limit: int | None, img_dir: Path) -> dict:
     print(f"⏳ โหลด {module_name} ... (โหลดโมเดลและต่อ Gemini)")
@@ -253,6 +287,9 @@ def run(module_name: str, testcases: str, only: set[str] | None,
     llm = getattr(getattr(bot, "engine", None), "llm", None)
     llm_desc = llm.describe() if hasattr(llm, "describe") else "(ไม่ทราบ)"
     print(f"✅ พร้อม · LLM: {llm_desc}")       # 13 ต.ค. — ยืนยันว่า GEMINI_THINKING มีผลจริง
+    sysinfo = system_info(bot, module_name)
+    print(f"   ระบบ {sysinfo['system']} · prompt {sysinfo.get('prompt_version', '-')} · code {sysinfo['code_sha']}"
+          f"{' (มีแก้ที่ยังไม่ commit)' if sysinfo['dirty'] else ''} · ค้น {sysinfo['search_engine']}")
 
     rows = list(csv.DictReader(open(testcases, encoding="utf-8-sig")))
     if only:
@@ -347,6 +384,7 @@ def run(module_name: str, testcases: str, only: set[str] | None,
     return {
         "module": module_name,
         "llm": llm_desc,
+        "system_info": sysinfo,
         # สวิตช์ชั้นงานใช้ของกราฟ (brands/modutech/turn.py) — ไว้แยกผลก่อน/หลังต่อกราฟ
         "graph_apps": os.getenv("MODUTECH_GRAPH_APPS", "1").strip() != "0",
         "model_versions": dict(Counter(r.get("model_version") for r in results if r.get("model_version"))),

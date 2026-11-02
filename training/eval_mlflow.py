@@ -28,7 +28,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-MLRUNS = HERE / "mlruns"
+MLRUNS = Path(os.environ["EVAL_MLRUNS"]).resolve() if os.environ.get("EVAL_MLRUNS") else HERE / "mlruns"   # ทดสอบ = โฟลเดอร์ชั่วคราว
 
 # 10 ต.ค. ผู้ใช้ตัดสิน: "ลูกค้า" ในคำตอบ ("หากลูกค้า…" · "คุณลูกค้า…") ถือเป็นภาษาบริการ ไม่นับเป็นการรั่ว
 # เลิกนับตั้งแต่คอมมิตนี้ — run ที่ log ไว้ก่อนหน้ายังมี leak.luk_kha อยู่ เทียบ turns_with_leak ข้ามช่วงนี้ไม่ได้ตรง ๆ
@@ -68,8 +68,50 @@ def _cat_metrics(by_category: dict) -> dict:
     return out
 
 
+def system_of(summary: dict) -> dict:
+    """ค่าตั้งของระบบ — ไฟล์ใหม่มี system_info · ไฟล์เก่า (ก่อน 2 พ.ย.) อ่านจากข้อความ llm และชื่อ module"""
+    info = dict(summary.get("system_info") or {})
+    if not info:
+        llm, mod = summary.get("llm") or "", summary.get("module") or ""
+        info["system"] = "agent" if (mod.startswith("agent") or "ADK agent" in llm) else "bot"
+        m = re.search(r"prompt (\S+)", llm)
+        if m:
+            info["prompt_version"] = m.group(1)
+        m = re.search(r"thinking (\S+)", llm)
+        if m:
+            info["gemini_thinking"] = m.group(1)
+        info["backfilled"] = True
+    return info
+
+
+def cost_metrics(results: list) -> dict:
+    """ต้นทุนต่อเทิร์นจาก llm_usage/seconds ของแต่ละเทิร์น — นับเฉพาะเทิร์นที่มีค่า ไม่เติมค่าที่ไม่มี
+    บอทหลักบันทึก llm_usage เฉพาะการเรียก LLM ตัวตอบ (ไม่รวมตัวตีความคำถาม/คำตอบ) · agent รวมทุกครั้งในเทิร์น"""
+    import statistics as st
+    graded = [r for r in results if not r.get("skipped")]
+    out = {}
+    secs = [float(r["seconds"]) for r in graded if isinstance(r.get("seconds"), (int, float))]
+    if secs:
+        q = sorted(secs)
+        out.update({"cost.seconds_median": st.median(q), "cost.seconds_p90": q[min(len(q) - 1, int(0.9 * len(q)))],
+                    "cost.seconds_total": sum(q)})
+    usage = [r["llm_usage"] for r in graded if isinstance(r.get("llm_usage"), dict)]
+    out["cost.turns_with_usage"] = len(usage)
+    for key, name in (("total_token_count", "tokens"), ("prompt_token_count", "tokens_in"),
+                      ("candidates_token_count", "tokens_out"), ("llm_calls", "llm_calls")):
+        vals = [u[key] for u in usage if isinstance(u.get(key), (int, float))]
+        if vals:
+            out[f"cost.{name}_median"] = st.median(vals)
+            out[f"cost.{name}_total"] = sum(vals)
+    tools = [len(u["tool_calls"]) for u in usage if isinstance(u.get("tool_calls"), list)]
+    if tools:
+        out["cost.tool_calls_median"] = st.median(tools)
+        out["cost.tool_calls_total"] = sum(tools)
+    return out
+
+
 def log_eval(summary: dict, json_path: str | None = None, code: str = "", round_no: str = "",
-             note: str = "") -> str:
+             note: str = "", blind: bool | None = None) -> str:
     os.environ.setdefault("MLFLOW_ALLOW_FILE_STORE", "true")     # ข้อ 5.2 กำหนด file store
     import mlflow
     mlflow.set_tracking_uri(MLRUNS.as_uri())
@@ -86,6 +128,15 @@ def log_eval(summary: dict, json_path: str | None = None, code: str = "", round_
         mlflow.set_tags({"kind": "answer_eval", "code": code or "unknown", "round": str(round_no or ""),
                          "commit_at_logging": commit, "source_file": json_path or "", "note": note})
         mlflow.log_params({"module": summary.get("module"), "testcases": tc, "testcases_sha": tc_hash})
+        info = system_of(summary)
+        prompt = info.pop("prompt_text", None)
+        mlflow.log_params({f"sys.{k}": str(v)[:500] for k, v in info.items()})
+        if prompt:                                   # prompt ฉบับเต็มที่ส่งให้โมเดล (agent) — ไฟล์แนบ ไม่ใช่ param
+            mlflow.log_text(prompt, f"prompt_{info.get('prompt_version', 'x')}_{info.get('prompt_sha', '')}.txt")
+        is_blind = ("blind" in Path(tc).name.lower()) if blind is None else blind
+        mlflow.set_tags({"system": info.get("system", ""), "blind": str(bool(is_blind)).lower(),
+                         "prompt_version": info.get("prompt_version", "")})
+        mlflow.log_metrics(cost_metrics(summary.get("results", [])))
         for k in ("total_turns", "graded", "passed", "failed", "errors", "skipped_no_image", "turns_with_image"):
             if isinstance(summary.get(k), (int, float)):
                 mlflow.log_metric(k, summary[k])
@@ -107,6 +158,7 @@ def main() -> int:
     ap.add_argument("--code", default="", help="เช่น pre-refactor / refactor")
     ap.add_argument("--note", default="")
     ap.add_argument("--no-mlflow", action="store_true", help="แค่พิมพ์ผล ไม่ log")
+    ap.add_argument("--round", default="", help="รอบที่เท่าไหร่ (pass^k ใช้แยกรอบ 1/2)")
     a = ap.parse_args()
     for f in a.files:
         s = json.loads(Path(f).read_text(encoding="utf-8"))
@@ -115,9 +167,9 @@ def main() -> int:
         print(f"  {f:<22} ผ่าน {s.get('passed')}/{s.get('graded', s.get('total_turns'))}   "
               f"เทิร์นที่หลุดคำต้องห้าม {lk['turns_with_leak']:>3}   ({words})")
         if not a.no_mlflow:
-            log_eval({**s, "leaks": lk}, json_path=f, code=a.code, note=a.note)
+            log_eval({**s, "leaks": lk}, json_path=f, code=a.code, note=a.note, round_no=a.round)
     if not a.no_mlflow:
-        print(f"  → MLflow experiment 'answer_eval' ที่ {MLRUNS.relative_to(ROOT)}")
+        print(f"  → MLflow experiment 'answer_eval' ที่ {MLRUNS}")
     return 0
 
 
