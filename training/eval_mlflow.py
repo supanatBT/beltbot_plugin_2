@@ -81,12 +81,21 @@ def system_of(summary: dict) -> dict:
         if m:
             info["gemini_thinking"] = m.group(1)
         info["backfilled"] = True
+    if not info.get("gemini_model"):            # ไฟล์ก่อน 2 พ.ย. ช่องนี้ว่าง → ใช้ model_version ที่ Google ตอบ (บ่อยสุด)
+        mvs = Counter(r.get("model_version") for r in summary.get("results", []) if r.get("model_version"))
+        if mvs:
+            info["gemini_model"] = mvs.most_common(1)[0][0]
+            info["gemini_model_from"] = "model_version"
+    if not info.get("token_scope"):              # ไฟล์ก่อน 2 พ.ย.: บอทนับแค่ response สุดท้ายของ LLM ตัวตอบ
+        info["token_scope"] = "every_request" if info.get("system") == "agent" else "final_response"
+        info["token_scope_from"] = "assumed_pre_2nov"
     return info
 
 
 def cost_metrics(results: list) -> dict:
     """ต้นทุนต่อเทิร์นจาก llm_usage/seconds ของแต่ละเทิร์น — นับเฉพาะเทิร์นที่มีค่า ไม่เติมค่าที่ไม่มี
-    บอทหลักบันทึก llm_usage เฉพาะการเรียก LLM ตัวตอบ (ไม่รวมตัวตีความคำถาม/คำตอบ) · agent รวมทุกครั้งในเทิร์น"""
+    ไฟล์บอทก่อน 2 พ.ย. (sys.token_scope = final_response) นับแค่ response สุดท้ายของ LLM ตัวตอบ
+    ไม่รวมตัวตีความคำถาม/คำตอบและรอบเรียก tool → ต่ำกว่าจริง · ตั้งแต่ 2 พ.ย. ทั้งบอทและ agent = every_request"""
     import statistics as st
     graded = [r for r in results if not r.get("skipped")]
     out = {}

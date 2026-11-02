@@ -62,6 +62,65 @@ def usage_of(resp) -> dict | None:
     return {k: v for k, v in out.items() if isinstance(v, int)} or None
 
 
+class UsageMeter:
+    """นับโทเคนทุกครั้งที่ client นี้เรียก API (2 พ.ย. 2026)
+
+    เดิม last_usage = usage ของ response สุดท้ายของ run() เท่านั้น จึงขาด
+      · ตัวตีความคำถาม/คำตอบ (complete) · ส่งซ้ำผ่าน session.send_message
+      · รอบเรียก tool อัตโนมัติ (AFC) — SDK ทั้งสองยิงหลาย request แต่คืน usage ของ request สุดท้าย
+    ตอนนี้ครอบตัวยิง request ของ SDK (ทุกรอบ AFC ผ่านจุดนี้) แล้วสะสมใน last_usage
+    · ผู้เรียกตั้ง last_usage = None เมื่อเริ่มเทิร์นใหม่ (run_answer_eval ทำทุกเทิร์น) · ไม่ตั้ง = สะสมต่อ
+    · calls_by_kind: answer = LLM ตัวตอบ (รวมรอบ tool + ส่งซ้ำ) · complete = ตัวตีความ
+    ครอบไม่ได้ (SDK เปลี่ยนชื่อภายใน) → นับจาก response ที่ได้กลับมาแทน และ usage_scope = "final_response" """
+    usage_scope = "final_response"
+    _kind = "answer"
+
+    def _count(self, resp, kind: str | None = None):
+        u = usage_of(resp) or {}
+        acc = self.last_usage if isinstance(self.last_usage, dict) else None
+        if acc is None:
+            acc = {}
+        acc["llm_calls"] = acc.get("llm_calls", 0) + 1
+        by = acc.setdefault("calls_by_kind", {})
+        k = kind or self._kind
+        by[k] = by.get(k, 0) + 1
+        for key, v in u.items():
+            acc[key] = acc.get(key, 0) + v
+        self.last_usage = acc
+        mv = model_version_of(resp)
+        if mv:
+            self.last_model_version = mv
+        return resp
+
+    def _wrap(self, obj, attr: str) -> bool:
+        """แทน obj.attr ด้วยตัวที่นับ usage ทุกครั้งที่ถูกเรียก (ระดับ instance ไม่แตะคลาสของ SDK)"""
+        raw = getattr(obj, attr, None)
+        if not callable(raw) or getattr(raw, "_usage_meter", False):
+            return False
+
+        def counted(*a, **kw):
+            return self._count(raw(*a, **kw))
+        counted._usage_meter = True
+        try:
+            setattr(obj, attr, counted)
+        except (AttributeError, TypeError):
+            return False
+        return True
+
+    def _final(self, resp, kind: str | None = None):
+        """ทางสำรองเมื่อครอบตัวยิงไม่ได้ — นับ response ที่ได้กลับมา (ขาดรอบ AFC ก่อนหน้า)"""
+        if self.usage_scope != "every_request":
+            self._count(resp, kind)
+        return resp
+
+    def _as(self, kind: str, fn):
+        prev, self._kind = self._kind, kind
+        try:
+            return fn()
+        finally:
+            self._kind = prev
+
+
 def model_version_of(resp) -> str | None:
     """ชื่อโมเดลจริงที่ Google ใช้ตอบ (เช่น gemini-3.6-flash) — ชื่อ alias อย่าง gemini-flash-latest
     ชี้ไปโมเดลใหม่ได้โดยไม่บอก จึงต้องบันทึกค่านี้ทุกเทิร์นเพื่อให้ผลทดสอบเทียบกันได้ (22 ต.ค.)"""
@@ -71,12 +130,14 @@ def model_version_of(resp) -> str | None:
 
 class _RetrySession:
     """session ของ SDK เดิม — send_message ต่อ (ขอให้ตอบซ้ำเมื่อคำตอบว่าง) ลองใหม่เมื่อ Google ไม่ว่างเหมือนกัน"""
-    def __init__(self, session, timeout_s: float | None = None):
+    def __init__(self, session, timeout_s: float | None = None, meter: "UsageMeter | None" = None):
         self._s = session
         self.timeout_s = timeout_s
+        self._meter = meter
 
     def send_message(self, message):
-        return run_with_deadline(lambda: with_retry(lambda: self._s.send_message(message)), self.timeout_s)
+        resp = run_with_deadline(lambda: with_retry(lambda: self._s.send_message(message)), self.timeout_s)
+        return self._meter._final(resp) if self._meter is not None else resp
 
     def __getattr__(self, name):
         return getattr(self._s, name)
@@ -175,7 +236,7 @@ def parse_thinking(raw) -> dict | None:
     raise ValueError(f"GEMINI_THINKING={raw!r} ต้องเป็นตัวเลข (thinking budget) หรือหนึ่งใน {THINKING_LEVELS}")
 
 
-class GeminiClient:
+class GeminiClient(UsageMeter):
     def __init__(self, genai_module, model_name: str, timeout_s: float | None = DEFAULT_TIMEOUT_S):
         self.genai = genai_module
         self.model_name = model_name
@@ -193,23 +254,32 @@ class GeminiClient:
             cfg["response_mime_type"] = "application/json"
         if temperature is not None:
             cfg["temperature"] = temperature
-        model = self.genai.GenerativeModel(model_name=self.model_name, system_instruction=system)
-        resp = run_with_deadline(lambda: with_retry(lambda: model.generate_content(user, generation_config=cfg or None)),
-                                 _complete_deadline(self.timeout_s))
+        model = self._metered(self.genai.GenerativeModel(model_name=self.model_name, system_instruction=system))
+        resp = self._as("complete", lambda: run_with_deadline(
+            lambda: with_retry(lambda: model.generate_content(user, generation_config=cfg or None)),
+            _complete_deadline(self.timeout_s)))
+        self._final(resp, "complete")
         return extract_text(resp)
+
+    def _metered(self, model):
+        """SDK เดิม: ChatSession เรียก self.model.generate_content ทุกรอบ AFC → ครอบที่ instance ของ model"""
+        if self._wrap(model, "generate_content"):
+            self.usage_scope = "every_request"
+        return model
 
     def run(self, turn: LLMTurn, chat_history: list, tool_calls: list) -> LLMResult:
         def attempt():
-            model = self.genai.GenerativeModel(model_name=self.model_name,
-                                               system_instruction=turn.system_prompt,
-                                               tools=list(turn.tools))
+            model = self._metered(self.genai.GenerativeModel(model_name=self.model_name,
+                                                             system_instruction=turn.system_prompt,
+                                                             tools=list(turn.tools)))
             session = model.start_chat(history=history_for_llm(chat_history),
                                        enable_automatic_function_calling=True)
             return session, session.send_message(list(turn.user_parts))
-        session, response = run_with_deadline(lambda: with_retry(attempt, tool_calls), self.timeout_s)
-        self.last_usage = usage_of(response)
-        self.last_model_version = model_version_of(response)
-        return LLMResult(response, _RetrySession(session, self.timeout_s), tool_calls)
+        session, response = self._as("answer", lambda: run_with_deadline(
+            lambda: with_retry(attempt, tool_calls), self.timeout_s))
+        self._final(response, "answer")
+        self.last_model_version = model_version_of(response) or self.last_model_version
+        return LLMResult(response, _RetrySession(session, self.timeout_s, self), tool_calls)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -221,15 +291,16 @@ class GeminiClient:
 
 
 class _GenAISession:
-    def __init__(self, chat, to_parts, timeout_s: float | None = None):
-        self._chat, self._to_parts, self.timeout_s = chat, to_parts, timeout_s
+    def __init__(self, chat, to_parts, timeout_s: float | None = None, meter: "UsageMeter | None" = None):
+        self._chat, self._to_parts, self.timeout_s, self._meter = chat, to_parts, timeout_s, meter
 
     def send_message(self, message):
-        return run_with_deadline(lambda: with_retry(lambda: self._chat.send_message(self._to_parts(message))),
+        resp = run_with_deadline(lambda: with_retry(lambda: self._chat.send_message(self._to_parts(message))),
                                  self.timeout_s)
+        return self._meter._final(resp) if self._meter is not None else resp
 
 
-class GenAIClient:
+class GenAIClient(UsageMeter):
     def __init__(self, genai_new, model_name: str, api_key: str, thinking: dict,
                  timeout_s: float | None = DEFAULT_TIMEOUT_S):
         from google.genai import types           # มาพร้อม genai_new — import ที่นี่ให้เทสต์ส่งของปลอมได้
@@ -238,6 +309,10 @@ class GenAIClient:
         # ชั้น SDK: timeout ต่อ request เป็นมิลลิวินาที (google-genai 2.8.0 HttpOptions.timeout)
         http = types.HttpOptions(timeout=int(timeout_s * 1000)) if timeout_s else None
         self.client = genai_new.Client(api_key=api_key, **({"http_options": http} if http else {}))
+        # google-genai 2.8.0: Models.generate_content วนรอบ AFC โดยเรียก self._generate_content ทุกรอบ
+        # และ chats ใช้ client.models ตัวเดียวกัน → ครอบจุดนี้จุดเดียวได้ครบทุก request
+        if self._wrap(getattr(self.client, "models", None), "_generate_content"):
+            self.usage_scope = "every_request"
         self.model_name = model_name
         self.thinking = dict(thinking or {})
         if "level" in self.thinking:
@@ -271,8 +346,9 @@ class GenAIClient:
         cfg = t.GenerateContentConfig(system_instruction=system, thinking_config=self.thinking_config,
                                       **({"response_mime_type": "application/json"} if json_mode else {}),
                                       **({"temperature": temperature} if temperature is not None else {}))
-        resp = run_with_deadline(lambda: with_retry(lambda: self.client.models.generate_content(
-            model=self.model_name, contents=user, config=cfg)), _complete_deadline(self.timeout_s))
+        resp = self._as("complete", lambda: run_with_deadline(lambda: with_retry(lambda: self.client.models.generate_content(
+            model=self.model_name, contents=user, config=cfg)), _complete_deadline(self.timeout_s)))
+        self._final(resp, "complete")
         return extract_text(resp)
 
     def run(self, turn: LLMTurn, chat_history: list, tool_calls: list) -> LLMResult:
@@ -285,7 +361,8 @@ class GenAIClient:
         def attempt():
             chat = self.client.chats.create(model=self.model_name, config=cfg, history=history)
             return chat, chat.send_message(self._parts(list(turn.user_parts)))
-        chat, response = run_with_deadline(lambda: with_retry(attempt, tool_calls), self.timeout_s)
-        self.last_usage = usage_of(response)
-        self.last_model_version = model_version_of(response)
-        return LLMResult(response, _GenAISession(chat, self._parts, self.timeout_s), tool_calls)
+        chat, response = self._as("answer", lambda: run_with_deadline(
+            lambda: with_retry(attempt, tool_calls), self.timeout_s))
+        self._final(response, "answer")
+        self.last_model_version = model_version_of(response) or self.last_model_version
+        return LLMResult(response, _GenAISession(chat, self._parts, self.timeout_s, self), tool_calls)

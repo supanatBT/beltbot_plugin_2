@@ -61,7 +61,15 @@ check("ไฟล์เก่า: อ่าน prompt r2m และ thinking low 
       and r2.data.params.get("sys.backfilled") == "True", r2.data.params)
 check("ชุดเดิม blind=false", r2.data.tags.get("blind") == "false")
 bot = dict(old, module="assistant", llm="google-genai · gemini-3.8-flash · thinking low · timeout 60 วิ")
-check("ไฟล์เก่าของบอท → system=bot", mlflow.get_run(E.log_eval(bot)).data.params.get("sys.system") == "bot")
+bp = mlflow.get_run(E.log_eval(bot)).data.params
+check("ไฟล์เก่าของบอท → system=bot", bp.get("sys.system") == "bot")
+check("ไฟล์เก่าของบอท → token_scope=final_response (นับแค่ LLM ตัวตอบ) ติดป้ายว่าสันนิษฐาน",
+      bp.get("sys.token_scope") == "final_response" and bp.get("sys.token_scope_from") == "assumed_pre_2nov", bp)
+mv = dict(summary, system_info=dict(summary.get("system_info") or {}, gemini_model=""),
+          results=[dict(r, model_version="gemini-3.8-flash") for r in summary["results"]])
+mp = mlflow.get_run(E.log_eval(mv)).data.params
+check("gemini_model ว่าง → เติมจาก model_version ของเทิร์น",
+      mp.get("sys.gemini_model") == "gemini-3.8-flash" and mp.get("sys.gemini_model_from") == "model_version", mp)
 
 print(f"\nรวม {ok}/{ok + fail}")
 sys.exit(1 if fail else 0)

@@ -142,7 +142,9 @@ if real is not None:
             parts = ([{"functionCall": {"name": "search_catalogue",
                                            "args": {"field": "strength", "value": 50000}}}] if len(REQS) == 1
                      else [{"text": f"ตอบ {len(REQS)}"}])
-            b = json.dumps({"candidates": [{"content": {"role": "model", "parts": parts}}]}).encode()
+            b = json.dumps({"candidates": [{"content": {"role": "model", "parts": parts}}],
+                            "usageMetadata": {"promptTokenCount": 100, "candidatesTokenCount": 5,
+                                              "totalTokenCount": 105}}).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(b)))
@@ -189,7 +191,21 @@ if real is not None:
        and [c["tool_name"] for c in log.calls] == ["search_catalogue"])
     ok("args ที่ LLM ส่งถึงฟังก์ชัน", log.calls and log.calls[0]["args"] == {"field": "strength", "value": 50000},
        str(log.calls[:1]))
+    # 2 พ.ย.: นับทุก request — AFC ยิง 2 ครั้ง (functionCall + ข้อความ) แต่ response สุดท้ายมี usage ของครั้งเดียว
+    u = dict(client.last_usage or {})
+    ok("นับโทเคนทุกรอบ AFC (2 request)", u.get("llm_calls") == 2 and u.get("total_token_count") == 210
+       and u.get("calls_by_kind") == {"answer": 2} and client.usage_scope == "every_request", str(u))
     ok("session.send_message ส่งต่อได้", extract_text(res.session.send_message("อีกที")) == "ตอบ 3")
+    ok("send_message นับต่อในเทิร์นเดียวกัน", client.last_usage.get("llm_calls") == 3
+       and client.last_usage.get("total_token_count") == 315, str(client.last_usage))
+    client.complete("ตีความ", "คำถาม", json_mode=True, temperature=0)
+    ok("ตัวตีความ (complete) นับรวม แยกชนิด", client.last_usage.get("calls_by_kind") == {"answer": 3, "complete": 1}
+       and client.last_usage.get("total_token_count") == 420, str(client.last_usage))
+    client.last_usage = None                      # run_answer_eval ตั้ง None ทุกเทิร์น
+    client.complete("ตีความ", "คำถาม")
+    ok("ตั้ง None แล้วเริ่มนับใหม่", client.last_usage == {"llm_calls": 1, "calls_by_kind": {"complete": 1},
+                                                      "prompt_token_count": 100, "candidates_token_count": 5,
+                                                      "total_token_count": 105}, str(client.last_usage))
     budget = GenAIClient(FakeModule, "m", "k", {"budget": 0}).thinking_config
     ok("ได้ 503 ครั้งแรกแล้วลองใหม่เองจนผ่าน", FAILED == [1])
     ok("budget 0", budget.thinking_budget == 0 and budget.thinking_level is None)
@@ -209,6 +225,64 @@ class _R:
 ok("model_version อ่านจาก response", model_version_of(_R(model_version="gemini-3.6-flash")) == "gemini-3.6-flash")
 ok("ไม่มี model_version → None", model_version_of(_R()) is None and model_version_of(_R(model_version="")) is None)
 ok("client เริ่มต้นไม่มีชื่อรุ่นค้าง", GeminiClient(None, "m").last_model_version is None)
+
+print("\n4b) SDK เดิม (google-generativeai) นับทุกรอบ AFC ของ ChatSession")
+
+
+class _U:
+    def __init__(self, n):
+        self.usage_metadata = _R(prompt_token_count=n, candidates_token_count=1, total_token_count=n + 1)
+        self.model_version = "gemini-3.8-flash"
+        self.text = "ตอบ"
+
+
+class _OldModule:
+    """ChatSession เดิมเรียก self.model.generate_content ทุกรอบ AFC (0.8.6 generative_models.py)"""
+    class GenerativeModel:
+        def __init__(self, **kw):
+            pass
+
+        def generate_content(self, *a, **kw):
+            return _U(10)
+
+        def start_chat(self, **kw):
+            model = self
+
+            class S:
+                def send_message(self, m):
+                    model.generate_content(m)            # รอบที่ 1: tool call
+                    return model.generate_content(m)     # รอบที่ 2: ข้อความ
+            return S()
+
+
+from core.protocol import LLMTurn as _T  # noqa: E402
+old = GeminiClient(_OldModule, "m")
+r = old.run(_T("SYS", ["q"], tools=[], debug=[]), [], [])
+ok("run นับ 2 รอบ", old.last_usage.get("llm_calls") == 2 and old.last_usage.get("total_token_count") == 22,
+   str(old.last_usage))
+r.session.send_message("อีกที")
+old.complete("SYS", "q", json_mode=True)
+ok("send_message + complete นับรวม", old.last_usage.get("calls_by_kind") == {"answer": 4, "complete": 1}
+   and old.last_usage.get("total_token_count") == 55 and old.usage_scope == "every_request", str(old.last_usage))
+ok("model_version ยังได้", old.last_model_version == "gemini-3.8-flash")
+
+
+class _NoWrap:
+    """ครอบไม่ได้ → นับจาก response ที่ได้ (final_response)"""
+    class GenerativeModel:
+        __slots__ = ()
+
+        def __init__(self, **kw):
+            pass
+
+        def generate_content(self, *a, **kw):
+            return _U(7)
+
+
+nw = GeminiClient(_NoWrap, "m")
+nw.complete("S", "q")
+ok("ครอบไม่ได้ → นับ response สุดท้าย + บอก scope", nw.usage_scope == "final_response"
+   and nw.last_usage.get("llm_calls") == 1 and nw.last_usage.get("total_token_count") == 8, str(nw.last_usage))
 
 print("\n5) จำกัดเวลา (26 ต.ค. · lat2_llm CONV-16 t4 ค้าง 627 วินาที)")
 import time as _time  # noqa: E402

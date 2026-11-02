@@ -38,12 +38,15 @@ APP, USER = "modutech_agent_baseline", "eval"
 
 
 class _LLMInfo:
+    usage_scope = "every_request"          # _turn นับ usage_metadata ทุก event ของ ADK (ทุกการเรียก LLM)
+
     def __init__(self):
         self.last_usage = None
         self.last_model_version = None
+        self.model_name = os.environ.get("GEMINI_MODEL") or "gemini-3.8-flash"   # ค่าเดียวกับ build_agent
 
     def describe(self) -> str:
-        return (f"ADK agent · {os.environ.get('GEMINI_MODEL') or 'gemini-3.8-flash'} · "
+        return (f"ADK agent · {self.model_name} · "
                 f"thinking {os.environ.get('GEMINI_THINKING') or 'low'} · prompt {prompt_version()} · เครื่องมือผ่าน MCP (stdio)")
 
 

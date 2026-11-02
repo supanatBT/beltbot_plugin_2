@@ -263,9 +263,13 @@ def code_fingerprint() -> dict:
 
 
 def system_info(bot, module_name: str) -> dict:
-    """ค่าตั้งของระบบที่วัด (บันทึกใน JSON ผล และเป็น param ของ MLflow)"""
+    """ค่าตั้งของระบบที่วัด (บันทึกใน JSON ผล และเป็น param ของ MLflow)
+    2 พ.ย.: gemini_model เดิมอ่านแค่ env → ว่างเมื่อใช้ค่าเริ่มต้นในโค้ด · ตอนนี้อ่านชื่อจาก client ก่อน
+    token_scope: บอกว่า llm_usage นับครบทุกการเรียก LLM หรือแค่ response สุดท้าย (เทียบต้นทุนบอท/agent)"""
+    llm = getattr(getattr(bot, "engine", None), "llm", None)
     info = {"system": "agent" if module_name.startswith("agent") else "bot",
-            "gemini_model": os.getenv("GEMINI_MODEL") or "",
+            "gemini_model": getattr(llm, "model_name", None) or os.getenv("GEMINI_MODEL") or "",
+            "token_scope": getattr(llm, "usage_scope", None) or "unknown",
             "gemini_thinking": os.getenv("GEMINI_THINKING") or "",
             "search_engine": (os.getenv("MODUTECH_SEARCH_ENGINE") or "qdrant").strip().lower(),
             "graph_apps": os.getenv("MODUTECH_GRAPH_APPS", "1").strip() != "0"}
