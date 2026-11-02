@@ -27,6 +27,24 @@ from core.sales import attach_handoff, escalation_again_th, escalation_gate
 from core.text import any_word, has
 from brands.modutech import need_flow as NF
 
+
+def make_catalogue_search(cat: Catalogue) -> CatalogueSearch:
+    """ค้นทั้งฐาน: ค่าเริ่มต้นกรองด้วย Payload/Range Filter ของ Qdrant (brands/modutech/variant_index.py)
+
+    MODUTECH_SEARCH_ENGINE=python → กรองด้วยโค้ดแบบเดิม (ผลเหมือนกัน — test_variant_index_parity.py)
+    ถ้าสร้างดัชนี Qdrant ไม่ได้ (ไม่มี qdrant-client ฯลฯ) ใช้แบบเดิมและเตือนใน stderr — ไม่ล้มทั้งระบบ
+    """
+    if os.getenv("MODUTECH_SEARCH_ENGINE", "qdrant").strip().lower() == "python":
+        return CatalogueSearch(cat)
+    try:
+        from brands.modutech.variant_index import QdrantCatalogueSearch
+        return QdrantCatalogueSearch(cat)
+    except Exception as e:                                   # noqa: BLE001
+        import sys
+        print(f"[modutech] WARNING ใช้ Qdrant Range Filter ไม่ได้ ({type(e).__name__}: {e}) "
+              "— ค้นทั้งฐานด้วยโค้ดแบบเดิมแทน ผลเหมือนกัน", file=sys.stderr)
+        return CatalogueSearch(cat)
+
 MOD_TEMP_TOPIC = r"อุณหภูมิ|องศา|°\s*[cC]|ร้อน|เย็น|แช่แข็ง|ฟรีซ|freez|temp|ทนความร้อน|ทนเย็น"
 MOD_STRENGTH_TOPIC = r"แรงดึง|ความแข็งแรง|รับแรง|strength|N\s*/\s*m|รับน้ำหนัก|โหลด"
 REFER_RX = (r"ตัวนี้|อันนี้|รุ่นนี้|ตัวนั้น|อันนั้น|รุ่นนั้น|ตัวแรก|อันแรก|ตัวหลัง|อันหลัง|ตัวที่|อันที่|รุ่นที่|"
@@ -92,7 +110,7 @@ class ModutechPlugin:
         self.info = info
         self.mod = cat
         self.detector = ModutechDetector(cat)
-        self.search = CatalogueSearch(cat)
+        self.search = make_catalogue_search(cat)
         self.materials = self.search.materials
         self._state_defaults = dict(state_defaults or {"codes": [], "slots": {}, "sprocket_codes": []})
         self.runtime = None             # brands.modutech.runtime.ModutechRuntime — ตั้งใน create()

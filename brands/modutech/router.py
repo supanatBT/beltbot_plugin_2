@@ -458,13 +458,9 @@ class CatalogueSearch:
                 "matches": [],
                 "note_th": f"นับจากฐานข้อมูลทั้ง {len(self.cat.products)} รุ่น ตัวเลขนี้สมบูรณ์"}
 
-    def search(self, q: ExploratoryQuery) -> dict:
-        if q.rank == "overview":
-            return self.overview()
-        if q.rank in ("max", "min") and q.field and q.value is None:
-            # เรียงทั้งฐาน — ใช้ทางกรองเดิมด้วยขอบที่ทุกค่าผ่าน แล้วเรียง/ตัดด้านล่าง
-            q = ExploratoryQuery(**{**q.__dict__, "op": ">=", "value": float("-inf")})
-        matches = []
+    def _candidates(self, q: ExploratoryQuery):
+        """ขั้นคัดกรอง: (รุ่น, variant ที่ผ่านทุกเงื่อนไข) ตามลำดับในไฟล์ — กรองด้วยโค้ดในหน่วยความจำ
+        variant_index.QdrantCatalogueSearch แทนที่เมธอดนี้ด้วย Payload/Range Filter ของ Qdrant (ผลต้องเหมือนกัน)"""
         for p in self.cat.products:
             spec, rc = p["specifications"], p["retrieval_card"]
             surfaces = {rc.get("surface_type")} | {i.get("surface_type") for i in p.get("industries", [])}
@@ -475,24 +471,32 @@ class CatalogueSearch:
                 vs = [v for v in vs if v.get("pin_material") == q.pin_material]
             if q.belt_material:
                 vs = [v for v in vs if self._material_ok(v.get("belt_material"), q.belt_material)]
-            if not vs:
-                continue
             if q.field in ("open_area", "pitch") and q.value is not None:
                 val = spec.get("open_area_pct") if q.field == "open_area" else (spec.get("pitch") or {}).get("mm")
-                ok = compare(val, q.op, q.value) if val is not None else False   # "==" = พิทช์ที่ต้องการ
-                if not ok:
+                if val is None or not compare(val, q.op, q.value):      # "==" = พิทช์ที่ต้องการ
                     continue
+            elif q.field in ("strength", "weight") and q.value is not None:
+                vs = [v for v in vs if (x := self._variant_value(v, q.field)) is not None
+                      and compare(x, q.op, q.value)]
+            if vs:
+                yield p, vs
+
+    def search(self, q: ExploratoryQuery) -> dict:
+        if q.rank == "overview":
+            return self.overview()
+        if q.rank in ("max", "min") and q.field and q.value is None:
+            # เรียงทั้งฐาน — ใช้ทางกรองเดิมด้วยขอบที่ทุกค่าผ่าน แล้วเรียง/ตัดด้านล่าง
+            q = ExploratoryQuery(**{**q.__dict__, "op": ">=", "value": float("-inf")})
+        matches = []
+        for p, vs in self._candidates(q):
+            spec, rc = p["specifications"], p["retrieval_card"]
+            if q.field in ("open_area", "pitch") and q.value is not None:
+                val = spec.get("open_area_pct") if q.field == "open_area" else (spec.get("pitch") or {}).get("mm")
                 hits = [{"variant_id": v["variant_id"], "belt_material": v["belt_material"],
                          "pin_material": v["pin_material"], "value": val} for v in vs]
             elif q.field in ("strength", "weight") and q.value is not None:
-                hits = []
-                for v in vs:
-                    val = self._variant_value(v, q.field)
-                    if val is not None and compare(val, q.op, q.value):
-                        hits.append({"variant_id": v["variant_id"], "belt_material": v["belt_material"],
-                                     "pin_material": v["pin_material"], "value": val})
-                if not hits:
-                    continue
+                hits = [{"variant_id": v["variant_id"], "belt_material": v["belt_material"],
+                         "pin_material": v["pin_material"], "value": self._variant_value(v, q.field)} for v in vs]
             else:
                 hits = [{"variant_id": v["variant_id"], "belt_material": v["belt_material"],
                          "pin_material": v["pin_material"]} for v in vs]
