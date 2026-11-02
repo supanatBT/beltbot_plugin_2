@@ -172,5 +172,41 @@ fi.read(Q_APP)
 ok("ข้อความเดิมเรียก LLM ครั้งเดียว", len(llm.calls) == 1, len(llm.calls))
 ok("system prompt สร้างได้ไม่มีวงเล็บค้าง", "{" not in build_system(fi.brands).split("คืน JSON")[0])
 
+print("7) คำถามค้นทั้งฐานที่มีอุณหภูมิ (3 พ.ย. · กรองด้วยโค้ด ไม่ปล่อยให้ LLM เติม)")
+from brands.modutech.router import CatalogueSearch  # noqa: E402
+from brands.modutech.turn import build_modutech_turn  # noqa: E402
+PITCH_Q = {"brand": "modutech", "topic": "pitch", "asks_temperature": True, "wet_or_dry": None, "note": ""}
+
+
+def search_ctx(q, front_on=True):
+    os.environ["FRONT_INTERPRETER"] = "llm" if front_on else "rules"
+    try:
+        core_s, _ = make(FakeLLM([("พิทช์", PITCH_Q)]))
+        d = core_s.decide(q)
+        if d.action != "search":
+            return d, None
+        return d, build_modutech_turn(d, cat, CatalogueSearch(cat)).context
+    finally:
+        os.environ.pop("FRONT_INTERPRETER", None)
+
+
+Q_COLD = "สายพาน Modutech พิทช์ 1 นิ้ว ใช้ในห้องเย็น -50 องศา ไลน์แห้ง มีรุ่นไหน"
+d, ctx = search_ctx(Q_COLD)
+ok("ค้นทั้งฐาน + อุณหภูมิ -50 แห้ง → กรองด้วยโค้ด เหลือ 0 (ต่ำสุดของพิทช์ 1 นิ้วคือ -40)",
+   ctx is not None and ctx["search_result"]["matched"] == 0 and ctx["search_result"]["matched_before_temperature"] > 0
+   and "need_filter" in ctx, (d.action, ctx and ctx["search_result"].get("matched")))
+d, ctx = search_ctx(Q_COLD.replace("-50", "-35"))
+sr = ctx["search_result"] if ctx else {}
+ok("-35 แห้ง → เหลือเฉพาะรุ่นที่มีเกรดผ่าน และเหลือเฉพาะเกรดที่ผ่าน",
+   sr.get("matched", 0) > 0 and all(v["belt_material"] in ("POM", "PE", "PA", "PA6") for m in sr["matches"]
+                                    for v in m["variants"]), sr.get("matched"))
+d, ctx = search_ctx("สายพาน Modutech พิทช์ 1 นิ้ว ทนเย็นได้ไหม มีรุ่นไหนบ้าง")
+ok("ถามเรื่องอุณหภูมิแต่ไม่บอกตัวเลข → บอก LLM ห้ามบอกตัวเลขอุณหภูมิ",
+   ctx is not None and "ห้ามบอกตัวเลขอุณหภูมิ" in (ctx["search_result"].get("temperature_th") or ""))
+d, ctx = search_ctx(Q_COLD, front_on=False)
+ok("ปิด FRONT_INTERPRETER → ผลค้นเดิม (ไม่กรองอุณหภูมิ)",
+   ctx is None or ("matched_before_temperature" not in ctx["search_result"] and "need_filter" not in ctx),
+   d.action)
+
 print(f"\nรวม {passed}/{passed + failed}")
 sys.exit(1 if failed else 0)

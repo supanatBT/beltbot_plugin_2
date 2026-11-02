@@ -141,6 +141,46 @@ class ModutechTurn:
     debug: list = field(default_factory=list)
 
 
+def front_fixes_enabled() -> bool:
+    """FRONT_INTERPRETER=llm (branch bot-qi-first) เปิดการแก้ที่มากับตัวตีความด่านหน้าด้วย · ปิด = บอทเดิมทุกตัวอักษร"""
+    return (os.getenv("FRONT_INTERPRETER") or "rules").strip().lower() == "llm"
+
+
+TEMP_WORD_RX = r"อุณหภูมิ|องศา|°\s*[cCfF]|ร้อน|เย็น|แช่แข็ง|ฟรีซ|freez|temp"
+
+
+def _search_temperature(sr: dict, md: dict, text: str, cat: Catalogue, context: dict, debug: list) -> dict:
+    """คำถามค้นทั้งฐานที่ลูกค้าบอกอุณหภูมิมาด้วย — กรองอุณหภูมิด้วยโค้ด (filter_by_need ตัวเดียวกับทางงานใช้)
+    3 พ.ย. (หลังเห็น blind BL-030): เดิมค้นแค่ช่องที่ถาม (เช่น พิทช์) ไม่ส่งอุณหภูมิให้ LLM → LLM เติมตัวเลขเอง
+    ไม่มีตัวเลขอุณหภูมิแต่ถามเรื่องอุณหภูมิ → บอก LLM ว่าผลนี้ยังไม่ได้ตรวจอุณหภูมิ ห้ามบอกตัวเลข"""
+    slots = md.get("slots") or {}
+    want_t = slots.get("temp_c")
+    if not isinstance(want_t, (int, float)):
+        want_t = slots.get("operating_temp_c")
+    matches = sr.get("matches")
+    if not isinstance(matches, list):
+        return sr
+    if isinstance(want_t, (int, float)):
+        codes = [m["belt_code"] for m in matches]
+        nf = NF.filter_by_need(cat, codes, None, want_t, slots.get("wet_or_dry"))
+        kept, grades = nf["kept"], nf["grades"]
+        out = []
+        for m in matches:
+            if m["belt_code"] not in kept:
+                continue
+            ok = set(grades.get(m["belt_code"]) or [])
+            vs = [v for v in m.get("variants") or [] if f"{v.get('belt_material')}/{v.get('pin_material')}" in ok]
+            out.append({**m, "variants": vs or m.get("variants") or []})
+        sr = {**sr, "matches": out, "matched": len(out), "matched_before_temperature": len(matches)}
+        context["need_filter"] = {"note_th": nf["note_th"], "kept": kept, "removed": nf["removed"],
+                                  **({"grades_passing_temperature": grades} if grades else {})}
+        debug.append(f"search + อุณหภูมิ {want_t:g} °C: {len(matches)} → {len(out)}")
+    elif re.search(TEMP_WORD_RX, text or "", re.IGNORECASE):
+        sr = {**sr, "temperature_th": ("ผลค้นนี้ยังไม่ได้ตรวจอุณหภูมิ ห้ามบอกตัวเลขอุณหภูมิหรือบอกว่ารุ่นใดทนอุณหภูมิได้ "
+                                       "ให้ถามลูกค้าว่าใช้งานที่อุณหภูมิเท่าไร")}
+    return sr
+
+
 def graph_apps_enabled() -> bool:
     """สวิตช์ชั้นงานใช้ของกราฟ — MODUTECH_GRAPH_APPS=0 ปิด เพื่อวัดก่อน/หลังด้วยโค้ดชุดเดียวกัน
 
@@ -354,6 +394,8 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
     if decision.action == "search":
         q = ExploratoryQuery(**md["search_query"])
         sr = search.search(q)
+        if front_fixes_enabled():
+            sr = _search_temperature(sr, md, decision.effective_text, cat, context, debug)
         # รอบ 5 (EX-004 · EX-006): คำถามค้นไม่มีชื่อแบรนด์ LLM ตอบ "68 รุ่นในฐานข้อมูล" ลูกค้าไม่รู้ว่าแบรนด์ไหน
         context["search_result"] = {"scope_th": f"ค้นจากสายพาน Modutech ทั้ง {sr['scanned']} รุ่น", **sr}
         if decision.sales_topics:
