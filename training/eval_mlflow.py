@@ -24,6 +24,7 @@ import re
 import subprocess
 import sys
 from collections import Counter
+from datetime import datetime
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -119,6 +120,33 @@ def cost_metrics(results: list) -> dict:
     return out
 
 
+def file_sha(path) -> str:
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()[:16]
+
+
+def already_logged(path) -> list:
+    """run ที่บันทึกไฟล์นี้ (sha เดียวกัน) ไว้แล้ว — กันบันทึกซ้ำเมื่อย้อนบันทึกทั้งโฟลเดอร์"""
+    os.environ.setdefault("MLFLOW_ALLOW_FILE_STORE", "true")
+    import mlflow
+    mlflow.set_tracking_uri(MLRUNS.as_uri())
+    exp = mlflow.get_experiment_by_name("answer_eval")
+    if exp is None:
+        return []
+    runs = mlflow.search_runs([exp.experiment_id], filter_string=f"tags.source_sha = '{file_sha(path)}'",
+                              output_format="list")
+    return [r.info.run_id for r in runs]
+
+
+def expand(patterns: list) -> list:
+    """PowerShell ไม่ขยาย * ให้ python → ขยายเอง · คงลำดับ · ตัดซ้ำ"""
+    import glob
+    out = []
+    for pat in patterns:
+        hits = sorted(glob.glob(pat)) if any(c in pat for c in "*?[") else [pat]
+        out += [h for h in hits if h not in out]
+    return out
+
+
 def log_eval(summary: dict, json_path: str | None = None, code: str = "", round_no: str = "",
              note: str = "", blind: bool | None = None) -> str:
     os.environ.setdefault("MLFLOW_ALLOW_FILE_STORE", "true")     # ข้อ 5.2 กำหนด file store
@@ -133,9 +161,15 @@ def log_eval(summary: dict, json_path: str | None = None, code: str = "", round_
     if tc and (ROOT / tc).exists():
         tc_hash = hashlib.sha256((ROOT / tc).read_bytes().replace(b"\r\n", b"\n")).hexdigest()[:12]
     name = Path(json_path).stem if json_path else f"{summary.get('module')}-{round_no or 'run'}"
+    src = {}
+    if json_path and Path(json_path).exists():      # บันทึกย้อนหลัง: วันที่ไฟล์ + sha ไว้กันบันทึกซ้ำ
+        fp = Path(json_path)
+        src = {"source_sha": file_sha(fp),
+               "source_mtime": datetime.fromtimestamp(fp.stat().st_mtime).isoformat(timespec="seconds")}
     with mlflow.start_run(run_name=name) as run:
         mlflow.set_tags({"kind": "answer_eval", "code": code or "unknown", "round": str(round_no or ""),
-                         "commit_at_logging": commit, "source_file": json_path or "", "note": note})
+                         "commit_at_logging": commit, "source_file": json_path or "", "note": note,
+                         "run_commit": str((summary.get("system_info") or {}).get("commit", "")), **src})
         mlflow.log_params({"module": summary.get("module"), "testcases": tc, "testcases_sha": tc_hash})
         info = system_of(summary)
         prompt = info.pop("prompt_text", None)
@@ -168,8 +202,12 @@ def main() -> int:
     ap.add_argument("--note", default="")
     ap.add_argument("--no-mlflow", action="store_true", help="แค่พิมพ์ผล ไม่ log")
     ap.add_argument("--round", default="", help="รอบที่เท่าไหร่ (pass^k ใช้แยกรอบ 1/2)")
+    ap.add_argument("--force", action="store_true", help="บันทึกซ้ำแม้ไฟล์ sha เดียวกันเคยบันทึกแล้ว")
     a = ap.parse_args()
-    for f in a.files:
+    for f in expand(a.files):
+        if not a.no_mlflow and not a.force and (ids := already_logged(f)):
+            print(f"  {f:<22} ข้าม — บันทึกแล้ว ({ids[0][:8]})")
+            continue
         s = json.loads(Path(f).read_text(encoding="utf-8"))
         lk = leak_summary(s.get("results", []))
         words = " · ".join(f"{w} {n}" for w, n in lk["per_word"].items()) or "-"

@@ -71,5 +71,22 @@ mp = mlflow.get_run(E.log_eval(mv)).data.params
 check("gemini_model ว่าง → เติมจาก model_version ของเทิร์น",
       mp.get("sys.gemini_model") == "gemini-3.8-flash" and mp.get("sys.gemini_model_from") == "model_version", mp)
 
+# บันทึกย้อนหลัง: วันที่ไฟล์ · commit ที่รัน · กันบันทึกซ้ำ · ขยาย * เอง (PowerShell ไม่ขยายให้)
+import json as _json, subprocess as _sp
+d = Path(tempfile.mkdtemp())          # นอก mlruns (file store อ่านทุกโฟลเดอร์ในนั้นเป็น experiment)
+for n in ("qi_blind_r1.json", "qi_blind_r2.json"):
+    (d / n).write_text(_json.dumps(dict(summary, results=res)), encoding="utf-8")
+(d / "qi_blind_r2.json").write_text(_json.dumps(dict(summary, results=res, passed=2)), encoding="utf-8")
+check("ขยาย * เป็นไฟล์เรียงชื่อ", [Path(x).name for x in E.expand([str(d / "qi_*.json")])] == ["qi_blind_r1.json", "qi_blind_r2.json"])
+rr = mlflow.get_run(E.log_eval(_json.loads((d / "qi_blind_r1.json").read_text(encoding="utf-8")),
+                               json_path=str(d / "qi_blind_r1.json"))).data.tags
+check("tag source_sha · source_mtime · run_commit จาก system_info",
+      rr.get("source_sha") == E.file_sha(d / "qi_blind_r1.json") and rr.get("source_mtime", "").startswith("20")
+      and rr.get("run_commit") == "e1b331f", rr)
+check("ไฟล์ที่บันทึกแล้วถูกจับได้ · ไฟล์ใหม่ไม่", E.already_logged(d / "qi_blind_r1.json") and not E.already_logged(d / "qi_blind_r2.json"))
+out = _sp.run([sys.executable, str(Path(E.__file__)), str(d / "*.json"), "--round", "1"], capture_output=True, text=True,
+              encoding="utf-8", env=dict(os.environ, PYTHONIOENCODING="utf-8")).stdout
+check("main: ข้ามไฟล์ที่บันทึกแล้ว บันทึกไฟล์ใหม่", "ข้าม" in out and out.count("ผ่าน ") == 1, out)
+
 print(f"\nรวม {ok}/{ok + fail}")
 sys.exit(1 if fail else 0)
