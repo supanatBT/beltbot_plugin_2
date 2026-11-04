@@ -25,6 +25,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
+$env:PYTHONIOENCODING = "utf-8"   # ก่อนเทสต์ออฟไลน์ด้วย — ส่งผลผ่าน pipe แล้ว Windows ใช้ cp874 พิมพ์ ✓ ไม่ได้
 function Fail($msg) { Write-Host "❌ $msg" -ForegroundColor Red; exit 1 }
 
 Write-Host "== ตรวจก่อนรัน ($System) ==" -ForegroundColor Cyan
