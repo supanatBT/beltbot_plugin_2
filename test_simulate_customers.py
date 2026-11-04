@@ -179,7 +179,7 @@ _s5 = SC.score(_gn, _trn, judge, "done")
 ok("เปลี่ยนใจกลางทาง: แนะนำถูกก่อนเปลี่ยน + บอกไม่มีหลังเปลี่ยน → hit", _s5["hit"] is True, (_s5["hit"], _s5["final_violations"]))
 
 
-print("\nsim-fair (4 พ.ย.) ก. ลูกค้าแยกจากระบบ — ของปลอมทั้งหมด ไม่เรียก API")
+print("\nsim-fair (4 พ.ย.) ก. ลูกค้าแยกจากระบบ · ค. ป้าย tactic — ของปลอมทั้งหมด ไม่เรียก API")
 import contextlib as _cl  # noqa: E402
 import io as _io  # noqa: E402
 import sim_fair_fakes as F  # noqa: E402
@@ -296,6 +296,19 @@ ok("A9 module ที่ไม่มีตัวนับ → usage = null (ไ�
    all(t.get("usage", "x") is None for r in res["results"] for t in r["transcript"] if t["role"] == "bot")
    and res.get("system_usage_total") is None)
 
+n_before = len(_built)
+b = F.make_bot_module()
+res, txt = _run("fake_sim_bot", env={"SIM_TACTIC_LABEL": "1"})
+hdr = [ln for ln in txt.splitlines() if ln.startswith("tactic: ")]
+ok("C1 .txt ทุกบทมีบรรทัด tactic ตรงกับเป้าหมาย (ไม่มี tactic → (ไม่ระบุ))",
+   hdr == ["tactic: (ไม่ระบุ)"] * 2 + [f"tactic: {F.GOALS['goals'][1]['tactic']}"] * 2, hdr)
+ok("C2 json ทุกบทมี tactic_checked: null", all("tactic_checked" in r and r["tactic_checked"] is None
+                                                for r in res["results"]))
+ok("C3 ไม่มีการเรียก LLM เพิ่ม (ไม่ใช้ LLM ตัดสิน)", len(b.llm_client.prompts) == 8 and len(_built) == n_before,
+   len(b.llm_client.prompts))
+b = F.make_bot_module()
+res, txt = _run("fake_sim_bot", env={"SIM_TACTIC_LABEL": "0"})
+ok("C5 SIM_TACTIC_LABEL ไม่ใช่ 1 → เท่า golden", _same_as_golden(res, txt))
 SC.build_customer_client = _orig_build
 
 print(f"\nรวม {passed}/{passed + failed}")

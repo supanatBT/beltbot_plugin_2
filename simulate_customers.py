@@ -40,6 +40,7 @@ simulate_customers.py — ลูกค้าจำลองด้วย LLM ค�
                            ตั้งชื่อรุ่น = สร้าง client ของลูกค้าเอง (google-genai) · โทเคนลูกค้าไม่ปนกับระบบ
                            · บันทึกโทเคนของระบบต่อเทิร์น (usage ในเทิร์นของบอท) · จำเป็นสำหรับ --module agent_assistant
     SIM_CUSTOMER_THINKING  thinking ของลูกค้า (ค่าแบบ GEMINI_THINKING) · ไม่กระทบ GEMINI_THINKING ของระบบ
+    SIM_TACTIC_LABEL=1     ใส่ tactic ไว้หัวบทใน .txt · ใส่ tactic + tactic_checked: null ใน json ให้คนอ่านกรอก
     $env:SIM_CUSTOMER_MODEL="gemini-3.8-flash"; $env:SIM_CUSTOMER_THINKING="low"
     python simulate_customers.py --module agent_assistant --goals training/redteam_goals_v2_truth.json --repeats 2 -o x.json
 """
@@ -378,6 +379,8 @@ def write_txt(path: str, results: list[dict]) -> None:
             f.write(f"\n=== {r['goal']}#{r.get('run', 1)} · {r['application']} · "
                     f"{'✓ ได้รุ่นที่ถูก' if r['hit'] else '✗ ไม่ได้รุ่นที่ถูก'} · จบแบบ {r['ended']}"
                     + (f" · ⚠ {', '.join(flags)}" if flags else "") + " ===\n")
+            if "tactic_checked" in r:          # SIM_TACTIC_LABEL=1 — ให้คนอ่านเทียบกับบทว่าลูกค้าทำตามแผนไหม
+                f.write(f"tactic: {r.get('tactic') or '(ไม่ระบุ)'}\n")
             if r.get("violations"):
                 f.write(f"รุ่นที่ผิดเงื่อนไข: {r['violations']}\n")
             for i in r.get("issues", []):
@@ -416,6 +419,7 @@ def main():
     if cust_client is not None:
         # ระบบไม่มีตัวนับ → object เปล่า: บันทึก usage = null ต่อเทิร์น (ไม่ใช่ 0 · ไม่ใช่ไม่มีคีย์)
         meter = system_meter(bot) or object()
+    tactic_label = os.getenv("SIM_TACTIC_LABEL", "").strip() == "1"
     judge = Judge()
     results = []
     for g in goals:
@@ -423,6 +427,9 @@ def main():
             r = run_goal(g, bot.chat_interaction, complete, judge, a.max_turns, a.temperature,
                          interpreter=getattr(bot, "answer_interpreter", None), meter=meter)
             r["run"] = k + 1
+            if tactic_label:
+                r["tactic"] = g.get("tactic")
+                r["tactic_checked"] = None     # คนอ่าน transcript แล้วกรอก true/false (ไม่ใช้ LLM ตัดสิน)
             results.append(r)
             print(f"  {'✓' if r['hit'] else '✗'} {g['id']}#{k + 1} {g.get('application', '')[:20]:20} "
                   f"{r['ended']:9} เทิร์น {r['turns']:2}"
@@ -440,6 +447,8 @@ def main():
         meta["customer_usage_total"] = usage_total([cust_client.last_usage])
         meta["system_usage_total"] = usage_total(t.get("usage") for r in results for t in r["transcript"]
                                                  if t["role"] == "bot")
+    if tactic_label:
+        meta["tactic_label"] = True
     json.dump({**meta, "summary": summary, "results": results}, open(a.out, "w", encoding="utf-8"),
               ensure_ascii=False, indent=2)
     txt = os.path.splitext(a.out)[0] + ".txt"

@@ -185,5 +185,39 @@ for name in ("redteam_goals.json", "redteam_goals_v2.json"):
        all("accept_codes" in g for g in mt)
        and all(g["accept_codes"] for g in mt if g["truth_note"].startswith("จับชื่องานไม่ได้") and g["hard_ok_codes"]))
 
+print("\nblind_review.py · สำเนาซ่อนชื่อระบบ")
+import csv  # noqa: E402
+import blind_review as BR  # noqa: E402
+with tempfile.TemporaryDirectory() as d:
+    files = []
+    for name in ("bot", "agent"):
+        p = os.path.join(d, f"sim_{name}.json")
+        json.dump({"module": name, "results": [
+            {"goal": "V01", "run": k, "tactic": "แผน", "transcript": [
+                {"role": "customer", "text": "สวัสดี"}, {"role": "bot", "text": f"ตอบจาก{name}ลับ"}]}
+            for k in (1, 2)]}, open(p, "w", encoding="utf-8"), ensure_ascii=False)
+        files.append(p)
+    raw = [open(f, "rb").read() for f in files]
+    out = os.path.join(d, "rv")
+    with contextlib.redirect_stdout(io.StringIO()):
+        BR.make(files, None, out)
+    txt = open(os.path.join(out, "review.txt"), encoding="utf-8").read()
+    ok("review.txt ไม่มีชื่อไฟล์/module · ใช้คำว่า 'ระบบ'", "sim_bot" not in txt and "sim_agent" not in txt
+       and "module" not in txt and "🤖 ระบบ" in txt and txt.count("=== ") == 4)
+    rows = list(csv.DictReader(open(os.path.join(out, "sheet.csv"), encoding="utf-8-sig")))
+    ok("sheet.csv มี 4 แถว ช่อง tactic_checked ว่าง", len(rows) == 4 and all(r["tactic_checked"] == "" for r in rows))
+    for i, r in enumerate(rows):
+        r["tactic_checked"] = "true" if i % 2 == 0 else "false"
+    with open(os.path.join(out, "sheet.csv"), "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=BR.SHEET_COLS)
+        w.writeheader()
+        w.writerows(rows)
+    with contextlib.redirect_stdout(io.StringIO()):
+        written = BR.merge(out)
+    vals = [r["tactic_checked"] for p in written for r in json.load(open(p, encoding="utf-8"))["results"]]
+    ok("merge: ได้ _checked.json สองไฟล์ ค่า true/false ครบ 4 บท · ไฟล์ดิบไม่ถูกแก้",
+       len(written) == 2 and sorted(vals) == [False, False, True, True]
+       and [open(f, "rb").read() for f in files] == raw)
+
 print(f"\nรวม {passed}/{passed + failed}")
 sys.exit(1 if failed else 0)
