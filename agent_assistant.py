@@ -78,6 +78,18 @@ def datasheet_messages(tool_calls: list, since: float) -> list[dict]:
     return out
 
 
+def reply_guard_on() -> bool:
+    return (os.environ.get("AGENT_REPLY_GUARD") or "").strip() == "1"
+
+
+def _merge_usage(a: dict, b: dict) -> dict:
+    out = dict(a)
+    for k in ("prompt_token_count", "candidates_token_count", "total_token_count", "llm_calls"):
+        out[k] = (a.get(k) or 0) + (b.get(k) or 0)
+    out["tool_calls"] = list(a.get("tool_calls") or []) + list(b.get("tool_calls") or [])
+    return out
+
+
 class _Engine:
     def __init__(self, model=None, toolset=None):
         self.llm = _LLMInfo()
@@ -114,6 +126,40 @@ class _Engine:
         usage["tool_calls"] = calls
         return "".join(text_parts).strip(), usage, model_version
 
+    def _guard(self, session_id: str, reply: str, usage: dict, mv):
+        """AGENT_REPLY_GUARD=1 (4 พ.ย.): ตรวจคำตอบด้วยโค้ดตัวเดียวกับบอท (core/reply_guard.py · core/turn.py guard_reply)
+        1) ชื่อฟิลด์/เหตุผลภายในหลุด → ขอเขียนใหม่ใน session เดิมหนึ่งครั้ง · ยังหลุดหรือเขียนไม่ได้ → ข้อความสำรอง
+        2) เบอร์ · อีเมล · LINE ที่ไม่ใช่ช่องทางจริง → ลบบรรทัดนั้น แล้วแนบช่องทางจริงแทน
+        ที่มา: ชุด blind v1.1 BL-009 — ผลหลังเปิดสวิตช์ต้องวัดบนชุด blind ใหม่เท่านั้น · ปิดสวิตช์ = ไม่ถูกเรียก (agent เดิม)"""
+        from core import reply_guard as RG
+        notes = []
+        leak = RG.leaks(reply)
+        if leak:
+            notes.append({"leak": leak[:5]})
+            new = ""
+            try:
+                new, u2, mv2 = self._call(self._turn(
+                    session_id, types.Content(role="user", parts=[types.Part(text=RG.LEAK_RETRY_TH)])))
+                usage, mv = _merge_usage(usage, u2), (mv2 or mv)
+            except Exception as e:                       # noqa: BLE001 — เขียนใหม่ไม่ได้ = ใช้ข้อความสำรอง
+                notes.append({"retry_error": type(e).__name__})
+            if new and not RG.leaks(new):
+                reply = new
+                notes.append({"action": "rewritten"})
+            else:
+                reply = RG.LEAK_FALLBACK_TH
+                notes.append({"action": "fallback", "retry_leak": RG.leaks(new)[:5]})
+        reply, fake = RG.scrub_contacts(reply)
+        if fake:
+            notes.append({"fake_contacts": fake[:5]})
+            from sales_contact import sales_contact_line_th
+            line = sales_contact_line_th()
+            if line and line not in reply:
+                reply = f"{reply}\n\n{line}".strip()
+        if notes:
+            usage = dict(usage, reply_guard=notes)
+        return reply, usage, mv
+
     def chat(self, query: str, image, session_id: str) -> tuple[str, str]:
         if not session_id:
             session_id = self._call(self._new_session())
@@ -130,6 +176,8 @@ class _Engine:
             parts.append(types.Part(text=query))
         t_start = time.time()
         reply, usage, mv = self._call(self._turn(session_id, types.Content(role="user", parts=parts)))
+        if reply_guard_on():
+            reply, usage, mv = self._guard(session_id, reply, usage, mv)
         self.llm.last_usage, self.llm.last_model_version = usage, mv
         self.last_images = datasheet_messages(usage.get("tool_calls") or [], t_start)
         return reply, session_id
