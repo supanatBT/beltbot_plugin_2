@@ -78,6 +78,23 @@ MOVEX_TOPICS = [
     ("drawing", r"drawing|datasheet|ดรออิ้ง|ขอรูป|ขอดูแบบ|แสดงแบบ", "product_id"),
 ]
 
+def _on(name: str) -> bool:
+    return (os.environ.get(name) or "").strip() == "1"
+
+
+# MOVEX_UNKNOWN_CODE=1 (4 พ.ย. · MX-X20 "โซ่ที่ไม่มีในระบบ เช่น LF999" เดิมถามรุ่นกลับ ไม่บอกว่าไม่มีรุ่นนี้)
+CODE_LIKE_RX = re.compile(r"(?<![A-Za-z0-9])(LFN?\s?-?\d{2,4}(?:\s?(?:TAB|MF[MH]))?(?:\s?K\s?\d{3,4})?"
+                          r"|(?<!\d)5[4-9]\d{3}(?!\d))", re.IGNORECASE)
+# MOVEX_SERIES_ANSWER=1 (4 พ.ย. · MX-T03 "882 series มีสินค้าอะไรบ้าง" · MX-X12 "LF 880 TAB ต้องใช้ wear strip แบบไหน")
+# รู้ซีรีส์ ไม่รู้ความกว้าง และคำถามไม่ใช่ค่าที่ต่างกันตามความกว้าง → ตอบระดับซีรีส์ (เดิมถามความกว้างทุกครั้ง)
+# ใช้เฉพาะข้อความล้วน: เทิร์นที่มีรูป · คำตอบของการถามกลับ · คำถามว่ารุ่นไหน = ถามความกว้างตามเดิม
+# MOVEX_ID_SCRUB=1 (4 พ.ย. · X08 X17 X19 I06 M11): รหัสภายใน movex_chain_… ในคำตอบ → ชื่อรุ่น (Ref / Art. Nr.)
+# core/reply_guard จับไม่ได้เพราะรหัสมีตัวพิมพ์ใหญ่ · แก้ด้วยการแทนค่า ไม่เรียก LLM เพิ่ม
+SERIES_NEEDS_MODEL_RX = re.compile(r"รุ่นอะไร|รุ่นไหน|ตัวไหน|อันไหน|เบอร์อะไร|เบอร์ไหน|which model|what model", re.IGNORECASE)
+SERIES_NOISE_RX = re.compile(r"movex|series|ซีรีส์|ซีรี่ส์|โซ่|chain|tab|mf[mh]|lfn?|ครับ|ค่ะ|คะ|นะ|หน่อย", re.IGNORECASE)
+PID_RX = re.compile(r"`?\b(movex_(?:chain|sprocket)_[A-Za-z0-9_]+)\b`?")
+
+
 ASK_MOVEX_UNCLEAR_IMAGE_TH = ("จากรูปยังระบุรุ่นได้ไม่ชัดครับ รบกวนแจ้งรหัสรุ่นที่ปั๊มบนตัวโซ่ "
                               "หรือส่งรูปด้านบนของโซ่ที่เห็นแผ่นชัด ๆ อีกครั้งครับ")
 
@@ -297,6 +314,10 @@ class MovexPlugin:
             return Decision("answer", key, reason=why, topic=topic, effective_text=text,
                             payload={**base, "level": "product"})
         if series:
+            if topic is None and _on("MOVEX_SERIES_ANSWER") and self._series_question(text, inp):
+                return Decision("answer", key, reason=f"{why} · คำถามระดับซีรีส์ (ไม่ขึ้นกับความกว้าง)",
+                                topic=topic, effective_text=text,
+                                payload={**base, "level": "series"})
             if topic and self.movex_series_uniform(series, fld):
                 return Decision("answer", key, reason=f"{why} · {topic} เท่ากันทั้งซีรีส์",
                                 topic=topic, effective_text=text,
@@ -304,6 +325,15 @@ class MovexPlugin:
             return Decision("ask", key, self.ask_movex_width_th(series, from_image=inp.has_image),
                             f"{why} · ต้องรู้ความกว้าง", topic=topic, effective_text=text,
                             payload={**base, "level": "series"}, pending="movex_width")
+        if _on("MOVEX_UNKNOWN_CODE") and not inp.has_image:
+            unknown = self._unknown_code(text)
+            if unknown:
+                from sales_contact import sales_contact_line_th
+                line = sales_contact_line_th()
+                reply = (f"ไม่พบรุ่น {unknown} ในระบบของ Movex ครับ\n\n" + self.ask_movex_model_th(topic)
+                         + ("\n\nถ้าเป็นรุ่นพิเศษหรือนอกแค็ตตาล็อก สอบถามฝ่ายขายได้โดยตรงครับ\n" + line if line else ""))
+                return Decision("ask", key, reply, f"รหัส {unknown} ไม่มีในข้อมูล", topic=topic,
+                                effective_text=text, pending="movex_model")
         app = movex_application_block(text, self.mx)
         if not app and not inp.has_image:
             # 30 ต.ค. (probe_movex_r1 MXT-U1–U3): คำถามหารุ่นตามคุณสมบัติที่ไม่มีรหัส เดิมถามรุ่นกลับทุกครั้ง
@@ -314,6 +344,34 @@ class MovexPlugin:
         return Decision("ask", key, app or self.ask_movex_model_th(topic),
                         "ยังไม่รู้รุ่น",
                         topic=topic, effective_text=text, pending="movex_model")  # noqa: E128
+
+    @staticmethod
+    def _series_question(text: str, inp: DecideInput) -> bool:
+        """คำถามข้อความล้วนที่ตอบระดับซีรีส์ได้ — ไม่ใช่รูป · ไม่ใช่คำตอบของการถามกลับ · ไม่ได้ถามว่ารุ่นไหน"""
+        if inp.has_image or inp.answer or not re.sub(r"\s+", "", text or ""):
+            return False
+        if SERIES_NEEDS_MODEL_RX.search(text):
+            return False
+        # พิมพ์แค่รหัส/ซีรีส์ ("880" "LF 880 TAB") = ยังไม่มีคำถาม → ถามความกว้างตามเดิม
+        rest = SERIES_NOISE_RX.sub("", CODE_LIKE_RX.sub("", text))
+        return len(re.sub(r"[\s\d.,:;!?()\-]+", "", rest)) >= 3
+
+    def _unknown_code(self, text: str) -> Optional[str]:
+        """รหัสหน้าตาแบบ Movex ที่ไม่ตรงรุ่นหรือซีรีส์ใดในข้อมูล → คืนรหัสนั้น · ไม่มี = None"""
+        for m in CODE_LIKE_RX.finditer(text or ""):
+            tok = m.group(1).strip()
+            got = self.resolve_movex(tok)
+            if not got["pids"] and not got["series"]:
+                return tok
+        return None
+
+    def scrub_ids(self, reply: str) -> str:
+        def sub(m):
+            p = self.mx.get(m.group(1))
+            if not p:
+                return m.group(0)
+            return str(p.get("Ref") or p.get("Art_Nr") or m.group(0)).strip()
+        return PID_RX.sub(sub, reply or "")
 
     def _interpret_search(self, text: str, topic: Optional[str]) -> Optional[Decision]:
         qi = getattr(self, "_query_interpreter", None)
@@ -391,7 +449,10 @@ class MovexPlugin:
         return self._rt().build_turn(decision, turn)
 
     def finish_turn(self, decision, turn, llm, result):
-        return self._rt().finish_turn(decision, turn, llm, result)
+        out = self._rt().finish_turn(decision, turn, llm, result)
+        if _on("MOVEX_ID_SCRUB") and out is not None and isinstance(out.reply, str):
+            out.reply = self.scrub_ids(out.reply)
+        return out
 
     def close(self) -> None:
         """ปิด Qdrant แบบไฟล์ก่อนโปรแกรมจบ (ไม่บังคับในสัญญา — assistant.py เรียกผ่าน atexit)"""

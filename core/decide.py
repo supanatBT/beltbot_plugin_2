@@ -56,6 +56,17 @@ DOMAIN_WORDS = [
 # เหตุผล: ลูกค้าที่เพิ่งถามสเปกของรุ่นหนึ่งแล้วพิมพ์สั้น ๆ ต่อ ("แล้วราคาล่ะ" "อันไหนดีกว่า"
 # "ส่งของกี่วัน") กำลังถามถึงรุ่นนั้น การปฏิเสธว่านอกเรื่องทำให้เสียงานโดยไม่จำเป็น
 # ไม่กระทบเคสนอกเรื่องจริง (CLARIF-002 "อากาศวันนี้เป็นยังไง") เพราะเป็นเทิร์นแรก ยังไม่มีรุ่นในโฟกัส
+# BOT_DOMAIN_PRODUCT=1 (4 พ.ย. · ชุดทดสอบเทอมที่แล้ว "สินค้าทั้งหมดในระบบมีอะไรบ้าง" ถูกตีเป็นนอกเรื่อง)
+# ไม่ตั้ง = รายการเดิม
+DOMAIN_WORDS_EXTRA = ["สินค้า", "ผลิตภัณฑ์", "product"]
+
+
+def _domain_words() -> list:
+    import os
+    return DOMAIN_WORDS + DOMAIN_WORDS_EXTRA if (os.environ.get("BOT_DOMAIN_PRODUCT") or "").strip() == "1" \
+        else DOMAIN_WORDS
+
+
 FOLLOWUP_MAX_CHARS = 40
 THANKS_WORDS = ["ขอบคุณ", "ขอบใจ", "thank"]
 THANKS_MAX_CHARS = 25
@@ -231,7 +242,7 @@ class Dialogue:
         # มีรุ่นค้างอยู่ในบทสนทนา + พิมพ์สั้น = ถามต่อเรื่องรุ่นนั้น ไม่ใช่เปลี่ยนเรื่อง
         in_focus = bool(st.brand) and any(p.has_focus(st.brands[k]) for k, p in self.plugins.items())
         followup = in_focus and len(text) <= FOLLOWUP_MAX_CHARS
-        domain = has_code or has_image or bool(any_word(DOMAIN_WORDS, effective)) \
+        domain = has_code or has_image or bool(any_word(_domain_words(), effective)) \
             or bool(any_word(self._domain_extra, effective)) or pending_before is not None \
             or has(STAINLESS_RX, effective) or followup
         if not domain:
