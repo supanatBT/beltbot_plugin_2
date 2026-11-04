@@ -57,8 +57,11 @@ def usage_of(resp) -> dict | None:
     u = getattr(resp, "usage_metadata", None)
     if u is None:
         return None
+    # cached_content_token_count (4 พ.ย.): โทเคนขาเข้าที่ Gemini แคชเอง (เป็นส่วนหนึ่งของ prompt_token_count ไม่ใช่ส่วนเพิ่ม)
+    # บันทึกอย่างเดียว — ใช้คิดค่าใช้จ่ายจริงให้เทียบกับ agent ได้ · metrics.token_fields ไม่อ่านค่านี้
     out = {k: getattr(u, k, None) for k in ("prompt_token_count", "candidates_token_count",
-                                            "thoughts_token_count", "total_token_count")}
+                                            "thoughts_token_count", "total_token_count",
+                                            "cached_content_token_count")}
     return {k: v for k, v in out.items() if isinstance(v, int)} or None
 
 
