@@ -34,6 +34,14 @@ simulate_customers.py — ลูกค้าจำลองด้วย LLM ค�
     python simulate_customers.py --goals training/redteam_goals.json --repeats 2 -o redteam.json   # ลูกค้าแบบจับผิด
     $env:ANSWER_INTERPRETER="rules"; python simulate_customers.py -o sim_rules.json   # เทียบกับกฎ regex
 ได้ไฟล์ .json (ผลเต็ม) และ .txt (บทสนทนาแบบแชท ลูกค้า/บอท)
+
+ลูกค้าแยกจากระบบที่ถูกวัด (branch sim-fair · 4 พ.ย. 2026) — ไม่ตั้ง env = แบบเดิมทุกตัวอักษร
+    SIM_CUSTOMER_MODEL     ว่าง = ลูกค้าใช้ bot.llm_client ตัวเดียวกับบอท (แบบเดิม)
+                           ตั้งชื่อรุ่น = สร้าง client ของลูกค้าเอง (google-genai) · โทเคนลูกค้าไม่ปนกับระบบ
+                           · บันทึกโทเคนของระบบต่อเทิร์น (usage ในเทิร์นของบอท) · จำเป็นสำหรับ --module agent_assistant
+    SIM_CUSTOMER_THINKING  thinking ของลูกค้า (ค่าแบบ GEMINI_THINKING) · ไม่กระทบ GEMINI_THINKING ของระบบ
+    $env:SIM_CUSTOMER_MODEL="gemini-3.8-flash"; $env:SIM_CUSTOMER_THINKING="low"
+    python simulate_customers.py --module agent_assistant --goals training/redteam_goals_v2_truth.json --repeats 2 -o x.json
 """
 from __future__ import annotations
 
@@ -78,6 +86,55 @@ SIM_TACTIC = """แผนของคุณในบทนี้ (ทำให�
 {tactic}
 - ห้ามจบบทด้วย {done} ก่อนทำตามแผนครบ
 """
+
+
+NO_CLIENT_MSG = ("❌ module {module} ไม่มี llm_client ให้ลูกค้าจำลองใช้ — ตั้ง SIM_CUSTOMER_MODEL เป็นชื่อรุ่นของลูกค้า "
+                 "(เช่น $env:SIM_CUSTOMER_MODEL=\"gemini-3.8-flash\") แล้วรันใหม่ · สคริปต์ไม่เลือกรุ่นแทนให้")
+
+
+def build_customer_client(model: str, thinking_raw: str):
+    """client ของลูกค้าจำลอง แยกจากระบบที่ถูกวัด — ใช้ google-genai (มีทั้ง venv บอทและ venv agent)"""
+    from core.llm import GenAIClient, parse_thinking
+    try:
+        from google import genai as genai_new
+    except ImportError as e:
+        sys.exit(f"❌ SIM_CUSTOMER_MODEL ต้องใช้แพ็กเกจ google-genai แต่ import ไม่ได้ ({e})")
+    key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    if not key:
+        sys.exit("❌ SIM_CUSTOMER_MODEL ต้องมี GEMINI_API_KEY (หรือ GOOGLE_API_KEY)")
+    return GenAIClient(genai_new, model, key, parse_thinking(thinking_raw) or {})
+
+
+def customer_llm(bot, module: str):
+    """(complete ของลูกค้า, client แยก หรือ None, meta ที่ต้องเพิ่ม)
+    ไม่ตั้ง SIM_CUSTOMER_MODEL = bot.llm_client.complete และ meta ไม่มีคีย์ใหม่ (ผลเท่าเดิมทุกตัวอักษร)"""
+    model = (os.getenv("SIM_CUSTOMER_MODEL") or "").strip()
+    if not model:
+        client = getattr(bot, "llm_client", None)
+        if client is None or not hasattr(client, "complete"):
+            sys.exit(NO_CLIENT_MSG.format(module=module))
+        return client.complete, None, {}
+    thinking = (os.getenv("SIM_CUSTOMER_THINKING") or "").strip()
+    client = build_customer_client(model, thinking)
+    return client.complete, client, {"customer_model": model, "customer_thinking": thinking or "ไม่ตั้ง",
+                                     "customer_source": "separate"}
+
+
+def system_meter(bot):
+    """ตัวนับโทเคนของระบบที่ถูกวัด — แบบเดียวกับ run_answer_eval (engine.llm) · สำรอง llm_client"""
+    return getattr(getattr(bot, "engine", None), "llm", None) or getattr(bot, "llm_client", None)
+
+
+_USAGE_SUM_KEYS = ("llm_calls", "prompt_token_count", "candidates_token_count", "thoughts_token_count",
+                   "total_token_count")
+
+
+def usage_total(usages) -> dict | None:
+    """รวมโทเคนจากหลาย usage · ไม่มีข้อมูลเลย = None (ไม่ใช่ 0)"""
+    got = [u for u in usages if isinstance(u, dict)]
+    if not got:
+        return None
+    return {k: sum(u.get(k, 0) for u in got) for k in _USAGE_SUM_KEYS if any(k in u for u in got)}
 
 
 def load_goals(path: str) -> list[dict]:
@@ -209,7 +266,8 @@ _INTERP_RX = re.compile(r"ตีความ: (LLM|กฎ)")
 
 
 def run_goal(g: dict, chat_fn, complete, judge: Judge, max_turns: int, temperature: float,
-             interpreter=None) -> dict:
+             interpreter=None, meter=None) -> dict:
+    """meter (sim-fair): ตัวนับโทเคนของระบบ — ให้มา = บันทึก usage ต่อเทิร์นของบอท (None = ไม่บันทึก แบบเดิม)"""
     transcript: list[dict] = []
     history, last_pids, session_id, vit, graph = [], [], "", None, None
     ended = "max_turns"
@@ -232,6 +290,8 @@ def run_goal(g: dict, chat_fn, complete, judge: Judge, max_turns: int, temperatu
         if not clean:
             continue
         ms0 = getattr(interpreter, "total_ms", 0.0)
+        if meter is not None and hasattr(meter, "last_usage"):
+            meter.last_usage = None          # เริ่มเทิร์นใหม่ (แบบ run_answer_eval) — ไม่ปนกับเทิร์นก่อน
         tb = time.perf_counter()
         try:
             out = chat_fn(clean, None, history, last_pids, session_id, vit, graph)
@@ -249,6 +309,9 @@ def run_goal(g: dict, chat_fn, complete, judge: Judge, max_turns: int, temperatu
         label = m.group(1) if m else ("LLM" if interp_ms > 0 else "-")
         transcript.append({"role": "bot", "text": reply, "sec": round(time.perf_counter() - tb, 3),
                            "interp": label, "interp_ms": interp_ms})
+        if meter is not None:
+            u = getattr(meter, "last_usage", None)
+            transcript[-1]["usage"] = json.loads(json.dumps(u)) if isinstance(u, dict) else None
         if ended in ("done", "giveup"):
             break
     res = score(g, transcript, judge, ended)
@@ -348,13 +411,17 @@ def main():
     only = {x.strip() for x in a.only.split(",") if x.strip()}
     goals = [g for g in goals if not only or g["id"] in only]
     bot = importlib.import_module(a.module)
-    complete = bot.llm_client.complete
+    complete, cust_client, cust_meta = customer_llm(bot, a.module)
+    meter = None
+    if cust_client is not None:
+        # ระบบไม่มีตัวนับ → object เปล่า: บันทึก usage = null ต่อเทิร์น (ไม่ใช่ 0 · ไม่ใช่ไม่มีคีย์)
+        meter = system_meter(bot) or object()
     judge = Judge()
     results = []
     for g in goals:
         for k in range(a.repeats):
             r = run_goal(g, bot.chat_interaction, complete, judge, a.max_turns, a.temperature,
-                         interpreter=getattr(bot, "answer_interpreter", None))
+                         interpreter=getattr(bot, "answer_interpreter", None), meter=meter)
             r["run"] = k + 1
             results.append(r)
             print(f"  {'✓' if r['hit'] else '✗'} {g['id']}#{k + 1} {g.get('application', '')[:20]:20} "
@@ -364,9 +431,15 @@ def main():
                   + (f" ⚠ ซ้ำ {r['repeats']}" if r["repeats"] else "")
                   + (f" 🚩 {sorted({i['kind'] for i in r['issues']})}" if r.get("issues") else ""))
     summary = summarize(results)
-    meta = {"module": a.module, "llm": getattr(bot.llm_client, "describe", lambda: "")(),
+    meta = {"module": a.module, "llm": getattr(system_meter(bot), "describe", lambda: "")(),
             "answer_interpreter": getattr(bot, "ANSWER_INTERPRETER", "?"), "repeats": a.repeats,
             "max_turns": a.max_turns, "temperature": a.temperature}
+    if cust_client is not None:
+        meta.update(cust_meta)
+        meta["customer_llm"] = getattr(cust_client, "describe", lambda: "")()
+        meta["customer_usage_total"] = usage_total([cust_client.last_usage])
+        meta["system_usage_total"] = usage_total(t.get("usage") for r in results for t in r["transcript"]
+                                                 if t["role"] == "bot")
     json.dump({**meta, "summary": summary, "results": results}, open(a.out, "w", encoding="utf-8"),
               ensure_ascii=False, indent=2)
     txt = os.path.splitext(a.out)[0] + ".txt"
