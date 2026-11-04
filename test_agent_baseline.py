@@ -13,6 +13,9 @@ import sys
 from typing import AsyncGenerator
 
 os.environ["AGENT_LAZY"] = "1"
+# เทสต์นี้วัด agent เดิม (ปิดทุกสวิตช์) — หน้าต่างที่ตั้งสวิตช์ไว้รันจริงจะทำให้ LLM ปลอมโดนตัวตรวจคำตอบจับ (4 พ.ย.)
+for _k in ("AGENT_REPLY_GUARD", "AGENT_RESOLVE_TAB", "AGENT_DATASHEET_FILES", "AGENT_IMAGE_MAX_SIDE"):
+    os.environ.pop(_k, None)
 from google.adk.models.base_llm import BaseLlm          # noqa: E402
 from google.adk.models.llm_response import LlmResponse  # noqa: E402
 from google.genai import types                          # noqa: E402
