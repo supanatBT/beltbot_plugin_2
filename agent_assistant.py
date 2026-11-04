@@ -29,6 +29,7 @@ except Exception:                                            # noqa: BLE001
 if not os.environ.get("GOOGLE_API_KEY") and os.environ.get("GEMINI_API_KEY"):
     os.environ["GOOGLE_API_KEY"] = os.environ["GEMINI_API_KEY"]
 
+from PIL import Image                                         # noqa: E402
 from google.adk.runners import Runner                         # noqa: E402
 from google.adk.sessions import InMemorySessionService        # noqa: E402
 from google.genai import types                                # noqa: E402
@@ -76,6 +77,30 @@ def datasheet_messages(tool_calls: list, since: float) -> list[dict]:
         out.append({"role": "assistant",
                     "content": f'<img src="data:image/png;base64,{b64}" style="{DATASHEET_IMG_STYLE}" />'})
     return out
+
+
+def image_max_side() -> int:
+    try:
+        return max(0, int((os.environ.get("AGENT_IMAGE_MAX_SIDE") or "0").strip()))
+    except ValueError:
+        return 0
+
+
+def llm_image_bytes(image) -> tuple[bytes, str]:
+    """รูปที่ส่งเข้า Gemini (อยู่ใน session จึงถูกส่งซ้ำทุกการเรียก LLM ของบทสนทนา)
+    AGENT_IMAGE_MAX_SIDE=<px> (4 พ.ย.): ย่อด้านยาวไม่เกินค่านี้ + JPEG — เครื่องมือรูป (ViT · SigLIP) ยังอ่านไฟล์เต็มจาก IMAGE_DIR
+    ไม่ตั้ง/0 = PNG ขนาดเต็มแบบเดิมทุกไบต์"""
+    side = image_max_side()
+    buf = io.BytesIO()
+    if not side:
+        image.convert("RGB").save(buf, format="PNG")
+        return buf.getvalue(), "image/png"
+    small = image.convert("RGB")
+    if max(small.size) > side:
+        small = small.copy()
+        small.thumbnail((side, side), Image.LANCZOS)
+    small.save(buf, format="JPEG", quality=90)
+    return buf.getvalue(), "image/jpeg"
 
 
 def reply_guard_on() -> bool:
@@ -168,10 +193,9 @@ class _Engine:
             os.makedirs(IMAGE_DIR, exist_ok=True)
             image_id = f"{uuid.uuid4().hex[:12]}.png"
             image.convert("RGB").save(os.path.join(IMAGE_DIR, image_id))
-            buf = io.BytesIO()
-            image.convert("RGB").save(buf, format="PNG")
+            data, mime = llm_image_bytes(image)
             parts.append(types.Part(text=f"[ลูกค้าแนบรูป image_id={image_id}]"))
-            parts.append(types.Part.from_bytes(data=buf.getvalue(), mime_type="image/png"))
+            parts.append(types.Part.from_bytes(data=data, mime_type=mime))
         if query:
             parts.append(types.Part(text=query))
         t_start = time.time()

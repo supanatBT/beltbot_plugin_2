@@ -109,7 +109,18 @@ def resolve_product(code: str) -> tuple[str | None, list[str]]:
     part = exact or [pid for pid, ks in keys.items() if any(q in k for k in ks if k)]
     if len(part) == 1:
         return part[0], []
+    if not part and resolve_tab_on() and "tab" not in q:
+        # AGENT_RESOLVE_TAB=1 (4 พ.ย.): ลูกค้ามักพิมพ์ "LF880 K325" ไม่มีคำว่า TAB → เดิมหาไม่เจอ agent ค้นซ้ำ 3–5 รอบ
+        # ทางสำรองเมื่อหาไม่เจอเท่านั้น — รหัสที่เคยหาเจอได้ผลเดิมทุกตัว
+        notab = [pid for pid, ks in keys.items() if any(q in k.replace("tab", "") for k in ks if k)]
+        if len(notab) == 1:
+            return notab[0], []
+        return None, sorted(notab)[:12]
     return None, sorted(part)[:12]
+
+
+def resolve_tab_on() -> bool:
+    return (os.environ.get("AGENT_RESOLVE_TAB") or "").strip() == "1"
 
 
 def _product_card(pid: str) -> dict:
