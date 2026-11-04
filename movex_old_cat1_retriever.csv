@@ -1,0 +1,21 @@
+﻿old_item,query,type,expected_pid,expected_answer,old_top1,old_hit,flag
+หมวด1-1,LF 820 K325 รับน้ำหนักได้สูงสุดเท่าไหร่,Straight Chain,movex_chain_LF820_K325,1625 N,movex_chain_LF820_K325,1,
+หมวด1-2,LF 821 K1200 น้ำหนักต่อเมตรเท่าไหร่,Straight Chain,movex_chain_LF821_K1200,3.35 kg/m,movex_chain_LF821_K1200,1,
+หมวด1-3,โซ่ 820 series กว้าง 101.6mm มีรุ่นอะไร,Straight Chain,movex_chain_LF820_K400,LF 820 K400,movex_chain_LF820_K400,1,
+หมวด1-4,LF 820 K600 ทำจากวัสดุอะไร,Straight Chain,movex_chain_LF820_K600,LF (Acetal),movex_chain_LF820_K600,1,
+หมวด1-5,LF 880 TAB K325 รัศมีเลี้ยวขั้นต่ำเท่าไหร่,Sideflexing Chain,movex_chain_LF880_TAB_K325,457 mm,movex_chain_LF880_TAB_K325,1,
+หมวด1-6,ต้องการโซ่เลี้ยวได้กว้าง 114.3mm สำหรับ 880 series,Sideflexing Chain,movex_chain_LF880_TAB_K450,LF 880 TAB K450,movex_chain_LF880_TAB_K450,1,
+หมวด1-7,LF 882 TAB K1000 รับโหลดได้เท่าไหร่,Sideflexing Chain,movex_chain_LF882_TAB_K1000,"3,520 N",movex_chain_LF882_TAB_K1000,1,"เฉลยในสมุด 3,520 N แต่ข้อมูลเป็น 3,830 N (หมวดนี้ให้คะแนนแค่อันดับ 1 ของตัวค้น ไม่กระทบคะแนน)"
+หมวด1-8,LFN 83 MFM pitch เท่าไหร่ครับ,Sideflexing Chain,movex_chain_LFN_83_MFM,33.5 mm,movex_chain_LFN_83_MFM,1,
+หมวด1-9,ต้องการโซ่ magnetic system กว้าง 103mm,Sideflexing Chain,movex_chain_LFN_103_MFH,LFN 103 MFH,movex_chain_LFN_103_MFH,1,
+หมวด1-10,LF 882 TAB K750 น้ำหนักต่อเมตรเท่าไหร่,Sideflexing Chain,movex_chain_LF882_TAB_K750,2.45 kg/m,movex_chain_LF882_TAB_K750,1,
+หมวด1-11,สเตอร์รหัส 54901 มีฟันกี่ซี่,Sprocket,movex_sprocket_54901,10 ซี่,movex_sprocket_54901,1,
+หมวด1-12,sprocket 55601 PD เท่าไหร่,Sprocket,movex_sprocket_55601,147.2 mm,movex_sprocket_55601,1,
+หมวด1-13,54201 bore ขนาดเท่าไหร่,Sprocket,movex_sprocket_54201,25 mm,movex_sprocket_54201,1,
+หมวด1-14,สเตอร์ Art.Nr 57801 OD เท่าไหร่,Sprocket,movex_sprocket_57801,—,movex_sprocket_55601,0,เฉลยในสมุดเป็น '—' แต่ข้อมูลมี OD = 144.5 mm
+หมวด1-15,54301 ใช้คู่กับโซ่อะไรได้บ้าง,Sprocket,movex_sprocket_54301,820 Series,movex_sprocket_54301,1,
+หมวด1-16,โซ่ที่เบาที่สุดในระบบคือรุ่นอะไร,Edge Case,movex_chain_LF820_K325,LF 820 K325,movex_chain_LF880_TAB_K450,0,
+หมวด1-17,โซ่ที่รับโหลดสูงสุดในระบบคือรุ่นอะไร,Edge Case,movex_chain_LF882_TAB_K1200,LF 882 TAB K1200,movex_chain_LF821_K1200,0,LF882 TAB K750/K1000/K1200 รับโหลด 3830 N เท่ากันทั้งสามรุ่น — เฉลยรุ่นเดียวไม่ครบ
+หมวด1-18,มีโซ่กว้างอย่างน้อย 180mm ไหมครับ,Edge Case,movex_chain_LF821_K750,LF 821 K750,movex_chain_LF880_TAB_K450,0,รุ่นที่กว้าง ≥180 มม. มี 7 รุ่น (LF820 K750 · LF821 ×3 · LF882 ×3) — เฉลยรุ่นเดียวไม่ครบ
+หมวด1-19,Krones Modul ใช้โซ่รุ่นไหน,Edge Case,movex_chain_LFN_83_MFM,LFN 83 MFM,movex_sprocket_57801,0,
+หมวด1-20,โซ่สำหรับ Sidel Matrix ที่ใช้ magnetic track,Edge Case,movex_chain_LFN_103_MFH,LFN 103 MFH,movex_chain_LFN_83_MFM,0,
