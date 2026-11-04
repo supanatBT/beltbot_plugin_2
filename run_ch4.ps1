@@ -6,6 +6,7 @@
 # ตัวอย่าง (จากโฟลเดอร์ beltbot_plugin_2)
 #   บอท:   powershell -ExecutionPolicy Bypass -File .\run_ch4.ps1 -System bot   -Python $BOTPY -Testcases ..\blind_v2.csv -Tag blind2 -ImgDir "<โฟลเดอร์รูป>"
 #   agent: powershell -ExecutionPolicy Bypass -File .\run_ch4.ps1 -System agent -Python $PY    -Testcases ..\blind_v2.csv -Tag blind2 -ImgDir "<โฟลเดอร์รูป>"
+#   ล็อก commit: เติม -Commit <hash> ทุกคำสั่ง (HEAD ไม่ตรง = หยุด)
 #   ชุดเล็ก: ... -System agent -Testcases testcases_modutech_136.csv -Tag modsmall -Rounds 1 -Only "TP-002,TP-011"
 #
 # ผล:  ..\ch4_<Tag>_<System>_r<รอบ>.json  · บอทมี ..\ch4_<Tag>_bot_r<รอบ>_img.log (การตัดสินเรื่องรูป)
@@ -18,7 +19,8 @@ param(
     [Parameter(Mandatory = $true)][string]$Tag,
     [string]$ImgDir = "",
     [int[]]$Rounds = @(1, 2),
-    [string]$Only = ""
+    [string]$Only = "",
+    [string]$Commit = ""          # ใส่ hash ที่ล็อกไว้ = หยุดถ้า HEAD ไม่ตรง (ไม่ใส่ = ไม่ตรวจข้อนี้)
 )
 
 $ErrorActionPreference = "Stop"
@@ -40,6 +42,7 @@ $need = @{ bot = @("MOVEX_ID_SCRUB", "MOVEX_SERIES_ANSWER", "MOVEX_UNKNOWN_CODE"
            agent = @("AGENT_DATASHEET_FILES", "AGENT_REPLY_GUARD", "AGENT_RESOLVE_TAB") }
 foreach ($w in $need[$System]) { if ($log -notmatch $w) { Fail "ยังไม่มี commit ของสวิตช์ $w — ใส่ patch ก่อน" } }
 $commit = (git rev-parse --short HEAD).Trim()
+if ($Commit -and -not ((git rev-parse HEAD).Trim().StartsWith($Commit))) { Fail "HEAD ($commit) ไม่ตรงกับ commit ที่ล็อกไว้ ($Commit)" }
 
 # ── ล็อกชุดทดสอบ ──
 $sha = (Get-FileHash -Algorithm SHA256 $Testcases).Hash.ToLower()
@@ -66,6 +69,7 @@ foreach ($k in "BOT_MODULE", "IMAGE_TEST_LOG", "AGENT_IMAGE_MAX_SIDE", "AGENT_IM
     Remove-Item "Env:$k" -ErrorAction SilentlyContinue }
 $env:PYTHONIOENCODING = "utf-8"
 $env:GEMINI_THINKING = "low"
+$env:GEMINI_MODEL = "gemini-3.8-flash"
 $cfg = @{ bot = [ordered]@{ FRONT_INTERPRETER = "llm"; BOT_DOMAIN_PRODUCT = "1"; MOVEX_UNKNOWN_CODE = "1";
                             MOVEX_SERIES_ANSWER = "1"; MOVEX_ID_SCRUB = "1" };
           agent = [ordered]@{ AGENT_PROMPT = "r3"; AGENT_DATASHEET_FILES = "1"; AGENT_REPLY_GUARD = "1"; AGENT_RESOLVE_TAB = "1" } }
@@ -78,6 +82,7 @@ $m["${System}_commit"] = $commit
 $m["${System}_env"] = $cfg[$System]
 $m["${System}_python"] = $Python
 $m["gemini_thinking"] = "low"
+$m["gemini_model"] = "gemini-3.8-flash"
 $m["${System}_started"] = (Get-Date -Format s)
 ($m | ConvertTo-Json -Depth 4) | Out-File -Encoding utf8 $manifest
 
