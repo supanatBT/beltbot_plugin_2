@@ -170,11 +170,38 @@ def movex_filter(spec_type: str, condition: str, target_value: float, product_ty
                                   sort_order=sort_order or "asc")
 
 
+def datasheet_files_on() -> bool:
+    """AGENT_DATASHEET_FILES=1 (4 พ.ย.) — ส่งรูป datasheet ถึงลูกค้าแบบเดียวกับบอท · ไม่ตั้ง/0 = agent เดิมทุกตัวอักษร"""
+    return (os.environ.get("AGENT_DATASHEET_FILES") or "").strip() == "1"
+
+
+DATASHEET_DIR = os.environ.get("AGENT_DATASHEET_DIR", os.path.join(ROOT, "agent_baseline", "_datasheets"))
+
+
+def datasheet_path(pid: str) -> str:
+    return os.path.join(DATASHEET_DIR, f"{os.path.basename(pid)}.png")
+
+
 @_tool
 def movex_datasheet(product_id: str) -> str:
     R = _data()[0]
     pid, _c = resolve_product(product_id)
-    return R.generate_datasheet(pid or product_id)
+    if not datasheet_files_on():
+        return R.generate_datasheet(pid or product_id)
+    # เปิดสวิตช์: เครื่องมือรันในโปรเซส MCP แยกจาก agent_assistant — ส่งรูปผ่านไฟล์ ไม่ผ่าน context ของ LLM (ไม่กินโทเคน)
+    # ล้างแคชของรุ่นนี้ก่อน: แคชอยู่ตลอดอายุโปรเซส แชทใหม่จึงเคยได้ข้อความ "แสดงบนหน้าจอเรียบร้อยแล้ว" ทั้งที่ไม่เคยแสดง
+    if pid:
+        R._datasheet_cache.pop(pid, None)
+    out = R.generate_datasheet(pid or product_id)
+    b64 = R._datasheet_cache.get(pid) if pid else None
+    if b64:
+        import base64
+        os.makedirs(DATASHEET_DIR, exist_ok=True)
+        tmp = datasheet_path(pid) + ".tmp"
+        with open(tmp, "wb") as f:
+            f.write(base64.b64decode(b64))
+        os.replace(tmp, datasheet_path(pid))            # เขียนเสร็จทั้งไฟล์ก่อน agent_assistant อ่าน
+    return out
 
 
 @_tool

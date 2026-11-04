@@ -10,10 +10,12 @@ llm.last_usage เก็บโทเคนรวม · จำนวนครั�
 from __future__ import annotations
 
 import asyncio
+import base64
 import io
 import os
 import sys
 import threading
+import time
 import uuid
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -50,9 +52,36 @@ class _LLMInfo:
                 f"thinking {os.environ.get('GEMINI_THINKING') or 'low'} · prompt {prompt_version()} · เครื่องมือผ่าน MCP (stdio)")
 
 
+DATASHEET_IMG_STYLE = "max-width:100%;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);margin:8px 0;"
+
+
+def datasheet_messages(tool_calls: list, since: float) -> list[dict]:
+    """AGENT_DATASHEET_FILES=1 (4 พ.ย.): รูป datasheet ที่ movex_datasheet สร้างในเทิร์นนี้ → ข้อความรูปต่อท้ายบทสนทนา
+    รูปแบบเดียวกับบอท (brands/movex/runtime.py finish_turn) · ไม่ส่งเข้า session ของ ADK จึงไม่กินโทเคน
+    รับเฉพาะไฟล์ที่เขียนหลังเริ่มเทิร์นนี้ — ไฟล์เก่าของรอบก่อนไม่ถูกแนบ · ปิดสวิตช์ = [] (agent เดิม)"""
+    from agent_baseline import movex_tools as MT
+    if not MT.datasheet_files_on():
+        return []
+    out, seen = [], set()
+    for tc in tool_calls:
+        if tc.get("tool") != "movex_datasheet":
+            continue
+        pid, _c = MT.resolve_product(str((tc.get("args") or {}).get("product_id") or ""))
+        path = MT.datasheet_path(pid) if pid else ""
+        if not pid or pid in seen or not os.path.isfile(path) or os.path.getmtime(path) < since - 1:
+            continue
+        seen.add(pid)
+        with open(path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode("ascii")
+        out.append({"role": "assistant",
+                    "content": f'<img src="data:image/png;base64,{b64}" style="{DATASHEET_IMG_STYLE}" />'})
+    return out
+
+
 class _Engine:
     def __init__(self, model=None, toolset=None):
         self.llm = _LLMInfo()
+        self.last_images: list[dict] = []
         self._loop = asyncio.new_event_loop()
         threading.Thread(target=self._loop.run_forever, daemon=True).start()
         self.agent = build_agent(model=model, toolset=toolset)
@@ -99,8 +128,10 @@ class _Engine:
             parts.append(types.Part.from_bytes(data=buf.getvalue(), mime_type="image/png"))
         if query:
             parts.append(types.Part(text=query))
+        t_start = time.time()
         reply, usage, mv = self._call(self._turn(session_id, types.Content(role="user", parts=parts)))
         self.llm.last_usage, self.llm.last_model_version = usage, mv
+        self.last_images = datasheet_messages(usage.get("tool_calls") or [], t_start)
         return reply, session_id
 
 
@@ -121,7 +152,7 @@ def chat_interaction(user_text, image, history, last_pids, session_id, vit_signa
         session_id = ""
     reply, session_id = eng.chat(user_text or "", image, session_id)
     history = list(history or []) + [{"role": "user", "content": user_text or "[รูป]"},
-                                     {"role": "assistant", "content": reply}]
+                                     {"role": "assistant", "content": reply}] + list(eng.last_images)
     refs = {"tool_calls": (eng.llm.last_usage or {}).get("tool_calls", [])}
     return history, None, refs, [], session_id, None, None
 
