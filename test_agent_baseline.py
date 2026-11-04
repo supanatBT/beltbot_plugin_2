@@ -80,6 +80,8 @@ check("เรียก search_catalogue ผ่าน MCP จริง", [c["tool
 check("ผลมาจากฐานข้อมูลจริง (HD635 C อันดับ 1)", "HD635 C" in reply, reply[:200])
 u = A.engine.llm.last_usage
 check("นับการเรียก LLM 2 ครั้ง (เรียกเครื่องมือ + ตอบ) และโทเคนรวม", u["llm_calls"] == 2 and u["total_token_count"] == 25, u)
+check("บันทึกเวลาเครื่องมือ · เวลาทั้งเทิร์น · โทเคนที่แคช (บันทึกอย่างเดียว)",
+      0 <= u["ms_tools"] <= u["ms_turn"] and u["cached_content_token_count"] == 0, u)
 
 print("3) session ข้ามเทิร์น")
 h2, *_rest = A.chat_interaction("แล้วสีอะไรบ้าง", None, h, [], sid, None, None)

@@ -109,7 +109,8 @@ def reply_guard_on() -> bool:
 
 def _merge_usage(a: dict, b: dict) -> dict:
     out = dict(a)
-    for k in ("prompt_token_count", "candidates_token_count", "total_token_count", "llm_calls"):
+    for k in ("prompt_token_count", "candidates_token_count", "total_token_count", "llm_calls",
+              "cached_content_token_count", "ms_tools", "ms_turn"):
         out[k] = (a.get(k) or 0) + (b.get(k) or 0)
     out["tool_calls"] = list(a.get("tool_calls") or []) + list(b.get("tool_calls") or [])
     return out
@@ -136,19 +137,35 @@ class _Engine:
     async def _turn(self, session_id: str, message: types.Content) -> tuple[str, dict, str | None]:
         text_parts, calls = [], []
         usage = {"prompt_token_count": 0, "candidates_token_count": 0, "total_token_count": 0, "llm_calls": 0}
+        # บันทึกอย่างเดียว ไม่เปลี่ยนพฤติกรรม (4 พ.ย.): โทเคนที่ Gemini แคชเอง (คิดเงินถูกกว่า) และเวลาที่ใช้ในเครื่องมือ
+        # เวลาเครื่องมือ = ช่วงระหว่าง event ที่ LLM สั่งเรียกเครื่องมือ ถึง event ผลของเครื่องมือ · ที่เหลือ = LLM + ส่วนอื่น
+        cached = 0
+        ms_tools = 0.0
+        t_begin = time.perf_counter()
+        t_tool = None
         model_version = None
         async for ev in self.runner.run_async(user_id=USER, session_id=session_id, new_message=message):
+            now = time.perf_counter()
             um = getattr(ev, "usage_metadata", None)
             if um is not None:
                 usage["llm_calls"] += 1
                 for k in ("prompt_token_count", "candidates_token_count", "total_token_count"):
                     usage[k] += getattr(um, k, 0) or 0
+                cached += getattr(um, "cached_content_token_count", 0) or 0
             model_version = getattr(ev, "model_version", None) or model_version
+            if ev.get_function_responses() and t_tool is not None:
+                ms_tools += (now - t_tool) * 1000
+                t_tool = None
+            if ev.get_function_calls():
+                t_tool = now
             for fc in ev.get_function_calls() or []:
                 calls.append({"tool": fc.name, "args": dict(fc.args or {})})
             if ev.is_final_response() and ev.content and ev.content.parts:
                 text_parts += [p.text for p in ev.content.parts if getattr(p, "text", None) and not getattr(p, "thought", False)]
         usage["tool_calls"] = calls
+        usage["cached_content_token_count"] = cached
+        usage["ms_tools"] = round(ms_tools)
+        usage["ms_turn"] = round((time.perf_counter() - t_begin) * 1000)
         return "".join(text_parts).strip(), usage, model_version
 
     def _guard(self, session_id: str, reply: str, usage: dict, mv):
