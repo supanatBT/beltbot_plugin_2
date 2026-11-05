@@ -256,6 +256,10 @@ st = res.get("system_usage_total") or {}
 ok("A8 โทเคนไม่ปน: ระบบ = 10 × เทิร์นบอท · ลูกค้า = 1010 × ครั้งที่ลูกค้าเรียก",
    st.get("total_token_count") == 10 * bot_turns and ct.get("total_token_count") == 1010 * len(cust.prompts)
    and st.get("prompt_token_count") == 7 * bot_turns, (st, ct, bot_turns))
+import hashlib as _hl  # noqa: E402
+ok("A7 meta หลักฐาน: goals · goals_sha (sha256 ของไฟล์ที่ใช้จริง) · system_info.system=bot",
+   res.get("goals", "").endswith("goals.json") and len(res.get("goals_sha", "")) == 64
+   and res.get("system_info", {}).get("system") == "bot" and "commit" in res.get("system_info", {}), res.get("system_info"))
 ok("A9 ทุกเทิร์นบอทมี usage ของเทิร์นนั้นเท่านั้น (7/3 · ไม่สะสมข้ามเทิร์น)",
    all(t.get("usage", {}).get("total_token_count") == 10 and t["usage"]["llm_calls"] == 1
        for r in res["results"] for t in r["transcript"] if t["role"] == "bot"))

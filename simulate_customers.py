@@ -126,6 +126,28 @@ def system_meter(bot):
     return getattr(getattr(bot, "engine", None), "llm", None) or getattr(bot, "llm_client", None)
 
 
+def system_info_of(bot, module: str, meter) -> dict:
+    """ค่าตั้งของระบบที่ถูกวัด (คีย์แบบ run_answer_eval.system_info → eval_mlflow อ่านได้)"""
+    info = {"system": "agent" if module.startswith("agent") else "bot",
+            "gemini_model": getattr(meter, "model_name", "") or os.getenv("GEMINI_MODEL", ""),
+            "gemini_thinking": os.getenv("GEMINI_THINKING", ""),
+            "token_scope": getattr(meter, "usage_scope", "")}
+    if info["system"] == "bot":
+        info["front_interpreter"] = (os.getenv("FRONT_INTERPRETER") or "rules").strip().lower()
+    try:
+        import subprocess
+        info["commit"] = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True,
+                                        text=True, timeout=10).stdout.strip()
+    except Exception:                                # noqa: BLE001 — ไม่มี git ก็รันต่อได้
+        info["commit"] = ""
+    if hasattr(bot, "system_info"):
+        try:
+            info.update(bot.system_info())
+        except Exception as e:                       # noqa: BLE001
+            info["system_info_error"] = f"{type(e).__name__}: {e}"
+    return info
+
+
 _USAGE_SUM_KEYS = ("llm_calls", "prompt_token_count", "candidates_token_count", "thoughts_token_count",
                    "total_token_count")
 
@@ -447,6 +469,12 @@ def main():
         meta["customer_usage_total"] = usage_total([cust_client.last_usage])
         meta["system_usage_total"] = usage_total(t.get("usage") for r in results for t in r["transcript"]
                                                  if t["role"] == "bot")
+        # หลักฐานสำหรับเล่ม/MLflow: ไฟล์เป้าหมายที่ใช้ (ล็อกด้วย sha) + ค่าตั้งของระบบที่ถูกวัด
+        import hashlib
+        meta["goals"] = os.path.relpath(os.path.abspath(a.goals), ROOT).replace("\\", "/")
+        meta["goals_sha"] = hashlib.sha256(open(a.goals, "rb").read()).hexdigest()
+        meta["only"] = sorted(only)
+        meta["system_info"] = system_info_of(bot, a.module, system_meter(bot))
     if tactic_label:
         meta["tactic_label"] = True
     json.dump({**meta, "summary": summary, "results": results}, open(a.out, "w", encoding="utf-8"),
