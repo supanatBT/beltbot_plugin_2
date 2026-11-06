@@ -315,7 +315,20 @@ def instruction_text() -> str:
     """ข้อความคำสั่งเต็มที่ส่งให้โมเดลจริง (รวมกฎจากฐานข้อมูล) — บันทึกเข้า MLflow ด้วยตัวเดียวกันนี้"""
     v = prompt_version()
     text = instruction_r3() if v == "r3" else instruction_r2m() if v == "r2m" else PROMPTS[v]
+    if image_surface_enabled():                      # ปิด = prompt เดิมทุกตัวอักษร
+        text += IMAGE_SURFACE_RULE
     return text.replace("{policy}", _policy_rules())
+
+
+# AGENT_IMAGE_SURFACE=1 (6 พ.ย.) — คู่กับ IMAGE_INTERPRETER=llm ของบอท · กฎความหมายเดียวกับ IMAGE_MATCH_RULES
+IMAGE_SURFACE_RULE = """
+- รูปสายพาน Modutech ที่ยังไม่รู้รุ่น → ดูชนิดผิวเองแล้วเรียก belts_by_surface ได้ ผลคือทุกรุ่นที่ผิวตรง ไม่ใช่การระบุรุ่น
+  ห้ามบอกว่ารูปคือรุ่นใดรุ่นหนึ่ง บอกชนิดผิวที่เห็นและจำนวนรุ่น แล้วถามข้อเดียวที่ช่วยคัดได้มากที่สุด
+  (พิทช์จาก pitches_mm_in_list · รหัสที่ปั๊มบนสายพาน · งานที่ใช้) · pitch_estimate_mm ต้องขอให้ลูกค้ายืนยัน"""
+
+
+def image_surface_enabled() -> bool:
+    return (os.environ.get("AGENT_IMAGE_SURFACE") or "").strip() == "1"
 
 
 def enabled_brands() -> list[str]:

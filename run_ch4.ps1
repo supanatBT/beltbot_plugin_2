@@ -66,7 +66,8 @@ Get-Content .env | Where-Object { $_ -and $_ -notmatch '^\s*#' } | ForEach-Objec
 if (-not $env:GEMINI_API_KEY) { Fail "ไม่มี GEMINI_API_KEY (.env)" }
 foreach ($k in "BOT_MODULE", "IMAGE_TEST_LOG", "AGENT_IMAGE_MAX_SIDE", "AGENT_IMAGE_TO_LLM", "AGENT_LAZY",
                "FRONT_INTERPRETER", "BOT_DOMAIN_PRODUCT", "MOVEX_UNKNOWN_CODE", "MOVEX_SERIES_ANSWER", "MOVEX_ID_SCRUB",
-               "AGENT_PROMPT", "AGENT_DATASHEET_FILES", "AGENT_REPLY_GUARD", "AGENT_RESOLVE_TAB") {
+               "AGENT_PROMPT", "AGENT_DATASHEET_FILES", "AGENT_REPLY_GUARD", "AGENT_RESOLVE_TAB", "IMAGE_INTERPRETER",
+               "AGENT_IMAGE_SURFACE") {
     Remove-Item "Env:$k" -ErrorAction SilentlyContinue }
 $env:PYTHONIOENCODING = "utf-8"
 $env:GEMINI_THINKING = "low"
