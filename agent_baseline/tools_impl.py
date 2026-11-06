@@ -342,3 +342,39 @@ def handoff_to_sales(topic: str) -> str:
 TOOLS = [overview_catalogue, compare_belts, search_catalogue, lookup_belt, find_by_application,
          sprockets_for, belts_for_sprocket, temperature, vector_search, match_catalogue_image,
          handoff_to_sales]
+
+
+# ─────────────── ลักษณะผิวจากรูป → รายชื่อรุ่น (AGENT_IMAGE_SURFACE=1 · 6 พ.ย.) ───────────────
+# คู่กับตัวอ่านรูปของบอท (IMAGE_INTERPRETER=llm): ตัวตรวจ (core/image_interpreter.parse_reading)
+# และตัวคัด (brands/modutech/image_read.image_match) ตัวเดียวกันทุกบรรทัด
+# ต่างกันแค่ใครอ่านรูป — บอทเรียก Gemini แยกอีกครั้ง · agent ดูรูปเองแล้วส่งชื่อผิวมา (ไม่เรียก LLM เพิ่ม)
+def surface_choices() -> dict:
+    """ชื่อผิวที่รับได้ → คำอธิบายหน้าตา (ใส่ในคำอธิบายเครื่องมือให้ LLM เลือก)"""
+    from brands.modutech.image_read import image_spec
+    return image_spec(_state()[0]).surfaces
+
+
+def belts_by_surface(surface: str, alternatives: str = "", openness: str = "",
+                     pitch_mm: float = 0, scale_visible: bool = False, confidence: str = "medium") -> str:
+    from brands.modutech.image_read import image_match, image_spec
+    from core.image_interpreter import parse_reading
+    cat, search, _k, _r, _t = _state()
+    spec = image_spec(cat)
+    raw = {
+        "is_product": "yes",
+        "surface": (surface or "").strip() or None,
+        "surface_alternatives": [a.strip() for a in (alternatives or "").split(",") if a.strip()],
+        "openness": (openness or "").strip().lower() or None,
+        "scale_visible": bool(scale_visible),
+        "pitch_mm": pitch_mm if pitch_mm else None,
+        "confidence": (confidence or "medium").strip().lower(),
+    }
+    reading = parse_reading(json.dumps(raw, ensure_ascii=False), spec)
+    if reading is None:
+        return _dump({"error": "ค่าที่ส่งมาใช้ไม่ได้ — surface ต้องเป็นชื่อในรายการ · confidence: high | medium | low",
+                      "allowed_surfaces": list(spec.surfaces)})
+    match, why = image_match(reading, search, cat, spec)
+    if match is None:
+        return _dump({"matched": False, "reason": why,
+                      "note_th": "ลักษณะนี้ใช้คัดรุ่นไม่ได้ ให้ถามลูกค้าเพิ่ม (พิทช์ · รหัสบนสายพาน · งานที่ใช้)"})
+    return _dump({"matched": True, **match})

@@ -98,6 +98,27 @@ def handoff_to_sales(topic: str) -> str:
     return T.handoff_to_sales(topic)
 
 
+# ─────────────── ลักษณะผิวจากรูป → รายชื่อรุ่น (AGENT_IMAGE_SURFACE=1 · 6 พ.ย.) ───────────────
+# ปิด (ค่าเริ่มต้น) = ไม่มีเครื่องมือนี้ · เครื่องมือเท่าเดิม ผลบทที่ 4 เทียบได้
+if (os.environ.get("AGENT_IMAGE_SURFACE") or "").strip() == "1":
+    _SURFACES = "\n".join(f'        "{k}": {v}' for k, v in T.surface_choices().items())
+
+    def belts_by_surface(surface: str, alternatives: str = "", openness: str = "", pitch_mm: float = 0,
+                         scale_visible: bool = False, confidence: str = "medium") -> str:
+        return T.belts_by_surface(surface, alternatives, openness, pitch_mm, scale_visible, confidence)
+
+    belts_by_surface.__doc__ = f"""รายชื่อสายพาน Modutech ทุกรุ่นที่ชนิดผิวตรงกับที่เห็นในรูป (คัดจากฐานข้อมูลด้วยโค้ด)
+        ไม่ใช่การระบุรุ่น — รุ่นที่ผิวเดียวกันหน้าตาคล้ายกันแต่พิทช์ วัสดุ และสเปกต่างกัน
+        surface: ชื่อผิวจากรายการด้านล่าง (สะกดตามนี้) · ว่างได้ถ้าบอกแค่ openness
+        alternatives: ผิวอื่นจากรายการที่ยังแยกไม่ออก คั่นด้วยจุลภาค ไม่เกิน 2
+        openness: "open" (มีช่อง/รูทะลุ) | "closed" (ผิวทึบ) | ว่าง
+        pitch_mm: ระยะระหว่างแนวสลัก ใส่ได้เฉพาะเมื่อมีไม้บรรทัด/สเกลในรูป และต้องตั้ง scale_visible=true (ใช้เรียงลำดับ ไม่ตัดรุ่น)
+        confidence: "high" | "medium" | "low" (low = ไม่คัดรุ่น)
+        ผิวที่รับได้:
+{_SURFACES}"""
+    app.tool()(belts_by_surface)
+
+
 # ─────────────── Movex (ขั้นที่ 2) — ฟังก์ชันเดิมของเทอมที่แล้วใน brands/movex/runtime.py ───────────────
 # เปิดเมื่อ AGENT_PROMPT=r2m (ค่าเริ่มต้น) หรือสั่งตรงด้วย AGENT_BRANDS=modutech,movex
 # prompt r1/r2 = ขั้นที่ 1 → เครื่องมือ 11 ตัวเท่าเดิม ผลรอบก่อนจึงเทียบได้
