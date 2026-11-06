@@ -104,7 +104,7 @@ def llm_image_bytes(image) -> tuple[bytes, str]:
 
 
 def reply_guard_on() -> bool:
-    return (os.environ.get("AGENT_REPLY_GUARD") or "").strip() == "1"
+    return (os.environ.get("AGENT_REPLY_GUARD") or "1").strip() != "0"
 
 
 def _merge_usage(a: dict, b: dict) -> dict:

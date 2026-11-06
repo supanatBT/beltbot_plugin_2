@@ -18,7 +18,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
-os.environ.pop("AGENT_IMAGE_SURFACE", None)
+os.environ["AGENT_IMAGE_SURFACE"] = "0"
 
 from agent_baseline import agent as A                          # noqa: E402
 from agent_baseline import tools_impl as T                     # noqa: E402
@@ -83,7 +83,7 @@ def tools_and_prompt(on: bool):
     if on:
         os.environ["AGENT_IMAGE_SURFACE"] = "1"
     else:
-        os.environ.pop("AGENT_IMAGE_SURFACE", None)
+        os.environ["AGENT_IMAGE_SURFACE"] = "0"
     from agent_baseline import mcp_server
     S = importlib.reload(mcp_server)
     tools = asyncio.run(S.app.list_tools())
@@ -98,7 +98,7 @@ ok("เปิด = เครื่องมือเพิ่มตัวเด�
 desc = on_tools["belts_by_surface"].description
 ok("คำอธิบายเครื่องมือมีผิวครบทุกชื่อ", all(f'"{s}"' in desc for s in spec.surfaces))
 ok("เปิด = prompt เดิม + กฎผิวจากรูปต่อท้าย", on_prompt.startswith(off_prompt) and "belts_by_surface" in on_prompt)
-os.environ.pop("AGENT_IMAGE_SURFACE", None)
+os.environ["AGENT_IMAGE_SURFACE"] = "0"
 
 print(f"\nรวม {passed}/{passed + failed}")
 sys.exit(1 if failed else 0)

@@ -100,7 +100,7 @@ def handoff_to_sales(topic: str) -> str:
 
 # ─────────────── ลักษณะผิวจากรูป → รายชื่อรุ่น (AGENT_IMAGE_SURFACE=1 · 6 พ.ย.) ───────────────
 # ปิด (ค่าเริ่มต้น) = ไม่มีเครื่องมือนี้ · เครื่องมือเท่าเดิม ผลบทที่ 4 เทียบได้
-if (os.environ.get("AGENT_IMAGE_SURFACE") or "").strip() == "1":
+if (os.environ.get("AGENT_IMAGE_SURFACE") or "1").strip() != "0":
     _SURFACES = "\n".join(f'        "{k}": {v}' for k, v in T.surface_choices().items())
 
     def belts_by_surface(surface: str, alternatives: str = "", openness: str = "", pitch_mm: float = 0,
@@ -122,7 +122,7 @@ if (os.environ.get("AGENT_IMAGE_SURFACE") or "").strip() == "1":
 # ─────────────── Movex (ขั้นที่ 2) — ฟังก์ชันเดิมของเทอมที่แล้วใน brands/movex/runtime.py ───────────────
 # เปิดเมื่อ AGENT_PROMPT=r2m (ค่าเริ่มต้น) หรือสั่งตรงด้วย AGENT_BRANDS=modutech,movex
 # prompt r1/r2 = ขั้นที่ 1 → เครื่องมือ 11 ตัวเท่าเดิม ผลรอบก่อนจึงเทียบได้
-_DEFAULT_BRANDS = ("modutech,movex" if (os.environ.get("AGENT_PROMPT") or "").strip().lower() in ("r2m", "r3")
+_DEFAULT_BRANDS = ("modutech,movex" if (os.environ.get("AGENT_PROMPT") or "r3").strip().lower() in ("r2m", "r3")
                    else "modutech")
 if "movex" in (os.environ.get("AGENT_BRANDS") or _DEFAULT_BRANDS).lower():
 

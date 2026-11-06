@@ -66,7 +66,7 @@ def _not_found(code: str, candidates: list[str]) -> str:
 
 
 def _send_conflict() -> bool:
-    return (os.environ.get("AGENT_PROMPT") or "").strip().lower() not in ("", "r1", "r2", "r2m")
+    return (os.environ.get("AGENT_PROMPT") or "r3").strip().lower() not in ("", "r1", "r2", "r2m")
 
 
 def _variants(p: dict, with_temp: bool = True) -> list[dict]:

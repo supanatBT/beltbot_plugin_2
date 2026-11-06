@@ -19,7 +19,7 @@ import time
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 os.environ["AGENT_LAZY"] = "1"
-os.environ.pop("AGENT_DATASHEET_FILES", None)
+os.environ["AGENT_DATASHEET_FILES"] = "0"   # ค่าเริ่มต้นเปิดตั้งแต่ 6 พ.ย.
 os.environ["AGENT_DATASHEET_DIR"] = tempfile.mkdtemp(prefix="agent_ds_")
 
 import importlib.util  # noqa: E402
@@ -133,7 +133,7 @@ else:
     parts_text = " ".join(getattr(pt, "text", "") or "" for pt in (getattr(msg, "parts", None) or []))
     check("รูป datasheet ไม่ถูกส่งเข้า session ของ ADK", "base64" not in parts_text and "<img" not in parts_text)
 
-    os.environ.pop("AGENT_DATASHEET_FILES")
+    os.environ["AGENT_DATASHEET_FILES"] = "0"
     eng2 = A._Engine.__new__(A._Engine); eng2.llm = A._LLMInfo(); eng2.last_images = []
     eng2._call = eng._call
     A.engine = eng2

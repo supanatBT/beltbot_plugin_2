@@ -120,7 +120,7 @@ def resolve_product(code: str) -> tuple[str | None, list[str]]:
 
 
 def resolve_tab_on() -> bool:
-    return (os.environ.get("AGENT_RESOLVE_TAB") or "").strip() == "1"
+    return (os.environ.get("AGENT_RESOLVE_TAB") or "1").strip() != "0"
 
 
 def _product_card(pid: str) -> dict:
@@ -183,7 +183,7 @@ def movex_filter(spec_type: str, condition: str, target_value: float, product_ty
 
 def datasheet_files_on() -> bool:
     """AGENT_DATASHEET_FILES=1 (4 พ.ย.) — ส่งรูป datasheet ถึงลูกค้าแบบเดียวกับบอท · ไม่ตั้ง/0 = agent เดิมทุกตัวอักษร"""
-    return (os.environ.get("AGENT_DATASHEET_FILES") or "").strip() == "1"
+    return (os.environ.get("AGENT_DATASHEET_FILES") or "1").strip() != "0"
 
 
 DATASHEET_DIR = os.environ.get("AGENT_DATASHEET_DIR", os.path.join(ROOT, "agent_baseline", "_datasheets"))

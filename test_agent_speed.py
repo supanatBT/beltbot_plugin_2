@@ -16,8 +16,9 @@ import tempfile
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 os.environ["AGENT_LAZY"] = "1"
-for k in ("AGENT_RESOLVE_TAB", "AGENT_IMAGE_MAX_SIDE", "AGENT_REPLY_GUARD", "AGENT_DATASHEET_FILES"):
-    os.environ.pop(k, None)
+os.environ.pop("AGENT_IMAGE_MAX_SIDE", None)
+for k in ("AGENT_RESOLVE_TAB", "AGENT_REPLY_GUARD", "AGENT_DATASHEET_FILES", "AGENT_IMAGE_SURFACE"):
+    os.environ[k] = "0"                      # สวิตช์เปิดเป็นค่าเริ่มต้นตั้งแต่ 6 พ.ย. — เริ่มจาก agent เดิม
 
 import importlib.util  # noqa: E402
 import types as _types  # noqa: E402
@@ -84,7 +85,7 @@ check("LF999 ยังหาไม่เจอ", after["LF999"][0] is None, afte
 check("ช่องว่างยังหาไม่เจอ", after[""] == (None, []), after[""])
 lk = M.movex_lookup("LF880 K325")
 check("movex_lookup ใช้ทางใหม่", "LF 880 TAB K325" in lk and "error" not in lk[:30], lk[:80])
-os.environ.pop("AGENT_RESOLVE_TAB")
+os.environ["AGENT_RESOLVE_TAB"] = "0"
 
 print("3) AGENT_IMAGE_MAX_SIDE")
 import agent_assistant as A  # noqa: E402

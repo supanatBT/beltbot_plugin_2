@@ -17,6 +17,7 @@ import types
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
+os.environ["AGENT_IMAGE_SURFACE"] = "0"   # ค่าเริ่มต้นเปิดตั้งแต่ 6 พ.ย. — ไฟล์นี้นับเครื่องมือ 18 ตัวเดิม
 
 STUBBED = []
 

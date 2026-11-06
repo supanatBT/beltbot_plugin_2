@@ -277,11 +277,12 @@ def instruction_r3() -> str:
     return t
 
 
+DEFAULT_PROMPT = "r3"     # ล็อก 6 พ.ย. = ตัวที่ใช้ blind v2 · ค่าเดิม r1
 PROMPTS = {"r1": INSTRUCTION_TH, "r2": INSTRUCTION_TH_R2, "r2m": None, "r3": None}   # r2m/r3 สร้างตอนเรียก (อ่าน brand.yaml)
 
 
 def prompt_version() -> str:
-    v = (os.environ.get("AGENT_PROMPT") or "r1").strip().lower()
+    v = (os.environ.get("AGENT_PROMPT") or DEFAULT_PROMPT).strip().lower()
     if v not in PROMPTS:
         raise ValueError(f"AGENT_PROMPT={v!r} ไม่รู้จัก (มี {sorted(PROMPTS)})")
     return v
@@ -328,7 +329,7 @@ IMAGE_SURFACE_RULE = """
 
 
 def image_surface_enabled() -> bool:
-    return (os.environ.get("AGENT_IMAGE_SURFACE") or "").strip() == "1"
+    return (os.environ.get("AGENT_IMAGE_SURFACE") or "1").strip() != "0"
 
 
 def enabled_brands() -> list[str]:

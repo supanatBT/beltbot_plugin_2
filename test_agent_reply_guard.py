@@ -17,8 +17,9 @@ import sys
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 os.environ["AGENT_LAZY"] = "1"
-os.environ.pop("AGENT_REPLY_GUARD", None)
-os.environ.pop("AGENT_DATASHEET_FILES", None)
+for _k in ("AGENT_REPLY_GUARD", "AGENT_DATASHEET_FILES", "AGENT_RESOLVE_TAB", "AGENT_IMAGE_SURFACE"):
+    os.environ[_k] = "0"                     # สวิตช์เปิดเป็นค่าเริ่มต้นตั้งแต่ 6 พ.ย. — ไฟล์นี้เริ่มจาก agent เดิม
+os.environ.setdefault("AGENT_PROMPT", "r1")
 
 import agent_assistant as A            # noqa: E402
 from core import reply_guard as RG     # noqa: E402

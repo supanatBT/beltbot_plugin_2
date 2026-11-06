@@ -7,6 +7,7 @@
 #   บอท:   powershell -ExecutionPolicy Bypass -File .\run_ch4.ps1 -System bot   -Python $BOTPY -Testcases ..\blind_v2.csv -Tag blind2 -ImgDir "<โฟลเดอร์รูป>"
 #   agent: powershell -ExecutionPolicy Bypass -File .\run_ch4.ps1 -System agent -Python $PY    -Testcases ..\blind_v2.csv -Tag blind2 -ImgDir "<โฟลเดอร์รูป>"
 #   ล็อก commit: เติม -Commit <hash> ทุกคำสั่ง (HEAD ไม่ตรง = หยุด)
+#   agent ตัวที่ใช้งานจริง (มีเครื่องมือผิวจากรูป): เติม -ImageSurface · ไม่เติม = ตั้ง AGENT_IMAGE_SURFACE=0 ตรงกับ blind v2
 #   ชุดเล็ก: ... -System agent -Testcases testcases_modutech_136.csv -Tag modsmall -Rounds 1 -Only "TP-002,TP-011"
 #
 # ผล:  ..\ch4_<Tag>_<System>_r<รอบ>.json  · บอทมี ..\ch4_<Tag>_bot_r<รอบ>_img.log (การตัดสินเรื่องรูป)
@@ -20,7 +21,8 @@ param(
     [string]$ImgDir = "",
     [int[]]$Rounds = @(1, 2),
     [string]$Only = "",
-    [string]$Commit = ""          # ใส่ hash ที่ล็อกไว้ = หยุดถ้า HEAD ไม่ตรง (ไม่ใส่ = ไม่ตรวจข้อนี้)
+    [string]$Commit = "",         # ใส่ hash ที่ล็อกไว้ = หยุดถ้า HEAD ไม่ตรง (ไม่ใส่ = ไม่ตรวจข้อนี้)
+    [switch]$ImageSurface         # agent: เปิดเครื่องมือผิวจากรูป (ค่าเริ่มต้นของ agent ตั้งแต่ 6 พ.ย.) · ไม่ใส่ = ปิด = ตรงกับ blind v2
 )
 
 $ErrorActionPreference = "Stop"
@@ -74,7 +76,8 @@ $env:GEMINI_THINKING = "low"
 $env:GEMINI_MODEL = "gemini-3.8-flash"
 $cfg = @{ bot = [ordered]@{ FRONT_INTERPRETER = "llm"; BOT_DOMAIN_PRODUCT = "1"; MOVEX_UNKNOWN_CODE = "1";
                             MOVEX_SERIES_ANSWER = "1"; MOVEX_ID_SCRUB = "1" };
-          agent = [ordered]@{ AGENT_PROMPT = "r3"; AGENT_DATASHEET_FILES = "1"; AGENT_REPLY_GUARD = "1"; AGENT_RESOLVE_TAB = "1" } }
+          agent = [ordered]@{ AGENT_PROMPT = "r3"; AGENT_DATASHEET_FILES = "1"; AGENT_REPLY_GUARD = "1"; AGENT_RESOLVE_TAB = "1";
+                            AGENT_IMAGE_SURFACE = $(if ($ImageSurface) { "1" } else { "0" }) } }
 foreach ($kv in $cfg[$System].GetEnumerator()) { [Environment]::SetEnvironmentVariable($kv.Key, $kv.Value) }
 $module = @{ bot = "assistant"; agent = "agent_assistant" }[$System]
 
