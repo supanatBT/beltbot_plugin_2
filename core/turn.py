@@ -243,8 +243,11 @@ class TurnEngine:
             # แบรนด์ที่ไม่มีตัวให้คะแนนรูปไม่ส่งรูปให้ LLM (ปลั๊กอินแบบนี้ส่ง user_parts = [effective_text] ล้วน)
             # ผลเดิม: Gemini ได้ประวัติที่จบด้วยคำตอบบอท → 400 "Requests ending with a model turn"
             # และต่อให้ไม่ error ก็จะตอบเรื่องรุ่นเดิมโดยไม่ได้ดูรูป (เดาแทนลูกค้า) → ขอคำถามแทน
+            # ปลั๊กอินที่อ่านลักษณะจากรูปได้ (reads_image · IMAGE_INTERPRETER=llm · 6 พ.ย.) ไปต่อที่ build_turn
+            # ถ้าอ่านไม่ได้ เทิร์นผู้ใช้ยังว่าง → ด่าน "Empty turn" ด้านล่างขอคำถามแบบเดียวกัน
+            reads = getattr(self.plugins.get(decision.brand), "reads_image", None)
             if turn_image is not None and not (user_text or "").strip() \
-                    and decision.brand not in self.image_scorers:
+                    and decision.brand not in self.image_scorers and not (callable(reads) and reads()):
                 ai_reply = _prefix(image_note, T.image_need_question(self.plugins[decision.brand].info))
                 raw_refs_html += (f"**Image-only:** {decision.brand} อ่านรูปไม่ได้ + ไม่มีข้อความ "
                                   f"→ ขอคำถาม (เดิม {decision.action} · {decision.reason})\n")

@@ -509,6 +509,37 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
                                 f"(รายละเอียดเต็มแนบมา {len(codes)} รุ่น)"),
                 }
                 debug.append(f"industry: {industry} → {len(full_list)} รุ่น")
+    # ── ลักษณะผิวที่อ่านจากรูป (IMAGE_INTERPRETER=llm · 6 พ.ย. · brands/modutech/image_read.py) ──
+    # รายชื่อคัดด้วยโค้ดแล้ว ใช้แบบเดียวกับรายชื่องานใช้: ครบทุกรุ่น + record เต็มไม่เกิน MAX_FULL_RECORDS
+    # ไม่มีคีย์นี้ (สวิตช์ปิด / อ่านไม่ได้) = ทางเดิมทุกตัวอักษร · รหัสที่ลูกค้าพิมพ์/โฟกัส = ไม่ใช้รูปกรอง
+    im = md.get("image_match")
+    if im and not md.get("codes"):
+        img_codes = list(im["belt_codes_complete"])
+        if full_list:
+            both = [c for c in img_codes if c in set(full_list)]    # ลำดับตามรูป (พิทช์ใกล้ก่อน ถ้ามี)
+            if both:
+                full_list = both
+                codes = both[:MAX_FULL_RECORDS]
+                for k in ("application_match", "industry_match"):
+                    if k in context:
+                        context[k]["belt_codes_complete"] = both
+                context["image_match"] = {**im, "belt_codes_complete": both, "count": len(both),
+                                          "combined_with_text": True}
+                debug.append(f"รูป ∩ งานใช้ = {len(both)} รุ่น")
+            else:
+                context["image_match"] = {k: v for k, v in im.items() if k != "belt_codes_complete"}
+                context["image_match"]["conflict_th"] = ("ผิวที่เห็นในรูปไม่ตรงกับรุ่นใดในรายชื่อของงานนี้ "
+                                                         "ให้ตอบตามรายชื่องาน และถามลูกค้าว่ารูปเป็นสายพานของงานนี้หรือไม่")
+                debug.append("รูปไม่ตรงกับรายชื่องานใช้ — ใช้รายชื่องาน")
+        elif not codes:
+            full_list = img_codes
+            codes = img_codes[:MAX_FULL_RECORDS]
+            context["image_match"] = im
+            skip_vector = True
+            debug.append(f"รูป → {len(img_codes)} รุ่น")
+    if md.get("image_read"):
+        debug.append(f"อ่านรูป: {md['image_read']}")
+
     if not codes and vector_search is not None and not skip_vector:
         ids = vector_search(decision.effective_text)
         codes = [cat.by_id[i]["belt_code"] for i in ids if i in cat.by_id]
@@ -645,11 +676,25 @@ def build_modutech_turn(decision: Decision, cat: Catalogue, search: CatalogueSea
     rules = _pull_rules(context.get("products"), "belt_code")
     for k, v in _pull_rules(context.get("sprockets"), "sprocket_code").items():
         rules.setdefault(k, []).extend(v)
-    return ModutechTurn(_system_prompt(context, rules), decision.effective_text, context,
+    user_prompt = decision.effective_text
+    if "image_match" in context and not (user_prompt or "").strip():
+        # รูปเปล่า (ไม่มีข้อความ) — เดิมไม่ถึงตรงนี้ (core/turn ขอคำถามแทน) · เทิร์นผู้ใช้ห้ามว่าง
+        user_prompt = IMAGE_ONLY_PROMPT_TH
+    return ModutechTurn(_system_prompt(context, rules), user_prompt, context,
                         ask_back=gated.ask_back, belt_codes=codes, debug=debug)
 
 
 SLOT_TH = {"wet_or_dry": "ไลน์เปียกหรือแห้ง", "line_shape": "ไลน์ตรงหรือมีโค้ง", "material": "เกรดวัสดุ"}
+
+
+IMAGE_ONLY_PROMPT_TH = "(ลูกค้าส่งรูปสายพานมาโดยไม่ได้พิมพ์คำถาม)"
+IMAGE_MATCH_RULES = """
+- ถ้ามี image_match คือลักษณะผิวที่ระบบอ่านจากรูปของลูกค้า ไม่ใช่การระบุรุ่น ห้ามบอกว่ารูปคือรุ่นใดรุ่นหนึ่ง
+  บอกลูกค้าว่าจากรูปผิวน่าจะเป็นแบบ surface_read_th (หรือตาม openness) ซึ่งในแคตตาล็อกมี count รุ่น
+  บอกรายชื่อจาก belt_codes_complete แบบบรรทัดเดียว ห้ามเพิ่มรุ่นที่ไม่อยู่ในรายการ
+  แล้วถามข้อเดียวที่ช่วยคัดรุ่นได้มากที่สุด: พิทช์ (ให้ตัวเลือกจาก pitches_mm_in_list) หรือรหัสที่ปั๊มบนสายพาน หรืองานที่ใช้
+  ถ้ามี pitch_estimate_mm ให้บอกว่าประมาณจากสเกลในรูปและขอให้ลูกค้ายืนยัน · ถ้ามี conflict_th ให้ทำตามนั้น
+  ถ้าลูกค้าถามสเปกของ "รุ่นในรูป" ห้ามตอบตัวเลขของรุ่นใดรุ่นหนึ่งจนกว่าลูกค้าจะยืนยันรุ่น"""
 
 
 def _system_prompt(context: dict, rules: dict[str, list[str]]) -> str:
@@ -660,6 +705,8 @@ def _system_prompt(context: dict, rules: dict[str, list[str]]) -> str:
     rules_block = (f"\n\nกฎเฉพาะรุ่นในคำถามนี้ (ใช้ตัดสินใจ ไม่ต้องยกข้อความในส่วนนี้ไปเขียนในคำตอบ){per_belt}"
                    if per_belt else "")
     graph_rules = GRAPH_APP_RULES if graph_apps_enabled() else ""
+    if "image_match" in context:                 # มีเฉพาะเมื่อเปิดตัวอ่านรูป — ปิด = prompt เดิมทุกตัวอักษร
+        graph_rules += IMAGE_MATCH_RULES
     return f"""
 คุณคือ 'Modutech Assistant' วิศวกรฝ่ายขายสายพานโมดูลาร์ Modutech
 ตอบภาษาไทย เป็นธรรมชาติ มีหางเสียง (ครับ)

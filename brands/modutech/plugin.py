@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import os
 import re
+from dataclasses import replace
 from typing import Optional
 
 from brands.modutech.detect import ModutechDetector
@@ -820,7 +821,35 @@ class ModutechPlugin:
         return self.runtime
 
     def build_turn(self, decision, turn):
-        return self._rt().build_turn(decision, turn)
+        return self._rt().build_turn(self._with_image_read(decision, turn), turn)
+
+    # ── ตัวอ่านรูป (core/image_interpreter · IMAGE_INTERPRETER=llm · 6 พ.ย.) ──
+    def reads_image(self) -> bool:
+        """อ่านลักษณะผิวจากรูปได้ไหม — core/turn ใช้ตัดสินว่ารูปเปล่าควรถึง build_turn หรือขอคำถามแบบเดิม"""
+        return getattr(self, "_image_interpreter", None) is not None
+
+    def _image_spec(self):
+        spec = getattr(self, "_ispec", None)
+        if spec is None:
+            from brands.modutech.image_read import image_spec
+            spec = self._ispec = image_spec(self.mod)
+        return spec
+
+    def _with_image_read(self, decision, turn):
+        """มีรูป + ยังไม่มีรหัสในโฟกัส → LLM อ่านผิว → โค้ดคัดรายชื่อ → ใส่ payload["image_match"]
+        สวิตช์ปิด · ไม่มีรูป · ค้นทั้งฐาน · มีรหัสแล้ว · อ่านไม่ได้ = decision เดิม (ทางเดิมทุกตัวอักษร)"""
+        ii = getattr(self, "_image_interpreter", None)
+        md = decision.payload or {}
+        if ii is None or getattr(turn, "image", None) is None or decision.action != "answer" or md.get("codes"):
+            return decision
+        from brands.modutech.image_read import image_match
+        spec = self._image_spec()
+        reading = ii.read(turn.image, turn.user_text, spec)
+        match, why = image_match(reading, self.search, self.mod, spec)
+        payload = {**md, "image_read": why}
+        if match is not None:
+            payload["image_match"] = match
+        return replace(decision, payload=payload)
 
     MAX_FOCUS_FROM_REPLY = 6
 
@@ -1000,6 +1029,7 @@ def create(ctx):
         plugin.runtime = ModutechRuntime(cat, plugin.search, kg, retriever, sh["tool_log"])
         plugin._interpreter = sh.get("answer_interpreter")      # None = กฎเดิม (need_flow)
         plugin._query_interpreter = sh.get("query_interpreter")  # None = กฎ regex + ทางเดิม (30 ต.ค.)
+        plugin._image_interpreter = sh.get("image_interpreter")  # None = รูปไม่ถูกอ่าน (บอทเดิม · 6 พ.ย.)
         if sh.get("device") is not None:
             from brands.modutech.image_gate import load_gate
             plugin._image_gate, why = load_gate(cfg["key"], d, cfg.get("image_gate"), sh["device"])

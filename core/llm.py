@@ -250,8 +250,9 @@ class GeminiClient(UsageMeter):
     def describe(self) -> str:
         return f"google-generativeai · {self.model_name} · thinking ไม่จำกัด · timeout {self.timeout_s or 'ไม่จำกัด'} วิ"
 
-    def complete(self, system: str, user: str, json_mode: bool = False, temperature: float | None = None) -> str:
-        """เรียกครั้งเดียว ไม่มี tool ไม่มีประวัติ — ใช้กับตัวตีความคำตอบ (core/answer_interpreter) และลูกค้าจำลอง"""
+    def complete(self, system: str, user, json_mode: bool = False, temperature: float | None = None) -> str:
+        """เรียกครั้งเดียว ไม่มี tool ไม่มีประวัติ — ใช้กับตัวตีความคำตอบ (core/answer_interpreter) และลูกค้าจำลอง
+        user = ข้อความ หรือ list [{"mime_type", "data"}, ข้อความ] (ตัวอ่านรูป core/image_interpreter · 6 พ.ย.)"""
         cfg = {}
         if json_mode:
             cfg["response_mime_type"] = "application/json"
@@ -343,14 +344,16 @@ class GenAIClient(UsageMeter):
         items = message if isinstance(message, (list, tuple)) else [message]
         return [self._part(p) for p in items]
 
-    def complete(self, system: str, user: str, json_mode: bool = False, temperature: float | None = None) -> str:
-        """เรียกครั้งเดียว ไม่มี tool ไม่มีประวัติ — ใช้กับตัวตีความคำตอบ (core/answer_interpreter) และลูกค้าจำลอง"""
+    def complete(self, system: str, user, json_mode: bool = False, temperature: float | None = None) -> str:
+        """เรียกครั้งเดียว ไม่มี tool ไม่มีประวัติ — ใช้กับตัวตีความคำตอบ (core/answer_interpreter) และลูกค้าจำลอง
+        user = ข้อความ หรือ list [{"mime_type", "data"}, ข้อความ] (ตัวอ่านรูป core/image_interpreter · 6 พ.ย.)"""
         t = self.types
+        contents = self._parts(user) if isinstance(user, (list, tuple)) else user   # ข้อความล้วน = แบบเดิมทุกไบต์
         cfg = t.GenerateContentConfig(system_instruction=system, thinking_config=self.thinking_config,
                                       **({"response_mime_type": "application/json"} if json_mode else {}),
                                       **({"temperature": temperature} if temperature is not None else {}))
         resp = self._as("complete", lambda: run_with_deadline(lambda: with_retry(lambda: self.client.models.generate_content(
-            model=self.model_name, contents=user, config=cfg)), _complete_deadline(self.timeout_s)))
+            model=self.model_name, contents=contents, config=cfg)), _complete_deadline(self.timeout_s)))
         self._final(resp, "complete")
         return extract_text(resp)
 

@@ -194,11 +194,20 @@ if FRONT_INTERPRETER == "llm":
     front_interpreter = FrontInterpreter(llm_client.complete, log=print)
 print(f"✅ ตีความด่านหน้า: {'LLM (' + GEMINI_MODEL + ') · สำรองด้วยกฎ' if front_interpreter else 'ปิด (บอทเดิม)'}")
 
+# ตัวอ่านรูป (core/image_interpreter · 6 พ.ย.): IMAGE_INTERPRETER=llm เปิด — LLM อ่านลักษณะผิวจากรูป แล้วโค้ดคัดรุ่น
+# ใช้กับแบรนด์ที่ยังไม่มีตัวให้คะแนนรูป (Modutech) · ค่าเริ่มต้นปิด = บอทเดิมทุกตัวอักษร
+IMAGE_INTERPRETER = (os.getenv("IMAGE_INTERPRETER") or "off").strip().lower()
+image_interpreter = None
+if IMAGE_INTERPRETER == "llm":
+    from core.image_interpreter import ImageInterpreter    # noqa: E402
+    image_interpreter = ImageInterpreter(llm_client.complete, log=print)
+print(f"✅ อ่านรูป (ลักษณะผิว): {'LLM (' + GEMINI_MODEL + ') · โค้ดคัดรุ่น · สำรองด้วยทางเดิม' if image_interpreter else 'ปิด (บอทเดิม)'}")
+
 plugins = load_plugins(_configs, shared=dict(
     device=DEVICE, jina_tokenizer=jina_tokenizer, jina_model=jina_model,
     siglip_processor=siglip_processor, siglip_model=siglip_model,
     vit=vit_models, logger=logger, tool_log=tool_log, answer_interpreter=answer_interpreter,
-    query_interpreter=query_interpreter))
+    query_interpreter=query_interpreter, image_interpreter=image_interpreter))
 DialogState = state_class(state_schema(_configs))
 _scorers = {k: s for k, s in ((k, p.image_scorer()) for k, p in plugins.items()) if s is not None}
 _gates = {k: g for k, g in ((k, getattr(p, "image_gate", lambda: None)()) for k, p in plugins.items())
