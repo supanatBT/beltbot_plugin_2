@@ -1126,7 +1126,9 @@ function BotImage({ url, alt }: { url: string; alt: string }) {
 const CSS = `
 .cv-wrap{display:flex;height:100dvh;min-height:0;overflow:hidden}
 .cv-main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
-.cv-main>.shell{flex:1;min-height:0}
+.cv-main>.shell{flex:1;min-height:0;width:100%;min-width:0}
+/* width/min-width (6 พ.ย.): .shell มี margin auto จึงไม่ยืดเต็ม .cv-main แต่กว้างตามเนื้อหา — ตาราง/ลิงก์ยาว
+   ดันกรอบเกินจอบนมือถือ แล้ว .cv-main ตัดทิ้ง (overflow:hidden) ปุ่มส่งหลุดขอบ · ตอนนี้ตารางเลื่อนในกรอบของตัวเอง */
 
 /* พับแถบ: จอกว้างใช้ display เพื่อคืนพื้นที่ให้บทสนทนาเต็มจอ
    จอแคบแถบเป็นลิ้นชักลอยทับอยู่แล้ว จึงใช้ transform เพื่อให้มีจังหวะเลื่อน */
