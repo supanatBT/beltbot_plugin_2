@@ -255,5 +255,39 @@ def system_info() -> dict:
             "brands": ",".join(enabled_brands()), "framework": "google-adk + mcp (stdio)"}
 
 
+LOCK_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_lock.json")
+
+
+def agent_config() -> dict:
+    """ค่าตั้งที่มีผลจริงตอนนี้ (หลังอ่านตัวแปรแวดล้อม) — ใช้เทียบกับ agent_lock.json"""
+    import hashlib
+    from agent_baseline import movex_tools as MT
+    from agent_baseline.agent import image_surface_enabled
+    return {
+        "model": os.environ.get("GEMINI_MODEL") or "gemini-3.8-flash",
+        "thinking": (os.environ.get("GEMINI_THINKING") or "low").strip().lower(),
+        "prompt": prompt_version(),
+        "prompt_sha": hashlib.sha256(instruction_text().encode("utf-8")).hexdigest()[:12],
+        "brands": ",".join(enabled_brands()),
+        "reply_guard": reply_guard_on(), "resolve_tab": MT.resolve_tab_on(),
+        "datasheet_files": MT.datasheet_files_on(), "image_surface": image_surface_enabled(),
+        "image_max_side": image_max_side(),
+    }
+
+
+def lock_status() -> dict:
+    """เทียบค่าตั้งจริงกับตัวที่ล็อกไว้ (agent_lock.json) · matches=False = ตัวที่รันไม่ใช่ตัวที่ทดสอบ"""
+    import json
+    cfg = agent_config()
+    try:
+        lock = json.load(open(LOCK_FILE, encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        return {"config": cfg, "lock": None, "matches": None, "error": type(e).__name__}
+    want = lock.get("config") or {}
+    diff = {k: {"want": want[k], "got": cfg.get(k)} for k in want if cfg.get(k) != want[k]}
+    return {"config": cfg, "tested_commit": lock.get("tested_commit"), "tag": lock.get("tag"),
+            "matches": not diff, "diff": diff}
+
+
 # run_answer_eval อ่าน getattr(bot, "engine").llm ก่อนเรียกเทิร์นแรก → สร้างตอน import
 engine = _Engine() if os.environ.get("AGENT_LAZY") != "1" else None

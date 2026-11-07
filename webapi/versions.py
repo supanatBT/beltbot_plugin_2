@@ -101,9 +101,16 @@ def collect(mod: Any) -> dict:
     except Exception as e:                               # noqa: BLE001
         manifest = {"present": None, "error": type(e).__name__}
 
-    return {"brands": brands, "models": models,
-            "llm": {"model": getattr(mod, "GEMINI_MODEL", None)},
-            "manifest": manifest}
+    out = {"brands": brands, "models": models,
+           "llm": {"model": getattr(mod, "GEMINI_MODEL", None)},
+           "manifest": manifest}
+    if hasattr(mod, "lock_status"):                      # agent: ค่าตั้งตรงกับตัวที่ทดสอบ (agent_lock.json) ไหม
+        try:
+            out["agent"] = mod.lock_status()
+            out["llm"]["model"] = out["agent"]["config"]["model"]
+        except Exception as e:                           # noqa: BLE001
+            out["agent"] = {"error": f"{type(e).__name__}: {e}"}
+    return out
 
 
 def summary(v: dict) -> dict:
@@ -116,6 +123,11 @@ def summary(v: dict) -> dict:
     locked = [m for m in models.values() if isinstance(m, dict) and m.get("locked")]
     mismatch = [k for k, m in models.items() if isinstance(m, dict) and m.get("match") is False]
     man = v.get("manifest") or {}
-    return {"catalogue": cats[0] if cats else None,
-            "models_locked": len(locked), "models_mismatch": len(mismatch),
-            "data_ok": (not man.get("problems")) if man.get("present") else None}
+    out = {"catalogue": cats[0] if cats else None,
+           "models_locked": len(locked), "models_mismatch": len(mismatch),
+           "data_ok": (not man.get("problems")) if man.get("present") else None}
+    ag = v.get("agent")
+    if isinstance(ag, dict) and "config" in ag:
+        out["agent_lock"] = {"matches": ag.get("matches"), "tested_commit": ag.get("tested_commit"),
+                             "prompt": ag["config"].get("prompt"), "differs": sorted((ag.get("diff") or {}))}
+    return out

@@ -11,13 +11,16 @@ RUN useradd -m -u 1000 user
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     HF_HOME=/home/user/.cache/huggingface \
-    PORT=7860
+    PORT=7860 \
+    BOT_MODULE=agent_assistant
 
 WORKDIR /app
 
 # ลงไลบรารีก่อนคัดลอกโค้ด ชั้นนี้จะได้ไม่ถูก build ใหม่ทุกครั้งที่แก้โค้ด
-COPY --chown=user:user requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# backend = agent (7 พ.ย. 2026) · ล็อกค่าตั้งด้วย agent_lock.json · /health/versions บอกว่าตรงไหม
+# กลับไปใช้บอท: เปลี่ยนสองบรรทัด COPY/RUN เป็น requirements.txt และลบ BOT_MODULE ใน ENV ข้างบน
+COPY --chown=user:user requirements_agent.txt requirements_space_agent.txt ./
+RUN pip install --no-cache-dir -r requirements_space_agent.txt
 
 # คัดลอกทั้งโฟลเดอร์ ของที่ไม่ต้องการกันไว้ใน .dockerignore แล้ว
 COPY --chown=user:user . .

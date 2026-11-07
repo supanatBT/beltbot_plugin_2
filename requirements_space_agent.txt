@@ -1,0 +1,12 @@
+# requirements_space_agent.txt - Hugging Face Space (Docker, CPU) with the agent backend
+# = requirements_agent.txt (ADK + MCP + model packages, same pins as .venv-agent that ran the
+#   image Test set on 2026-11-06, commit f0f860b) + the web API packages that run_agent_app.ps1 installs.
+# No gradio / google-generativeai: the agent path does not import them (bot path only).
+# Keep this file ASCII-only (old pip on Windows decodes it with cp874).
+
+-r requirements_agent.txt
+
+fastapi==0.141.1
+starlette==0.52.1
+uvicorn==0.52.4
+python-multipart==0.0.32

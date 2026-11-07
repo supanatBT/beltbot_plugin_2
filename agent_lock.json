@@ -1,0 +1,18 @@
+{
+ "tag": "agent-deploy-v1",
+ "tested_commit": "f0f860b",
+ "tested": "ชุดรูป Test 40 รูป (agent_img_test40_r1.json) · 6 พ.ย. 2026",
+ "note": "ค่าตั้งที่มีผลจริงต้องตรงทุกช่อง · prompt_sha = sha256 ของ instruction_text() 12 ตัวแรก · แก้ prompt/สวิตช์ = ต้องทดสอบใหม่แล้วอัปเดตไฟล์นี้",
+ "config": {
+  "model": "gemini-3.8-flash",
+  "thinking": "low",
+  "prompt": "r3",
+  "prompt_sha": "d983711f7e2e",
+  "brands": "modutech,movex",
+  "reply_guard": true,
+  "resolve_tab": true,
+  "datasheet_files": true,
+  "image_surface": true,
+  "image_max_side": 0
+ }
+}
