@@ -2,7 +2,9 @@
 import { SPACE_URL, notConfigured, relay, spaceHeaders, upstreamDown } from "@/lib/space";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+// agent (7 พ.ย. 2026): เทสรูปชุด Test มัธยฐาน 29 วิ · 6/40 เกิน 55 วิ · สูงสุด 115 วิ → เดิม 60/55 ตัดคำตอบทิ้ง 15%
+// 130 วิ ต้องเปิด Fluid Compute ของ Vercel (Hobby รองรับถึง 300) · ถ้า deploy ฟ้องว่าเกินเพดาน ให้เปิดก่อน
+export const maxDuration = 130;
 
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024; // ฟังก์ชัน Vercel รับ body ได้ราว 4.5 MB
 const MAX_TEXT = 1000;
@@ -54,7 +56,7 @@ export async function POST(req: Request) {
       method: "POST",
       headers: spaceHeaders(req),
       body: out,
-      signal: AbortSignal.timeout(55_000),
+      signal: AbortSignal.timeout(125_000),
     });
   } catch {
     return upstreamDown();
