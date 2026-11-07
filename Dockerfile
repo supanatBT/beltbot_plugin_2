@@ -18,8 +18,11 @@ WORKDIR /app
 
 # ลงไลบรารีก่อนคัดลอกโค้ด ชั้นนี้จะได้ไม่ถูก build ใหม่ทุกครั้งที่แก้โค้ด
 # backend = agent (7 พ.ย. 2026) · ล็อกค่าตั้งด้วย agent_lock.json · /health/versions บอกว่าตรงไหม
-# กลับไปใช้บอท: เปลี่ยนสองบรรทัด COPY/RUN เป็น requirements.txt และลบ BOT_MODULE ใน ENV ข้างบน
+# กลับไปใช้บอท: เปลี่ยนบรรทัด COPY/RUN ทั้งสามเป็น COPY requirements.txt + RUN pip install -r requirements.txt และลบ BOT_MODULE ใน ENV ข้างบน
+# ลงสองรอบเหมือน .venv-agent (run_agent_app.ps1): ADK+โมเดลก่อน แล้วตามด้วยชุดเว็บ
+# รวมเป็นรอบเดียวไม่ได้ — google-adk ประกาศ starlette>=1.3.1 แต่เว็บทดสอบกับ 0.52.1 (ดู requirements_space_agent.txt)
 COPY --chown=user:user requirements_agent.txt requirements_space_agent.txt ./
+RUN pip install --no-cache-dir -r requirements_agent.txt
 RUN pip install --no-cache-dir -r requirements_space_agent.txt
 
 # คัดลอกทั้งโฟลเดอร์ ของที่ไม่ต้องการกันไว้ใน .dockerignore แล้ว
