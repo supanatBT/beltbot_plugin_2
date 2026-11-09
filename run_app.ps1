@@ -1,6 +1,6 @@
 ﻿# run_app.ps1 — เปิด backend และหน้าเว็บ จากโฟลเดอร์เดียว
 #
-# ต้องสั่ง uvicorn จากโฟลเดอร์นี้ เพราะพาธในโค้ดเป็นแบบ ./qdrant_db, ./modutech_v30_3.json
+# ต้องสั่ง uvicorn จากโฟลเดอร์นี้ เพราะพาธในโค้ดเป็นแบบ ./data/qdrant_db, ./data/modutech_v30_3.json
 # ซึ่งนับจากโฟลเดอร์ที่สั่งรัน ไม่ใช่จากที่ไฟล์วางอยู่ สคริปต์นี้ cd ให้เองแล้ว
 #
 # ระบุ interpreter ให้ชัดดีกว่าพึ่ง activate
@@ -21,7 +21,7 @@ if ($LASTEXITCODE -ne 0) { Write-Host "เรียก python ไม่ได้
 
 Write-Host "`n== ตรวจก่อนรัน ==" -ForegroundColor Cyan
 Push-Location $root
-& $Python "$root\check_app.py"
+& $Python "$root\tools\check_app.py"
 $rc = $LASTEXITCODE
 Pop-Location
 if ($rc -ne 0) { exit 1 }

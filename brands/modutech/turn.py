@@ -53,7 +53,7 @@ def _grade_hint(text: str):
 _RULE_KEYS = ("forbidden_th", "gate_rules_th", "_gate_rules_th")
 
 
-# 23 ต.ค.: answering.forbidden_th ใน modutech_v30_3.json (9 รุ่น) ยังเขียน "โบรชัวร์แนะนำไว้แต่สายผลิตไม่มี"
+# 23 ต.ค.: answering.forbidden_th ใน data/modutech_v30_3.json (9 รุ่น) ยังเขียน "โบรชัวร์แนะนำไว้แต่สายผลิตไม่มี"
 # ซึ่งยืนยันเกินข้อมูล (gaps = not_listed) และขัดกับกฎของ material_gate ที่ห้ามบอกว่าผลิตหรือไม่ผลิต
 # (2c2d0f4) — fix10_r1 MT-001 ตอบ "ไม่มีในสายการผลิตมาตรฐาน" · ไม่แก้ไฟล์ฐานข้อมูล แก้ถ้อยคำตอนดึงเข้า prompt
 _RULE_WORDING = [("สายผลิตไม่มี", "แคตตาล็อก 2026 ไม่มี")]
@@ -106,7 +106,7 @@ def sprocket_to_belts(kg, cat: Catalogue, codes: list) -> list:
     หลายตัว การเดาจากชื่อเมธอดจะเข้าสาขาผิดแล้วคืน [] เงียบ ๆ
 
     ทำไมต้องมีชั้นนี้: กราฟมาได้สองทาง และคืนค่าคนละอย่าง
-      · KnowledgeGraph.load_from_db("modutech_kg.db")  — แบบเดียวกับ Movex
+      · KnowledgeGraph.load_from_db("data/modutech_kg.db")  — แบบเดียวกับ Movex
         โหนดสายพานใช้ belt_code_id เป็น id จึงคืน belt_code_id
       · ModutechGraph.from_catalogue(cat)  — สร้างสดจาก JSON
         คืน belt_code ตรง ๆ

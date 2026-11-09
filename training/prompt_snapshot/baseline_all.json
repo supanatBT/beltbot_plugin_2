@@ -30,7 +30,7 @@
   },
   {
    "args": [
-    "./movex-lora-tuned-3"
+    "./data/movex-lora-tuned-3"
    ],
    "kind": "PeftModel",
    "num_labels": null

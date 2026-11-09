@@ -18,18 +18,18 @@ state:
   series: null      # ซีรีส์ที่รู้แล้วแต่ยังไม่รู้ความกว้าง
 
 data:                                   # พาธนับจากโฟลเดอร์นี้ — ไม่ขึ้นกับว่าสั่งรันจากไหน
-  products: ../../extracted_data_v3_machine_ready.json
-  graph_db: ../../movex_kg.db
-  qdrant_path: ../../qdrant_db          # ห้ามแก้ collection — ครอบด้วย adapter เท่านั้น
+  products: ../../data/extracted_data_v3_machine_ready.json
+  graph_db: ../../data/movex_kg.db
+  qdrant_path: ../../data/qdrant_db          # ห้ามแก้ collection — ครอบด้วย adapter เท่านั้น
   text_collection: movex_text_chunks
 
 image:
   enabled: auto                         # auto = เปิดเมื่อมีทั้งโมเดลและ collection ที่มีข้อมูล
   vit:
     base: google/vit-base-patch16-224-in21k
-    adapter: ../../movex-lora-tuned-3   # โฟลเดอร์ local — ยังไม่ได้ขึ้น HF Hub
+    adapter: ../../data/movex-lora-tuned-3   # โฟลเดอร์ local — ยังไม่ได้ขึ้น HF Hub
     revision: "sha256:d29b4849e9a869a9" # local ใช้ hash ของ adapter_model.safetensors แทน tag
-  labels: ../../movex-lora-tuned-3/label_mapping.json   # 10 คลาส — นับจากไฟล์ ไม่ฝังในโค้ด
+  labels: ../../data/movex-lora-tuned-3/label_mapping.json   # 10 คลาส — นับจากไฟล์ ไม่ฝังในโค้ด
   thresholds: thresholds.json
   collection: movex_images
   # 27 ต.ค. (ผู้ใช้เลือก): ถ้อยคำทางการ ไม่กล่าวหาว่ารูปไม่เกี่ยว — ของจริงที่ถ่ายไกลก็โดนปฏิเสธได้

@@ -2,7 +2,7 @@
 training/eval_mlflow.py — ผลประเมินแชตบอตเข้า MLflow (HANDOFF ข้อ 5.3) + ตรวจคำต้องห้ามทั้งชุด (เฟส 0)
 
 ใช้สองทาง
-    python run_answer_eval.py --module assistant --testcases testcases_modutech_136.csv -o run8.json --mlflow --round 1
+    python run_answer_eval.py --module assistant --testcases eval/cases/testcases_modutech_136.csv -o run8.json --mlflow --round 1
     python training/eval_mlflow.py run3.json run4.json run5.json run6.json run7.json --code pre-refactor
 
 คำต้องห้ามทั้งชุด (global forbidden words)

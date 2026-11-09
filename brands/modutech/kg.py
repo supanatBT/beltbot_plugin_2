@@ -1,4 +1,4 @@
-"""กราฟความสัมพันธ์ของสินค้า Modutech — สร้างจาก modutech_v30_3.json ตอนสตาร์ต
+"""กราฟความสัมพันธ์ของสินค้า Modutech — สร้างจาก data/modutech_v30_3.json ตอนสตาร์ต
 
 ทำไมสร้างใหม่ทุกครั้ง ไม่โหลดไฟล์ .db
   ไฟล์ .db ที่สร้างไว้ล่วงหน้าคือสำเนาที่สองของข้อมูลเดียวกัน วันที่แก้ JSON แล้วลืมสร้าง .db ใหม่
@@ -13,7 +13,7 @@
   เพราะเล่มไม่นิยาม Di/Do/A/B/E/X และเครื่องหมาย & ในช่องรูเพลายังตีความไม่ได้
   (บันทึกใน sprocket_open_questions: ampersand_vs_to หน้า 224/250)
 
-  ไฟล์ modutech_kg.db รุ่นที่สร้างไว้ 7 ก.ย. เก็บ Di_mm/Do_mm/Bore_mm ไว้ใน node attrs
+  ไฟล์ data/modutech_kg.db รุ่นที่สร้างไว้ 7 ก.ย. เก็บ Di_mm/Do_mm/Bore_mm ไว้ใน node attrs
   ถ้าต่อกราฟแบบนั้นเข้า retriever ค่าที่ยังตีความไม่ได้จะเลี่ยงเกตออกไปถึงลูกค้าได้
   โมดูลนี้ตัดปัญหาที่ต้นทาง — ของที่ไม่มีอยู่ในกราฟ รั่วออกจากกราฟไม่ได้
 
@@ -21,7 +21,7 @@
   กราฟบอกความสัมพันธ์ ไม่ตัดสินว่าพูดได้หรือไม่ได้ — ธง blocking_for ยังเป็นหน้าที่ของเกต
   ตรงกับหลักการ: รายงานข้อขัดแย้ง ไม่ตัดสินแทน
 
-รัน: python modutech_kg.py [modutech_v30_3.json]
+รัน: python modutech_kg.py [data/modutech_v30_3.json]
 """
 from __future__ import annotations
 
@@ -609,7 +609,7 @@ def assert_no_blocked_fields(db_path: str) -> list[str]:
     return sorted(found)
 
 
-def load_modutech_kg(cat, db_path: str = "./modutech_kg.db", quiet: bool = False):
+def load_modutech_kg(cat, db_path: str = "./data/modutech_kg.db", quiet: bool = False):
     """โหลดกราฟจากไฟล์ .db ถ้าใช้ได้ ไม่งั้นสร้างจาก JSON
 
     ลำดับการตัดสินใจ — ทุกทางจบด้วยกราฟที่ถูกต้อง ไม่มีทางที่เดินต่อด้วยของผิด
@@ -662,7 +662,7 @@ def load_modutech_kg(cat, db_path: str = "./modutech_kg.db", quiet: bool = False
 if __name__ == "__main__":
     import time
 
-    path = sys.argv[1] if len(sys.argv) > 1 else "modutech_v30_3.json"
+    path = sys.argv[1] if len(sys.argv) > 1 else "data/modutech_v30_3.json"
     t = time.perf_counter()
     g = ModutechGraph.from_json(path)
     ms = (time.perf_counter() - t) * 1000

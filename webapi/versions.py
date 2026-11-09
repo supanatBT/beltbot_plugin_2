@@ -95,7 +95,7 @@ def collect(mod: Any) -> dict:
 
     manifest: dict = {"present": False}
     try:
-        import data_manifest
+        from tools import data_manifest
         if os.path.isfile(data_manifest.OUT):
             manifest = {"present": True, "problems": data_manifest.check()}
     except Exception as e:                               # noqa: BLE001

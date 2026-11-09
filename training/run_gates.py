@@ -32,21 +32,21 @@ SNAP_DIR = Path(__file__).resolve().parent / "gate_snapshots"
 
 # ชื่อไฟล์ · regex ดึงคะแนน · คะแนนเต็มตามข้อ 6 (None = ไม่อยู่ในเกณฑ์ข้อ 6 แต่รันไว้ดู)
 SUITES = [
-    ("testsuite_120.py",        r"รวม\s+(\d+)/(\d+)",                152),  # 150 → 152 (1 พ.ย.): วลี "belt width increment" ทำให้ซ่อนเพิ่ม 2 รุ่น เคส WD-S สร้างจากข้อมูล
-    ("test_sprocket_flow.py",   r"รวม\s+(\d+)/(\d+)",                45),   # 41 → 45 เฟส 2: แยกข้อเท็จจริง/คำสั่ง
-    ("test_context_voice.py",   r"รวม\s+(\d+)/(\d+)",                15),     # เฟส 2 — Context ไม่มีคำสั่งถึง LLM · รอบ 4 AP-004/TP-014
-    ("testcases_graph.py",      r"ตรวจแล้ว\s+(\d+)\s+เคสเป็นธรรม",      33),
-    ("test_resume.py",          r"(\d+)/(\d+)\s+ผ่าน",               22),
-    ("test_api_resume.py",      r"(\d+)/(\d+)\s+ผ่าน",               17),
-    ("test_modutech_kg.py",     r"รวม\s+(\d+)/(\d+)",                None),
-    ("test_increment_status.py", r"(ผ่านทุกข้อ)",                     None),
-    ("test_core_registry.py",   r"รวม\s+(\d+)/(\d+)",                None),   # ชั้น 1 — registry + ทะเบียนโมเดล
-    ("test_core_dialogue.py",   r"รวม\s+(\d+)/(\d+)",                None),   # ชั้น 2 — สถานะบทสนทนา
-    ("test_core_router.py",     r"รวม\s+(\d+)/(\d+)",                None),   # ชั้น 3 — เลือกแบรนด์ N ตัว
-    ("test_core_decide.py",     r"รวม\s+(\d+)/(\d+)",                None),   # ชั้น 4 — ตัดสินเทียบของเดิมทุกเทิร์น
-    ("test_webapi_sanitize.py", r"รวม\s+(\d+)/(\d+)",                None),   # ชั้น 6 — กู้สถานะผ่านปลั๊กอิน เทียบของเดิม
-    ("test_assistant_resume.py", r"รวม\s+(\d+)/(\d+)",               None),   # ชั้น 6 — webapi → assistant ตัวจริง
-    ("test_llm_thinking.py",    r"รวม\s+(\d+)/(\d+)",                None),   # 13 ต.ค. — GEMINI_THINKING (ข้อ 3 ข้ามถ้าไม่มี google-genai)
+    ("eval/cases/testsuite_120.py",        r"รวม\s+(\d+)/(\d+)",                152),  # 150 → 152 (1 พ.ย.): วลี "belt width increment" ทำให้ซ่อนเพิ่ม 2 รุ่น เคส WD-S สร้างจากข้อมูล
+    ("tests/test_sprocket_flow.py",   r"รวม\s+(\d+)/(\d+)",                45),   # 41 → 45 เฟส 2: แยกข้อเท็จจริง/คำสั่ง
+    ("tests/test_context_voice.py",   r"รวม\s+(\d+)/(\d+)",                15),     # เฟส 2 — Context ไม่มีคำสั่งถึง LLM · รอบ 4 AP-004/TP-014
+    ("eval/cases/testcases_graph.py",      r"ตรวจแล้ว\s+(\d+)\s+เคสเป็นธรรม",      33),
+    ("tests/test_resume.py",          r"(\d+)/(\d+)\s+ผ่าน",               22),
+    ("tests/test_api_resume.py",      r"(\d+)/(\d+)\s+ผ่าน",               17),
+    ("tests/test_modutech_kg.py",     r"รวม\s+(\d+)/(\d+)",                None),
+    ("tests/test_increment_status.py", r"(ผ่านทุกข้อ)",                     None),
+    ("tests/test_core_registry.py",   r"รวม\s+(\d+)/(\d+)",                None),   # ชั้น 1 — registry + ทะเบียนโมเดล
+    ("tests/test_core_dialogue.py",   r"รวม\s+(\d+)/(\d+)",                None),   # ชั้น 2 — สถานะบทสนทนา
+    ("tests/test_core_router.py",     r"รวม\s+(\d+)/(\d+)",                None),   # ชั้น 3 — เลือกแบรนด์ N ตัว
+    ("tests/test_core_decide.py",     r"รวม\s+(\d+)/(\d+)",                None),   # ชั้น 4 — ตัดสินเทียบของเดิมทุกเทิร์น
+    ("tests/test_webapi_sanitize.py", r"รวม\s+(\d+)/(\d+)",                None),   # ชั้น 6 — กู้สถานะผ่านปลั๊กอิน เทียบของเดิม
+    ("tests/test_assistant_resume.py", r"รวม\s+(\d+)/(\d+)",               None),   # ชั้น 6 — webapi → assistant ตัวจริง
+    ("tests/test_llm_thinking.py",    r"รวม\s+(\d+)/(\d+)",                None),   # 13 ต.ค. — GEMINI_THINKING (ข้อ 3 ข้ามถ้าไม่มี google-genai)
 ]
 # เทสต์ของแต่ละแบรนด์ — brands/<key>/test_*.py หาเองทุกครั้ง เพิ่มแบรนด์ไม่ต้องแก้ไฟล์นี้
 def brand_suites() -> list:
@@ -57,12 +57,12 @@ def brand_suites() -> list:
 
 
 # ไฟล์ที่ชุดเกตเขียนออกมา — ต้องคงที่ข้ามการย้ายโครง
-GENERATED = ["testcases_modutech_136.csv", "testcases_graph_relations.csv"]
+GENERATED = ["eval/cases/testcases_modutech_136.csv", "eval/cases/testcases_graph_relations.csv"]
 
 # prompt snapshot — ชั้นที่ชุดเกตทั้งห้าวัดไม่ถึง (chat_interaction ทั้งเส้น ผ่าน Gemini ปลอม)
 # เปลี่ยนชื่อโมดูลบอตเมื่อไหร่ แก้ที่นี่ที่เดียว
 BASELINE_BRANDS = "movex,modutech"   # แบรนด์ที่มีตอนวัด baseline.json (7 ต.ค.)
-BOT_MODULE = "assistant"     # ชั้น 5: ชื่อใหม่ · chatbot_v5 เป็นตัวชี้มาที่นี่
+BOT_MODULE = "bot.assistant"     # ชั้น 5: ชื่อใหม่ · chatbot_v5 เป็นตัวชี้มาที่นี่
 SNAPSHOT = Path(__file__).resolve().parent / "prompt_snapshot"
 
 CORE_DIR = ROOT / "core"

@@ -26,12 +26,13 @@ SessionStore อยู่ในหน่วยความจำ จึงหา
 เบราว์เซอร์เห็นพาธนั้นอยู่แล้ว ส่งออกไปคือยกเลิกการป้องกันของตัวเอง
 
 state ที่ client ส่งมาถือเป็นข้อมูลที่เชื่อไม่ได้ ต้องผ่าน sanitize_dialog_state() ก่อน
-ค่าสเปกปลอมไม่ได้อยู่แล้วเพราะเกตอ่านจาก modutech_v30_3.json ใหม่ทุกเทิร์น
+ค่าสเปกปลอมไม่ได้อยู่แล้วเพราะเกตอ่านจาก data/modutech_v30_3.json ใหม่ทุกเทิร์น
 สิ่งที่ปลอมได้คือรหัสรุ่นกับ slot ซึ่งทำให้คำตอบของตัวเองผิด ไม่กระทบผู้ใช้คนอื่น
 """
 from __future__ import annotations
 
 import importlib
+from core.entrypoints import import_bot
 import logging
 import os
 import re
@@ -315,7 +316,7 @@ def _sanitize_legacy(raw: Any, mod: Any) -> dict:
     }
     # ให้คลาสเป็นผู้ตัดสินว่าฟิลด์ไหนมีจริง เผื่อ DialogState เปลี่ยนในอนาคต
     try:
-        from dialogue_state import DialogState
+        from bot.dialogue_state import DialogState
         return DialogState.from_dict(out).to_dict()
     except Exception:                                   # noqa: BLE001
         return out
@@ -397,7 +398,7 @@ class BotAdapter:
                 return
             t0 = time.time()
             try:
-                mod = importlib.import_module(self.module_name)
+                mod = import_bot(self.module_name)
                 self._fn = getattr(mod, "chat_interaction")
                 log.info("โหลด %s เสร็จใน %.1f วินาที", self.module_name, time.time() - t0)
                 try:                                # อ่านอย่างเดียว · พังก็ไม่ทำให้บอทใช้ไม่ได้
@@ -411,7 +412,7 @@ class BotAdapter:
                 raise
 
     def _module(self) -> Any:
-        return importlib.import_module(self.module_name)
+        return import_bot(self.module_name)
 
     def seed_session(self, s: BotSession, resume: Any) -> dict:
         """ใส่ประวัติกับสถานะที่เบราว์เซอร์ส่งมาเข้า session ที่สร้างใหม่

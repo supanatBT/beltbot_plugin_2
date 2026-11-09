@@ -109,7 +109,7 @@ def modutech_retriever_config_kwargs() -> dict:
        (router ส่งคำถามที่มีรูปไป Movex อยู่แล้ว)
     """
     return dict(
-        qdrant_path="./qdrant_modutech_db",
+        qdrant_path="./data/qdrant_modutech_db",
         text_collection="modutech_belt_chunks",
         image_collection="modutech_images__not_built",
         payload_id_keys=("belt_code_id", "sprocket_code"),

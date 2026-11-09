@@ -970,7 +970,7 @@ def create(ctx):
         retriever = None
         qpath = path(data["qdrant_path"])
         if sh.get("jina_model") is not None and os.path.exists(qpath):
-            from retriever_v4 import RetrieverV4, RetrieverV4Config
+            from shared.retriever_v4 import RetrieverV4, RetrieverV4Config
             mod_db = {
                 p["belt_code_id"]: {"product_id": p["belt_code_id"], "Ref": p["belt_code"],
                                     "belt_series": p.get("belt_series", ""),

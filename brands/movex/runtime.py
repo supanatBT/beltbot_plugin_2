@@ -23,7 +23,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from core.llm import extract_text
 from core.protocol import ImageScore, LLMTurn, TurnOutput
-from retriever_v4 import GraphResult, RetrieverV4, ViTSignal
+from shared.retriever_v4 import GraphResult, RetrieverV4, ViTSignal
 
 # ── ชื่อที่ฟังก์ชันเดิมอ้าง — bind() ตั้งค่า ──
 product_db: dict = {}

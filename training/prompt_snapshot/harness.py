@@ -33,7 +33,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(ROOT))
-os.chdir(ROOT)                                   # บอตอ้างพาธแบบ ./qdrant_db
+os.chdir(ROOT)                                   # บอตอ้างพาธแบบ ./data/qdrant_db
 os.environ["GEMINI_API_KEY"] = "fake-key-for-snapshot"   # Gemini เป็นของปลอม ไม่มีการเรียกออกเน็ต
 # 23 ต.ค.: ตรึงค่าที่ไม่ใช่ prompt ให้เท่าตอนวัด baseline — load_dotenv ไม่เขียนทับตัวแปรที่ตั้งไว้แล้ว
 #   GEMINI_THINKING ใน .env (13 ต.ค.) ทำให้บอตใช้ google-genai ซึ่ง fakes.py ไม่ได้ปลอม → บันทึก Gemini 0 ครั้ง
@@ -43,9 +43,9 @@ os.environ["GEMINI_MODEL"] = "gemini-flash-latest"
 
 import fakes  # noqa: E402
 
-CASE_FILES = [HERE / "cases" / "testcases_v2.csv",
-              ROOT / "testcases_modutech_136.csv",
-              ROOT / "testcases_graph_relations.csv",
+CASE_FILES = [HERE / "cases" / "eval/cases/testcases_v2.csv",
+              ROOT / "eval/cases/testcases_modutech_136.csv",
+              ROOT / "eval/cases/testcases_graph_relations.csv",
               HERE / "cases" / "snapshot_extra.csv"]
 
 DATASHEET_WORDS = re.compile(r"datasheet|drawing|ดรออิ้ง|ขอรูป|ขอดูแบบ", re.IGNORECASE)
@@ -125,7 +125,7 @@ def make_image(name: str):
 
 def load_bank():
     from qdrant_client import QdrantClient
-    c = QdrantClient(path="./qdrant_db")
+    c = QdrantClient(path="./data/qdrant_db")
     pts, _ = c.scroll("movex_images", limit=1000, with_vectors=True, with_payload=False)
     pts = sorted(pts, key=lambda p: str(p.id))
     bank = {"vit": [p.vector["vit"] for p in pts], "siglip": [p.vector["siglip"] for p in pts]}
@@ -167,9 +167,10 @@ def load_cases():
 
 def run(module: str) -> dict:
     fakes.install_all()
-    import retriever_v4
+    from shared import retriever_v4
     fakes.patch_retriever(retriever_v4.RetrieverV4, load_bank())
-    bot = importlib.import_module(module)
+    from core.entrypoints import import_bot
+    bot = import_bot(module)
     install_fake_tool_calls(bot)
 
     seen_tools: dict = {}
@@ -274,7 +275,7 @@ def compare(a: dict, b: dict) -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--module", default="chatbot_v5")
+    ap.add_argument("--module", default="bot.assistant")
     ap.add_argument("-o", "--out", required=True)
     ap.add_argument("--compare", help="ไฟล์ snapshot ที่ใช้เทียบ")
     a = ap.parse_args()

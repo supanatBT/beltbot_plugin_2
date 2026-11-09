@@ -32,7 +32,7 @@ if (-not (Test-Path "$root\.env")) { Write-Host "ไม่มี .env ที่�
 
 $surface = if ($NoImageSurface) { "0" } else { "1" }
 Write-Host "`n== ค่าตั้ง ==" -ForegroundColor Cyan
-$cfg = [ordered]@{ BOT_MODULE = "agent_assistant"; GEMINI_MODEL = "gemini-3.8-flash"; GEMINI_THINKING = "low"
+$cfg = [ordered]@{ BOT_MODULE = "agent.assistant"; GEMINI_MODEL = "gemini-3.8-flash"; GEMINI_THINKING = "low"
                   AGENT_PROMPT = $Prompt; AGENT_DATASHEET_FILES = "1"; AGENT_REPLY_GUARD = "1"; AGENT_RESOLVE_TAB = "1"
                   AGENT_IMAGE_SURFACE = $surface; PYTHONIOENCODING = "utf-8" }
 foreach ($kv in $cfg.GetEnumerator()) { Write-Host "   $($kv.Key)=$($kv.Value)" }

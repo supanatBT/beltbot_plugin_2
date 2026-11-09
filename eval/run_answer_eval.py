@@ -1,0 +1,546 @@
+"""
+run_answer_eval.py — harness ชั้น B
+==================================
+รันชุด test case ผ่าน chat_interaction() จริง แล้วตรวจ "ถ้อยคำของคำตอบ"
+
+    ชั้น A  run_retrieval_eval.py   วัดว่าค้นเจอของที่ถูกไหม   ไม่ใช้ LLM
+    ชั้น B  ไฟล์นี้                  วัดว่าเรียบเรียงถูกไหม     ใช้ Gemini
+
+ต่างจากชั้น A ตรงไหน
+-------------------
+  · เรียก chat_interaction() เต็มรูป ผ่าน Gemini จริง
+  · ต่อบทสนทนาข้ามเทิร์นได้ (chat_history + last_pids + vit/graph carry-over)
+    เคส multi_turn จึงวัดได้ ต่างจากชั้น A ที่รันแต่ละเทิร์นแยกกัน
+  · เปลืองโควตา API และผลไม่คงที่ทุกรอบ จึงควรรันหลายรอบแล้วดูความสม่ำเสมอ
+
+metric ที่ชั้นนี้ตรวจ
+--------------------
+  answer_has_required      must_contain ครบทุกคำ
+  answer_has_any           must_contain_any อย่างน้อยหนึ่งคำ
+  answer_avoids_forbidden  must_not_contain ไม่มีสักคำ
+  asked_back               must_ask_back = TRUE แล้วตอบกลับเป็นคำถามจริง
+  value_correct            expected_value ปรากฏในคำตอบ
+  unit_correct             expected_unit ปรากฏในคำตอบ
+  reply_within_limit       ความยาวไม่เกิน reply_max_length
+  no_error                 ไม่มี exception ระหว่างเรียก
+
+รัน
+---
+  # เส้นฐาน Movex — ต้องตั้ง GEMINI_API_KEY ก่อน
+  python run_answer_eval.py -o baseline_answer_movex.json
+
+  # รันเฉพาะบางเคสตอนดีบัก
+  python run_answer_eval.py --only SPEC-001,GRAPH-001 -o probe.json
+
+  # เทียบสองรอบ
+  python run_answer_eval.py --compare baseline_answer_movex.json after_answer_movex.json
+
+  # log เข้า MLflow (training/mlruns · HANDOFF ข้อ 5.3) — ระบุรอบเสมอ ห้ามสรุปจากรอบเดียว
+  python run_answer_eval.py --module assistant --testcases eval/cases/testcases_modutech_136.csv -o run8.json \
+      --mlflow --code refactor --round 1
+
+คำต้องห้ามทั้งชุด (leaks) — เฟส 0 ของ HANDOFF_brand_plugin
+  นับ ห้าม · ให้บอกเฉพาะ · ระบบจึง ในทุกคำตอบ ("ลูกค้า" เลิกนับ 10 ต.ค. — ผู้ใช้ตัดสินว่าเป็นภาษาบริการ) รายงานแยก **ไม่เปลี่ยนผ่าน/ตก**
+  (ถ้าปนกับเกณฑ์เดิม ตัวเลข 170/172 จะขยับทั้งที่ระบบไม่ได้เปลี่ยน)
+"""
+
+from __future__ import annotations
+import os as _os, sys as _sys  # รากของ repo: import แพ็กเกจได้ และพาธข้อมูลนับจากราก
+_ROOT = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+if _ROOT not in _sys.path:
+    _sys.path.insert(0, _ROOT)
+_os.chdir(_ROOT)
+
+import argparse
+import os
+import csv
+import importlib
+from core.entrypoints import import_bot
+import json
+import re
+
+from eval import eval_mentions as EM
+import sys
+import time
+from collections import Counter, defaultdict
+from pathlib import Path
+
+# คำที่บ่งว่าคำตอบเป็นการถามกลับ ไม่ใช่การตอบ
+ASK_BACK_HINTS = ("?", "ไหม", "หรือไม่", "หรือเปล่า", "ระบุ", "ขอทราบ",
+                  "ช่วยบอก", "รบกวนแจ้ง", "รุ่นไหน", "แบบไหน", "กรุณา")
+
+
+# คำปฏิเสธที่วางไว้หน้าคำยืนยันในภาษาไทย
+# "เลี้ยวได้ครับ" เป็นสตริงย่อยของ "ไม่สามารถเลี้ยวได้ครับ" พอดี
+# การหาแบบ substring จึงเจอทั้งที่ความหมายตรงข้าม ต้องดูคำนำหน้าด้วย
+NEGATIONS = ("ไม่สามารถ", "ไม่ได้", "ไม่", "ยังไม่", "มิได้", "ปราศจาก",
+             "cannot", "can not", "can't", "not ", "no ")
+# ขอบเขตประโยคภาษาไทย — ไม่มีจุดปิดประโยค จึงใช้คำลงท้ายกับขึ้นบรรทัดใหม่
+# ไม่ตัดที่จุด เพราะภาษาไทยใช้จุดในคำย่อ (มม. ซม. น.) การตัดที่จุดจะแยก
+# "ไม่สามารถสั่งความกว้าง 500 มม." ออกจาก "ได้ครับ" แล้วคำปฏิเสธหลุดไปคนละประโยค
+SENTENCE_SPLIT = re.compile(r"(?<=ครับ)|(?<=ค่ะ)|(?<=คะ)|[\n。!?]|(?<=แต่)|(?<=อย่างไรก็ตาม)")
+
+
+def _sentences(text: str) -> list[str]:
+    # ตัดประโยคก่อน แล้วค่อย norm ทีละประโยค — norm_text ยุบ \n เป็นช่องว่าง ถ้า norm ก่อน
+    # การตัดที่ขึ้นบรรทัดใหม่จะไม่เกิด คำตอบแบบรายการทั้งก้อนกลายเป็นประโยคเดียว แล้วคำว่า "ไม่"
+    # ในหมายเหตุบรรทัดไหนก็ได้จะลบล้างคำต้องห้ามทั้งรายการ (พบ 23 ต.ค. · graph_apps_r2 GA-R03)
+    # ให้คะแนน fix6_r1 · fix7_r1 · graph_run2 ใหม่แล้วผลเท่าเดิม
+    return [n for n in (norm_text(s) for s in SENTENCE_SPLIT.split(text or "")) if n and n.strip()]
+
+
+def mentions_positively(token: str, text: str) -> bool:
+    """
+    คำต้องห้ามนี้ถูกพูดถึงในเชิงยืนยันจริงหรือไม่
+
+    ดูคำปฏิเสธ "ทั้งประโยค" ที่มีคำนั้นอยู่ ไม่ใช่นับตัวอักษรก่อนหน้า
+    เพราะภาษาไทยวางคำปฏิเสธไว้ต้นประโยคแล้วมีส่วนขยายคั่นก่อนถึงคำลงท้าย
+
+        "ไม่สามารถสั่งความกว้าง 500 มม. ได้ครับ"
+         ↑ ปฏิเสธ                        ↑ token ห่าง 26 ตัวอักษร
+
+    การนับหน้าต่างแบบเดิม (14 ตัวอักษร) จึงพลาดกรณีนี้ และทำให้คำตอบที่ถูกต้อง
+    ถูกนับเป็นละเมิดแบบสุ่ม ขึ้นกับว่าบอทใส่ส่วนขยายยาวแค่ไหน
+    """
+    token = norm_text(token)
+    if not token:
+        return False
+    for sentence in _sentences(text):
+        if token in sentence and not any(neg in sentence for neg in NEGATIONS):
+            return True                       # เจอแบบยืนยัน = ละเมิดจริง
+    return False
+
+
+def load_image(name: str, img_dir: Path):
+    """
+    เปิดไฟล์รูปจากคอลัมน์ image ของ test case
+
+    chat_interaction รับ PIL Image (เห็นได้จาก image_to_base64_html(pil_image))
+    คืน (image, error) — ถ้าไม่เจอไฟล์จะคืน error เพื่อให้รายงานว่า "ข้ามเพราะไม่มีรูป"
+    ไม่ใช่นับเป็นตก เพราะระบบไม่ได้ผิด
+    """
+    path = img_dir / name
+    if not path.exists():
+        return None, f"ไม่พบรูป {path}"
+    try:
+        from PIL import Image
+        return Image.open(path).convert("RGB"), None
+    except Exception as exc:                            # noqa: BLE001
+        return None, f"เปิดรูปไม่ได้ {path}: {type(exc).__name__}"
+
+
+def split_tokens(raw: str) -> list[str]:
+    return [t.strip() for t in re.split(r"\s*\|\s*", raw or "") if t.strip()]
+
+
+def norm_text(text: str) -> str:
+    """ตัดตัวคั่นหลักพันและช่องว่างซ้ำ เพื่อให้ 1,000 กับ 1000 เทียบกันได้"""
+    text = (text or "").lower()
+    # 23 ต.ค. (graph_fix8 SPK-F03): gemini-3.8-flash เขียนรหัสสเตอร์นอก backtick เป็น MD-TR254SQZ10\*POM
+    # (escape ของ markdown — หน้าเว็บแสดงเป็น *) ตัด \ หน้าอักขระ markdown ก่อนเทียบ ไม่งั้นรหัสถูกแต่ตรวจไม่เจอ
+    text = re.sub(r"\\([*_~`])", r"\1", text)
+    text = re.sub(r"(?<=\d),(?=\d{3}\b)", "", text)
+    text = re.sub(r"\s+", " ", text)
+    # 2 พ.ย. (ผู้ใช้สั่ง · QI-X2 agent_probe_qi_r2m): รหัสรุ่นเขียนได้ทั้ง "LF 820 K325" และ "LF820 K325"
+    # ตัดช่องว่างระหว่างตัวอักษรละตินกับตัวเลข (ทั้งสองทิศ) ทั้งฝั่งคำตอบและฝั่งเกณฑ์ → ใช้กับบอทและ agent เท่ากัน
+    # คำต้องห้ามก็เข้มขึ้นตามกัน ("LF820 K400" ในคำตอบนับเป็นเอ่ย "LF 820 K400")
+    return re.sub(r"(?<=[a-z])\s(?=\d)|(?<=\d)\s(?=[a-z])", "", text)
+
+
+def number_in_text(value: str, text: str) -> bool:
+    """
+    หาตัวเลขในคำตอบแบบยอมรับรูปแบบต่างกัน
+
+    100000 · 100,000 · 100000.0 ถือว่าเจอเหมือนกัน
+    แต่ 1000 ต้องไม่ไปแมตช์กับ 10000 จึงบังคับขอบเขตตัวเลข
+    """
+    try:
+        num = float(value)
+    except (TypeError, ValueError):
+        return str(value).lower() in norm_text(text)
+    body = f"{int(num)}" if num.is_integer() else f"{num}"
+    return re.search(rf"(?<!\d){re.escape(body)}(?:\.0+)?(?!\d)", norm_text(text)) is not None
+
+
+def looks_like_question(reply: str) -> bool:
+    return any(hint in reply for hint in ASK_BACK_HINTS)
+
+
+# ===============================================================
+# ตรวจคำตอบหนึ่งเทิร์น
+# ===============================================================
+
+
+def check_reply(case: dict, reply: str, error: str | None) -> dict:
+    checks: dict[str, bool] = {"no_error": error is None}
+    if error is not None:
+        return {"checks": checks, "passed": False, "reply": "", "error": error}
+
+    body = norm_text(reply)
+
+    required = split_tokens(case.get("must_contain", ""))
+    if required:
+        checks["answer_has_required"] = all(norm_text(t) in body for t in required)
+
+    any_of = split_tokens(case.get("must_contain_any", ""))
+    if any_of:
+        checks["answer_has_any"] = any(norm_text(t) in body for t in any_of)
+
+    forbidden = split_tokens(case.get("must_not_contain", ""))
+    if forbidden:
+        # ตรวจเฉพาะย่อหน้าแรก ซึ่งเป็นส่วนที่ตอบว่าได้หรือไม่ได้
+        #
+        # บอทมักตอบคำตัดสินก่อน แล้วค่อยแนะนำรุ่นทางเลือกในย่อหน้าถัดไป
+        # เช่น "LF820 เลี้ยวไม่ได้ครับ ... แนะนำ LF880 TAB K325 รัศมี 457 mm"
+        # ค่า 457 เป็นของรุ่นที่แนะนำ ไม่ใช่ของรุ่นที่ถูกถาม การตรวจทั้งคำตอบ
+        # จึงลงโทษพฤติกรรมที่ดี เจตนาของเกณฑ์คือกันการอ้างค่าผิดรุ่นในคำตัดสิน
+        verdict = (reply or "").split("\n\n")[0]
+        checks["answer_avoids_forbidden"] = not any(
+            mentions_positively(t, verdict) for t in forbidden)
+        # เก็บผลแบบตรวจทั้งคำตอบไว้เป็นข้อมูล ไม่ใช้ตัดสิน
+        # 26 ต.ค. (ผู้ใช้สั่งแก้ · GA-F03): ตรวจทีละบรรทัด — บรรทัดที่บอกว่าใช้ไม่ได้/ไม่มีเกรด ไม่นับเป็นการเสนอ
+        # (เดิมตัดประโยคที่ "แต่" ทำให้ "…เครื่องบรรจุลงลัง… แต่ ไม่มีเกรด PE, PP" นับเป็นเสนอ)
+        info_forbidden_anywhere = not any(
+            EM.recommended(t, reply, contains=lambda tok, line: mentions_positively(tok, line)) for t in forbidden)
+        # เคสที่คำตอบเป็นรายการ (เช่น "งานนี้ใช้รุ่นไหน") คำต้องห้ามอยู่ในย่อหน้าหลัง ๆ ไม่ใช่ย่อหน้าแรก
+        # เคสแบบนี้ใส่ metrics = forbid_anywhere เพื่อตัดสินจากทั้งคำตอบ (23 ต.ค. · testcases_graph_apps)
+        if "forbid_anywhere" in split_tokens(case.get("metrics", "")):
+            checks["answer_avoids_forbidden"] = info_forbidden_anywhere
+    else:
+        info_forbidden_anywhere = None
+
+    if (case.get("must_ask_back") or "").strip().upper() == "TRUE":
+        checks["asked_back"] = looks_like_question(reply)
+
+    value = (case.get("expected_value") or "").strip()
+    if value:
+        checks["value_correct"] = number_in_text(value, reply)
+
+    unit = (case.get("expected_unit") or "").strip()
+    if unit:
+        # หน่วยเขียนได้หลายแบบ เช่น C กับ องศา · N/m กับ นิวตันต่อเมตร
+        variants = {unit.lower(), unit.lower().replace("/", " / ")}
+        if unit.upper() == "C":
+            variants |= {"°c", "องศา"}
+        if unit.lower() == "mm":
+            variants |= {"มม.", "มิลลิเมตร"}
+        if unit.lower() == "n/m":
+            variants |= {"n/m", "นิวตัน"}
+        if unit == "%":
+            variants |= {"เปอร์เซ็นต์"}
+        checks["unit_correct"] = any(v in body for v in variants)
+
+    limit = (case.get("reply_max_length") or "").strip()
+    if limit.isdigit():
+        checks["reply_within_limit"] = len(reply) <= int(limit)
+
+    return {"checks": checks, "passed": all(checks.values()), "reply": reply,
+            "error": None,
+            "info": {"forbidden_absent_anywhere": info_forbidden_anywhere}}
+
+
+# ===============================================================
+# รันทั้งชุด
+# ===============================================================
+
+
+def extract_reply(chat_history: list) -> str:
+    for msg in reversed(chat_history or []):
+        if msg.get("role") == "assistant":
+            content = msg.get("content") or ""
+            if content.startswith("<img"):      # datasheet ไม่ใช่คำตอบ
+                continue
+            return content
+    return ""
+
+
+def code_fingerprint() -> dict:
+    """commit + hash ของโค้ดที่สร้าง prompt และตัดสิน (brands/ core/ bot/ agent/) ตอนรัน
+    prompt ของบอทหลักประกอบใหม่ทุกเทิร์นจากโค้ดชุดนี้ จึงใช้ hash ของโค้ดแทนข้อความ prompt ก้อนเดียว"""
+    import hashlib
+    import subprocess
+    root = Path(__file__).resolve().parents[1]          # รากของ repo (ไฟล์นี้อยู่ใน eval/)
+    h = hashlib.sha256()
+    for sub in ("brands", "core", "bot", "agent"):
+        for p in sorted((root / sub).rglob("*")):
+            if p.is_file() and p.suffix in (".py", ".yaml", ".json") and "__pycache__" not in p.parts:
+                h.update(str(p.relative_to(root)).replace("\\", "/").encode())
+                h.update(p.read_bytes().replace(b"\r\n", b"\n"))
+    git = lambda *a: subprocess.run(["git", *a], cwd=root, capture_output=True, text=True,   # noqa: E731
+                                    encoding="utf-8", errors="replace").stdout.strip()
+    return {"code_sha": h.hexdigest()[:12], "commit": git("rev-parse", "--short", "HEAD"),
+            "branch": git("rev-parse", "--abbrev-ref", "HEAD"), "dirty": bool(git("status", "--porcelain", "--", *("brands", "core", "bot", "agent")))}
+
+
+def system_info(bot, module_name: str) -> dict:
+    """ค่าตั้งของระบบที่วัด (บันทึกใน JSON ผล และเป็น param ของ MLflow)
+    2 พ.ย.: gemini_model เดิมอ่านแค่ env → ว่างเมื่อใช้ค่าเริ่มต้นในโค้ด · ตอนนี้อ่านชื่อจาก client ก่อน
+    token_scope: บอกว่า llm_usage นับครบทุกการเรียก LLM หรือแค่ response สุดท้าย (เทียบต้นทุนบอท/agent)"""
+    llm = getattr(getattr(bot, "engine", None), "llm", None)
+    info = {"system": "agent" if module_name.startswith("agent") else "bot",
+            "gemini_model": getattr(llm, "model_name", None) or os.getenv("GEMINI_MODEL") or "",
+            "token_scope": getattr(llm, "usage_scope", None) or "unknown",
+            "gemini_thinking": os.getenv("GEMINI_THINKING") or "",
+            "search_engine": (os.getenv("MODUTECH_SEARCH_ENGINE") or "qdrant").strip().lower(),
+            "graph_apps": os.getenv("MODUTECH_GRAPH_APPS", "1").strip() != "0"}
+    if info["system"] == "bot":       # 2 พ.ย.: ตัวตีความของบอท (ค่าเริ่มต้นตาม assistant.py)
+        info.update({"front_interpreter": (os.getenv("FRONT_INTERPRETER") or "rules").strip().lower(),
+                     "query_interpreter": (os.getenv("QUERY_INTERPRETER") or "llm").strip().lower(),
+                     "answer_interpreter": (os.getenv("ANSWER_INTERPRETER") or "llm").strip().lower()})
+    info.update(code_fingerprint())
+    if hasattr(bot, "system_info"):
+        try:
+            info.update(bot.system_info())
+        except Exception as e:                          # noqa: BLE001
+            info["system_info_error"] = f"{type(e).__name__}: {e}"
+    return info
+
+
+def run(module_name: str, testcases: str, only: set[str] | None,
+        sleep: float, limit: int | None, img_dir: Path) -> dict:
+    print(f"⏳ โหลด {module_name} ... (โหลดโมเดลและต่อ Gemini)")
+    bot = import_bot(module_name)
+    if not hasattr(bot, "chat_interaction"):
+        sys.exit(f"❌ {module_name} ไม่มีฟังก์ชัน chat_interaction")
+    llm = getattr(getattr(bot, "engine", None), "llm", None)
+    llm_desc = llm.describe() if hasattr(llm, "describe") else "(ไม่ทราบ)"
+    print(f"✅ พร้อม · LLM: {llm_desc}")       # 13 ต.ค. — ยืนยันว่า GEMINI_THINKING มีผลจริง
+    sysinfo = system_info(bot, module_name)
+    print(f"   ระบบ {sysinfo['system']} · prompt {sysinfo.get('prompt_version', '-')} · code {sysinfo['code_sha']}"
+          f"{' (มีแก้ที่ยังไม่ commit)' if sysinfo['dirty'] else ''} · ค้น {sysinfo['search_engine']}")
+
+    rows = list(csv.DictReader(open(testcases, encoding="utf-8-sig")))
+    if only:
+        rows = [r for r in rows if r["id"] in only]
+    if limit:
+        rows = rows[:limit]
+
+    # จัดกลุ่มตาม id แล้วเรียงตามเทิร์น เพื่อเล่นบทสนทนาต่อเนื่อง
+    grouped: dict[str, list[dict]] = defaultdict(list)
+    for row in rows:
+        grouped[row["id"]].append(row)
+    for case_id in grouped:
+        grouped[case_id].sort(key=lambda r: int(r.get("turn_number") or 1))
+
+    results = []
+    started = time.time()
+    for case_id, turns in grouped.items():
+        # state ของบทสนทนา รีเซ็ตทุกเคส
+        history: list = []
+        last_pids: list = []
+        session_id = ""
+        vit_signal = None
+        graph_result = None
+
+        for case in turns:
+            query = case.get("user_text", "")
+            img_name = (case.get("image") or "").strip()
+
+            # เทิร์นที่เป็นรูปล้วน (user_text ว่าง) ต้องไม่ข้าม
+            # ไม่งั้นบริบทของบทสนทนาจะไม่ถูกตั้ง แล้วเทิร์นถัดไปตอบผิดรุ่นตามกันหมด
+            if not query and not img_name:
+                continue
+
+            image = None
+            if img_name:
+                image, img_err = load_image(img_name, img_dir)
+                if img_err:
+                    results.append({
+                        "checks": {}, "passed": None, "skipped": True,
+                        "skip_reason": "image_missing", "reply": "", "error": None,
+                        "id": case_id, "turn": case.get("turn_number", "1"),
+                        "category": case.get("category", ""), "query": query or "[รูป]",
+                        "metrics": split_tokens(case.get("metrics", "")),
+                        "seconds": 0.0, "note": img_err,
+                    })
+                    print(f"  ⬜ {case_id:<16} t{case.get('turn_number','1')} {img_err}")
+                    # บริบทขาดไปแล้ว เทิร์นที่เหลือของเคสนี้วัดไม่ได้
+                    break
+
+            error = None
+            reply = ""
+            t0 = time.perf_counter()
+            if llm is not None and hasattr(llm, "last_usage"):
+                llm.last_usage = None
+            if llm is not None and hasattr(llm, "last_model_version"):
+                llm.last_model_version = None
+            try:
+                out = bot.chat_interaction(
+                    query, image, history, last_pids, session_id, vit_signal, graph_result)
+                history, _state, _refs, last_pids, session_id, vit_signal, graph_result = out
+                reply = extract_reply(history)
+            except Exception as exc:                    # noqa: BLE001
+                error = f"{type(exc).__name__}: {exc}"
+
+            outcome = check_reply(case, reply, error)
+            outcome["skipped"] = False
+            outcome["used_image"] = bool(img_name)
+            outcome.update({
+                "id": case_id,
+                "turn": case.get("turn_number", "1"),
+                "category": case.get("category", ""),
+                "query": query,
+                "metrics": split_tokens(case.get("metrics", "")),
+                "seconds": round(time.perf_counter() - t0, 1),
+                "llm_usage": getattr(llm, "last_usage", None),
+                "model_version": getattr(llm, "last_model_version", None),
+            })
+            results.append(outcome)
+
+            mark = "⚠️ " if error else ("✅ " if outcome["passed"] else "❌ ")
+            print(f"  {mark}{case_id:<16} t{outcome['turn']} {query[:38]:<40} "
+                  f"{outcome['seconds']}s")
+            if sleep:
+                time.sleep(sleep)
+
+    graded = [r for r in results if not r.get("skipped")]
+    passed = [r for r in graded if r["passed"]]
+    per_cat: dict[str, list] = defaultdict(list)
+    for r in graded:
+        per_cat[r["category"]].append(r["passed"])
+
+    return {
+        "module": module_name,
+        "llm": llm_desc,
+        "system_info": sysinfo,
+        # สวิตช์ชั้นงานใช้ของกราฟ (brands/modutech/turn.py) — ไว้แยกผลก่อน/หลังต่อกราฟ
+        "graph_apps": os.getenv("MODUTECH_GRAPH_APPS", "1").strip() != "0",
+        "model_versions": dict(Counter(r.get("model_version") for r in results if r.get("model_version"))),
+        "testcases": testcases,
+        "total_turns": len(results),
+        "graded": len(graded),
+        "passed": len(passed),
+        "failed": len(graded) - len(passed),
+        "skipped_no_image": sum(1 for r in results if r.get("skipped")),
+        "turns_with_image": sum(1 for r in graded if r.get("used_image")),
+        "errors": sum(1 for r in graded if r["error"]),
+        "seconds": round(time.time() - started, 1),
+        "by_category": {k: f"{sum(v)}/{len(v)}" for k, v in sorted(per_cat.items())},
+        "by_check": dict(Counter(
+            k for r in graded for k, v in r["checks"].items() if not v)),
+        "leaks": _leaks(results),
+        "results": results,
+    }
+
+
+def _leaks(results: list) -> dict:
+    """คำต้องห้ามทั้งชุด — ตัวชี้วัดแยก ไม่แตะ passed (ดู training/eval_mlflow.py)"""
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "training"))
+        from eval_mlflow import leak_summary
+        return leak_summary(results)
+    except ImportError:
+        return {}
+
+
+def print_summary(s: dict) -> None:
+    print("\n" + "=" * 62)
+    print(f"  โมดูล        {s['module']}")
+    print(f"  เทิร์นทั้งหมด  {s['total_turns']}   วัดได้ {s.get('graded', s['total_turns'])}"
+          f"   ผ่าน {s['passed']} · ตก {s['failed']}")
+    if s.get("skipped_no_image"):
+        print(f"  ⬜ ข้ามเพราะไม่มีรูป  {s['skipped_no_image']}")
+    if s.get("turns_with_image"):
+        print(f"  เทิร์นที่ใช้รูป      {s['turns_with_image']}")
+    if s["errors"]:
+        print(f"  ⚠️ error      {s['errors']}")
+    print(f"  เวลา         {s['seconds']} วินาที")
+    if s["by_category"]:
+        print("\n  แยกตามหมวด:")
+        for k, v in s["by_category"].items():
+            print(f"    {k:<16} {v}")
+    lk = s.get("leaks") or {}
+    if lk.get("turns_with_leak"):
+        words = " · ".join(f"{w} {n}" for w, n in lk["per_word"].items())
+        print(f"\n  คำต้องห้ามหลุดในคำตอบ {lk['turns_with_leak']} เทิร์น ({words}) — ไม่นับในผ่าน/ตก")
+    if s["by_check"]:
+        print("\n  เกณฑ์ที่ตกบ่อยสุด:")
+        for k, v in sorted(s["by_check"].items(), key=lambda x: -x[1]):
+            print(f"    {k:<24} {v} ครั้ง")
+    fails = [r for r in s["results"] if not r.get("skipped") and not r["passed"]]
+    if fails:
+        print("\n  เทิร์นที่ตก:")
+        for r in fails:
+            why = r["error"] or ", ".join(k for k, v in r["checks"].items() if not v)
+            print(f"    {r['id']:<16} t{r['turn']}  {why}")
+            print(f"        ถาม  {r['query'][:60]}")
+            print(f"        ตอบ  {(r['reply'] or '')[:100]}")
+    print("=" * 62)
+
+
+def compare(path_a: str, path_b: str) -> None:
+    a = json.loads(Path(path_a).read_text(encoding="utf-8"))
+    b = json.loads(Path(path_b).read_text(encoding="utf-8"))
+    ra = {r["id"] + str(r["turn"]): r for r in a["results"]}
+    rb = {r["id"] + str(r["turn"]): r for r in b["results"]}
+
+    print(f"\n{'=' * 62}")
+    print(f"  ก่อน  {path_a}   ผ่าน {a['passed']}/{a['total_turns']}")
+    print(f"  หลัง  {path_b}   ผ่าน {b['passed']}/{b['total_turns']}")
+
+    changed = [(k, f"{'ผ่าน' if ra[k]['passed'] else 'ตก'} → "
+                   f"{'ผ่าน' if rb[k]['passed'] else 'ตก'}")
+               for k in sorted(set(ra) & set(rb)) if ra[k]["passed"] != rb[k]["passed"]]
+    only_a = sorted(set(ra) - set(rb))
+    only_b = sorted(set(rb) - set(ra))
+
+    if not changed and not only_a and not only_b:
+        print("\n  ✅ ไม่มีเทิร์นไหนเปลี่ยนสถานะ")
+    else:
+        for k, what in changed:
+            print(f"    {k:<18} {what}")
+        for k in only_a:
+            print(f"    {k:<18} มีเฉพาะรอบแรก")
+        for k in only_b:
+            print(f"    {k:<18} มีเฉพาะรอบหลัง")
+    print("\n  หมายเหตุ: คำตอบของ LLM ไม่คงที่ทุกรอบ การเปลี่ยนสถานะ 1-2 เทิร์น")
+    print("  อาจเป็นความผันผวนปกติ ไม่ใช่ผลของการแก้โค้ดเสมอไป")
+    print("=" * 62)
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description="harness ชั้น B — วัดถ้อยคำของคำตอบ")
+    ap.add_argument("--module", default="bot.assistant",
+                    help="โมดูลที่มี chat_interaction (เช่น chatbot_modutech)")
+    ap.add_argument("--testcases", default="./eval/cases/testcases_v2.csv")
+    ap.add_argument("--only", help="รันเฉพาะ id ที่ระบุ คั่นด้วยจุลภาค")
+    ap.add_argument("--sleep", type=float, default=1.0,
+                    help="พักระหว่างเทิร์น กัน rate limit")
+    ap.add_argument("--img-dir", default="./img",
+                    help="โฟลเดอร์เก็บรูปที่ test case อ้างถึง")
+    ap.add_argument("--limit", type=int)
+    ap.add_argument("-o", "--out")
+    ap.add_argument("--compare", nargs=2, metavar=("ก่อน", "หลัง"))
+    ap.add_argument("--mlflow", action="store_true", help="log ผลรอบนี้เข้า training/mlruns")
+    ap.add_argument("--code", default="", help="ป้ายโค้ดที่วัด เช่น pre-refactor / refactor")
+    ap.add_argument("--round", default="", help="รอบที่เท่าไหร่ของโค้ดชุดนี้")
+    args = ap.parse_args()
+
+    if args.compare:
+        compare(*args.compare)
+        return
+
+    if not Path(args.testcases).exists():
+        sys.exit(f"❌ ไม่พบ {args.testcases}")
+
+    only = {x.strip() for x in args.only.split(",")} if args.only else None
+    img_dir = Path(args.img_dir)
+    if not img_dir.exists():
+        print(f"⚠️  ไม่พบโฟลเดอร์ {img_dir} — เคสที่ต้องใช้รูปจะถูกข้าม")
+    summary = run(args.module, args.testcases, only, args.sleep, args.limit, img_dir)
+    print_summary(summary)
+
+    if args.out:
+        Path(args.out).write_text(json.dumps(summary, ensure_ascii=False, indent=1),
+                                  encoding="utf-8")
+        print(f"\n📄 {args.out}")
+
+    if args.mlflow:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "training"))
+        from eval_mlflow import log_eval
+        rid = log_eval(summary, json_path=args.out, code=args.code, round_no=args.round)
+        print(f"📈 MLflow run {rid[:8]} (experiment answer_eval)")
+
+
+if __name__ == "__main__":
+    main()

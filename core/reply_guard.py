@@ -35,7 +35,7 @@ def _digits(s: str) -> str:
 def official_contacts() -> tuple[set, set]:
     """(เบอร์จริงแบบตัวเลขล้วน, อีเมลจริงตัวพิมพ์เล็ก) จาก sales_contact.py"""
     try:
-        import sales_contact as SC
+        from shared import sales_contact as SC
     except Exception:                                    # noqa: BLE001 — ไม่มีไฟล์ = ไม่มีช่องทางจริง
         return set(), set()
     phones = {_digits(SC.SALES_PHONE)} - {""}

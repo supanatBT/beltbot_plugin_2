@@ -328,7 +328,7 @@ class MovexPlugin:
         if _on("MOVEX_UNKNOWN_CODE") and not inp.has_image:
             unknown = self._unknown_code(text)
             if unknown:
-                from sales_contact import sales_contact_line_th
+                from shared.sales_contact import sales_contact_line_th
                 line = sales_contact_line_th()
                 reply = (f"ไม่พบรุ่น {unknown} ในระบบของ Movex ครับ\n\n" + self.ask_movex_model_th(topic)
                          + ("\n\nถ้าเป็นรุ่นพิเศษหรือนอกแค็ตตาล็อก สอบถามฝ่ายขายได้โดยตรงครับ\n" + line if line else ""))
@@ -513,8 +513,8 @@ def create(ctx):
     sh = ctx.shared
     plugin._query_interpreter = sh.get("query_interpreter")    # None = ถามรุ่นแบบเดิม (30 ต.ค.)
     if sh.get("jina_model") is not None:
-        from knowledge_graph import KnowledgeGraph
-        from retriever_v4 import RetrieverV4, RetrieverV4Config
+        from brands.movex.knowledge_graph import KnowledgeGraph
+        from shared.retriever_v4 import RetrieverV4, RetrieverV4Config
         from brands.movex import runtime as R
         vit_proc, vit_model = (sh.get("vit") or {}).get(cfg["key"], (None, None))
         graph = KnowledgeGraph.load_from_db(path(data["graph_db"]))

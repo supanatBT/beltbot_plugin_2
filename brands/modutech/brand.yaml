@@ -19,9 +19,9 @@ state:
   sprocket_codes: []  # รหัสสเตอร์ของเทิร์นนี้ ไม่สะสมข้ามเทิร์น
 
 data:
-  catalogue: ../../modutech_v30_3.json  # 11 ต.ค. ค่ำ: v30_3 = v30_2 + ฝ่ายเทคนิค→พนักงานฝ่ายขาย (CHANGELOG_v30_3.md) · v30_2 = v30_1 + wet_note_th ใหม่ (CHANGELOG_v30_2.md) · 7 ต.ค.: ใช้ v30_1 (คำสั่งโปรเจกต์ที่เขียน v30.json ล้าสมัย)
-  graph_db: ../../modutech_kg.db
-  qdrant_path: ../../qdrant_modutech_db
+  catalogue: ../../data/modutech_v30_3.json  # 11 ต.ค. ค่ำ: v30_3 = v30_2 + ฝ่ายเทคนิค→พนักงานฝ่ายขาย (CHANGELOG_v30_3.md) · v30_2 = v30_1 + wet_note_th ใหม่ (CHANGELOG_v30_2.md) · 7 ต.ค.: ใช้ v30_1 (คำสั่งโปรเจกต์ที่เขียน v30.json ล้าสมัย)
+  graph_db: ../../data/modutech_kg.db
+  qdrant_path: ../../data/qdrant_modutech_db
   # 28 ต.ค.: เรียกผ่าน alias ของ Qdrant — สลับแคตตาล็อกเวอร์ชันใหม่ / ย้อนกลับด้วย qdrant_alias.py ไม่ต้องแก้โค้ด
   # ยังไม่ได้ตั้ง alias (หรือหาไม่เจอ) → ใช้ชื่อสำรอง = collection เดิม พฤติกรรมเท่าเดิม
   text_collection: modutech_live

@@ -12,7 +12,7 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     HF_HOME=/home/user/.cache/huggingface \
     PORT=7860 \
-    BOT_MODULE=agent_assistant
+    BOT_MODULE=agent.assistant
 
 WORKDIR /app
 
@@ -46,6 +46,6 @@ CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]
 #    และ /api/chat ตอบ 503 warming_up ซึ่งหน้าเว็บแสดงข้อความรอให้ผู้ใช้อยู่แล้ว
 #
 # 2. ห้ามใส่คำสั่งที่รัน build_database.py ลงในไฟล์นี้เด็ดขาด
-#    มันลบแล้วสร้าง collection ใหม่ ถ้าโดน ./qdrant_db คือข้อมูล Movex หายทั้งก้อน
+#    มันลบแล้วสร้าง collection ใหม่ ถ้าโดน ./data/qdrant_db คือข้อมูล Movex หายทั้งก้อน
 #    และระบบไฟล์ของ Space ฟรีไม่ถาวร กู้คืนไม่ได้
 #    ฐานข้อมูลที่ build เสร็จแล้วให้ขึ้นไปพร้อมรีโปอย่างเดียว

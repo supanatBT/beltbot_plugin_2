@@ -9,7 +9,7 @@ modutech_gates.py
 ----------------
     gate(products: list[dict], slots: Slots, ...) -> GateResult
 
-  · products = record สินค้าดิบจาก modutech_v30_3.json (ที่ retriever คืนมา)
+  · products = record สินค้าดิบจาก data/modutech_v30_3.json (ที่ retriever คืนมา)
   · ไม่แก้ input — ทำบน deepcopy และเทียบ fingerprint ก่อน/หลัง (shadow copy)
   · ไม่เรียก LLM ไม่โหลดโมเดล ไม่แตะ Qdrant → แชต C เทสต์ด้วย python ล้วนได้
   · ตัดสินจากฟิลด์โครงสร้างเท่านั้น ไม่อ่านข้อความใน rules_th / forbidden_th
@@ -57,11 +57,11 @@ class CatalogueError(RuntimeError):
 
 class Catalogue:
     """
-    ถือ modutech_v30_3.json ไว้ในหน่วยความจำ ไม่มีเมธอดไหนเขียนไฟล์
+    ถือ data/modutech_v30_3.json ไว้ในหน่วยความจำ ไม่มีเมธอดไหนเขียนไฟล์
     ตรวจว่าเป็น v30 จากเนื้อไฟล์ (มีคีย์สเตอร์) ไม่ใช่จากชื่อไฟล์ — v29 ถูกปฏิเสธ
     """
 
-    def __init__(self, path: str = "modutech_v30_3.json"):
+    def __init__(self, path: str = "data/modutech_v30_3.json"):
         with open(path, encoding="utf-8") as f:
             self.data = json.load(f)
         self.path = path
@@ -583,7 +583,7 @@ def width_gate(products: list[dict], slots: Slots) -> GateResult:
     EC508 TR — ผู้ใช้ตัดสิน 30 ก.ย. ว่า "ไม่ต้องแก้" ข้อมูลดิบ
       belt_widths_mm ตัวที่สามเป็น 609.9 ทั้งที่คอลัมน์นิ้วในเล่มพิมพ์ 24.00 (= 609.6)
       และบันไดของรุ่นนี้คือ 508.0 → 558.8 → 609.6 → 660.4 ทีละ 50.8 ตรงกับหมายเหตุในเล่ม
-      เสนอให้แก้ 609.9 → 609.6 ใน modutech_v30_1.json ผู้ใช้ไม่รับ จึงคงของดิบไว้
+      เสนอให้แก้ 609.9 → 609.6 ใน data/modutech_v30_1.json ผู้ใช้ไม่รับ จึงคงของดิบไว้
       ผลที่ตามมา ยอมรับแล้ว ไม่ใช่บั๊ก
         · ค่าเพิ่มทีละของรุ่นนี้ถูกซ่อนตลอด (50.5 ที่คำนวณจากตารางไม่ตรง 50.8 ที่เล่มพิมพ์)
         · ลูกค้าที่ถามเป็นนิ้วเห็น 24.012 ปนอยู่ในรายการที่เหลือเป็นจำนวนเต็ม

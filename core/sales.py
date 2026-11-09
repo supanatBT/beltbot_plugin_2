@@ -102,7 +102,7 @@ def escalation_gate(user_text: str, belt_code: Optional[str] = None,
       has_spec_question = True  → คำถามผสม: ตอบสเปกตามปกติ แล้วโค้ดต่อท้ายด้วย handoff_th
     ข้อความฝ่ายขายสร้างในโค้ดเสมอ LLM ไม่ได้เขียนเอง
     """
-    from sales_contact import sales_contact_line_th
+    from shared.sales_contact import sales_contact_line_th
     allowed = set(allowed_topics) if allowed_topics else set(ESCALATE_PATTERNS)
     topics = [t for t, rx in _ESC_RE.items() if t in allowed and rx.search(user_text or "")]
     if not topics:
@@ -141,7 +141,7 @@ def escalation_gate(user_text: str, belt_code: Optional[str] = None,
 def escalation_again_th(esc: Escalation) -> str:
     """ลูกค้าถามเรื่องการค้าเดิมซ้ำทันที ("กะราคาคร่าว ๆ ให้หน่อยไม่ได้เหรอ") — ไม่ตอบประโยคเดิมทุกตัวอักษร
     redteam r4 R09#2 (27 ต.ค.): ลูกค้าเซ้าซี้ราคาซ้ำ บอทตอบข้อความเดิมซ้ำ · ยังไม่ให้ตัวเลขหรือรับปากเหมือนเดิม"""
-    from sales_contact import sales_contact_line_th
+    from shared.sales_contact import sales_contact_line_th
     topic_txt = "/".join(esc.topics)
     topic_txt = (" " + topic_txt + " ") if topic_txt[0].isascii() else topic_txt
     contact = sales_contact_line_th()

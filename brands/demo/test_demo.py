@@ -87,7 +87,7 @@ ALLOWED = {
     (T.greeting(infos3[:2]), T.greeting(infos3)),        # เฟส 2: ทักทายแยกจากขอบคุณ
 }
 convs: dict = {}
-for f in ("testsuite_120.csv", "testcases_modutech_136.csv", "testcases_graph_relations.csv",
+for f in ("eval/cases/testsuite_120.csv", "eval/cases/testcases_modutech_136.csv", "eval/cases/testcases_graph_relations.csv",
           "training/prompt_snapshot/cases/testcases_v2.csv", "training/prompt_snapshot/cases/snapshot_extra.csv"):
     for r in csv.DictReader(open(os.path.join(ROOT, f), encoding="utf-8-sig")):
         convs.setdefault((f, r["id"]), []).append(r)

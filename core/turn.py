@@ -59,7 +59,7 @@ ERROR_REPLY_TH = ("ขออภัยครับ เกิดข้อผิด
 def error_reply_th() -> str:
     """error ที่ไม่รู้จัก — เดิมส่ง str(e) ดิบถึงลูกค้า (เช่น 400 INVALID_ARGUMENT {...}) · รายละเอียดอยู่ใน log แทน"""
     try:
-        from sales_contact import sales_contact_line_th
+        from shared.sales_contact import sales_contact_line_th
         contact = sales_contact_line_th()
     except Exception:                                    # noqa: BLE001 — ไม่มีไฟล์ช่องทางติดต่อ = ข้อความอย่างเดียว
         contact = ""
@@ -399,7 +399,7 @@ def guard_reply(reply: str, result, decision) -> tuple[str, list]:
     if fake:
         notes.append(f"**Reply guard:** ลบช่องทางติดต่อที่ไม่ใช่ของจริง {fake[:5]}\n")
         if not getattr(decision, "sales_handoff_th", ""):
-            from sales_contact import sales_contact_line_th
+            from shared.sales_contact import sales_contact_line_th
             line = sales_contact_line_th()
             if line and line not in reply:
                 reply = f"{reply}\n\n{line}".strip()
