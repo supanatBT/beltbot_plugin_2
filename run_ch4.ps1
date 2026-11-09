@@ -9,6 +9,7 @@
 #   ล็อก commit: เติม -Commit <hash> ทุกคำสั่ง (HEAD ไม่ตรง = หยุด)
 #   agent ตัวที่ใช้งานจริง (มีเครื่องมือผิวจากรูป): เติม -ImageSurface · ไม่เติม = ตั้ง AGENT_IMAGE_SURFACE=0 ตรงกับ blind v2
 #   ชุดเล็ก: ... -System agent -Testcases testcases_modutech_136.csv -Tag modsmall -Rounds 1 -Only "TP-002,TP-011"
+#   ฐาน v31 (9 พ.ย.): เติม -V31 = agent ใช้ AGENT_PROMPT=r4 + modutech_v31.json (ไม่เติม = r3 + v30_3 เหมือนเดิม) · ใช้ Tag ใหม่
 #
 # ผล:  ..\ch4_<Tag>_<System>_r<รอบ>.json  · บอทมี ..\ch4_<Tag>_bot_r<รอบ>_img.log (การตัดสินเรื่องรูป)
 #      ..\ch4_<Tag>_manifest.json  (SHA-256 ของชุดทดสอบ · commit · ค่าตั้งของแต่ละระบบ) — ชุดทดสอบเปลี่ยน = หยุด
@@ -22,7 +23,8 @@ param(
     [int[]]$Rounds = @(1, 2),
     [string]$Only = "",
     [string]$Commit = "",         # ใส่ hash ที่ล็อกไว้ = หยุดถ้า HEAD ไม่ตรง (ไม่ใส่ = ไม่ตรวจข้อนี้)
-    [switch]$ImageSurface         # agent: เปิดเครื่องมือผิวจากรูป (ค่าเริ่มต้นของ agent ตั้งแต่ 6 พ.ย.) · ไม่ใส่ = ปิด = ตรงกับ blind v2
+    [switch]$ImageSurface,        # agent: เปิดเครื่องมือผิวจากรูป (ค่าเริ่มต้นของ agent ตั้งแต่ 6 พ.ย.) · ไม่ใส่ = ปิด = ตรงกับ blind v2
+    [switch]$V31                  # agent: ฐาน v31 + prompt r4 (9 พ.ย.)
 )
 
 $ErrorActionPreference = "Stop"
@@ -60,6 +62,10 @@ Write-Host "ชุดทดสอบ $Testcases · SHA-256 $($sha.Substring(0,16
 
 Write-Host "`n== เทสต์ออฟไลน์ (ไม่เสียเงิน) ==" -ForegroundColor Cyan
 $tests = @{ bot = @("test_bot_movex_fixes.py"); agent = @("test_agent_reply_guard.py", "test_agent_speed.py") }
+if ($V31) {
+    if ($System -ne "agent") { Fail "-V31 ใช้กับ agent เท่านั้น (บอทยังใช้ v30_3)" }
+    if (-not (Test-Path .\modutech_v31.json)) { Fail "ไม่พบ modutech_v31.json" }
+    $tests["agent"] += @("test_v31.py") }
 foreach ($t in $tests[$System]) { & $Python $t | Select-Object -Last 1; if ($LASTEXITCODE -ne 0) { Fail "$t ไม่ผ่าน" } }
 
 # ── ค่าตั้งที่ล็อก ──
@@ -69,15 +75,16 @@ if (-not $env:GEMINI_API_KEY) { Fail "ไม่มี GEMINI_API_KEY (.env)" }
 foreach ($k in "BOT_MODULE", "IMAGE_TEST_LOG", "AGENT_IMAGE_MAX_SIDE", "AGENT_IMAGE_TO_LLM", "AGENT_LAZY",
                "FRONT_INTERPRETER", "BOT_DOMAIN_PRODUCT", "MOVEX_UNKNOWN_CODE", "MOVEX_SERIES_ANSWER", "MOVEX_ID_SCRUB",
                "AGENT_PROMPT", "AGENT_DATASHEET_FILES", "AGENT_REPLY_GUARD", "AGENT_RESOLVE_TAB", "IMAGE_INTERPRETER",
-               "AGENT_IMAGE_SURFACE") {
+               "AGENT_IMAGE_SURFACE", "AGENT_MODUTECH_JSON") {
     Remove-Item "Env:$k" -ErrorAction SilentlyContinue }
 $env:PYTHONIOENCODING = "utf-8"
 $env:GEMINI_THINKING = "low"
 $env:GEMINI_MODEL = "gemini-3.8-flash"
 $cfg = @{ bot = [ordered]@{ FRONT_INTERPRETER = "llm"; BOT_DOMAIN_PRODUCT = "1"; MOVEX_UNKNOWN_CODE = "1";
                             MOVEX_SERIES_ANSWER = "1"; MOVEX_ID_SCRUB = "1" };
-          agent = [ordered]@{ AGENT_PROMPT = "r3"; AGENT_DATASHEET_FILES = "1"; AGENT_REPLY_GUARD = "1"; AGENT_RESOLVE_TAB = "1";
+          agent = [ordered]@{ AGENT_PROMPT = $(if ($V31) { "r4" } else { "r3" }); AGENT_DATASHEET_FILES = "1"; AGENT_REPLY_GUARD = "1"; AGENT_RESOLVE_TAB = "1";
                             AGENT_IMAGE_SURFACE = $(if ($ImageSurface) { "1" } else { "0" }) } }
+if ($V31) { $cfg["agent"]["AGENT_MODUTECH_JSON"] = (Resolve-Path .\modutech_v31.json).Path }
 foreach ($kv in $cfg[$System].GetEnumerator()) { [Environment]::SetEnvironmentVariable($kv.Key, $kv.Value) }
 $module = @{ bot = "assistant"; agent = "agent_assistant" }[$System]
 
