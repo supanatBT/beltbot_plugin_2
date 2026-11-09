@@ -73,7 +73,10 @@ print("1) system prompt")
 ag = build_agent(model=FakeLlm())
 txt = ag.static_instruction.parts[0].text
 check("ไม่มี {policy} ค้าง", "{policy}" not in txt)
-check("มีกฎ answering_policy จากฐานข้อมูล", "temperature_effective" in txt and "ถามลูกค้าว่าไลน์เปียกหรือแห้ง" in txt)
+if os.environ.get("AGENT_PROMPT") == "r4":     # v31: กฎ R1–R11 แทนกฎข้อความเดิม (9 พ.ย.)
+    check("มีกฎ answering_policy v31 จากฐานข้อมูล", "R3 อุณหภูมิ" in txt and "R11 " in txt)
+else:
+    check("มีกฎ answering_policy จากฐานข้อมูล", "temperature_effective" in txt and "ถามลูกค้าว่าไลน์เปียกหรือแห้ง" in txt)
 check("ไม่มีวงเล็บปีกกาที่ ADK จะตีความเป็นตัวแปร (static_instruction ไม่แทนค่า แต่กันไว้)", "{" not in INSTRUCTION_TH.replace("{policy}", "") and "{" not in INSTRUCTION_TH_R2.replace("{policy}", ""))
 
 print("2) ADK ↔ MCP ↔ ฐานข้อมูลจริง")

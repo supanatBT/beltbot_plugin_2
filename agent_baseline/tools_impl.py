@@ -2,7 +2,7 @@
 agent_baseline/tools_impl.py — เครื่องมือของ agent เทียบ (Modutech · ขั้นที่ 1)
 
 หลักของการเทียบ (claude/… แผน agent-baseline · 1 พ.ย. 2026)
-  · ข้อมูลชุดเดียวกับบอทหลัก: modutech_v30_3.json · กราฟจาก JSON · คอลเลกชัน modutech_live (อ่านอย่างเดียว)
+  · ข้อมูลชุดเดียวกับบอทหลัก: modutech_v30_3.json (r4 ใช้ modutech_v31.json ผ่าน AGENT_MODUTECH_JSON) · กราฟจาก JSON · คอลเลกชัน modutech_live (อ่านอย่างเดียว)
   · เครื่องมือคืน "ข้อมูลดิบ + ธง + กฎในข้อมูล" แต่ "ไม่บังคับกฎ"
       เช่น temperature() คืนทั้งค่าเปียกและแห้ง ไม่ถามก่อน · lookup_belt() คืนค่าที่ติดธงด้วย
     ถ้าเครื่องมือบังคับกฎเอง = เอาเกตของบอทหลักไปซ่อนในเครื่องมือ การเทียบจะไม่มีความหมาย
@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 from collections import Counter
 from functools import lru_cache
@@ -69,6 +70,25 @@ def _send_conflict() -> bool:
     return (os.environ.get("AGENT_PROMPT") or "r3").strip().lower() not in ("", "r1", "r2", "r2m")
 
 
+def _v31() -> bool:
+    """r4 (9 พ.ย.) = ฐาน v31 · ส่งฟิลด์โครงสร้างของกฎ R1–R11 แทนกฎข้อความ (answering / data_quality ดิบ)
+    r1–r3 ส่งเหมือนเดิมทุกตัวอักษร — ผลของรอบเดิมรันซ้ำได้"""
+    return (os.environ.get("AGENT_PROMPT") or "r3").strip().lower() == "r4"
+
+
+def _width_v31(we: dict) -> dict:
+    """R5: ค่าเพิ่มทีละส่งเฉพาะเมื่อ increment_status = match / not_printed · ค่าต่ำสุดที่แคบกว่ามาตรฐานติดป้ายให้ยืนยัน"""
+    out = {k: we.get(k) for k in ("standard_min_mm", "max_mm", "confidence", "increment_status", "width_note_th")}
+    if we.get("increment_status") in ("match", "not_printed") and we.get("increment_mm") is not None:
+        out["increment_mm"] = we["increment_mm"]
+    pm, std = we.get("printed_min_mm"), we.get("standard_min_mm")
+    if pm is not None and std is not None and pm < std:
+        out["printed_min_mm_needs_sales_confirmation"] = pm
+    if we.get("conflicting_value_mm") is not None:
+        out["table_value_conflicting_needs_sales_confirmation_mm"] = we["conflicting_value_mm"]
+    return out
+
+
 def _variants(p: dict, with_temp: bool = True) -> list[dict]:
     out = []
     for v in p["specifications"].get("variants") or []:
@@ -78,16 +98,42 @@ def _variants(p: dict, with_temp: bool = True) -> list[dict]:
         # ค่าวิ่งโค้ง — รอบ r1 ไม่ได้ส่งค่านี้ agent จึงตอบความแข็งแรงช่วงโค้งไม่ได้ (ST-001) ทั้งที่บอทหลักเห็น
         if v.get("belt_strength_curve"):
             row["strength_curve_n_per_m"] = v["belt_strength_curve"].get("n_per_m")
+        if _v31():
+            # R1: lb/ft คำนวณจาก N/m ในฐาน (ไม่ใช้ lb ที่เล่มพิมพ์) · R7: ค่าที่ยังไม่ยืนยัน
+            row["strength_lb_per_ft"] = (v.get("belt_strength") or {}).get("lb_per_ft")
+            if v.get("belt_strength_curve"):
+                row["strength_curve_lb_per_ft"] = v["belt_strength_curve"].get("lb_per_ft")
+            if v.get("confirmation"):
+                row["confirmation"] = v["confirmation"]
         if with_temp:
             te = v.get("temperature_effective") or {}
             row["temperature_effective"] = {k: te.get(k) for k in ("dry", "wet") if k in te}
             row["temperature_trust"] = v.get("temperature_trust")
+            if _v31():
+                # R3: สถานะค่าเปียกต่อเกรด (ok · partial_data · no_data · not_recommended) + เหตุผล
+                row["wet_status"] = te.get("wet_status") or "ok"
+                if row["wet_status"] != "ok":
+                    row["wet_note_th"] = te.get("wet_note_th")
             # r3 (2 พ.ย.): ส่งข้อขัดแย้งตารางสเปก vs คุณสมบัติวัสดุ (ข้อมูลดิบในฐาน · ไม่บังคับกฎ)
             # r1/r2/r2m ไม่ส่ง — ให้ผลของรอบเดิมรันซ้ำได้เท่าเดิม
             if _send_conflict() and te.get("conflict"):
                 row["temperature_conflict"] = te.get("conflict")
                 row["temperature_conflict_note_th"] = te.get("conflict_note_th")
         out.append(row)
+    return out
+
+
+def _notes_v31(s: dict) -> list:
+    """R5: รุ่นที่ค่าเพิ่มทีละในหมายเหตุไม่ตรงกับตาราง (increment_status = mismatch) ตัดท่อนที่พูดถึงค่าเพิ่มทีละออก
+    ท่อนอื่นของหมายเหตุคงไว้ (แยกท่อนด้วย " - " ตามที่เล่มพิมพ์)"""
+    notes = s.get("notes") or []
+    if (s.get("width_effective") or {}).get("increment_status") != "mismatch":
+        return notes
+    out = []
+    for n in notes:
+        keep = [seg for seg in re.split(r"\s+-\s+", n) if "increment" not in re.sub(r"\s+", "", seg).lower()]
+        if keep:
+            out.append(" - ".join(keep))
     return out
 
 
@@ -109,11 +155,22 @@ def _card(p: dict, full: bool) -> dict:
         "answering": p.get("answering"),
         "catalogue_page": s.get("page"),
     }
+    if _v31():
+        # v31: ไม่ส่ง answering / data_quality ดิบ — ส่งเฉพาะฟิลด์โครงสร้างที่กฎ R1–R11 อ่าน
+        dq, ans = p.get("data_quality") or {}, p.get("answering") or {}
+        for k in ("width_effective", "data_quality", "answering"):
+            d.pop(k, None)
+        d["width"] = _width_v31(s.get("width_effective") or {})
+        d["required_slots"] = ans.get("required_slots") or []
+        d["blocking_for"] = dq.get("blocking_for") or []
+        d["escalate_to_sales"] = ans.get("escalate_to_sales") or []
+        if p.get("material_status"):
+            d["material_status"] = p["material_status"]
     if full:
         d.update({
             "cleanability": s.get("cleanability"),
             "min_nosebar_diameter": s.get("min_nosebar_diameter"),
-            "notes": s.get("notes"),
+            "notes": _notes_v31(s) if _v31() else s.get("notes"),
             "sales_knowledge_th": p.get("sales_knowledge_th"),
             "industries": [{"industry": i.get("industry"),
                             "applications": [{"application_th": a.get("application_th") or a.get("application"),
@@ -189,6 +246,19 @@ def sprockets_for(belt_code: str) -> str:
     if not belt:
         return _not_found(belt_code, cands)
     sp = kg.sprockets_for_belt(belt)
+    if _v31():
+        # R9 (ตัดสิน 9 พ.ย.): Do / Di อ่านจากภาพวาดหน้าสเตอร์ได้ · รูเพลาและ A B ยังส่งฝ่ายขาย
+        rows = []
+        for code in sp:
+            x = cat.sprockets.get(code) or {}
+            dims = x.get("dimensions") or {}
+            rows.append({"sprocket_code": code, "teeth": x.get("teeth"),
+                         "material": x.get("material") if x.get("material_basis") == "printed_in_code" else None,
+                         "Do_mm": (dims.get("Do") or {}).get("mm"), "Di_mm": (dims.get("Di") or {}).get("mm")})
+        return _dump({"belt_code": belt, "sprockets": rows, "same_series": kg.get_same_series(belt),
+                      "note_th": ("รหัสเฟืองอนุมานจากซีรีส์ ต้องยืนยันกับฝ่ายขาย · Do = เส้นผ่านศูนย์กลางนอกที่ปลายฟัน "
+                                  "Di = เส้นผ่านศูนย์กลางวงในที่โคนฟัน · วัสดุ null = เล่มไม่ระบุ "
+                                  "· ขนาดรูเพลาและระยะ A B ต้องยืนยันกับฝ่ายขาย")})
     return _dump({"belt_code": belt, "sprockets": sp, "same_series": kg.get_same_series(belt),
                   "note_th": "รหัสเฟืองอนุมานจากซีรีส์ ต้องยืนยันกับฝ่ายขาย ขนาดเฟืองและรูเพลาไม่มีในข้อมูล"})
 
