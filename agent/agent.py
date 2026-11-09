@@ -403,7 +403,7 @@ def image_surface_enabled() -> bool:
 
 def enabled_brands() -> list[str]:
     """แบรนด์ที่ MCP server เปิดเครื่องมือ — กติกาเดียวกับ mcp_server.py"""
-    default = "modutech,movex" if prompt_version() in ("r2m", "r3") else "modutech"
+    default = "modutech,movex" if prompt_version() in ("r2m", "r3", "r4") else "modutech"
     raw = (os.environ.get("AGENT_BRANDS") or default).lower()
     return [b for b in ("modutech", "movex") if b in raw]
 

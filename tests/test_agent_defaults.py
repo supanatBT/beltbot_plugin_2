@@ -58,6 +58,10 @@ for k in ("guard", "surface", "tab", "files"):
     check(f"ตั้ง =0 = {k} ปิด", s[k] is False, s)
 os.environ["AGENT_PROMPT"] = "r1"
 check("AGENT_PROMPT=r1 ยังเลือกได้", AG.prompt_version() == "r1")
+check("AGENT_PROMPT=r1 = Modutech อย่างเดียว", AG.enabled_brands() == ["modutech"], AG.enabled_brands())
+for v in ("r3", "r4"):          # 9 พ.ย.: r4 เคยปิดเครื่องมือ Movex (blind2_v31 BV2-038/039 ส่งฝ่ายขาย)
+    os.environ["AGENT_PROMPT"] = v
+    check(f"AGENT_PROMPT={v} เปิดเครื่องมือ Movex", AG.enabled_brands() == ["modutech", "movex"], AG.enabled_brands())
 for k in SW:
     os.environ.pop(k, None)
 
