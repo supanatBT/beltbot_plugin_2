@@ -18,7 +18,7 @@ import copy
 import json
 import sys
 
-from brands.modutech.kg import BELT, COMPATIBLE_WITH, MATERIAL, SPROCKET, ModutechGraph
+from engine.brands.modutech.kg import BELT, COMPATIBLE_WITH, MATERIAL, SPROCKET, ModutechGraph
 
 PATH = sys.argv[1] if len(sys.argv) > 1 else "data/modutech_v30_3.json"
 with open(PATH, encoding="utf-8") as f:

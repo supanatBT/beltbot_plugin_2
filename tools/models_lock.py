@@ -106,7 +106,7 @@ def main() -> int:
         lines += [f"  {mid}:", f"    revision: {sha}", f"    role: \"{role}\""]
     with open(a.o, "w", encoding="utf-8", newline="\n") as f:          # UTF-8 ไม่มี BOM
         f.write("\n".join(lines) + "\n")
-    from core import model_lock
+    from engine.core import model_lock
     model_lock.load(a.o)                                                # ตรวจว่าอ่านกลับได้
     print(f"✅ เขียน {os.path.basename(a.o)} · ล็อก {len(locked)} ตัว")
     return 0

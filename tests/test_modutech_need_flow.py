@@ -17,8 +17,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 from bot import dialogue_state as DS  # noqa: E402
-from brands.modutech import need_flow as NF  # noqa: E402
-from brands.modutech.turn import build_modutech_turn  # noqa: E402
+from engine.brands.modutech import need_flow as NF  # noqa: E402
+from engine.brands.modutech.turn import build_modutech_turn  # noqa: E402
 
 passed = failed = 0
 
@@ -165,8 +165,8 @@ ok("ไม่มีรุ่นที่ตรง → kept ว่าง + แน
 
 print("\n4) รุ่นที่คำตอบเสนอ → โฟกัสเทิร์นหน้า (เว็บ 25 ต.ค.: \"ขอดูสเปคทั้งสองตัวเทียบกัน\" ถูกตีเป็นนอกเรื่อง)")
 from types import SimpleNamespace  # noqa: E402
-from core.protocol import LLMTurn, TurnOutput  # noqa: E402
-from core.turn import TurnEngine  # noqa: E402
+from engine.core.protocol import LLMTurn, TurnOutput  # noqa: E402
+from engine.core.turn import TurnEngine  # noqa: E402
 
 
 class _Log:
@@ -335,7 +335,7 @@ ok("ถามรหัสตรง ๆ → การ์ดครบทุกอ�
    len(card["industries"]))
 
 print("\n10) หน่วยและคำพิมพ์ผิดจาก redteam_r1 (26 ต.ค.)")
-from brands.modutech.plugin import extract_modutech_slots as _X  # noqa: E402
+from engine.brands.modutech.plugin import extract_modutech_slots as _X  # noqa: E402
 ok("ฟุต → มม. ไม่ปัด (0.083 ฟุต = 25.3 → ถามยืนยัน)", NF.parse_pitch("พิทช์ประมาณ 0.083 ฟุต") == 25.3)
 ok("ฟาเรนไฮต์ → °C (R06)", [NF.parse_temp("176 องศาฟาเรนไฮต์"), NF.parse_temp("176F"), NF.parse_temp("-4 °F"),
                              _X("ประมาณ 176 องศาฟาเรนไฮต์ครับ", ()).get("operating_temp_c")] == [80.0, 80.0, -20.0, 80.0])

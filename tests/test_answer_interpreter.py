@@ -18,8 +18,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 from bot import dialogue_state as DS  # noqa: E402
-from brands.modutech import need_flow as NF  # noqa: E402
-from core.answer_interpreter import AnswerInterpreter, parse_reading  # noqa: E402
+from engine.brands.modutech import need_flow as NF  # noqa: E402
+from engine.core.answer_interpreter import AnswerInterpreter, parse_reading  # noqa: E402
 
 passed = failed = 0
 

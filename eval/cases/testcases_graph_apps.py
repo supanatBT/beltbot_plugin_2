@@ -33,11 +33,11 @@ import json
 import sys
 from collections import defaultdict
 
-from brands.modutech import gates as mg
-from brands.modutech import router as mr
-from brands.modutech import turn as mt
+from engine.brands.modutech import gates as mg
+from engine.brands.modutech import router as mr
+from engine.brands.modutech import turn as mt
 from bot.dialogue_state import DialogueManager
-from brands.modutech.kg import ModutechGraph
+from engine.brands.modutech.kg import ModutechGraph
 
 FIELDS = ["id", "category", "subcategory", "turn_type", "turn_number", "user_text",
           "image", "must_contain", "must_contain_any", "must_not_contain",
@@ -97,7 +97,7 @@ def main() -> None:
 
     # ข้อความถามกลับสำเร็จรูปของบอต — คำใน must_contain_any ต้องไม่อยู่ในนี้
     # รอบแรก GI-A06 ผ่านทั้งที่บอตถามกลับ เพราะข้อความถามกลับมีคำว่า "เครื่องตรวจจับโลหะ"
-    import brands.modutech.plugin as _plugin
+    import engine.brands.modutech.plugin as _plugin
     ask_texts = " ".join(v for k, v in vars(_plugin).items() if k.startswith("ASK_") and isinstance(v, str))
 
     # ชื่อไทยจาก JSON

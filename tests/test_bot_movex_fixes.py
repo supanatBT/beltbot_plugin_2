@@ -26,7 +26,7 @@ for k in SWITCHES + ("FRONT_INTERPRETER",):
     os.environ.pop(k, None)
 
 from bot import dialogue_state as DS  # noqa: E402
-from core.protocol import ImageScore, TurnOutput  # noqa: E402
+from engine.core.protocol import ImageScore, TurnOutput  # noqa: E402
 
 data = json.load(open(os.path.join(ROOT, "data/extracted_data_v3_machine_ready.json"), encoding="utf-8"))
 real = {p["product_id"]: p for p in data.get("products", []) if "product_id" in p}
@@ -83,7 +83,7 @@ os.environ["MOVEX_UNKNOWN_CODE"] = "1"
 d = turn("มีรุ่น LF777 ไหมครับ")
 check("LF777 → บอกว่าไม่พบ", d.reply_th.startswith("ไม่พบรุ่น LF777"), d.reply_th[:60])
 check("ยังบอกซีรีส์ที่มี", "ซีรีส์ที่มี" in d.reply_th)
-from shared.sales_contact import sales_contact_line_th  # noqa: E402
+from engine.shared.sales_contact import sales_contact_line_th  # noqa: E402
 check("แนบช่องทางฝ่ายขายจริง", (not sales_contact_line_th()) or sales_contact_line_th() in d.reply_th)
 check("ค้างคำถามรุ่นไว้ (ตอบรุ่นต่อได้)", d.state.pending == "movex_model", d.state.pending)
 d = turn("54999 ฟันกี่ซี่")

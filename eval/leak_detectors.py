@@ -30,9 +30,9 @@ _os.chdir(_ROOT)
 
 import re
 
-from brands.modutech import need_flow as NF
-from brands.modutech.plugin import ASK_WET_DRY_TH, extract_modutech_slots
-from core import reply_guard as RG
+from engine.brands.modutech import need_flow as NF
+from engine.brands.modutech.plugin import ASK_WET_DRY_TH, extract_modutech_slots
+from engine.core import reply_guard as RG
 
 FRUSTRATION_RX = re.compile(r"บอกไปแล้ว|ตอบไปแล้ว|ถามซ้ำ|ถามอีกแล้ว|ถามทำไมอีก|ไม่ตรงคำถาม|ไม่เข้าใจที่ผม|"
                             r"ไม่เข้าใจที่ฉัน|อ่านไม่เข้าใจ|งงกับบอท|already (?:told|said)|i (?:just )?said", re.IGNORECASE)

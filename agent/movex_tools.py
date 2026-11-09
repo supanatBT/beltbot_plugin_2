@@ -24,7 +24,7 @@ from functools import lru_cache
 
 from agent.tools_impl import IMAGE_DIR, ROOT, _dump, shared_models
 
-BDIR = os.path.join(ROOT, "brands", "movex")
+BDIR = os.path.join(ROOT, "engine", "brands", "movex")
 
 
 def _cfg() -> dict:
@@ -39,8 +39,8 @@ def _path(rel: str) -> str:
 @lru_cache(maxsize=1)
 def _data():
     """ข้อมูล Movex ชุดเดียวกับ brands/movex/plugin.create() — extracted_data + กราฟ · ผูกเข้า runtime (bind)"""
-    from brands.movex.knowledge_graph import KnowledgeGraph
-    from brands.movex import runtime as R
+    from engine.brands.movex.knowledge_graph import KnowledgeGraph
+    from engine.brands.movex import runtime as R
     data = _cfg().get("data") or {}
     raw = json.load(open(_path(data["products"]), encoding="utf-8"))
     products = {p["product_id"]: p for p in raw.get("products", []) if "product_id" in p}
@@ -56,8 +56,8 @@ def _vit():
     """ViT LoRA ของ Movex แบบเดียวกับ assistant.py (ตรวจ revision ตาม brand.yaml ด้วย core.models)"""
     from peft import PeftModel
     from transformers import ViTForImageClassification, ViTImageProcessor
-    from core import model_lock
-    from core.models import load_image_spec
+    from engine.core import model_lock
+    from engine.core.models import load_image_spec
     spec = load_image_spec("movex", BDIR, _cfg().get("image") or {})
     device = shared_models()["device"]
     proc = ViTImageProcessor.from_pretrained(spec.base, **model_lock.pin(spec.base))
@@ -72,7 +72,7 @@ def _vit():
 @lru_cache(maxsize=1)
 def _retriever():
     """RetrieverV4 ฝั่ง Movex = brands/movex/plugin.create() ทุกค่า (data/qdrant_db · ค่าตั้งต้น RetrieverV4Config)"""
-    from shared.retriever_v4 import RetrieverV4, RetrieverV4Config
+    from engine.shared.retriever_v4 import RetrieverV4, RetrieverV4Config
     R, products, graph = _data()
     m = shared_models()
     try:

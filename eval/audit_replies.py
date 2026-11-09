@@ -32,7 +32,7 @@ ASK_USE = re.compile(r"ลำเลียง(?:สินค้า|วัตถ�
 
 def hidden_increments() -> dict[str, float]:
     """รุ่นที่ประตูความกว้างซ่อนค่าเพิ่มทีละ (ตรรกะเดียวกับ gates.width_gate)"""
-    from brands.modutech.gates import catalogue_increment_status
+    from engine.brands.modutech.gates import catalogue_increment_status
     here = os.path.dirname(os.path.abspath(__file__))
     out = {}
     for p in json.load(open(os.path.join(os.path.dirname(here), "data/modutech_v30_3.json"), encoding="utf-8"))["products"]:

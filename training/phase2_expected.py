@@ -38,7 +38,7 @@ def expected_reply(old_reply: str, text: str, action: str = "", movex_products: 
     """ข้อความของเดิม → ข้อความที่เฟส 2 ตั้งใจให้เป็น"""
     r = (old_reply or "").replace(OLD_ASK_ENDING, NEW_ASK_ENDING)
     if movex_products is not None and r.startswith(MOVEX_MODEL_ASK_HEAD):
-        from brands.movex.plugin import movex_application_block
+        from engine.brands.movex.plugin import movex_application_block
         r = movex_application_block(text, movex_products) or r
     m = _OLD_SMALLTALK_RX.match(r)
     if m and _GREET_RX.search(text or "") and not _THANKS_RX.search(text or ""):

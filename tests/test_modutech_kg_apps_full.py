@@ -33,7 +33,7 @@ import json
 import sys
 from collections import defaultdict
 
-from brands.modutech.kg import APPLICATION, INDUSTRY, ModutechGraph
+from engine.brands.modutech.kg import APPLICATION, INDUSTRY, ModutechGraph
 
 PATH = sys.argv[1] if len(sys.argv) > 1 else "data/modutech_v30_3.json"
 with open(PATH, encoding="utf-8") as f:

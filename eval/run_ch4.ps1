@@ -40,7 +40,7 @@ if ($ImgDir -and -not (Test-Path $ImgDir)) { Fail "ไม่พบโฟลเ�
 
 $branch = (git branch --show-current).Trim()
 if ($branch -ne "eval-movex-old") { Fail "ต้องอยู่ branch eval-movex-old (ตอนนี้ $branch)" }
-if (git status --porcelain -- core brands bot agent eval/run_answer_eval.py) {
+if (git status --porcelain -- engine bot agent eval/run_answer_eval.py) {
     Fail "มีโค้ดแก้ค้างที่ยังไม่ commit — ผลจะอ้างไม่ได้" }
 $log = (git log -40 --format=%B) -join "`n"
 $need = @{ bot = @("MOVEX_ID_SCRUB", "MOVEX_SERIES_ANSWER", "MOVEX_UNKNOWN_CODE", "BOT_DOMAIN_PRODUCT");

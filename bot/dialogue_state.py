@@ -21,18 +21,18 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
 
-from brands.modutech.detect import ModutechDetector
-from brands.modutech.plugin import ModutechPlugin, extract_modutech_slots  # noqa: F401  (ชื่อเดิม)
-from brands.movex import detect as _movex_detect
-from brands.movex.plugin import MovexPlugin, load_thresholds, reject_text
-from core import router as _core_router
-from core import templates as _templates
-from core.decide import Dialogue
-from core.dialogue import state_class as _state_class
-from core.protocol import Decision as _CoreDecision, ImageScore
-from core.registry import discover as _discover_brands, state_schema as _state_schema
-from brands.modutech.gates import Catalogue
-from brands.modutech.router import CodeMatch
+from engine.brands.modutech.detect import ModutechDetector
+from engine.brands.modutech.plugin import ModutechPlugin, extract_modutech_slots  # noqa: F401  (ชื่อเดิม)
+from engine.brands.movex import detect as _movex_detect
+from engine.brands.movex.plugin import MovexPlugin, load_thresholds, reject_text
+from engine.core import router as _core_router
+from engine.core import templates as _templates
+from engine.core.decide import Dialogue
+from engine.core.dialogue import state_class as _state_class
+from engine.core.protocol import Decision as _CoreDecision, ImageScore
+from engine.core.registry import discover as _discover_brands, state_schema as _state_schema
+from engine.brands.modutech.gates import Catalogue
+from engine.brands.modutech.router import CodeMatch
 
 _LEGACY_BRANDS = ["movex", "modutech"]
 _CFG = {b.key: b for b in _discover_brands(only=_LEGACY_BRANDS, resolve_images=False)}

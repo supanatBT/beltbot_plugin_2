@@ -99,7 +99,7 @@ ok("เวลา: ทุกเทิร์นของบอทมี sec · แ
 
 print("\n4) ตัวตีความ LLM (ปลอม · หน่วง 50 มิลลิวินาที) — วัดเวลาที่เพิ่ม")
 import time as _t  # noqa: E402
-from core.answer_interpreter import AnswerInterpreter  # noqa: E402
+from engine.core.answer_interpreter import AnswerInterpreter  # noqa: E402
 
 
 def slow_llm(system, user, json_mode=False, temperature=None):

@@ -32,7 +32,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from starlette.concurrency import run_in_threadpool
 
-from core import metrics as M
+from engine.core import metrics as M
 from webapi import versions as V
 from webapi.bot import BotAdapter, MediaRegistry, SessionStore, to_web_messages
 from webapi.image_guard import ImageRejected, load_image, read_limited

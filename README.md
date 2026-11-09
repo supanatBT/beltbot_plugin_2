@@ -54,9 +54,10 @@ Space รุ่นฟรีหลับเมื่อไม่มีคนใ�
 | `app.py` · `webapi/` | FastAPI ที่หน้าเว็บเรียก · เลือกตัวตอบด้วย `BOT_MODULE` | ทั้งสองระบบ |
 | `bot/` | บอทหลัก (โค้ดตัดสินใจ + LLM เรียบเรียง): `assistant.py` · `dialogue_state.py` · `pipeline_logger.py` | `BOT_MODULE=bot.assistant` |
 | `agent/` | agent (Google ADK + MCP · กฎอยู่ใน prompt): `assistant.py` · `agent.py` · `tools_impl.py` · `movex_tools.py` · `mcp_server.py` | `BOT_MODULE=agent.assistant` |
-| `core/` | แกนกลางที่ไม่รู้จักชื่อแบรนด์ (router · decide · turn · reply_guard ...) | ทั้งสอง |
-| `brands/` | ปลั๊กอินรายแบรนด์ (`modutech/` เกต กราฟ ตัวค้น · `movex/` กราฟ runtime · `demo/`) | ทั้งสอง — agent เรียกฐานและตัวค้นชุดเดียวกับบอทเพื่อให้เทียบกันได้ |
-| `shared/` | ของใช้ร่วมที่รู้จักชื่อแบรนด์: `retriever_v4.py` (ค้นเวกเตอร์) · `sales_contact.py` | ทั้งสอง |
+| `engine/` | แกนที่บอทและ agent ใช้ร่วมกัน — agent เรียกฐานและตัวค้นชุดเดียวกับบอทเพื่อให้เทียบกันได้ | ทั้งสอง |
+| `engine/core/` | แกนกลางที่ไม่รู้จักชื่อแบรนด์ (router · decide · turn · reply_guard · entrypoints ...) | |
+| `engine/brands/` | ปลั๊กอินรายแบรนด์ (`modutech/` เกต กราฟ ตัวค้น · `movex/` กราฟ runtime · `demo/`) · วิธีเพิ่มแบรนด์ `ADD_BRAND.md` | |
+| `engine/shared/` | ของใช้ร่วมที่รู้จักชื่อแบรนด์: `retriever_v4.py` (ค้นเวกเตอร์) · `sales_contact.py` | |
 | `data/` | แคตตาล็อก JSON (`modutech_v30_3.json` ตัวที่ล็อก · `modutech_v31.json`) · Movex · กราฟ `.db` · Qdrant · ViT LoRA · `DATA_MANIFEST.json` | — |
 | `image/` | รูปสินค้า Movex — **อยู่ที่รากต่อ** เพราะพาธ `image/...` ฝังอยู่ในข้อมูล Movex และ payload ของ Qdrant | — |
 | `tests/` | เทสต์ออฟไลน์ `python tests/test_xxx.py` | — |
@@ -67,7 +68,7 @@ Space รุ่นฟรีหลับเมื่อไม่มีคนใ�
 | `archive/` | ผลรันเก่า (ไม่มีโค้ดอ่าน) | — |
 | `web/` | หน้าเว็บ Next.js (deploy ที่ Vercel) | — |
 
-ชื่อโมดูลเดิม (`assistant` · `agent_assistant` · `chatbot_v5`) ยังใช้ใน `BOT_MODULE` และ `--module` ได้ — แปลงที่ `core/entrypoints.py`
+ชื่อโมดูลเดิม (`assistant` · `agent_assistant` · `chatbot_v5`) ยังใช้ใน `BOT_MODULE` และ `--module` ได้ — แปลงที่ `engine/core/entrypoints.py`
 
 คำสั่งที่ใช้บ่อย
 

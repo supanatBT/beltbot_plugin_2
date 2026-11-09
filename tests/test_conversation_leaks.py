@@ -41,9 +41,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 from bot import dialogue_state as DS  # noqa: E402
-from brands.modutech.turn import build_modutech_turn  # noqa: E402
-from core.protocol import LLMTurn, TurnOutput  # noqa: E402
-from core.turn import TurnEngine  # noqa: E402
+from engine.brands.modutech.turn import build_modutech_turn  # noqa: E402
+from engine.core.protocol import LLMTurn, TurnOutput  # noqa: E402
+from engine.core.turn import TurnEngine  # noqa: E402
 
 data = json.load(open(os.path.join(ROOT, "data/extracted_data_v3_machine_ready.json"), encoding="utf-8"))
 REAL_MX = {p["product_id"]: p for p in data.get("products", []) if "product_id" in p}

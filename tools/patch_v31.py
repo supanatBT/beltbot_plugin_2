@@ -26,7 +26,7 @@ import hashlib
 import json
 import sys
 
-from brands.modutech.gates import catalogue_increment_status
+from engine.brands.modutech.gates import catalogue_increment_status
 
 SRC = sys.argv[1] if len(sys.argv) > 1 else "data/modutech_v30_3.json"
 DST = sys.argv[2] if len(sys.argv) > 2 else "data/modutech_v31.json"

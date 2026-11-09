@@ -19,8 +19,8 @@ if _ROOT not in _sys.path:
 _os.chdir(_ROOT)
 
 from bot import dialogue_state as D
-from brands.modutech.router import CatalogueSearch, comparison_op, thai_number
-from brands.modutech.gates import Catalogue
+from engine.brands.modutech.router import CatalogueSearch, comparison_op, thai_number
+from engine.brands.modutech.gates import Catalogue
 
 CAT = Catalogue("data/modutech_v30_3.json")
 S = CatalogueSearch(CAT)

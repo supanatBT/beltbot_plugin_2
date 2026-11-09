@@ -27,9 +27,9 @@ from types import SimpleNamespace
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-import brands.movex.runtime as R  # noqa: E402
-from brands.movex import knowledge_graph as K  # noqa: E402
-from shared.retriever_v4 import GraphResult, RetrievalResultV4, RetrievedProduct, ViTSignal  # noqa: E402
+import engine.brands.movex.runtime as R  # noqa: E402
+from engine.brands.movex import knowledge_graph as K  # noqa: E402
+from engine.shared.retriever_v4 import GraphResult, RetrievalResultV4, RetrievedProduct, ViTSignal  # noqa: E402
 
 passed = failed = 0
 

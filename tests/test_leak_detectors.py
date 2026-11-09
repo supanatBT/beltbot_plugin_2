@@ -18,9 +18,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 from eval import leak_detectors as LD
-from brands.modutech.plugin import ASK_WET_DRY_TH  # noqa: E402
+from engine.brands.modutech.plugin import ASK_WET_DRY_TH  # noqa: E402
 from eval import simulate_customers as SC  # noqa: E402
-from brands.modutech import need_flow as NF  # noqa: E402
+from engine.brands.modutech import need_flow as NF  # noqa: E402
 
 passed = failed = 0
 

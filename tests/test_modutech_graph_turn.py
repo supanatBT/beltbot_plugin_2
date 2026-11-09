@@ -21,10 +21,10 @@ _os.chdir(_ROOT)
 import json
 import sys
 
-from brands.modutech import router as mr
-from brands.modutech import turn as mt
-from brands.modutech.gates import Catalogue
-from brands.modutech.kg import ModutechGraph, load_modutech_kg
+from engine.brands.modutech import router as mr
+from engine.brands.modutech import turn as mt
+from engine.brands.modutech.gates import Catalogue
+from engine.brands.modutech.kg import ModutechGraph, load_modutech_kg
 from bot.dialogue_state import DialogueManager
 
 cat = Catalogue("data/modutech_v30_3.json")

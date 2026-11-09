@@ -32,7 +32,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 os.environ["METRICS_LOG"] = "1"
 
-from core import metrics as M  # noqa: E402
+from engine.core import metrics as M  # noqa: E402
 
 PASS = FAIL = 0
 THAI = re.compile(r"[\u0E00-\u0E7F]")
@@ -145,7 +145,7 @@ ok("METRIC api ไม่มี IP/ข้อความ", not any(k in x for x i
 
 # ── 4 ──
 print("4. core/model_lock")
-from core import model_lock  # noqa: E402
+from engine.core import model_lock  # noqa: E402
 
 with tempfile.TemporaryDirectory() as td:
     ok("ไม่มีไฟล์ = {}", model_lock.load(os.path.join(td, "none.yaml")) == {})
@@ -195,7 +195,7 @@ with tempfile.TemporaryDirectory() as td:
 print("5–6. alias ของ Qdrant (ไฟล์จริงในโฟลเดอร์ชั่วคราว)")
 from qdrant_client import QdrantClient, models as QM  # noqa: E402
 
-from brands.modutech.plugin import resolve_collection  # noqa: E402
+from engine.brands.modutech.plugin import resolve_collection  # noqa: E402
 from tools import qdrant_alias as QA  # noqa: E402
 
 

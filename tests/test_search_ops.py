@@ -5,8 +5,8 @@ if _ROOT not in _sys.path:
     _sys.path.insert(0, _ROOT)
 _os.chdir(_ROOT)
 import json, sys
-from brands.modutech.router import CatalogueSearch, ExploratoryQuery, compare
-from brands.modutech import turn as T
+from engine.brands.modutech.router import CatalogueSearch, ExploratoryQuery, compare
+from engine.brands.modutech import turn as T
 
 ok = fail = 0
 def check(name, cond):
@@ -19,7 +19,7 @@ check("compare <", compare(2.7, "<", 2.8) and not compare(2.8, "<", 2.8))
 check("compare >=/<=", compare(30000, ">=", 30000) and compare(30000, "<=", 30000))
 check("compare unknown op → False", not compare(1, "~", 0))
 
-from brands.modutech.gates import Catalogue  # noqa: E402
+from engine.brands.modutech.gates import Catalogue  # noqa: E402
 S = CatalogueSearch(Catalogue("data/modutech_v30_3.json"))
 tool = T.make_search_tool(S)
 
@@ -46,7 +46,7 @@ check("op ผิด → ปฏิเสธ", tool(field="strength", op="~", valu
 check("op '=>' → >=", json.loads(tool(field="strength", op="=>", value=100000))["matched"] == 1)
 
 # "น้ำหนัก" ไม่ใช่ "น้ำ" — QI-D2 ("น้ำหนักเบา ๆ") เดิมตั้ง wet_or_dry=wet ให้เองโดยลูกค้าไม่ได้พูด
-from brands.modutech.plugin import extract_modutech_slots as X
+from engine.brands.modutech.plugin import extract_modutech_slots as X
 check("น้ำหนักเบา ๆ → ไม่ตั้งเปียก", "wet_or_dry" not in X("Modutech มีสายพานรุ่นที่น้ำหนักเบา ๆ ไหม", []))
 check("รับน้ำหนักได้เท่าไหร่ → ไม่ตั้งเปียก", "wet_or_dry" not in X("รับน้ำหนักได้เท่าไหร่", []))
 check("ระบายน้ำ → เปียก", X("ระบายน้ำได้ดี", []).get("wet_or_dry") == "wet")
@@ -54,7 +54,7 @@ check("โดนน้ำตลอด → เปียก", X("ไลน์โ�
 check("น้ำหนัก + ล้างน้ำ → เปียก", X("น้ำหนักเบา ล้างน้ำทุกวัน", []).get("wet_or_dry") == "wet")
 
 # ผิวยาง = Grip Top (Non Slip ไม่มียาง · ผู้ใช้ยืนยัน 30 ต.ค. · QI-D4)
-from brands.modutech.router import RUBBER_SURFACES
+from engine.brands.modutech.router import RUBBER_SURFACES
 q = S.parse("สายพาน Modutech ผิวยางกันลื่นรุ่นไหนแรงดึงสูงสุด")
 check(f"ผิวยางกันลื่น → กลุ่ม Grip Top ({q and q.surface_any})", q is not None and q.surface_any == RUBBER_SURFACES)
 r = S.search(q) if q else {"matches": [{"belt_code": "-"}]}

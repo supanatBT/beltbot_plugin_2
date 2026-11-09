@@ -10,8 +10,8 @@ if _ROOT not in _sys.path:
 _os.chdir(_ROOT)
 import csv, glob, itertools, json, sys
 
-from brands.modutech.router import CatalogueSearch, ExploratoryQuery
-from brands.modutech.gates import Catalogue
+from engine.brands.modutech.router import CatalogueSearch, ExploratoryQuery
+from engine.brands.modutech.gates import Catalogue
 
 DB = "data/modutech_v30_3.json"
 
@@ -74,7 +74,7 @@ def main():
     cat = Catalogue(DB)
     py = CatalogueSearch(cat)
     try:
-        from brands.modutech.variant_index import QdrantCatalogueSearch
+        from engine.brands.modutech.variant_index import QdrantCatalogueSearch
         qd = QdrantCatalogueSearch(cat)
     except ImportError:                                  # ใช้ --dump บนเวอร์ชันเก่าที่ยังไม่มีไฟล์นี้ได้
         qd = None

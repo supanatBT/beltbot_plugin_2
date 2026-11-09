@@ -33,14 +33,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 from bot import dialogue_state as DS                                    # noqa: E402
-from brands.modutech.kg import load_modutech_kg                # noqa: E402
-from brands.modutech.runtime import ModutechRuntime            # noqa: E402
-from core.decide import GENERIC_REJECT_IMAGE_TH                # noqa: E402
-from core.image_policy import GateReading                      # noqa: E402
-from core.llm import LLMResult                                 # noqa: E402
-from core.protocol import ImageScore, LLMTurn                  # noqa: E402
-from core.tools import ToolLog                                 # noqa: E402
-from core.turn import TurnEngine                               # noqa: E402
+from engine.brands.modutech.kg import load_modutech_kg                # noqa: E402
+from engine.brands.modutech.runtime import ModutechRuntime            # noqa: E402
+from engine.core.decide import GENERIC_REJECT_IMAGE_TH                # noqa: E402
+from engine.core.image_policy import GateReading                      # noqa: E402
+from engine.core.llm import LLMResult                                 # noqa: E402
+from engine.core.protocol import ImageScore, LLMTurn                  # noqa: E402
+from engine.core.tools import ToolLog                                 # noqa: E402
+from engine.core.turn import TurnEngine                               # noqa: E402
 
 passed = failed = 0
 
@@ -76,7 +76,7 @@ def movex_build(decision, turn):
 
 
 def movex_finish(decision, turn, llm_turn, result):
-    from core.protocol import TurnOutput
+    from engine.core.protocol import TurnOutput
     return TurnOutput(result.response.text)
 
 
@@ -301,7 +301,7 @@ ok("ไม่มี INVALID_ARGUMENT / code / ❌ ถึงลูกค้า", 
 ok("ขอโทษ + ให้ส่งใหม่ + ช่องทางฝ่ายขาย", rep_.startswith("ขออภัยครับ") and "ส่งคำถามอีกครั้ง" in rep_
    and "ติดต่อฝ่ายขาย" in rep_, rep_)
 from eval.leak_detectors import FALLBACK_RX  # noqa: E402
-from core.turn import TIMEOUT_REPLY_TH, TRANSIENT_REPLY_TH  # noqa: E402
+from engine.core.turn import TIMEOUT_REPLY_TH, TRANSIENT_REPLY_TH  # noqa: E402
 ok("ตัวนับเทิร์นที่ตอบไม่สำเร็จยังจับข้อความใหม่ได้ครบสามแบบ",
    all(FALLBACK_RX.search(t) for t in (rep_, TIMEOUT_REPLY_TH, TRANSIENT_REPLY_TH)))
 ok("ข้อความปฏิเสธรูปของ Movex ไม่กล่าวหาว่ารูปไม่เกี่ยว",
@@ -317,7 +317,7 @@ ok("คำถามข้อความล้วนยังไปถึง LLM
 print("\nlog ทดสอบรูป (IMAGE_TEST_LOG) → image_test_log.py → CSV")
 import csv as _csv  # noqa: E402
 import tempfile  # noqa: E402
-import core.turn as CT  # noqa: E402
+import engine.core.turn as CT  # noqa: E402
 from eval import image_test_log as ITL  # noqa: E402
 
 with tempfile.TemporaryDirectory() as tmp:

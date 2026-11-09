@@ -19,10 +19,10 @@ _os.chdir(_ROOT)
 
 import sys
 
-from brands.modutech.gates import Catalogue
-from brands.modutech.kg import (APPLICATION, INDUSTRY, USED_FOR, USED_IN, ModutechGraph,
+from engine.brands.modutech.gates import Catalogue
+from engine.brands.modutech.kg import (APPLICATION, INDUSTRY, USED_FOR, USED_IN, ModutechGraph,
                                 _refuse_if_movex)
-from brands.modutech.router import CatalogueSearch
+from engine.brands.modutech.router import CatalogueSearch
 
 PATH = sys.argv[1] if len(sys.argv) > 1 else "data/modutech_v30_3.json"
 cat = Catalogue(PATH)
@@ -61,7 +61,7 @@ th = {}
 for p in cat.products:
     for i in p.get("industries") or []:
         th[i["industry"]] = i.get("industry_th") or i["industry"]
-from brands.modutech.router import INDUSTRY_KEYWORDS  # noqa: E402
+from engine.brands.modutech.router import INDUSTRY_KEYWORDS  # noqa: E402
 for ind, kws in INDUSTRY_KEYWORDS.items():
     res = search.match_industry(kws[0])
     want = set(res[1]) if res and res[0] == ind else set()

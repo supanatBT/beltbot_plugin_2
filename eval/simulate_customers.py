@@ -47,7 +47,7 @@ import argparse
 from eval import eval_mentions as EM
 from eval import leak_detectors as LD
 import importlib
-from core.entrypoints import import_bot
+from engine.core.entrypoints import import_bot
 import json
 import os
 import re
@@ -95,7 +95,7 @@ class Judge:
 
     def __init__(self, root: str = ROOT):
         from bot import dialogue_state as DS
-        from brands.modutech import need_flow as NF
+        from engine.brands.modutech import need_flow as NF
         self.NF = NF
         self.cat = DS.Catalogue(os.path.join(root, "data/modutech_v30_3.json"))
         mgr = DS.DialogueManager({}, self.cat)
@@ -123,7 +123,7 @@ class Judge:
 
     def stated_before(self, transcript: list[dict], bot_index: int) -> set:
         """เงื่อนไขที่ลูกค้าพิมพ์ออกมาแล้ว ก่อนข้อความที่ bot_index ของบอท (pitch · temp · wet)"""
-        from brands.modutech.plugin import extract_modutech_slots
+        from engine.brands.modutech.plugin import extract_modutech_slots
         seen, b = set(), -1
         for t in transcript:
             if t["role"] == "bot":

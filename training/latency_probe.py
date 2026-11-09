@@ -109,7 +109,7 @@ def main() -> int:
     variants = [("think:0" if v.strip() == "nothink" else v.strip()) for v in a.variants.split(",") if v.strip()]
     if any(v.startswith("think:") or v == "genai" for v in variants):
         sys.path.insert(0, str(HERE.parent))
-        from core.llm import parse_thinking
+        from engine.core.llm import parse_thinking
         for v in variants:
             if v.startswith("think:"):
                 parse_thinking(v.split(":", 1)[1])      # ค่าผิด = หยุดก่อนยิงจริง

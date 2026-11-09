@@ -55,7 +55,7 @@ import argparse
 import os
 import csv
 import importlib
-from core.entrypoints import import_bot
+from engine.core.entrypoints import import_bot
 import json
 import re
 
@@ -255,13 +255,13 @@ def extract_reply(chat_history: list) -> str:
 
 
 def code_fingerprint() -> dict:
-    """commit + hash ของโค้ดที่สร้าง prompt และตัดสิน (brands/ core/ bot/ agent/) ตอนรัน
+    """commit + hash ของโค้ดที่สร้าง prompt และตัดสิน (engine/ bot/ agent/) ตอนรัน
     prompt ของบอทหลักประกอบใหม่ทุกเทิร์นจากโค้ดชุดนี้ จึงใช้ hash ของโค้ดแทนข้อความ prompt ก้อนเดียว"""
     import hashlib
     import subprocess
     root = Path(__file__).resolve().parents[1]          # รากของ repo (ไฟล์นี้อยู่ใน eval/)
     h = hashlib.sha256()
-    for sub in ("brands", "core", "bot", "agent"):
+    for sub in ("engine", "bot", "agent"):
         for p in sorted((root / sub).rglob("*")):
             if p.is_file() and p.suffix in (".py", ".yaml", ".json") and "__pycache__" not in p.parts:
                 h.update(str(p.relative_to(root)).replace("\\", "/").encode())
@@ -269,7 +269,7 @@ def code_fingerprint() -> dict:
     git = lambda *a: subprocess.run(["git", *a], cwd=root, capture_output=True, text=True,   # noqa: E731
                                     encoding="utf-8", errors="replace").stdout.strip()
     return {"code_sha": h.hexdigest()[:12], "commit": git("rev-parse", "--short", "HEAD"),
-            "branch": git("rev-parse", "--abbrev-ref", "HEAD"), "dirty": bool(git("status", "--porcelain", "--", *("brands", "core", "bot", "agent")))}
+            "branch": git("rev-parse", "--abbrev-ref", "HEAD"), "dirty": bool(git("status", "--porcelain", "--", *("engine", "bot", "agent")))}
 
 
 def system_info(bot, module_name: str) -> dict:

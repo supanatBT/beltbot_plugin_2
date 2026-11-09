@@ -11,7 +11,7 @@ _os.chdir(_ROOT)
 import copy
 import sys
 
-from brands.modutech.gates import (Catalogue, Slots, catalogue_increment_status,
+from engine.brands.modutech.gates import (Catalogue, Slots, catalogue_increment_status,
                             catalogue_standard_increment, width_gate)
 
 TOPIC_VARIANTS = [
@@ -120,7 +120,7 @@ def main():
     # แทรก = ตรงตำแหน่งที่ตัวอ่านจับได้จริง (เดิมแทรกโคลอน แต่ 1 พ.ย. เล่มพิมพ์โคลอนจริงจึงรับแล้ว) ไม่ใช่ replace ข้อความตรง ๆ
     # เพราะหมายเหตุในเล่มมีคำแตก เช่น "Standard b elt increme nts 101,6 m m."
     import re as _re
-    from brands.modutech.gates import _STD_INCREMENT_RE
+    from engine.brands.modutech.gates import _STD_INCREMENT_RE
     broken = copy.deepcopy(target)
     notes = broken["specifications"].get("notes") or []
     for i, n in enumerate(notes):

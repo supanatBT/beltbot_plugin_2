@@ -22,8 +22,8 @@ import tempfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-from core import models as M                                  # noqa: E402
-from core.registry import RegistryError, discover, load_plugins  # noqa: E402
+from engine.core import models as M                                  # noqa: E402
+from engine.core.registry import RegistryError, discover, load_plugins  # noqa: E402
 
 passed = failed = 0
 
@@ -77,8 +77,8 @@ ok("auto + collection ว่าง → ปิด", not st.enabled and "ไม่
 print("\n3) ข้อความรวมหลายแบรนด์ประกอบจาก brand.yaml ได้ตรงของเดิมทุกตัวอักษร (core/templates.py)")
 # ของเดิมดึงจาก git e261bf9 — ไม่เทียบกับ dialogue_state ปัจจุบันซึ่งสร้างจาก templates เอง (จะกลายเป็นเทียบกับตัวเอง)
 import subprocess                                             # noqa: E402
-from core import templates as TPL                             # noqa: E402
-from core.decide import Dialogue                              # noqa: E402
+from engine.core import templates as TPL                             # noqa: E402
+from engine.core.decide import Dialogue                              # noqa: E402
 _old = subprocess.run(["git", "show", "e261bf9:dialogue_state.py"], cwd=ROOT, capture_output=True,
                       text=True, encoding="utf-8").stdout
 OLD: dict = {}
@@ -212,19 +212,17 @@ r, m = raises(lambda: discover(p, only=["zz"]), RegistryError, "zz"); ok("only �
 r, m = raises(lambda: load_plugins(discover(p)), RegistryError, "plugin.py")
 ok("ยังไม่มี plugin.py → หยุดพร้อมบอกไฟล์", r, m)
 
-print("\n6) ชื่อเดิมของ Modutech ชี้ไปโมดูลจริงตัวเดียวกัน (ไม่ใช่สำเนา)")
-import importlib                                              # noqa: E402
-for n in ("gates", "router", "turn", "kg"):
-    ok(f"modutech_{n} is brands.modutech.{n}",
-       importlib.import_module(f"modutech_{n}") is importlib.import_module(f"brands.modutech.{n}"))
-
-src = open(os.path.join(ROOT, "chatbot_v5.py"), encoding="utf-8").read()
-ok("chatbot_v5.py เป็นตัวชี้ไป assistant (ไม่ใช่สำเนา)",
-   'sys.modules[__name__] = importlib.import_module("assistant")' in src and len(src.splitlines()) < 15)
+print("\n6) ชื่อเดิม (ก่อนจัดโฟลเดอร์ 9 พ.ย.) — ไฟล์ shim ถูกลบ ชื่อ BOT_MODULE เดิมแปลงที่ engine/core/entrypoints.py")
+from engine.core.entrypoints import resolve                    # noqa: E402
+for old_name in ("modutech_gates", "modutech_router", "modutech_turn", "modutech_kg", "chatbot_v5"):
+    ok(f"ไม่มี {old_name}.py ที่ราก", not os.path.exists(os.path.join(ROOT, f"{old_name}.py")))
+ok("BOT_MODULE ชื่อเดิมยังใช้ได้",
+   (resolve("assistant"), resolve("chatbot_v5"), resolve("agent_assistant"))
+   == ("bot.assistant", "bot.assistant", "agent.assistant"))
 
 print("\n7) แกนกลางไม่มีชื่อแบรนด์")
-hits = [f"{f}:{i}" for f in sorted(os.listdir(os.path.join(ROOT, "core"))) if f.endswith(".py")
-        for i, line in enumerate(open(os.path.join(ROOT, "core", f), encoding="utf-8"), 1)
+hits = [f"{f}:{i}" for f in sorted(os.listdir(os.path.join(ROOT, "engine", "core"))) if f.endswith(".py")
+        for i, line in enumerate(open(os.path.join(ROOT, "engine", "core", f), encoding="utf-8"), 1)
         if re.search(r"movex|modutech", line, re.I)]
 ok("grep core/*.py", not hits, hits)
 

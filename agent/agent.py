@@ -212,7 +212,7 @@ def _brand_menu() -> tuple[str, str]:
     import yaml
     infos = []
     for key in ("movex", "modutech"):
-        cfg = yaml.safe_load(open(os.path.join(ROOT, "brands", key, "brand.yaml"), encoding="utf-8")) or {}
+        cfg = yaml.safe_load(open(os.path.join(ROOT, "engine", "brands", key, "brand.yaml"), encoding="utf-8")) or {}
         infos.append(cfg["info"])
     infos.sort(key=lambda i: i["order"])
     lines = "\n".join(f"{i['order']}. {i['menu_line_th']}" for i in infos)
@@ -222,7 +222,7 @@ def _brand_menu() -> tuple[str, str]:
 
 
 def _movex_thresholds() -> dict:
-    with open(os.path.join(ROOT, "brands", "movex", "thresholds.json"), encoding="utf-8") as f:
+    with open(os.path.join(ROOT, "engine", "brands", "movex", "thresholds.json"), encoding="utf-8") as f:
         return json.load(f)
 
 

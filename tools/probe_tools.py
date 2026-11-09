@@ -23,7 +23,7 @@ _os.chdir(_ROOT)
 import argparse
 import csv
 import importlib
-from core.entrypoints import import_bot
+from engine.core.entrypoints import import_bot
 import json
 import sys
 import time

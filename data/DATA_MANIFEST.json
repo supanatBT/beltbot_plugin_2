@@ -54,13 +54,13 @@
    "bytes": 81920
   },
   {
-   "file": "brands/modutech/image_gate.npz",
+   "file": "engine/brands/modutech/image_gate.npz",
    "found": true,
    "sha256": "91cee512a3a557c2c3c3bda90dde6c611a2785be32e6692accc2fe5aaa8d285d",
    "bytes": 670694
   },
   {
-   "file": "brands/movex/thresholds.json",
+   "file": "engine/brands/movex/thresholds.json",
    "found": true,
    "sha256": "43fb50b73b1f14f111bc98a4bb15869208e687560885a4d37d25b4274616c014",
    "bytes": 400

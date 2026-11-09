@@ -28,11 +28,11 @@ from PIL import Image
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-from brands.modutech.image_gate import (GateData, GateFileError, GateThresholds,  # noqa: E402
+from engine.brands.modutech.image_gate import (GateData, GateFileError, GateThresholds,  # noqa: E402
                                         ModutechImageGate, load_gate, normalize_image)
-from core.image_policy import GateReading, ImageCarry, resolve  # noqa: E402
-from core.image_router import ImageRoute  # noqa: E402
-from core.protocol import ImageScore, LLMTurn  # noqa: E402
+from engine.core.image_policy import GateReading, ImageCarry, resolve  # noqa: E402
+from engine.core.image_router import ImageRoute  # noqa: E402
+from engine.core.protocol import ImageScore, LLMTurn  # noqa: E402
 
 passed = failed = 0
 
@@ -124,7 +124,7 @@ ok("ไม่มีประตู + Movex ปฏิเสธ → ถามแ�
 # ════════════════════════════ 2) Dialogue จริง ════════════════════════════
 print("\n2) core/decide กับปลั๊กอินจริง")
 from bot import dialogue_state as DS  # noqa: E402
-from core.decide import Dialogue  # noqa: E402
+from engine.core.decide import Dialogue  # noqa: E402
 
 data = json.load(open(os.path.join(ROOT, "data/extracted_data_v3_machine_ready.json"), encoding="utf-8"))
 real = {p["product_id"]: p for p in data.get("products", []) if "product_id" in p}
@@ -209,7 +209,7 @@ ok("ควบคุม: ไม่ผ่าน policy = พฤติกรรม�
 
 # ════════════════════════════ 3) TurnEngine ════════════════════════════
 print("\n3) core/turn.TurnEngine")
-from core.turn import TurnEngine  # noqa: E402
+from engine.core.turn import TurnEngine  # noqa: E402
 
 
 class _Log:
@@ -365,7 +365,7 @@ th = GateThresholds()
 ok("ค่าเริ่ม = แผน (0.65 · −0.02 · 0.8254)", (th.not_product_score, th.not_product_text, th.direct_score)
    == (0.65, -0.02, 0.8254))
 import yaml  # noqa: E402
-ycfg = yaml.safe_load(open(os.path.join(ROOT, "brands/modutech/brand.yaml"), encoding="utf-8"))["image_gate"]
+ycfg = yaml.safe_load(open(os.path.join(ROOT, "engine/brands/modutech/brand.yaml"), encoding="utf-8"))["image_gate"]
 ok("brand.yaml ตรงกับค่าในโค้ด", GateThresholds.from_cfg(ycfg) == th)
 
 d = 8
@@ -381,7 +381,7 @@ B = np.stack([unit(rng.normal(size=d)) for _ in range(4)]).astype(np.float32)
 O = np.stack([unit(rng.normal(size=d)) for _ in range(8)]).astype(np.float32)
 tmp = tempfile.mkdtemp(prefix="gate_")
 meta = {"model": "m-384", "other_names": [f"o{i}" for i in range(8)]}
-from brands.modutech.image_gate import _sha  # noqa: E402
+from engine.brands.modutech.image_gate import _sha  # noqa: E402
 meta["G_sha256"] = _sha(G)
 np.savez(os.path.join(tmp, "image_gate.npz"), G=G, belt_P=B, other_P=O, meta=json.dumps(meta))
 data = GateData.load(os.path.join(tmp, "image_gate.npz"), "m-384")
@@ -429,7 +429,7 @@ ref = os.environ.get("IMAGE_EVAL_DIR")
 if ref and os.path.isdir(ref):
     sys.path.insert(0, ref)
     from imgeval.normalize import normalize_image as ref_norm, center_views as ref_cv  # noqa: E402
-    from brands.modutech.image_gate import center_views  # noqa: E402
+    from engine.brands.modutech.image_gate import center_views  # noqa: E402
     src = Image.fromarray(np.random.default_rng(1).integers(0, 255, (700, 500, 3), dtype=np.uint8))
     a, b = normalize_image(src), ref_norm(src)
     ok("normalize พิกเซลตรงกับ 21_image_eval", np.array_equal(np.asarray(a), np.asarray(b)))

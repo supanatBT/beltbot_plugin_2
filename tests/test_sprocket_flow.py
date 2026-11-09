@@ -27,11 +27,11 @@ import json
 import os
 import sys
 
-from brands.modutech import gates as mg
-from brands.modutech import router as mr
-from brands.modutech import turn as mt
+from engine.brands.modutech import gates as mg
+from engine.brands.modutech import router as mr
+from engine.brands.modutech import turn as mt
 from bot.dialogue_state import DialogueManager
-from brands.modutech.kg import ModutechGraph, load_modutech_kg
+from engine.brands.modutech.kg import ModutechGraph, load_modutech_kg
 
 PATH = sys.argv[1] if len(sys.argv) > 1 else "data/modutech_v30_3.json"
 cat = mg.Catalogue(PATH)
@@ -119,7 +119,7 @@ print("\n6) ใช้ได้กับกราฟทั้งสองแบ�
 # "เล่มไม่มีข้อมูล" ทั้งที่จริงคือคีย์ไม่ตรงกัน (ไฟล์ใช้ belt_code_id สร้างสดใช้ belt_code)
 DB = os.environ.get("MODUTECH_KG_DB", "./data/modutech_kg.db")
 if os.path.exists(DB):
-    from brands.modutech.kg import assert_no_blocked_fields, db_fingerprint, catalogue_fingerprint
+    from engine.brands.modutech.kg import assert_no_blocked_fields, db_fingerprint, catalogue_fingerprint
     kg_db = load_modutech_kg(cat, DB, quiet=True)
     check("ไฟล์ .db ไม่มีฟิลด์ที่ sprocket_gate บล็อก",
           not assert_no_blocked_fields(DB), str(assert_no_blocked_fields(DB)))

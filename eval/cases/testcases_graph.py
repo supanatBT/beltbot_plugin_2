@@ -30,11 +30,11 @@ import csv
 import sys
 from collections import defaultdict
 
-from brands.modutech import gates as mg
-from brands.modutech import router as mr
-from brands.modutech import turn as mt
+from engine.brands.modutech import gates as mg
+from engine.brands.modutech import router as mr
+from engine.brands.modutech import turn as mt
 from bot.dialogue_state import DialogueManager
-from brands.modutech.kg import ModutechGraph
+from engine.brands.modutech.kg import ModutechGraph
 
 FIELDS = ["id", "category", "subcategory", "turn_type", "turn_number", "user_text",
           "image", "must_contain", "must_contain_any", "must_not_contain",

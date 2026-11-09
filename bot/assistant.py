@@ -30,14 +30,14 @@ from transformers import (                                 # noqa: E402
 )
 from peft import PeftModel                                 # noqa: E402
 
-from core.decide import Dialogue                           # noqa: E402
-from core.dialogue import state_class                      # noqa: E402
-from core.llm import DEFAULT_TIMEOUT_S, GeminiClient, GenAIClient, parse_thinking  # noqa: E402
-from core.models import resolve_image                      # noqa: E402
-from core import model_lock                                # noqa: E402
-from core.registry import discover, load_plugins, state_schema  # noqa: E402
-from core.tools import ToolLog                             # noqa: E402
-from core.turn import TurnEngine                           # noqa: E402
+from engine.core.decide import Dialogue                           # noqa: E402
+from engine.core.dialogue import state_class                      # noqa: E402
+from engine.core.llm import DEFAULT_TIMEOUT_S, GeminiClient, GenAIClient, parse_thinking  # noqa: E402
+from engine.core.models import resolve_image                      # noqa: E402
+from engine.core import model_lock                                # noqa: E402
+from engine.core.registry import discover, load_plugins, state_schema  # noqa: E402
+from engine.core.tools import ToolLog                             # noqa: E402
+from engine.core.turn import TurnEngine                           # noqa: E402
 from bot.pipeline_logger import PipelineLogger                 # noqa: E402
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -173,7 +173,7 @@ tool_log = ToolLog()
 ANSWER_INTERPRETER = (os.getenv("ANSWER_INTERPRETER") or "llm").strip().lower()
 answer_interpreter = None
 if ANSWER_INTERPRETER == "llm":
-    from core.answer_interpreter import AnswerInterpreter    # noqa: E402
+    from engine.core.answer_interpreter import AnswerInterpreter    # noqa: E402
     answer_interpreter = AnswerInterpreter(llm_client.complete, log=print)
 print(f"✅ ตีความคำตอบ: {'LLM (' + GEMINI_MODEL + ') · สำรองด้วยกฎ' if answer_interpreter else 'กฎ regex'}")
 
@@ -181,7 +181,7 @@ print(f"✅ ตีความคำตอบ: {'LLM (' + GEMINI_MODEL + ') · �
 QUERY_INTERPRETER = (os.getenv("QUERY_INTERPRETER") or "llm").strip().lower()
 query_interpreter = None
 if QUERY_INTERPRETER == "llm":
-    from core.query_interpreter import QueryInterpreter    # noqa: E402
+    from engine.core.query_interpreter import QueryInterpreter    # noqa: E402
     query_interpreter = QueryInterpreter(llm_client.complete, log=print)
 print(f"✅ ตีความคำถาม: {'LLM (' + GEMINI_MODEL + ') เฉพาะจุดที่ต้องเดา · สำรองด้วยทางเดิม' if query_interpreter else 'ปิด (กฎ regex + ทางเดิม)'}")
 
@@ -190,7 +190,7 @@ print(f"✅ ตีความคำถาม: {'LLM (' + GEMINI_MODEL + ') เ�
 FRONT_INTERPRETER = (os.getenv("FRONT_INTERPRETER") or "rules").strip().lower()
 front_interpreter = None
 if FRONT_INTERPRETER == "llm":
-    from core.front_interpreter import FrontInterpreter    # noqa: E402
+    from engine.core.front_interpreter import FrontInterpreter    # noqa: E402
     front_interpreter = FrontInterpreter(llm_client.complete, log=print)
 print(f"✅ ตีความด่านหน้า: {'LLM (' + GEMINI_MODEL + ') · สำรองด้วยกฎ' if front_interpreter else 'ปิด (บอทเดิม)'}")
 

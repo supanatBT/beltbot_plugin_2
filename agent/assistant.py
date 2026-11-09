@@ -173,7 +173,7 @@ class _Engine:
         1) ชื่อฟิลด์/เหตุผลภายในหลุด → ขอเขียนใหม่ใน session เดิมหนึ่งครั้ง · ยังหลุดหรือเขียนไม่ได้ → ข้อความสำรอง
         2) เบอร์ · อีเมล · LINE ที่ไม่ใช่ช่องทางจริง → ลบบรรทัดนั้น แล้วแนบช่องทางจริงแทน
         ที่มา: ชุด blind v1.1 BL-009 — ผลหลังเปิดสวิตช์ต้องวัดบนชุด blind ใหม่เท่านั้น · ปิดสวิตช์ = ไม่ถูกเรียก (agent เดิม)"""
-        from core import reply_guard as RG
+        from engine.core import reply_guard as RG
         notes = []
         leak = RG.leaks(reply)
         if leak:
@@ -194,7 +194,7 @@ class _Engine:
         reply, fake = RG.scrub_contacts(reply)
         if fake:
             notes.append({"fake_contacts": fake[:5]})
-            from shared.sales_contact import sales_contact_line_th
+            from engine.shared.sales_contact import sales_contact_line_th
             line = sales_contact_line_th()
             if line and line not in reply:
                 reply = f"{reply}\n\n{line}".strip()

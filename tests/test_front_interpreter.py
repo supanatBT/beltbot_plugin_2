@@ -25,8 +25,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 from bot import dialogue_state as DS                                     # noqa: E402
-from core.decide import Dialogue                                # noqa: E402
-from core.front_interpreter import FrontInterpreter, parse_front, build_system   # noqa: E402
+from engine.core.decide import Dialogue                                # noqa: E402
+from engine.core.front_interpreter import FrontInterpreter, parse_front, build_system   # noqa: E402
 
 passed = failed = 0
 
@@ -178,8 +178,8 @@ ok("ข้อความเดิมเรียก LLM ครั้งเด�
 ok("system prompt สร้างได้ไม่มีวงเล็บค้าง", "{" not in build_system(fi.brands).split("คืน JSON")[0])
 
 print("7) คำถามค้นทั้งฐานที่มีอุณหภูมิ (3 พ.ย. · กรองด้วยโค้ด ไม่ปล่อยให้ LLM เติม)")
-from brands.modutech.router import CatalogueSearch  # noqa: E402
-from brands.modutech.turn import build_modutech_turn  # noqa: E402
+from engine.brands.modutech.router import CatalogueSearch  # noqa: E402
+from engine.brands.modutech.turn import build_modutech_turn  # noqa: E402
 PITCH_Q = {"brand": "modutech", "topic": "pitch", "asks_temperature": True, "wet_or_dry": None, "note": ""}
 
 

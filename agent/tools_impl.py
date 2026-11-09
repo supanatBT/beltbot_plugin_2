@@ -26,10 +26,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from brands.modutech.gates import Catalogue                      # noqa: E402
-from brands.modutech.kg import ModutechGraph                       # noqa: E402
-from brands.modutech.router import CatalogueSearch, CodeResolver   # noqa: E402
-from brands.modutech.turn import graph_application_match, make_search_tool  # noqa: E402
+from engine.brands.modutech.gates import Catalogue                      # noqa: E402
+from engine.brands.modutech.kg import ModutechGraph                       # noqa: E402
+from engine.brands.modutech.router import CatalogueSearch, CodeResolver   # noqa: E402
+from engine.brands.modutech.turn import graph_application_match, make_search_tool  # noqa: E402
 
 CATALOGUE_PATH = os.environ.get("AGENT_MODUTECH_JSON", os.path.join(ROOT, "data/modutech_v30_3.json"))
 IMAGE_DIR = os.environ.get("AGENT_IMAGE_DIR", os.path.join(ROOT, "agent", "_images"))
@@ -44,7 +44,7 @@ def _state():
     cat = Catalogue(CATALOGUE_PATH)
     # ค้นทั้งฐานตัวเดียวกับบอทหลัก (brands/modutech/plugin.make_catalogue_search):
     # กรองด้วย Payload/Range Filter ของ Qdrant · MODUTECH_SEARCH_ENGINE=python = แบบเดิม · ผลเท่ากันทุกตัวอักษร
-    from brands.modutech.plugin import make_catalogue_search
+    from engine.brands.modutech.plugin import make_catalogue_search
     search = make_catalogue_search(cat)
     kg = ModutechGraph.from_catalogue(cat)
     return cat, search, kg, CodeResolver(cat), make_search_tool(search)
@@ -289,7 +289,7 @@ def shared_models() -> dict:
     """Jina v3 + SigLIP-224 ชุดเดียว ใช้ร่วมกันทั้งตัวค้น Modutech และ Movex (= assistant.py โหลดครั้งเดียว)"""
     import torch
     from transformers import AutoModel, AutoTokenizer, SiglipModel, SiglipProcessor
-    from core import model_lock
+    from engine.core import model_lock
 
     jina_id, siglip_id = "jinaai/jina-embeddings-v3", "google/siglip-base-patch16-224"   # = assistant.py
     device = os.environ.get("AGENT_DEVICE") or ("cuda" if torch.cuda.is_available() else "cpu")
@@ -311,9 +311,9 @@ def _retriever():
     """สร้าง RetrieverV4 ฝั่ง Modutech แบบเดียวกับ brands/modutech/plugin.create() ทุกค่า
     (Jina v3 · SigLIP-224 · product_db · กราฟ · ชื่อ collection จาก alias ใน brand.yaml) — ViT ไม่ส่ง (ค้นข้อความอย่างเดียว)"""
     import yaml
-    from shared.retriever_v4 import RetrieverV4, RetrieverV4Config
-    from brands.modutech.plugin import resolve_collection
-    from brands.modutech.router import modutech_retriever_config_kwargs
+    from engine.shared.retriever_v4 import RetrieverV4, RetrieverV4Config
+    from engine.brands.modutech.plugin import resolve_collection
+    from engine.brands.modutech.router import modutech_retriever_config_kwargs
 
     m = shared_models()
     device, tok, jina, sp, sm = m["device"], m["jina_tokenizer"], m["jina_model"], m["siglip_processor"], m["siglip_model"]
@@ -324,9 +324,9 @@ def _retriever():
                                   "product_type": p["retrieval_card"].get("surface_type", ""),
                                   "Material": ",".join(p["retrieval_card"].get("materials") or [])}
               for p in cat.products}
-    bdir = os.path.join(ROOT, "brands", "modutech")
+    bdir = os.path.join(ROOT, "engine", "brands", "modutech")
     data = (yaml.safe_load(open(os.path.join(bdir, "brand.yaml"), encoding="utf-8")) or {}).get("data") or {}
-    qpath = os.path.normpath(os.path.join(bdir, data.get("qdrant_path") or "../../data/qdrant_modutech_db"))
+    qpath = os.path.normpath(os.path.join(bdir, data.get("qdrant_path") or "../../../data/qdrant_modutech_db"))
     kw = modutech_retriever_config_kwargs()
     kw["qdrant_path"] = qpath
     info = resolve_collection(qpath, data.get("text_collection"),
@@ -352,8 +352,8 @@ def vector_search(query: str, top_k: int = 5) -> str:
 @lru_cache(maxsize=1)
 def _gate():
     import yaml
-    from brands.modutech.image_gate import load_gate
-    bdir = os.path.join(ROOT, "brands", "modutech")
+    from engine.brands.modutech.image_gate import load_gate
+    bdir = os.path.join(ROOT, "engine", "brands", "modutech")
     cfg = (yaml.safe_load(open(os.path.join(bdir, "brand.yaml"), encoding="utf-8")) or {}).get("image_gate") or {}
     try:
         return load_gate("modutech", bdir, cfg, os.environ.get("AGENT_DEVICE", "cpu"))
@@ -371,7 +371,7 @@ def match_catalogue_image(image_id: str, top_k: int = 5) -> str:
         return _dump({"error": f"เครื่องมือเทียบรูปไม่พร้อม ({why})"})
     import numpy as np
     from PIL import Image
-    from brands.modutech.image_gate import prepare
+    from engine.brands.modutech.image_gate import prepare
     im = Image.open(path).convert("RGB")
     V = np.asarray(gate.embed(prepare(im)), dtype=np.float32)
     sims = (V @ gate.data.G.T).max(axis=0)
@@ -398,7 +398,7 @@ def match_catalogue_image(image_id: str, top_k: int = 5) -> str:
 
 def handoff_to_sales(topic: str) -> str:
     try:
-        from shared.sales_contact import sales_contact_line_th
+        from engine.shared.sales_contact import sales_contact_line_th
         contact = sales_contact_line_th()
     except Exception:                                       # noqa: BLE001
         contact = ""
@@ -420,14 +420,14 @@ TOOLS = [overview_catalogue, compare_belts, search_catalogue, lookup_belt, find_
 # ต่างกันแค่ใครอ่านรูป — บอทเรียก Gemini แยกอีกครั้ง · agent ดูรูปเองแล้วส่งชื่อผิวมา (ไม่เรียก LLM เพิ่ม)
 def surface_choices() -> dict:
     """ชื่อผิวที่รับได้ → คำอธิบายหน้าตา (ใส่ในคำอธิบายเครื่องมือให้ LLM เลือก)"""
-    from brands.modutech.image_read import image_spec
+    from engine.brands.modutech.image_read import image_spec
     return image_spec(_state()[0]).surfaces
 
 
 def belts_by_surface(surface: str, alternatives: str = "", openness: str = "",
                      pitch_mm: float = 0, scale_visible: bool = False, confidence: str = "medium") -> str:
-    from brands.modutech.image_read import image_match, image_spec
-    from core.image_interpreter import parse_reading
+    from engine.brands.modutech.image_read import image_match, image_spec
+    from engine.core.image_interpreter import parse_reading
     cat, search, _k, _r, _t = _state()
     spec = image_spec(cat)
     raw = {

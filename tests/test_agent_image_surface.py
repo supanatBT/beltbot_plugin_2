@@ -27,8 +27,8 @@ os.environ["AGENT_IMAGE_SURFACE"] = "0"
 
 from agent import agent as A                          # noqa: E402
 from agent import tools_impl as T                     # noqa: E402
-from brands.modutech.image_read import image_match, image_spec  # noqa: E402
-from core.image_interpreter import parse_reading               # noqa: E402
+from engine.brands.modutech.image_read import image_match, image_spec  # noqa: E402
+from engine.core.image_interpreter import parse_reading               # noqa: E402
 
 passed = failed = 0
 

@@ -60,7 +60,7 @@ def _collections(plugin) -> list[dict]:
 
 
 def collect(mod: Any) -> dict:
-    from core import model_lock
+    from engine.core import model_lock
     brands: dict = {}
     plugins = getattr(mod, "plugins", {}) or {}
     gates = getattr(mod, "_gates", {}) or {}

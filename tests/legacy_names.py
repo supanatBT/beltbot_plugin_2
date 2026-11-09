@@ -7,12 +7,12 @@ import importlib
 import sys
 
 LEGACY = {
-    "modutech_gates": "brands.modutech.gates",
-    "modutech_router": "brands.modutech.router",
-    "modutech_kg": "brands.modutech.kg",
-    "modutech_turn": "brands.modutech.turn",
+    "modutech_gates": "engine.brands.modutech.gates",
+    "modutech_router": "engine.brands.modutech.router",
+    "modutech_kg": "engine.brands.modutech.kg",
+    "modutech_turn": "engine.brands.modutech.turn",
     "dialogue_state": "bot.dialogue_state",
-    "sales_contact": "shared.sales_contact",
+    "sales_contact": "engine.shared.sales_contact",
 }
 
 

@@ -19,10 +19,10 @@ _os.chdir(_ROOT)
 import json
 
 from bot import dialogue_state as D
-from brands.modutech.router import ExploratoryQuery
-from brands.movex.search import MovexSearch
-from core.query_interpreter import QueryField, QueryInterpreter, QuerySpec, parse_query
-from brands.modutech.gates import Catalogue
+from engine.brands.modutech.router import ExploratoryQuery
+from engine.brands.movex.search import MovexSearch
+from engine.core.query_interpreter import QueryField, QueryInterpreter, QuerySpec, parse_query
+from engine.brands.modutech.gates import Catalogue
 
 ok = total = 0
 

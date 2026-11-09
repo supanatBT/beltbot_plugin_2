@@ -167,9 +167,9 @@ def load_cases():
 
 def run(module: str) -> dict:
     fakes.install_all()
-    from shared import retriever_v4
+    from engine.shared import retriever_v4
     fakes.patch_retriever(retriever_v4.RetrieverV4, load_bank())
-    from core.entrypoints import import_bot
+    from engine.core.entrypoints import import_bot
     bot = import_bot(module)
     install_fake_tool_calls(bot)
 

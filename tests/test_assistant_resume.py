@@ -21,7 +21,7 @@ os.environ.setdefault("GEMINI_API_KEY", "fake-key-for-test")
 
 import fakes                                                  # noqa: E402
 fakes.install_all()
-from shared import retriever_v4                                           # noqa: E402
+from engine.shared import retriever_v4                                           # noqa: E402
 fakes.patch_retriever(retriever_v4.RetrieverV4, {})
 
 from webapi.bot import BotAdapter, BotSession                 # noqa: E402

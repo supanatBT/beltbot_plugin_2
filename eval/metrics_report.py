@@ -26,7 +26,7 @@ import sys
 from collections import Counter, defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from core.metrics import parse_line                     # noqa: E402
+from engine.core.metrics import parse_line                     # noqa: E402
 
 POLICIES = ["direct", "dominant", "context", "confirm", "conflict", "ask", "text_brand",
             "unchanged", "not_product", "off"]

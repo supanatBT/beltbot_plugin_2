@@ -23,7 +23,7 @@ import sys
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from core.llm import extract_text, parse_thinking
+from engine.core.llm import extract_text, parse_thinking
 
 passed = failed = 0
 
@@ -61,7 +61,7 @@ ok("text = None → อ่านจาก parts", extract_text(_R(None, [type("P
 ok("text ปกติ", extract_text(_R("ข", [])) == "ข")
 
 print("2b) ลองใหม่เมื่อ Google ไม่ว่าง (with_retry)")
-from core.llm import is_transient, with_retry  # noqa: E402
+from engine.core.llm import is_transient, with_retry  # noqa: E402
 
 
 class _E(Exception):
@@ -121,11 +121,11 @@ except Exception as e:                                   # noqa: BLE001
     real = None
 
 if real is not None:
-    from core.llm import GenAIClient
-    from core.protocol import LLMTurn
-    from core.tools import ToolLog
+    from engine.core.llm import GenAIClient
+    from engine.core.protocol import LLMTurn
+    from engine.core.tools import ToolLog
     REQS, FAILED, FAIL_FIRST, CLIENT_OPTS = [], [], True, []
-    import core.llm as _llm
+    import engine.core.llm as _llm
     _llm.RETRY_DELAYS = (0.01, 0.01)               # เทสต์ไม่ต้องรอจริง
 
     class H(BaseHTTPRequestHandler):
@@ -219,7 +219,7 @@ if real is not None:
     srv.shutdown()
 
 # ── 22 ต.ค.: บันทึกชื่อรุ่นจริงที่ Google ตอบ (alias -latest ย้ายรุ่นได้เอง) ──
-from core.llm import GeminiClient, model_version_of  # noqa: E402
+from engine.core.llm import GeminiClient, model_version_of  # noqa: E402
 
 
 class _R:
@@ -260,7 +260,7 @@ class _OldModule:
             return S()
 
 
-from core.protocol import LLMTurn as _T  # noqa: E402
+from engine.core.protocol import LLMTurn as _T  # noqa: E402
 old = GeminiClient(_OldModule, "m")
 r = old.run(_T("SYS", ["q"], tools=[], debug=[]), [], [])
 ok("run นับ 2 รอบ", old.last_usage.get("llm_calls") == 2 and old.last_usage.get("total_token_count") == 22,
@@ -291,7 +291,7 @@ ok("ครอบไม่ได้ → นับ response สุดท้าย 
 
 print("\n5) จำกัดเวลา (26 ต.ค. · lat2_llm CONV-16 t4 ค้าง 627 วินาที)")
 import time as _time  # noqa: E402
-from core.llm import LLMTimeout, run_with_deadline  # noqa: E402
+from engine.core.llm import LLMTimeout, run_with_deadline  # noqa: E402
 
 t0 = _time.perf_counter()
 try:
@@ -318,7 +318,7 @@ class _HangModule:
             return S()
 
 
-from core.protocol import LLMTurn as _Turn  # noqa: E402
+from engine.core.protocol import LLMTurn as _Turn  # noqa: E402
 t0 = _time.perf_counter()
 try:
     GeminiClient(_HangModule, "m", timeout_s=0.3).run(_Turn("SYS", ["q"], tools=[], debug=[]), [], [])
@@ -327,7 +327,7 @@ except LLMTimeout:
     got = "ตัด"
 ok("GeminiClient ค้าง → LLMTimeout ใน ~0.3 วิ", got == "ตัด" and _time.perf_counter() - t0 < 1.5,
    (got, _time.perf_counter() - t0))
-import core.turn as _ct  # noqa: E402
+import engine.core.turn as _ct  # noqa: E402
 ok("TurnEngine มีข้อความให้ลูกค้าส่งใหม่เมื่อเกินเวลา", "ส่งคำถามเดิมอีกครั้ง" in _ct.TIMEOUT_REPLY_TH)
 
 print(f"\nรวม {passed}/{passed + failed}")

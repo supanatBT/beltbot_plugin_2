@@ -39,7 +39,7 @@ try:                                    # โค้ดเดิม (e261bf9) ท
     from modutech_gates import Catalogue
 except ImportError:                     # โค้ดปัจจุบัน (จัดโฟลเดอร์ 9 พ.ย.)
     from bot import dialogue_state as D
-    from brands.modutech.gates import Catalogue
+    from engine.brands.modutech.gates import Catalogue
 
 root, out_path = sys.argv[2], sys.argv[3]
 cat = Catalogue(root + "/data/modutech_v30_3.json")
@@ -180,7 +180,7 @@ def main() -> int:
     conv_changed = conv_changed | {k.rsplit("|", 1)[0] for k in cross_turns}
     need_turns = [k for k, v in a.items() if isinstance(v, dict) and need_flow_changed(v.get("reply_th", ""))]
     conv_need = {k.rsplit("|", 1)[0] for k in need_turns} - conv_changed
-    from brands.modutech.need_flow import ASK_NEED_TH
+    from engine.brands.modutech.need_flow import ASK_NEED_TH
     bad_need = [k for k in need_turns if not (isinstance(b.get(k), dict) and b[k].get("reply_th") == ASK_NEED_TH)]
     conv_changed = conv_changed | conv_need
     skipped_need_flow = set(need_turns)
@@ -200,7 +200,7 @@ def main() -> int:
     print(f"      26 ต.ค.: slot _need_text ใหม่ {n_need} เทิร์น (ตัดออกก่อนเทียบ)")
     # 26 ต.ค. (ผู้ใช้เลือกข้อ 2 ก): บอกงาน + ขอให้ช่วยเลือก ("ใช้รุ่นไหนดี") → ถามพิทช์/อุณหภูมิต่อ
     # ของเดิมตอบรายชื่อทันที — ทั้งบทสนทนาหลังจากนี้ต่างโดยตั้งใจ
-    from brands.modutech.need_flow import ASK_PITCH_TH, ASK_TEMP_TH
+    from engine.brands.modutech.need_flow import ASK_PITCH_TH, ASK_TEMP_TH
     pick_turns = [k for k in a if isinstance(a[k], dict) and a[k].get("action") == "answer"
                   and isinstance(b.get(k), dict) and b[k].get("reply_th") in (ASK_PITCH_TH, ASK_TEMP_TH)
                   and k not in skipped_need_flow]
@@ -227,10 +227,10 @@ def main() -> int:
     diff = [k for k in sorted(set(a) & set(b)) if a[k] != b[k] and k not in skipped]
     # 27 ต.ค. (ผู้ใช้เลือกถ้อยคำทางการ): ข้อความปฏิเสธรูปเปลี่ยน — ต่างได้เฉพาะ reply_th ของ reject_image
     # และต้องเป็นข้อความใหม่ของแบรนด์นั้นหรือข้อความกลาง (action · reason · payload · สถานะเท่าเดิม)
-    from core.decide import GENERIC_REJECT_IMAGE_TH as _GEN
+    from engine.core.decide import GENERIC_REJECT_IMAGE_TH as _GEN
     import yaml
-    from brands.movex.plugin import reject_text as _mx_reject
-    _mx_cfg = yaml.safe_load(open(os.path.join(ROOT, "brands", "movex", "brand.yaml"), encoding="utf-8"))
+    from engine.brands.movex.plugin import reject_text as _mx_reject
+    _mx_cfg = yaml.safe_load(open(os.path.join(ROOT, "engine", "brands", "movex", "brand.yaml"), encoding="utf-8"))
     _new_rej = {_GEN, _mx_reject(_mx_cfg)}
     reword = [k for k in diff if isinstance(a[k], dict) and isinstance(b[k], dict)
               and a[k].get("action") == b[k].get("action") == "reject_image"
@@ -278,15 +278,15 @@ def main() -> int:
 
     print("\n2) แกนกลางไม่รู้จักแบรนด์")
     sys.path.insert(0, ROOT)
-    for f in sorted(os.listdir(os.path.join(ROOT, "core"))):
+    for f in sorted(os.listdir(os.path.join(ROOT, "engine", "core"))):
         if f.endswith(".py"):
-            src = open(os.path.join(ROOT, "core", f), encoding="utf-8").read()
+            src = open(os.path.join(ROOT, "engine", "core", f), encoding="utf-8").read()
             ok(f"core/{f}", not re.search(r"movex|modutech", src, re.I))
     for b_ in ("movex", "modutech"):
         other = "modutech" if b_ == "movex" else "movex"
-        bad = [f for f in os.listdir(os.path.join(ROOT, "brands", b_)) if f.endswith(".py")
+        bad = [f for f in os.listdir(os.path.join(ROOT, "engine", "brands", b_)) if f.endswith(".py")
                and re.search(rf"^\s*(from|import)\s+brands\.{other}\b|^\s*(from|import)\s+{other}_",
-                             open(os.path.join(ROOT, "brands", b_, f), encoding="utf-8").read(), re.M)]
+                             open(os.path.join(ROOT, "engine", "brands", b_, f), encoding="utf-8").read(), re.M)]
         ok(f"brands/{b_} ไม่ import แบรนด์อื่น", not bad, bad)
 
     print(f"\nรวม {passed}/{passed + failed}")

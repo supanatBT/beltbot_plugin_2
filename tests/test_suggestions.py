@@ -24,7 +24,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 from bot import dialogue_state as DS                         # noqa: E402
-from brands.modutech import need_flow as NF         # noqa: E402
+from engine.brands.modutech import need_flow as NF         # noqa: E402
 from webapi.bot import suggestions_for              # noqa: E402
 
 passed = failed = 0

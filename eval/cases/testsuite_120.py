@@ -24,9 +24,9 @@ import json
 import sys
 
 from bot.dialogue_state import DialogueManager, DialogState
-from brands.modutech.gates import (Catalogue, Slots, catalogue_increment_status,
+from engine.brands.modutech.gates import (Catalogue, Slots, catalogue_increment_status,
                             catalogue_nonstandard_increment, run_gates)
-from brands.modutech.router import ExploratoryQuery
+from engine.brands.modutech.router import ExploratoryQuery
 
 PATH = sys.argv[1] if len(sys.argv) > 1 else "data/modutech_v30_3.json"
 CAT = Catalogue(PATH)

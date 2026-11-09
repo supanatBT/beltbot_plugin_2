@@ -25,7 +25,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 from bot import dialogue_state as D                                    # noqa: E402
-from brands.modutech.gates import Catalogue                          # noqa: E402
+from engine.brands.modutech.gates import Catalogue                          # noqa: E402
 from webapi.bot import sanitize_dialog_state, state_resumable  # noqa: E402
 
 passed = failed = 0
@@ -116,7 +116,7 @@ bad2 = [c for c in cases[:200]
 ok("200 กรณีแรกกับ fakebot", not bad2, bad2[:2])
 
 print("\n3) แบรนด์ที่สาม — webapi ไม่ต้องแก้")
-from core.dialogue import state_class                         # noqa: E402
+from engine.core.dialogue import state_class                         # noqa: E402
 
 
 class _Demo:

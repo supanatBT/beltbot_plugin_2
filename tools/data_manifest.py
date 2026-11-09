@@ -38,7 +38,7 @@ LINEAGE = [
 # ไฟล์ที่บอทไม่ได้เปิดตอนรัน — บน Space ไม่มีก็ได้ (ไฟล์ที่บอทใช้จริงต้องมีเสมอ)
 HISTORY_ONLY = {"modutech_v30.json", "data/modutech_v30_1.json", "data/modutech_v30_2.json"}
 OTHER = ["data/extracted_data_v3_machine_ready.json", "data/modutech_kg.db", "data/movex_kg.db",
-         "brands/modutech/image_gate.npz", "brands/movex/thresholds.json"]
+         "engine/brands/modutech/image_gate.npz", "engine/brands/movex/thresholds.json"]
 
 
 def sha256(path: str) -> str:

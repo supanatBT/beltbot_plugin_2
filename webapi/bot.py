@@ -32,7 +32,7 @@ state ที่ client ส่งมาถือเป็นข้อมูลท
 from __future__ import annotations
 
 import importlib
-from core.entrypoints import import_bot
+from engine.core.entrypoints import import_bot
 import logging
 import os
 import re

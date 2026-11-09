@@ -20,9 +20,9 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-import core.reply_guard as RG  # noqa: E402
-from core.turn import guard_reply  # noqa: E402
-from shared.sales_contact import SALES_PHONE, sales_contact_line_th  # noqa: E402
+import engine.core.reply_guard as RG  # noqa: E402
+from engine.core.turn import guard_reply  # noqa: E402
+from engine.shared.sales_contact import SALES_PHONE, sales_contact_line_th  # noqa: E402
 
 passed = failed = 0
 

@@ -21,7 +21,7 @@ import types
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-from core.dialogue import state_class                        # noqa: E402
+from engine.core.dialogue import state_class                        # noqa: E402
 from bot.dialogue_state import DialogState                        # noqa: E402
 
 passed = failed = 0

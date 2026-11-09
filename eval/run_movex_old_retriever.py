@@ -38,7 +38,7 @@ def main() -> None:
 
     os.environ.setdefault("BRANDS", "movex")      # โหลดเฉพาะ Movex (ประหยัดหน่วยความจำ)
     from bot import assistant                                # noqa: F401  สร้างระบบแบบเดียวกับตอนใช้งานจริง
-    from brands.movex import runtime as R
+    from engine.brands.movex import runtime as R
     inner = R._retriever_inner
     if inner is None:
         sys.exit("ตัวค้นของ Movex ไม่ถูกสร้าง (ไม่พบโมเดล Jina หรือ Qdrant ของ Movex) — ตรวจ log ตอนโหลด")

@@ -29,11 +29,11 @@ import re
 import sys
 from collections import defaultdict
 
-from brands.modutech import gates as mg
-from brands.modutech import router as mr
-from brands.modutech import turn as mt
+from engine.brands.modutech import gates as mg
+from engine.brands.modutech import router as mr
+from engine.brands.modutech import turn as mt
 from bot.dialogue_state import DialogueManager
-from brands.modutech.kg import ModutechGraph
+from engine.brands.modutech.kg import ModutechGraph
 
 CASES = ["eval/cases/testcases_modutech_136.csv", "eval/cases/testcases_graph_relations.csv"]
 VOICE_RX = re.compile(r"ห้าม|ให้บอกเฉพาะ|ระบบ(?:จึง|ใช้|เลือกใช้|ไม่ใช้)"
@@ -196,7 +196,7 @@ ok("EX-004: search_result มี scope_th ที่เอ่ย Modutech", "Modu
     "scope_th", ""), str((t4.context.get("search_result") or {}).get("scope_th")))
 
 # RT-014: ลูกค้าบอกงานแต่ไม่รู้รุ่น → ยกรุ่น Movex ที่ usage เขียนถึงงานนั้น (ข้อความตายตัว)
-from brands.movex.plugin import movex_application_block  # noqa: E402
+from engine.brands.movex.plugin import movex_application_block  # noqa: E402
 _mx = {x["product_id"]: x for x in json.load(open("data/extracted_data_v3_machine_ready.json", encoding="utf-8"))["products"]}
 blk = movex_application_block("โซ่ลำเลียงขวด PET", _mx) or ""
 ok("RT-014: ขวด PET → LF 820 K325 · LF 880 TAB K325 · LFN 83 MFM · ไม่มีรุ่นที่ usage ไม่พูดถึง PET",

@@ -51,7 +51,7 @@ SUITES = [
 # เทสต์ของแต่ละแบรนด์ — brands/<key>/test_*.py หาเองทุกครั้ง เพิ่มแบรนด์ไม่ต้องแก้ไฟล์นี้
 def brand_suites() -> list:
     out = []
-    for f in sorted((ROOT / "brands").glob("*/test_*.py")):
+    for f in sorted((ROOT / "engine" / "brands").glob("*/test_*.py")):
         out.append((f.relative_to(ROOT).as_posix(), r"รวม\s+(\d+)/(\d+)", None))
     return out
 
@@ -65,7 +65,7 @@ BASELINE_BRANDS = "movex,modutech"   # แบรนด์ที่มีตอ�
 BOT_MODULE = "bot.assistant"     # ชั้น 5: ชื่อใหม่ · chatbot_v5 เป็นตัวชี้มาที่นี่
 SNAPSHOT = Path(__file__).resolve().parent / "prompt_snapshot"
 
-CORE_DIR = ROOT / "core"
+CORE_DIR = ROOT / "engine" / "core"
 BRAND_WORDS = re.compile(r"movex|modutech", re.IGNORECASE)
 
 

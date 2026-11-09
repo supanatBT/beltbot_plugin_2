@@ -27,8 +27,8 @@ for _k in ("AGENT_REPLY_GUARD", "AGENT_DATASHEET_FILES", "AGENT_RESOLVE_TAB", "A
 os.environ.setdefault("AGENT_PROMPT", "r1")
 
 from agent import assistant as A            # noqa: E402
-from core import reply_guard as RG     # noqa: E402
-from shared.sales_contact import sales_contact_line_th  # noqa: E402
+from engine.core import reply_guard as RG     # noqa: E402
+from engine.shared.sales_contact import sales_contact_line_th  # noqa: E402
 
 ok = fail = 0
 

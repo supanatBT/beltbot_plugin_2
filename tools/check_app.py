@@ -138,20 +138,20 @@ CODE = {
     "bot/dialogue_state.py": "ทางเข้าสถานะบทสนทนา → core/decide.py + brands/*/plugin.py",
     "bot/pipeline_logger.py": "บันทึกทุกขั้นของการตอบ",
     "agent/assistant.py": "agent (BOT_MODULE=agent.assistant)",
-    "core/turn.py":      "หนึ่งเทิร์นของแชต (ไม่รู้จักแบรนด์)",
-    "core/decide.py":    "ตัดสินก่อนถึง LLM ส่วนกลาง (ไม่รู้จักแบรนด์)",
-    "core/entrypoints.py": "ชื่อ BOT_MODULE เดิม → โมดูลใหม่",
-    "shared/retriever_v4.py": "ค้นข้อมูลจาก Qdrant",
-    "shared/sales_contact.py": "เบอร์/อีเมลฝ่ายขายตัวจริง",
-    "brands/movex/runtime.py":    "ค้น/tool/prompt ของ Movex (ครอบ retriever_v4)",
-    "brands/movex/knowledge_graph.py": "กราฟความเข้ากันได้ของ Movex (โหลดไฟล์ .db)",
-    "brands/movex/plugin.py":    "ตัดสินของ Movex",
-    "brands/modutech/runtime.py": "ค้น/tool ของ Modutech (collection แยก)",
-    "brands/modutech/gates.py":  "เกตกรองคำตอบ Modutech",
-    "brands/modutech/router.py": "แยกว่าคำถามเป็น Movex หรือ Modutech",
-    "brands/modutech/turn.py":   "ประกอบคำตอบหนึ่งเทิร์นของ Modutech",
-    "brands/modutech/plugin.py": "ตัดสินของ Modutech",
-    "brands/modutech/kg.py":     "กราฟความสัมพันธ์ + ตัวโหลดที่ตรวจลายนิ้วมือ",
+    "engine/core/turn.py":      "หนึ่งเทิร์นของแชต (ไม่รู้จักแบรนด์)",
+    "engine/core/decide.py":    "ตัดสินก่อนถึง LLM ส่วนกลาง (ไม่รู้จักแบรนด์)",
+    "engine/core/entrypoints.py": "ชื่อ BOT_MODULE เดิม → โมดูลใหม่",
+    "engine/shared/retriever_v4.py": "ค้นข้อมูลจาก Qdrant",
+    "engine/shared/sales_contact.py": "เบอร์/อีเมลฝ่ายขายตัวจริง",
+    "engine/brands/movex/runtime.py":    "ค้น/tool/prompt ของ Movex (ครอบ retriever_v4)",
+    "engine/brands/movex/knowledge_graph.py": "กราฟความเข้ากันได้ของ Movex (โหลดไฟล์ .db)",
+    "engine/brands/movex/plugin.py":    "ตัดสินของ Movex",
+    "engine/brands/modutech/runtime.py": "ค้น/tool ของ Modutech (collection แยก)",
+    "engine/brands/modutech/gates.py":  "เกตกรองคำตอบ Modutech",
+    "engine/brands/modutech/router.py": "แยกว่าคำถามเป็น Movex หรือ Modutech",
+    "engine/brands/modutech/turn.py":   "ประกอบคำตอบหนึ่งเทิร์นของ Modutech",
+    "engine/brands/modutech/plugin.py": "ตัดสินของ Modutech",
+    "engine/brands/modutech/kg.py":     "กราฟความสัมพันธ์ + ตัวโหลดที่ตรวจลายนิ้วมือ",
 }
 
 print("\n1) ไฟล์โค้ด")
@@ -165,7 +165,7 @@ src5 = read(ROOT / "bot" / "assistant.py")
 
 def _brand(key: str) -> dict:
     import yaml
-    p = ROOT / "brands" / key / "brand.yaml"
+    p = ROOT / "engine" / "brands" / key / "brand.yaml"
     return (yaml.safe_load(p.read_text(encoding="utf-8")) or {}) if p.is_file() else {}
 
 
@@ -175,7 +175,7 @@ def _bpath(key: str, *keys: str, default: str = "") -> str:
         node = (node or {}).get(k) if isinstance(node, dict) else None
     if not node:
         return default
-    rel = os.path.relpath(os.path.normpath(os.path.join(ROOT, "brands", key, node)), ROOT)
+    rel = os.path.relpath(os.path.normpath(os.path.join(ROOT, "engine", "brands", key, node)), ROOT)
     return "./" + rel.replace(os.sep, "/")
 
 
@@ -229,14 +229,14 @@ for rel, expect in ((const("QDRANT_PATH", "./data/qdrant_db"), ("movex_text_chun
 # ── 3. เวอร์ชันของไฟล์ที่แก้ 29–30 ก.ย. ───────────────────────
 # ตรวจด้วยข้อความเฉพาะในโค้ด ไม่ใช่วันที่ไฟล์ ซึ่งเปลี่ยนตอนคัดลอกอยู่แล้ว
 MARKERS = {
-    "brands/modutech/gates.py": [
+    "engine/brands/modutech/gates.py": [
         ("inch_basis", "ค่านิ้วคำนวณจาก มม. ทุกฟิลด์ (30 ก.ย.)"),
         ("NO_INCREMENT_TH", "ไม่ประกาศค่าเพิ่มทีละที่ยืนยันไม่ได้ (29 ก.ย.)"),
         ("catalogue_nonstandard_increment", "อ่านขนาดนอกมาตรฐานจากเล่ม (29 ก.ย.)"),
         ("temperature_unconfirmed_th", "คำเตือน MD254 RR (29 ก.ย.)"),
     ],
     # ย้ายจาก dialogue_state.py ไป core/decide.py (ชั้น 4)
-    "core/decide.py": [
+    "engine/core/decide.py": [
         ("FOLLOWUP_MAX_CHARS", "คำถามต่อเนื่องสั้น ๆ ไม่ถูกตีเป็นนอกเรื่อง (29 ก.ย.)"),
         ("นิ้ว", "คำหน่วยวัดใน DOMAIN_WORDS (29 ก.ย.)"),
     ],
@@ -306,7 +306,7 @@ if jp.is_file():
     except json.JSONDecodeError as e:
         bad.append(f"   ✗ อ่าน {jp.name} ไม่ได้: {e}")
 
-sc = read(ROOT / "shared" / "sales_contact.py")
+sc = read(ROOT / "engine" / "shared" / "sales_contact.py")
 if sc:
     check(bool(re.search(r"\d{2,3}-\d{3,4}-?\d{3,4}|@", sc)),
           "   ✓ sales_contact.py มีช่องทางติดต่อจริง",
@@ -323,7 +323,7 @@ if not KG_DB.is_file():
 else:
     try:
         sys.path.insert(0, str(ROOT))
-        from brands.modutech.kg import (assert_no_blocked_fields, catalogue_fingerprint,
+        from engine.brands.modutech.kg import (assert_no_blocked_fields, catalogue_fingerprint,
                                  db_fingerprint)
         want = catalogue_fingerprint(json.loads(jp.read_text(encoding="utf-8"))) if jp.is_file() else None
         got = db_fingerprint(str(KG_DB))
@@ -406,7 +406,7 @@ check(bool(se.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")),
 _think = se.get("GEMINI_THINKING") or os.environ.get("GEMINI_THINKING") or ""
 if _think.strip():
     try:
-        from core.llm import parse_thinking
+        from engine.core.llm import parse_thinking
         _tc = parse_thinking(_think)
         check(True, f"   ✓ GEMINI_THINKING={_think.strip()} → {_tc}", "")
     except ValueError as e:

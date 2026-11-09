@@ -23,10 +23,10 @@ import types
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-from core.protocol import BrandSignal                        # noqa: E402
-from core.router import choose                               # noqa: E402
+from engine.core.protocol import BrandSignal                        # noqa: E402
+from engine.core.router import choose                               # noqa: E402
 from bot import dialogue_state as D                                    # noqa: E402
-from brands.modutech.gates import Catalogue                          # noqa: E402
+from engine.brands.modutech.gates import Catalogue                          # noqa: E402
 
 passed = failed = 0
 
@@ -117,8 +117,8 @@ choose(sig, has_image=True, image_brands=["a"])
 ok("choose ไม่แก้สัญญาณที่ส่งมา", sig["a"].strength == "none")
 
 print("\n3) แต่ละแบรนด์รู้จักแค่ตัวเอง")
-from brands.movex import detect as mx                         # noqa: E402
-from brands.modutech.detect import ModutechDetector           # noqa: E402
+from engine.brands.movex import detect as mx                         # noqa: E402
+from engine.brands.modutech.detect import ModutechDetector           # noqa: E402
 md = ModutechDetector(cat)
 ok("Movex ไม่รู้จักรหัส Modutech", mx.detect("MP80 C").strength == "none")
 ok("Modutech ไม่รู้จักรหัส Movex", md.detect("LF820 K325").strength == "none")
@@ -126,7 +126,7 @@ ok("Modutech: รหัส exact → strong + has_code", md.detect("HC508 C").st
    and md.detect("HC508 C").has_code)
 ok("Modutech: ชื่อแบรนด์ → strong ไม่ใช่รหัส", md.detect("modutech").strength == "strong"
    and not md.detect("modutech").has_code)
-src = open(os.path.join(ROOT, "brands", "modutech", "router.py"), encoding="utf-8").read()
+src = open(os.path.join(ROOT, "engine", "brands", "modutech", "router.py"), encoding="utf-8").read()
 ok("โฟลเดอร์ Modutech ไม่มี regex ของ Movex แล้ว", "MOVEX_PATTERNS" not in src and "MOVEX_WEAK" not in src)
 
 print(f"\nรวม {passed}/{passed + failed}")

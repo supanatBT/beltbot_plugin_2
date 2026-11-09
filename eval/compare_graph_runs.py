@@ -25,8 +25,8 @@ import re
 import sys
 
 from eval import run_answer_eval as rae
-from brands.modutech.gates import Catalogue
-from brands.modutech.kg import ModutechGraph
+from engine.brands.modutech.gates import Catalogue
+from engine.brands.modutech.kg import ModutechGraph
 
 args = [a for a in sys.argv[1:] if not a.startswith("-")]
 out_path = sys.argv[sys.argv.index("-o") + 1] if "-o" in sys.argv else "compare_graph.md"
