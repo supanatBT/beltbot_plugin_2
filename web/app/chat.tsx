@@ -26,6 +26,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Answer from "./components/Answer";
 import { prepareImage, ResizeError } from "@/lib/resize";
 import type { Convo, Msg, Suggestion, Vote } from "@/lib/chat-types";
+import { inferSuggestions } from "@/lib/quick-infer";
 import { exportFileName, toMarkdown } from "@/lib/export";
 
 type Outgoing = { body: string; image: { file: File; url: string } | null };
@@ -471,7 +472,10 @@ export default function Chat() {
           sessionId: data.session_id || c.sessionId,
           state: data.state && Object.keys(data.state).length ? data.state : c.state,
           turnsLeft: typeof data.turns_left === "number" ? data.turns_left : c.turnsLeft,
-          suggest: readSuggestions(data.suggestions),
+          // backend ไม่ส่งปุ่ม (agent ไม่มี DialogState · 10 พ.ย.) → อ่านคำถามท้ายคำตอบล่าสุดเอง (lib/quick-infer.ts)
+          suggest:
+            readSuggestions(data.suggestions) ??
+            inferSuggestions([...incoming].reverse().find((m): m is Extract<Msg, { role: "bot" }> => m.role === "bot")?.text),
           messages: [
             ...c.messages,
             ...(resumed
@@ -1127,6 +1131,12 @@ const CSS = `
 .cv-wrap{display:flex;height:100dvh;min-height:0;overflow:hidden}
 .cv-main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
 .cv-main>.shell{flex:1;min-height:0;width:100%;min-width:0}
+/* แถบเลื่อนชิดขอบจอ (10 พ.ย.): เดิม .shell กว้างไม่เกิน 820px กลางจอ กล่องเลื่อน .list อยู่ข้างใน แถบเลื่อนจึงลอยกลางจอ
+   ตอนนี้ .shell กว้างเต็มพื้นที่แชต · หัว/ช่องพิมพ์จำกัด 820px เหมือนเดิม · .list กว้างเต็มแต่เว้นขอบให้เนื้อหาเหลือ 820px
+   (padding เป็น % ของความกว้างกรอบ จึงคำนวณจากความกว้างจริงได้) — ความกว้างที่ผู้ใช้เห็นเท่าเดิมทุกขนาดจอ */
+.cv-main>.shell{max-width:none}
+.cv-main>.shell>.top,.cv-main>.shell>.composer{width:100%;max-width:820px;margin-left:auto;margin-right:auto}
+.cv-main>.shell>.list{padding-left:max(16px,calc((100% - 820px)/2 + 16px));padding-right:max(16px,calc((100% - 820px)/2 + 16px))}
 /* width/min-width (6 พ.ย.): .shell มี margin auto จึงไม่ยืดเต็ม .cv-main แต่กว้างตามเนื้อหา — ตาราง/ลิงก์ยาว
    ดันกรอบเกินจอบนมือถือ แล้ว .cv-main ตัดทิ้ง (overflow:hidden) ปุ่มส่งหลุดขอบ · ตอนนี้ตารางเลื่อนในกรอบของตัวเอง */
 
