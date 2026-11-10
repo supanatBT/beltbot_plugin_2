@@ -5,6 +5,12 @@ training/eval_mlflow.py — ผลประเมินแชตบอตเข�
     python run_answer_eval.py --module assistant --testcases eval/cases/testcases_modutech_136.csv -o run8.json --mlflow --round 1
     python training/eval_mlflow.py run3.json run4.json run5.json run6.json run7.json --code pre-refactor
 
+ผลลูกค้าจำลอง (simulate_customers.py · sim-fair 5 พ.ย.) — ตรวจจากโครงไฟล์เอง แยก experiment "sim_redteam"
+    python training/eval_mlflow.py ../sim_v2_qi.json ../sim_v2_agent.json --code sim-fair
+    python training/eval_mlflow.py ../sim_v2_qi_checked.json ../sim_v2_agent_checked.json --code sim-fair --note "หลังอ่านแบบซ่อนชื่อ"
+    metric ต่อบท (hit · final_violations · issues) + ต่อเป้าหมายแบบ pass^k + โทเคนระบบ/ลูกค้าแยกกัน
+    + tactic_checked / manual_ok เมื่อเป็นไฟล์ *_checked.json · ไฟล์ผล .json และ .txt เป็นไฟล์แนบ
+
 คำต้องห้ามทั้งชุด (global forbidden words)
     เป็นตัวชี้วัดแยก **ไม่เปลี่ยนผ่าน/ตก** ของเทิร์นใด — ถ้าเอาไปปนกับเกณฑ์เดิม ตัวเลข 170/172
     จะขยับทั้งที่ระบบไม่ได้เปลี่ยน (บทเรียนเดียวกับ MOD-REJ-002 ใน HANDOFF ข้อ 7)
@@ -124,12 +130,12 @@ def file_sha(path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()[:16]
 
 
-def already_logged(path) -> list:
+def already_logged(path, experiment: str = "answer_eval") -> list:
     """run ที่บันทึกไฟล์นี้ (sha เดียวกัน) ไว้แล้ว — กันบันทึกซ้ำเมื่อย้อนบันทึกทั้งโฟลเดอร์"""
     os.environ.setdefault("MLFLOW_ALLOW_FILE_STORE", "true")
     import mlflow
     mlflow.set_tracking_uri(MLRUNS.as_uri())
-    exp = mlflow.get_experiment_by_name("answer_eval")
+    exp = mlflow.get_experiment_by_name(experiment)
     if exp is None:
         return []
     runs = mlflow.search_runs([exp.experiment_id], filter_string=f"tags.source_sha = '{file_sha(path)}'",
@@ -195,6 +201,158 @@ def log_eval(summary: dict, json_path: str | None = None, code: str = "", round_
         return run.info.run_id
 
 
+# ═══ ลูกค้าจำลอง (simulate_customers.py) ═══════════════════════════════════════
+SIM_EXPERIMENT = "sim_redteam"
+
+
+def is_sim(doc: dict) -> bool:
+    """ไฟล์ผล simulate_customers: summary เป็น dict + ผลต่อบทมี transcript"""
+    res = doc.get("results") or []
+    return isinstance(doc.get("summary"), dict) and bool(res) and isinstance(res[0], dict) and "transcript" in res[0]
+
+
+def _bool_counts(results: list, key: str) -> dict:
+    vals = [r.get(key, "missing") for r in results]
+    return {"true": sum(v is True for v in vals), "false": sum(v is False for v in vals),
+            "unchecked": sum(v is None for v in vals), "present": sum(v != "missing" for v in vals)}
+
+
+def sim_metrics(doc: dict) -> dict:
+    """ตัวเลขของลูกค้าจำลอง — นับแยก ไม่รวมเป็นคะแนนเดียว
+    บท: hit · final_violation · issue · ended · turns
+    เป้าหมาย (pass^k): ผ่านเมื่อทุกรอบ hit และไม่มี final_violations · บทที่ tactic_checked = false ไม่นับเป็นรอบที่ผ่าน/ตก
+    ต้นทุน: system_usage_total / customer_usage_total แยกกัน · โทเคนและวินาทีต่อเทิร์นของระบบ"""
+    import statistics as st
+    res = doc.get("results") or []
+    out = {"sim.conversations": len(res),
+           "sim.hit": sum(bool(r.get("hit")) for r in res),
+           "sim.final_violation": sum(bool(r.get("final_violations")) for r in res),
+           "sim.violation_any_turn": sum(bool(r.get("violations")) for r in res),
+           "sim.with_issue": sum(bool(r.get("issues")) for r in res),
+           "sim.ended_done": sum(r.get("ended") == "done" for r in res),
+           "sim.ended_giveup": sum(r.get("ended") == "giveup" for r in res),
+           "sim.ended_max_turns": sum(r.get("ended") == "max_turns" for r in res),
+           "sim.ended_error": sum(str(r.get("ended", "")).startswith(("error", "sim_error")) for r in res)}
+    turns = [r.get("turns") for r in res if isinstance(r.get("turns"), (int, float))]
+    if turns:
+        out["sim.turns_mean"] = sum(turns) / len(turns)
+    by_goal: dict = {}
+    for r in res:
+        by_goal.setdefault(r["goal"], []).append(r)
+    ok_goal = lambda rs: all(r.get("hit") and not r.get("final_violations") for r in rs)   # noqa: E731
+    out["goal.total"] = len(by_goal)
+    out["goal.pass_all_runs"] = sum(ok_goal(rs) for rs in by_goal.values())
+    kept = {g: [r for r in rs if r.get("tactic_checked") is not False] for g, rs in by_goal.items()}
+    if any("tactic_checked" in r for r in res):
+        out["goal.pass_all_runs_tactic_ok"] = sum(ok_goal(rs) for rs in kept.values() if rs)
+        out["goal.with_tactic_ok_run"] = sum(bool(rs) for rs in kept.values())
+        tc = _bool_counts(res, "tactic_checked")
+        out.update({"tactic.ok": tc["true"], "tactic.off": tc["false"], "tactic.unchecked": tc["unchecked"]})
+    if any("manual_ok" in r for r in res):
+        mc = _bool_counts(res, "manual_ok")
+        out.update({"manual.ok": mc["true"], "manual.fail": mc["false"], "manual.unchecked": mc["unchecked"]})
+    bot = [t for r in res for t in r["transcript"] if t.get("role") == "bot"]
+    secs = sorted(float(t["sec"]) for t in bot if isinstance(t.get("sec"), (int, float)))
+    if secs:
+        out.update({"cost.seconds_median": st.median(secs), "cost.seconds_p90": secs[min(len(secs) - 1, int(0.9 * len(secs)))],
+                    "cost.seconds_total": sum(secs)})
+    usage = [t["usage"] for t in bot if isinstance(t.get("usage"), dict)]
+    out["cost.turns_with_usage"] = len(usage)
+    for key, name in (("total_token_count", "tokens"), ("prompt_token_count", "tokens_in"),
+                      ("candidates_token_count", "tokens_out"), ("llm_calls", "llm_calls")):
+        vals = [u[key] for u in usage if isinstance(u.get(key), (int, float))]
+        if vals:
+            out[f"cost.{name}_median"] = st.median(vals)
+            out[f"cost.{name}_total"] = sum(vals)
+    for who in ("system", "customer"):
+        tot = doc.get(f"{who}_usage_total") or {}
+        for key, name in (("total_token_count", "tokens"), ("prompt_token_count", "tokens_in"),
+                          ("candidates_token_count", "tokens_out"), ("thoughts_token_count", "tokens_thought"),
+                          ("llm_calls", "llm_calls")):
+            if isinstance(tot.get(key), (int, float)):
+                out[f"{who}.{name}_total"] = tot[key]
+    return out
+
+
+def sim_goal_table(doc: dict) -> dict:
+    """ผลต่อเป้าหมาย/รอบ (ไฟล์แนบ goals.json) — ไว้อ่านคู่กับ transcript"""
+    out: dict = {}
+    for r in doc.get("results") or []:
+        out.setdefault(r["goal"], []).append({k: r.get(k) for k in (
+            "run", "hit", "final_violations", "violations", "ended", "turns", "tactic_checked", "manual_ok",
+            "review_note", "acceptable_source") if k in r})
+    return out
+
+
+def sim_leaks(doc: dict) -> dict:
+    per_word: Counter = Counter()
+    turns = []
+    for r in doc.get("results") or []:
+        k = 0
+        for t in r["transcript"]:
+            if t.get("role") != "bot":
+                continue
+            k += 1
+            h = leak_hits(t.get("text", ""))
+            if h:
+                per_word.update(h)
+                turns.append(f"{r['goal']}#{r.get('run', 1)} b{k}")
+    return {"turns_with_leak": len(turns), "per_word": dict(per_word), "turns": turns}
+
+
+def log_sim(doc: dict, json_path: str | None = None, code: str = "", round_no: str = "", note: str = "") -> str:
+    os.environ.setdefault("MLFLOW_ALLOW_FILE_STORE", "true")
+    import mlflow
+    mlflow.set_tracking_uri(MLRUNS.as_uri())
+    mlflow.set_experiment(SIM_EXPERIMENT)
+    commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
+                            capture_output=True, text=True, encoding="utf-8", errors="replace").stdout.strip()
+    name = Path(json_path).stem if json_path else f"{doc.get('module')}-sim"
+    src = {}
+    if json_path and Path(json_path).exists():
+        fp = Path(json_path)
+        src = {"source_sha": file_sha(fp),
+               "source_mtime": datetime.fromtimestamp(fp.stat().st_mtime).isoformat(timespec="seconds")}
+    res = doc.get("results") or []
+    checked = any("tactic_checked" in r and r["tactic_checked"] is not None for r in res)
+    leaks = sim_leaks(doc)
+    with mlflow.start_run(run_name=name) as run:
+        info = system_of(doc)
+        prompt = info.pop("prompt_text", None)
+        mlflow.set_tags({"kind": "sim_redteam", "code": code or "unknown", "round": str(round_no or ""),
+                         "commit_at_logging": commit, "source_file": json_path or "", "note": note,
+                         "run_commit": str(info.get("commit", "")), "system": info.get("system", ""),
+                         "prompt_version": info.get("prompt_version", ""), "blind": "false",
+                         "human_checked": str(checked).lower(), **src})
+        goals = doc.get("goals", "")
+        mlflow.log_params({"module": doc.get("module"), "goals": goals, "goals_sha": str(doc.get("goals_sha", ""))[:16],
+                           "only": ",".join(doc.get("only") or []), "repeats": doc.get("repeats"),
+                           "max_turns": doc.get("max_turns"), "temperature": doc.get("temperature"),
+                           "customer_model": doc.get("customer_model", "bot_client"),
+                           "customer_thinking": doc.get("customer_thinking", ""),
+                           "customer_source": doc.get("customer_source", "bot_client"),
+                           "tactic_label": str(bool(doc.get("tactic_label")))})
+        mlflow.log_params({f"sys.{k}": str(v)[:500] for k, v in info.items()})
+        if prompt:
+            mlflow.log_text(prompt, f"prompt_{info.get('prompt_version', 'x')}_{info.get('prompt_sha', '')}.txt")
+        mlflow.log_metrics(sim_metrics(doc))
+        mlflow.log_metric("leak.turns", leaks["turns_with_leak"])
+        for w in GLOBAL_FORBIDDEN:
+            mlflow.log_metric(LEAK_METRIC[w], leaks["per_word"].get(w, 0))
+        mlflow.log_dict(sim_goal_table(doc), "goals.json")
+        mlflow.log_dict(leaks, "leaks.json")
+        if json_path and Path(json_path).exists():
+            mlflow.log_artifact(json_path)
+            txt = Path(json_path).with_suffix(".txt")
+            if not txt.exists() and Path(json_path).stem.endswith("_checked"):
+                txt = Path(json_path).with_name(Path(json_path).stem[:-len("_checked")] + ".txt")
+            if txt.exists():
+                mlflow.log_artifact(str(txt))
+        else:
+            mlflow.log_dict(doc, "sim.json")
+        return run.info.run_id
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="นำไฟล์ผลประเมินที่มีอยู่เข้า MLflow + นับคำต้องห้ามย้อนหลัง")
     ap.add_argument("files", nargs="+")
@@ -204,11 +362,22 @@ def main() -> int:
     ap.add_argument("--round", default="", help="รอบที่เท่าไหร่ (pass^k ใช้แยกรอบ 1/2)")
     ap.add_argument("--force", action="store_true", help="บันทึกซ้ำแม้ไฟล์ sha เดียวกันเคยบันทึกแล้ว")
     a = ap.parse_args()
+    sims = 0
     for f in expand(a.files):
-        if not a.no_mlflow and not a.force and (ids := already_logged(f)):
+        s = json.loads(Path(f).read_text(encoding="utf-8"))
+        exp = SIM_EXPERIMENT if is_sim(s) else "answer_eval"
+        if not a.no_mlflow and not a.force and (ids := already_logged(f, exp)):
             print(f"  {f:<22} ข้าม — บันทึกแล้ว ({ids[0][:8]})")
             continue
-        s = json.loads(Path(f).read_text(encoding="utf-8"))
+        if exp == SIM_EXPERIMENT:
+            sims += 1
+            m = sim_metrics(s)
+            print(f"  {f:<22} ลูกค้าจำลอง {s.get('module')} · hit {m['sim.hit']}/{m['sim.conversations']} บท · "
+                  f"เป้าหมายผ่านทุกรอบ {m['goal.pass_all_runs']}/{m['goal.total']} · "
+                  f"ผิดเงื่อนไข {m['sim.final_violation']} บท")
+            if not a.no_mlflow:
+                log_sim(s, json_path=f, code=a.code, note=a.note, round_no=a.round)
+            continue
         lk = leak_summary(s.get("results", []))
         words = " · ".join(f"{w} {n}" for w, n in lk["per_word"].items()) or "-"
         print(f"  {f:<22} ผ่าน {s.get('passed')}/{s.get('graded', s.get('total_turns'))}   "
@@ -216,7 +385,7 @@ def main() -> int:
         if not a.no_mlflow:
             log_eval({**s, "leaks": lk}, json_path=f, code=a.code, note=a.note, round_no=a.round)
     if not a.no_mlflow:
-        print(f"  → MLflow experiment 'answer_eval' ที่ {MLRUNS}")
+        print(f"  → MLflow experiment 'answer_eval'" + (f" · '{SIM_EXPERIMENT}'" if sims else "") + f" ที่ {MLRUNS}")
     return 0
 
 

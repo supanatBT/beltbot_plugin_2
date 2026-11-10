@@ -183,5 +183,142 @@ _trn = [{"role": "customer", "text": "ไลน์แช่แข็ง พิ�
 _s5 = SC.score(_gn, _trn, judge, "done")
 ok("เปลี่ยนใจกลางทาง: แนะนำถูกก่อนเปลี่ยน + บอกไม่มีหลังเปลี่ยน → hit", _s5["hit"] is True, (_s5["hit"], _s5["final_violations"]))
 
+
+print("\nsim-fair (4 พ.ย.) ก. ลูกค้าแยกจากระบบ · ค. ป้าย tactic — ของปลอมทั้งหมด ไม่เรียก API")
+import contextlib as _cl  # noqa: E402
+import io as _io  # noqa: E402
+import sim_fair_fakes as F  # noqa: E402
+
+_GOLD = os.path.join(ROOT, "tests", "golden")
+_ENV = ("SIM_CUSTOMER_MODEL", "SIM_CUSTOMER_THINKING", "SIM_TACTIC_LABEL", "GEMINI_THINKING")
+
+
+def _run(module, extra=("--repeats", "2"), env=None):
+    saved = {k: os.environ.get(k) for k in _ENV}
+    for k in _ENV:
+        os.environ.pop(k, None)
+    os.environ.update(env or {})
+    try:
+        with tempfile.TemporaryDirectory() as d, _cl.redirect_stdout(_io.StringIO()):
+            res, txt = F.run_main(SC, module, d, list(extra))
+        return res, txt
+    finally:
+        for k, v in saved.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+
+def _same_as_golden(res, txt):
+    g = json.load(open(os.path.join(_GOLD, "sim_fake_bot.json"), encoding="utf-8"))
+    a = json.dumps(F.strip_volatile(res), sort_keys=True, ensure_ascii=False)
+    b = json.dumps(g, sort_keys=True, ensure_ascii=False)
+    return a == b and txt == open(os.path.join(_GOLD, "sim_fake_bot.txt"), encoding="utf-8").read()
+
+
+_built = []
+
+
+def _factory(model, thinking_raw):
+    c = F.FakeLLM(name=f"cust:{model}", usage=(1000, 10))
+    c.thinking_raw = thinking_raw
+    _built.append(c)
+    return c
+
+
+_orig_build = SC.build_customer_client
+SC.build_customer_client = _factory
+
+b = F.make_bot_module()
+res, txt = _run("fake_sim_bot")
+ok("A1 ไม่ตั้ง env → json + txt เท่า golden ของ 509ae12 (ตัดเฉพาะ seconds/sec/interp_ms/latency_sec)",
+   _same_as_golden(res, txt))
+ok("A1 meta ไม่มีคีย์ใหม่ · บทไม่มี usage", not ({"customer_model", "customer_source", "tactic_label"} & set(res))
+   and all("usage" not in t for r in res["results"] for t in r["transcript"]))
+ok("A2 ไม่ตั้ง env → ลูกค้าใช้ bot.llm_client · ไม่สร้าง client แยก", len(b.llm_client.prompts) > 0 and not _built,
+   (len(b.llm_client.prompts), len(_built)))
+b = F.make_bot_module()
+res, txt = _run("fake_sim_bot", env={"SIM_CUSTOMER_MODEL": ""})
+ok("A10 SIM_CUSTOMER_MODEL ว่าง = ไม่ตั้ง", _same_as_golden(res, txt) and not _built)
+
+b = F.make_bot_module()
+res, txt = _run("fake_sim_bot", env={"SIM_CUSTOMER_MODEL": "fake-cust", "SIM_CUSTOMER_THINKING": "none-x",
+                                     "GEMINI_THINKING": "low"})
+cust = _built[-1] if _built else None
+ok("A3 ตั้ง SIM_CUSTOMER_MODEL → prompt ลูกค้าไปที่ client แยกเท่านั้น", cust is not None and len(cust.prompts) > 0
+   and not b.llm_client.prompts and len(_built) == 1, (len(_built), len(b.llm_client.prompts)))
+ok("A3 client แยกสร้างด้วยรุ่น fake-cust", cust is not None and cust.name == "cust:fake-cust")
+ok("A4 thinking ของลูกค้าแยก · GEMINI_THINKING ของระบบไม่เปลี่ยน", cust is not None and cust.thinking_raw == "none-x"
+   and res.get("customer_thinking") == "none-x")
+ok("A7 meta: customer_model · customer_thinking · customer_source=separate · llm ของระบบ",
+   res.get("customer_model") == "fake-cust" and res.get("customer_source") == "separate"
+   and res.get("llm") == "fake · bot" and res.get("customer_llm") == "fake · cust:fake-cust", {k: res.get(k) for k in
+   ("customer_model", "customer_source", "llm", "customer_llm")})
+bot_turns = sum(t["role"] == "bot" for r in res["results"] for t in r["transcript"])
+ct = res.get("customer_usage_total") or {}
+st = res.get("system_usage_total") or {}
+ok("A8 โทเคนไม่ปน: ระบบ = 10 × เทิร์นบอท · ลูกค้า = 1010 × ครั้งที่ลูกค้าเรียก",
+   st.get("total_token_count") == 10 * bot_turns and ct.get("total_token_count") == 1010 * len(cust.prompts)
+   and st.get("prompt_token_count") == 7 * bot_turns, (st, ct, bot_turns))
+import hashlib as _hl  # noqa: E402
+ok("A7 meta หลักฐาน: goals · goals_sha (sha256 ของไฟล์ที่ใช้จริง) · system_info.system=bot",
+   res.get("goals", "").endswith("goals.json") and len(res.get("goals_sha", "")) == 64
+   and res.get("system_info", {}).get("system") == "bot" and "commit" in res.get("system_info", {}), res.get("system_info"))
+ok("A9 ทุกเทิร์นบอทมี usage ของเทิร์นนั้นเท่านั้น (7/3 · ไม่สะสมข้ามเทิร์น)",
+   all(t.get("usage", {}).get("total_token_count") == 10 and t["usage"]["llm_calls"] == 1
+       for r in res["results"] for t in r["transcript"] if t["role"] == "bot"))
+
+F.make_agent_module()
+saved_out = None
+try:
+    with tempfile.TemporaryDirectory() as d, _cl.redirect_stdout(_io.StringIO()):
+        for k in _ENV:
+            os.environ.pop(k, None)
+        F.run_main(SC, "fake_sim_agent", d, [])
+except SystemExit as e:
+    saved_out = str(e)
+    with tempfile.TemporaryDirectory() as d:
+        pass
+ok("A5 agent ไม่มี llm_client + ไม่ตั้ง env → หยุด (SystemExit ไม่ใช่ AttributeError) ข้อความไทยบอกให้ตั้ง",
+   saved_out is not None and "SIM_CUSTOMER_MODEL" in saved_out and "ไม่มี llm_client" in saved_out, saved_out)
+with tempfile.TemporaryDirectory() as d:
+    out = os.path.join(d, "out.json")
+    try:
+        with _cl.redirect_stdout(_io.StringIO()):
+            sys.argv = ["x", "--module", "fake_sim_agent", "--goals", F.write_goals(d), "-o", out]
+            SC.main()
+    except SystemExit:
+        pass
+    ok("A5 ไม่มีไฟล์ผลถูกเขียน", not os.path.exists(out))
+
+F.make_agent_module()
+res, txt = _run("fake_sim_agent", env={"SIM_CUSTOMER_MODEL": "fake-cust"})
+ok("A6 agent + SIM_CUSTOMER_MODEL → รันครบทุกเป้าหมาย · โครงไฟล์เหมือนของบอท",
+   len(res["results"]) == 4 and {"summary", "results", "module", "llm"} <= set(res) and res["llm"] == "fake agent")
+ok("A6 โทเคนของ agent ต่อเทิร์นมาจาก engine.llm.last_usage",
+   all(t.get("usage", {}).get("total_token_count") == 10 for r in res["results"] for t in r["transcript"]
+       if t["role"] == "bot"))
+F.make_agent_module(with_meter=False)
+res, txt = _run("fake_sim_agent", env={"SIM_CUSTOMER_MODEL": "fake-cust"})
+ok("A9 module ที่ไม่มีตัวนับ → usage = null (ไม่ใช่ 0) · system_usage_total = null",
+   all(t.get("usage", "x") is None for r in res["results"] for t in r["transcript"] if t["role"] == "bot")
+   and res.get("system_usage_total") is None)
+
+n_before = len(_built)
+b = F.make_bot_module()
+res, txt = _run("fake_sim_bot", env={"SIM_TACTIC_LABEL": "1"})
+hdr = [ln for ln in txt.splitlines() if ln.startswith("tactic: ")]
+ok("C1 .txt ทุกบทมีบรรทัด tactic ตรงกับเป้าหมาย (ไม่มี tactic → (ไม่ระบุ))",
+   hdr == ["tactic: (ไม่ระบุ)"] * 2 + [f"tactic: {F.GOALS['goals'][1]['tactic']}"] * 2, hdr)
+ok("C2 json ทุกบทมี tactic_checked: null", all("tactic_checked" in r and r["tactic_checked"] is None
+                                                for r in res["results"]))
+ok("C3 ไม่มีการเรียก LLM เพิ่ม (ไม่ใช้ LLM ตัดสิน)", len(b.llm_client.prompts) == 8 and len(_built) == n_before,
+   len(b.llm_client.prompts))
+b = F.make_bot_module()
+res, txt = _run("fake_sim_bot", env={"SIM_TACTIC_LABEL": "0"})
+ok("C5 SIM_TACTIC_LABEL ไม่ใช่ 1 → เท่า golden", _same_as_golden(res, txt))
+SC.build_customer_client = _orig_build
+
 print(f"\nรวม {passed}/{passed + failed}")
 sys.exit(1 if failed else 0)

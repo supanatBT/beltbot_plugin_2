@@ -1,0 +1,259 @@
+{
+  "answer_interpreter": "rules",
+  "llm": "fake · bot",
+  "max_turns": 10,
+  "module": "fake_sim_bot",
+  "repeats": 2,
+  "results": [
+    {
+      "acceptable": [
+        "EC508 C",
+        "EC508 PR11",
+        "HC508 C"
+      ],
+      "acceptable_source": "application",
+      "application": "ไก่ ไลน์ตัดแต่ง",
+      "brand": "modutech",
+      "ended": "done",
+      "explained_not_recommended": [],
+      "final_violations": [],
+      "goal": "F01",
+      "hit": true,
+      "issues": [],
+      "mentioned": [
+        "EC508 C"
+      ],
+      "offtopic": 0,
+      "reached": true,
+      "repeats": 0,
+      "run": 1,
+      "transcript": [
+        {
+          "role": "customer",
+          "text": "สายพาน modutech ไก่ตัดแต่งครับ"
+        },
+        {
+          "interp": "-",
+          "role": "bot",
+          "text": "พิทช์เท่าไหร่ครับ"
+        },
+        {
+          "role": "customer",
+          "text": "พิทช์ 2 นิ้ว 5 องศา เปียก"
+        },
+        {
+          "interp": "-",
+          "role": "bot",
+          "text": "แนะนำ EC508 C ครับ"
+        },
+        {
+          "role": "customer",
+          "text": "โอเคครับ"
+        },
+        {
+          "interp": "-",
+          "role": "bot",
+          "text": "ยินดีครับ"
+        }
+      ],
+      "turns": 3,
+      "violations": []
+    },
+    {
+      "acceptable": [
+        "EC508 C",
+        "EC508 PR11",
+        "HC508 C"
+      ],
+      "acceptable_source": "application",
+      "application": "ไก่ ไลน์ตัดแต่ง",
+      "brand": "modutech",
+      "ended": "done",
+      "explained_not_recommended": [],
+      "final_violations": [],
+      "goal": "F01",
+      "hit": true,
+      "issues": [],
+      "mentioned": [
+        "EC508 C"
+      ],
+      "offtopic": 0,
+      "reached": true,
+      "repeats": 0,
+      "run": 2,
+      "transcript": [
+        {
+          "role": "customer",
+          "text": "สายพาน modutech ไก่ตัดแต่งครับ"
+        },
+        {
+          "interp": "-",
+          "role": "bot",
+          "text": "พิทช์เท่าไหร่ครับ"
+        },
+        {
+          "role": "customer",
+          "text": "พิทช์ 2 นิ้ว 5 องศา เปียก"
+        },
+        {
+          "interp": "-",
+          "role": "bot",
+          "text": "แนะนำ EC508 C ครับ"
+        },
+        {
+          "role": "customer",
+          "text": "โอเคครับ"
+        },
+        {
+          "interp": "-",
+          "role": "bot",
+          "text": "ยินดีครับ"
+        }
+      ],
+      "turns": 3,
+      "violations": []
+    },
+    {
+      "acceptable": [
+        "SM254 FG50%"
+      ],
+      "acceptable_source": "application",
+      "application": "ขนมปังเข้าเตาอบ",
+      "brand": "modutech",
+      "ended": "done",
+      "explained_not_recommended": [],
+      "final_violations": [
+        "EC508 C"
+      ],
+      "goal": "F02",
+      "hit": false,
+      "issues": [
+        {
+          "detail": "EC508 C",
+          "kind": "violation",
+          "turn": null
+        }
+      ],
+      "mentioned": [
+        "EC508 C"
+      ],
+      "offtopic": 0,
+      "reached": true,
+      "repeats": 0,
+      "run": 1,
+      "transcript": [
+        {
+          "role": "customer",
+          "text": "สายพานเข้าเตาอบครับ"
+        },
+        {
+          "interp": "-",
+          "role": "bot",
+          "text": "พิทช์เท่าไหร่ครับ"
+        },
+        {
+          "role": "customer",
+          "text": "พิทช์ 2 นิ้ว 5 องศา เปียก"
+        },
+        {
+          "interp": "-",
+          "role": "bot",
+          "text": "แนะนำ EC508 C ครับ"
+        },
+        {
+          "role": "customer",
+          "text": "โอเคครับ"
+        },
+        {
+          "interp": "-",
+          "role": "bot",
+          "text": "ยินดีครับ"
+        }
+      ],
+      "turns": 3,
+      "violations": [
+        "EC508 C"
+      ]
+    },
+    {
+      "acceptable": [
+        "SM254 FG50%"
+      ],
+      "acceptable_source": "application",
+      "application": "ขนมปังเข้าเตาอบ",
+      "brand": "modutech",
+      "ended": "done",
+      "explained_not_recommended": [],
+      "final_violations": [
+        "EC508 C"
+      ],
+      "goal": "F02",
+      "hit": false,
+      "issues": [
+        {
+          "detail": "EC508 C",
+          "kind": "violation",
+          "turn": null
+        }
+      ],
+      "mentioned": [
+        "EC508 C"
+      ],
+      "offtopic": 0,
+      "reached": true,
+      "repeats": 0,
+      "run": 2,
+      "transcript": [
+        {
+          "role": "customer",
+          "text": "สายพานเข้าเตาอบครับ"
+        },
+        {
+          "interp": "-",
+          "role": "bot",
+          "text": "พิทช์เท่าไหร่ครับ"
+        },
+        {
+          "role": "customer",
+          "text": "พิทช์ 2 นิ้ว 5 องศา เปียก"
+        },
+        {
+          "interp": "-",
+          "role": "bot",
+          "text": "แนะนำ EC508 C ครับ"
+        },
+        {
+          "role": "customer",
+          "text": "โอเคครับ"
+        },
+        {
+          "interp": "-",
+          "role": "bot",
+          "text": "ยินดีครับ"
+        }
+      ],
+      "turns": 3,
+      "violations": [
+        "EC508 C"
+      ]
+    }
+  ],
+  "summary": {
+    "conversations": 4,
+    "ended": {
+      "done": 4
+    },
+    "final_violation_pct": 50.0,
+    "hit_pct": 50.0,
+    "issues_by_kind": {
+      "violation": 2
+    },
+    "mean_turns": 3.0,
+    "reached_pct": 100.0,
+    "with_issue_pct": 50.0,
+    "with_offtopic_pct": 0.0,
+    "with_repeat_pct": 0.0,
+    "with_violation_pct": 50.0
+  },
+  "temperature": 1.0
+}

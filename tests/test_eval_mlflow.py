@@ -93,5 +93,80 @@ out = _sp.run([sys.executable, str(Path(E.__file__)), str(d / "*.json"), "--roun
               encoding="utf-8", env=dict(os.environ, PYTHONIOENCODING="utf-8")).stdout
 check("main: ข้ามไฟล์ที่บันทึกแล้ว บันทึกไฟล์ใหม่", "ข้าม" in out and out.count("ผ่าน ") == 1, out)
 
+# ลูกค้าจำลอง (sim-fair 5 พ.ย.) — โครงไฟล์ของ simulate_customers.py · แยก experiment sim_redteam
+print("\nลูกค้าจำลอง → experiment sim_redteam")
+def _conv(goal, run, hit, fv=(), tactic=None, extra=None):
+    r = {"goal": goal, "run": run, "hit": hit, "final_violations": list(fv), "violations": list(fv), "issues": [],
+         "ended": "done", "turns": 3, "acceptable_source": "goal", "tactic": "แผน", "tactic_checked": tactic,
+         "transcript": [{"role": "customer", "text": "x"},
+                        {"role": "bot", "text": "ตอบ", "sec": 2.0,
+                         "usage": {"total_token_count": 100, "prompt_token_count": 90, "candidates_token_count": 10, "llm_calls": 1}},
+                        {"role": "customer", "text": "y"},
+                        {"role": "bot", "text": "ห้ามบอก", "sec": 4.0,
+                         "usage": {"total_token_count": 300, "prompt_token_count": 270, "candidates_token_count": 30, "llm_calls": 2}}]}
+    r.update(extra or {})
+    return r
+sim = {"module": "agent_assistant", "llm": "ADK agent · gemini-3.8-flash · thinking low · prompt r3 · เครื่องมือผ่าน MCP (stdio)",
+       "answer_interpreter": "?", "repeats": 2, "max_turns": 10, "temperature": 1.0,
+       "customer_model": "gemini-3.8-flash", "customer_thinking": "low", "customer_source": "separate",
+       "customer_usage_total": {"llm_calls": 8, "prompt_token_count": 8000, "candidates_token_count": 400, "total_token_count": 8400},
+       "system_usage_total": {"llm_calls": 12, "prompt_token_count": 1440, "candidates_token_count": 160, "total_token_count": 1600},
+       "goals": "training/redteam_goals_v2_truth.json", "goals_sha": "e6bf3fe62a4b13c8aee11f861979987b148a9c34095b4b8c81209391ec8e4867",
+       "only": [], "tactic_label": True,
+       "system_info": {"system": "agent", "prompt_version": "r3", "gemini_model": "gemini-3.8-flash", "commit": "abc1234"},
+       "summary": {"conversations": 4, "hit_pct": 75.0},
+       "results": [_conv("V01", 1, True), _conv("V01", 2, True), _conv("V02", 1, True), _conv("V02", 2, False, ["EC254 C"])]}
+check("is_sim: ไฟล์ลูกค้าจำลอง = จริง · ไฟล์ run_answer_eval = เท็จ", E.is_sim(sim) and not E.is_sim(summary))
+sm = E.sim_metrics(sim)
+check("บท: hit 3/4 · ผิดเงื่อนไข 1 · เป้าหมายผ่านทุกรอบ 1/2",
+      sm["sim.hit"] == 3 and sm["sim.conversations"] == 4 and sm["sim.final_violation"] == 1
+      and sm["goal.pass_all_runs"] == 1 and sm["goal.total"] == 2, sm)
+check("โทเคนระบบกับลูกค้าแยกกัน · ต่อเทิร์นระบบ มัธยฐาน 200 รวม 1600",
+      sm["system.tokens_total"] == 1600 and sm["customer.tokens_total"] == 8400
+      and sm["cost.tokens_median"] == 200 and sm["cost.tokens_total"] == 1600 and sm["cost.seconds_median"] == 3.0, sm)
+check("ยังไม่กรอก tactic_checked → นับ unchecked 4", sm["tactic.unchecked"] == 4 and sm["tactic.ok"] == 0, sm)
+sd = Path(tempfile.mkdtemp())
+sp_ = sd / "sim_v2_agent.json"
+sp_.write_text(_json.dumps(sim, ensure_ascii=False), encoding="utf-8")
+(sd / "sim_v2_agent.txt").write_text("=== V01#1 ===\n", encoding="utf-8")
+srun = mlflow.get_run(E.log_sim(sim, json_path=str(sp_), code="sim-fair"))
+sp2, st2 = srun.data.params, srun.data.tags
+check("experiment sim_redteam (ไม่ปนกับ answer_eval)",
+      mlflow.get_experiment(srun.info.experiment_id).name == "sim_redteam")
+check("param: goals · goals_sha · customer_model · customer_source · sys.prompt_version",
+      sp2.get("goals") == "training/redteam_goals_v2_truth.json" and sp2.get("goals_sha") == "e6bf3fe62a4b13c8"
+      and sp2.get("customer_model") == "gemini-3.8-flash" and sp2.get("customer_source") == "separate"
+      and sp2.get("sys.prompt_version") == "r3", sp2)
+check("tag: kind=sim_redteam · system=agent · run_commit · human_checked=false",
+      st2.get("kind") == "sim_redteam" and st2.get("system") == "agent" and st2.get("run_commit") == "abc1234"
+      and st2.get("human_checked") == "false", st2)
+sart = [a.path for a in mlflow.MlflowClient().list_artifacts(srun.info.run_id)]
+check("ไฟล์แนบ: json + txt + goals.json + leaks.json",
+      {"sim_v2_agent.json", "sim_v2_agent.txt", "goals.json", "leaks.json"} <= set(sart), sart)
+check("คำต้องห้ามนับจากข้อความระบบใน transcript ('ห้าม' 4 เทิร์น)", srun.data.metrics.get("leak.turns") == 4,
+      srun.data.metrics.get("leak.turns"))
+check("กันบันทึกซ้ำใน sim_redteam", E.already_logged(sp_, "sim_redteam") and not E.already_logged(sp_, "answer_eval"))
+chk = dict(sim, results=[_conv("V01", 1, True, tactic=True, extra={"manual_ok": True}),
+                         _conv("V01", 2, True, tactic=True, extra={"manual_ok": False}),
+                         _conv("V02", 1, True, tactic=True), _conv("V02", 2, False, ["EC254 C"], tactic=False)])
+cm = E.sim_metrics(chk)
+check("ไฟล์ _checked: tactic ok 3 · off 1 · บทที่หลุดแผนไม่นับ → V02 ผ่านทุกรอบที่ทำตามแผน",
+      cm["tactic.ok"] == 3 and cm["tactic.off"] == 1 and cm["goal.pass_all_runs_tactic_ok"] == 2
+      and cm["goal.pass_all_runs"] == 1 and cm["manual.ok"] == 1 and cm["manual.fail"] == 1, cm)
+cp_ = sd / "sim_v2_agent_checked.json"
+cp_.write_text(_json.dumps(chk, ensure_ascii=False), encoding="utf-8")
+ctags = mlflow.get_run(E.log_sim(chk, json_path=str(cp_))).data.tags
+cart = [a.path for a in mlflow.MlflowClient().list_artifacts(mlflow.search_runs(
+    [srun.info.experiment_id], filter_string=f"tags.source_sha = '{E.file_sha(cp_)}'", output_format="list")[0].info.run_id)]
+check("_checked: human_checked=true · แนบ .txt ของไฟล์ดิบ", ctags.get("human_checked") == "true"
+      and "sim_v2_agent.txt" in cart, (ctags.get("human_checked"), cart))
+sd2 = Path(tempfile.mkdtemp())
+(sd2 / "sim_v2_qi.json").write_text(_json.dumps(dict(sim, module="assistant",
+    system_info={"system": "bot", "commit": "abc1234"})), encoding="utf-8")
+out2 = _sp.run([sys.executable, str(Path(E.__file__)), str(sd2 / "*.json"), "--code", "sim-fair"], capture_output=True,
+               text=True, encoding="utf-8", env=dict(os.environ, PYTHONIOENCODING="utf-8")).stdout
+check("main: ไฟล์ลูกค้าจำลองไปที่ sim_redteam · พิมพ์ hit/เป้าหมาย", "ลูกค้าจำลอง assistant" in out2
+      and "sim_redteam" in out2, out2)
+
 print(f"\nรวม {ok}/{ok + fail}")
 sys.exit(1 if fail else 0)
