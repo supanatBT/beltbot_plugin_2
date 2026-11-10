@@ -12,7 +12,10 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     HF_HOME=/home/user/.cache/huggingface \
     PORT=7860 \
-    BOT_MODULE=agent.assistant
+    BOT_MODULE=agent.assistant \
+    AGENT_PROMPT=r4 \
+    AGENT_MODUTECH_JSON=data/modutech_v31.json
+# r4 + v31 (10 พ.ย.) — ต้องตั้งคู่กันเสมอ · ไม่ตั้ง = r3 + v30_3 (ตัว deploy 7 พ.ย.) · agent_lock.json ตรวจ prompt_sha ของคู่นี้
 
 WORKDIR /app
 
