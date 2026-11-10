@@ -293,7 +293,9 @@ def main() -> int:
 
     commit = os.popen(f'git -C "{ROOT}" rev-parse --short HEAD').read().strip()
     env = {k: os.environ.get(k) for k in ("AGENT_PROMPT", "AGENT_REPLY_GUARD", "AGENT_RESOLVE_TAB", "AGENT_DATASHEET_FILES",
-                                          "AGENT_IMAGE_SURFACE", "GEMINI_MODEL", "GEMINI_THINKING")}
+                                          "AGENT_IMAGE_SURFACE", "AGENT_MODUTECH_JSON", "GEMINI_MODEL", "GEMINI_THINKING")}
+    from agent.tools_impl import CATALOGUE_PATH                # 10 พ.ย.: ฐาน Modutech ที่ใช้จริง (บันทึกอย่างเดียว)
+    env["modutech_json_used"] = CATALOGUE_PATH
     json.dump({"labels": a.labels or a.from_rows, "brands": a.brands if a.from_rows else "modutech", "texts": texts, "runs": a.runs, "commit": commit, "env": env,
                "llm": A.engine.llm.describe(), "prompt": prompt_version(), "results": results},
               open(a.out, "w", encoding="utf-8"), ensure_ascii=False, indent=1)

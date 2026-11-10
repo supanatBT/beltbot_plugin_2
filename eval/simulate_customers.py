@@ -138,6 +138,13 @@ def system_info_of(bot, module: str, meter) -> dict:
             "gemini_model": getattr(meter, "model_name", "") or os.getenv("GEMINI_MODEL", ""),
             "gemini_thinking": os.getenv("GEMINI_THINKING", ""),
             "token_scope": getattr(meter, "usage_scope", "")}
+    if info["system"] == "agent":
+        # 10 พ.ย.: บันทึกฐาน Modutech ที่ agent ใช้จริง (r4 ต้องคู่กับ v31) · บันทึกอย่างเดียว ไม่เปลี่ยนพฤติกรรม
+        try:
+            from agent.tools_impl import CATALOGUE_PATH
+            info["modutech_json"] = os.path.relpath(CATALOGUE_PATH, ROOT).replace("\\", "/")
+        except Exception as e:                       # noqa: BLE001 — คนละไดรฟ์บน Windows ฯลฯ
+            info["modutech_json"] = os.getenv("AGENT_MODUTECH_JSON") or f"? ({type(e).__name__})"
     if info["system"] == "bot":
         info["front_interpreter"] = (os.getenv("FRONT_INTERPRETER") or "rules").strip().lower()
     try:
