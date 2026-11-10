@@ -1,7 +1,7 @@
 {
  "tag": "agent-deploy-v2",
  "tested_commit": "555a518",
- "tested": "รอผลเทส 10 พ.ย. (run_ch4 -V31 · รูป Test 40 + ควบคุม 53 · ผู้ใช้จำลอง V01–V08) — แก้ช่องนี้เป็นชื่อไฟล์ผลหลังผ่าน ก่อน merge เข้า main",
+ "tested": "10 พ.ย. 555a518: Movex tools 20/20 · text 37/37 · image 48/48 · accuracy 86·86/100 อัตโนมัติ (ในขอบเขต 91/91 ×2 ตามเกณฑ์ .0/ส่งฝ่ายขาย) · withhold 44·46/47 (ก_withhold 15/15 ×2) · blind2_v31c 56·57/66 (ไม่ใช่ผล blind) · ผู้ใช้จำลอง v2 ×2 hit 14/16 · รูป Test40 มีรุ่นจริง 35/37 ฟันธง 0 · ควบคุม 53 เสนอ Modutech 0 — ไฟล์ ch4_*_v31*_agent_r*.json · sim_v2_agent_v31.json · agent_img_*_v31.json · สรุป claude/RESULTS_v31_r4_10nov.md · ข้อที่รู้: คำสั่งหลุด 5 เทิร์นใน withhold (กฎวัสดุนอกตาราง R6)",
  "note": "ค่าตั้งที่มีผลจริงต้องตรงทุกช่อง · prompt_sha = sha256 ของ instruction_text() 12 ตัวแรก (r4 เติม {policy} จาก answering_policy ของ modutech_v31.json จึงผูกกับฐานด้วย) · แก้ prompt/สวิตช์/ฐาน = ต้องทดสอบใหม่แล้วอัปเดตไฟล์นี้ · ตัวก่อนหน้า agent-deploy-v1 = r3 d983711f7e2e (f0f860b)",
  "config": {
   "model": "gemini-3.8-flash",
