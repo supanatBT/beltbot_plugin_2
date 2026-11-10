@@ -5,6 +5,13 @@ run_image_surface_eval_agent.py — วัด agent กับรูปจริ�
     python run_image_surface_eval_agent.py --labels ... --text "" --text "สายพานแบบนี้มีรุ่นไหนบ้างครับ" -o ...
 
 labels_test.csv คอลัมน์: path (สัมพัทธ์กับโฟลเดอร์ของไฟล์) · belt_code · surface · (view · angle · card ... ใช้แยกผลด้วย --by)
+                   brand (ไม่ใส่ = modutech) · movex / none = รูปกลุ่มควบคุม ไม่มีรุ่นจริงให้คัด
+
+กลุ่มควบคุม (8 พ.ย.) — รูปที่ไม่ใช่สายพาน Modutech ตรงจาก brand_calibration_rows.csv ฝั่ง eval:
+    python run_image_surface_eval_agent.py --from-rows <ผล 05>\brand_calibration_rows.csv --brands movex,none \
+        --root <โฟลเดอร์รูป Movex> --root <โฟลเดอร์รูปไม่ใช่สายพาน> -o ..\agent_img_control_r1.json
+    ต่อรูปบันทึก: เรียก belts_by_surface ไหม (ไม่ควร) · ตอบรายชื่อ Modutech ไหม · แบรนด์ที่ผู้ตรวจอ่านได้
+    สรุป: "ตอบเป็น Modutech" = เรียกเครื่องมือผิวจนได้รายชื่อ หรือคำตอบยืนยันว่าเป็น Modutech (ต้องใกล้ 0)
 ทุกรูปเป็นบทสนทนาใหม่ · ใช้ค่าตั้งที่ล็อกของ agent (ไม่ตั้งอะไร = r3 + สวิตช์ blind v2 + AGENT_IMAGE_SURFACE เปิด)
 
 ต่อรูปบันทึก
@@ -41,7 +48,7 @@ sys.path.insert(0, ROOT)
 
 from eval.run_image_eval_agent import codes_in, known_codes, outcome  # noqa: E402
 
-JUDGE = """คุณเป็นผู้ตรวจคำตอบของแชทบอทขายสายพาน ลูกค้าส่งรูปสายพานมา{text_note}
+JUDGE = """คุณเป็นผู้ตรวจคำตอบของแชทบอทขายสายพาน ลูกค้าส่งรูปมา{text_note}
 อ่านคำตอบของบอทแล้วตอบเป็น JSON เท่านั้น:
 {{"brand_claimed": "modutech" | "movex" | "other" | "none",
  "asked_back": true | false,
@@ -106,6 +113,41 @@ def surface_result(args: dict) -> dict:
         return {"error": f"{type(e).__name__}: {e}"}
 
 
+def summarize_control(label, rs, short=False):
+    """รูปที่ไม่ใช่สายพาน Modutech — วัดว่าเอเจนต์หลงตอบเป็น Modutech แค่ไหน"""
+    n = len(rs)
+    called = sum(r["called"] for r in rs)
+    listed = sum(bool(r["matched"]) for r in rs)
+    as_mod = sum(r["as_modutech"] for r in rs)
+    mod_codes = sum(bool(r["modutech_codes"]) for r in rs)
+    oc = Counter(r["brand_outcome"] for r in rs)
+    if short:
+        print(f"  {label:<26} n={n:<4} ตอบเป็น Modutech {pct(as_mod, n):<22} เรียกเครื่องมือผิว {pct(called, n):<22} {dict(oc)}")
+        return
+    print(f"ตอบเป็น Modutech           {pct(as_mod, n)}   (ต้องใกล้ 0)")
+    print(f"เรียก belts_by_surface     {pct(called, n)}   · ได้รายชื่อ {listed}")
+    print(f"คำตอบเอ่ยรหัส Modutech     {pct(mod_codes, n)}")
+    print(f"แบรนด์ (ผู้ตรวจ)           {dict(oc)}")
+    secs = sorted(r["seconds"] for r in rs)
+    if secs:
+        print(f"เวลา (มัธยฐาน / p90)       {secs[len(secs) // 2]} / {secs[int(len(secs) * 0.9) - 1 if len(secs) > 1 else 0]} วินาที")
+
+
+def rows_from_calibration(path, roots, brands, split):
+    """แถวจาก brand_calibration_rows.csv (05_brand_calibration.py) → แถวแบบ labels · path เป็น path เต็ม"""
+    out, missing = [], []
+    for r in csv.DictReader(open(path, encoding="utf-8-sig")):
+        if r.get("split") != split or (r.get("brand") or "none") not in brands:
+            continue
+        fp = next((os.path.join(rt, r["path"]) for rt in roots if os.path.isfile(os.path.join(rt, r["path"]))), None)
+        if fp is None:
+            missing.append(r["path"])
+            continue
+        out.append({"path": os.path.abspath(fp), "belt_code": "", "surface": "", "brand": r.get("brand") or "none",
+                    "cls": r.get("cls", "")})
+    return out, missing
+
+
 def summarize(label, rs, short=False):
     n = len(rs)
     called = [r for r in rs if r["called"]]
@@ -133,7 +175,11 @@ def summarize(label, rs, short=False):
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--labels", required=True)
+    ap.add_argument("--labels", help="ไฟล์ป้ายรูป (หรือใช้ --from-rows)")
+    ap.add_argument("--from-rows", help="brand_calibration_rows.csv — ใช้รูปกลุ่มควบคุมจากการปรับเกณฑ์ประตูรูป")
+    ap.add_argument("--root", action="append", default=[], help="โฟลเดอร์ที่ path ใน --from-rows อ้างถึง (ใส่ได้หลายครั้ง)")
+    ap.add_argument("--brands", default="movex,none", help="แบรนด์ที่เลือกจาก --from-rows")
+    ap.add_argument("--split", default="eval", help="ฝั่งที่เลือกจาก --from-rows (eval = ไม่ได้ใช้ตั้งเกณฑ์)")
     ap.add_argument("--text", action="append", help="ข้อความที่ลูกค้าพิมพ์มากับรูป (ใส่ได้หลายครั้ง · ไม่ใส่ = ส่งรูปอย่างเดียว)")
     ap.add_argument("--runs", type=int, default=1)
     ap.add_argument("--limit", type=int, default=0)
@@ -143,8 +189,21 @@ def main() -> int:
     a = ap.parse_args()
     texts = a.text or [""]
 
-    base = os.path.dirname(os.path.abspath(a.labels))
-    rows = list(csv.DictReader(open(a.labels, encoding="utf-8-sig")))
+    if bool(a.labels) == bool(a.from_rows):
+        print("❌ ใส่ --labels หรือ --from-rows อย่างใดอย่างหนึ่ง")
+        return 1
+    if a.from_rows:
+        rows, miss = rows_from_calibration(a.from_rows, a.root, {b.strip() for b in a.brands.split(",")}, a.split)
+        print(f"กลุ่มควบคุมจาก {os.path.basename(a.from_rows)}: {len(rows)} รูป {dict(Counter(r['brand'] for r in rows))}"
+              + (f" · หาไม่เจอ {len(miss)} เช่น {miss[:3]} (เติม --root)" if miss else ""))
+        if not rows:
+            return 1
+        base = ""
+        if "brand" not in a.by:
+            a.by = "brand,cls"
+    else:
+        base = os.path.dirname(os.path.abspath(a.labels))
+        rows = list(csv.DictReader(open(a.labels, encoding="utf-8-sig")))
     if a.limit:
         rows = rows[: a.limit]
     missing = [r["path"] for r in rows if not os.path.isfile(os.path.join(base, r["path"]))]
@@ -157,7 +216,7 @@ def main() -> int:
     if not image_surface_enabled():
         print("⚠️ AGENT_IMAGE_SURFACE=0 — agent ไม่มี belts_by_surface (วัดได้แค่ตัวเทียบ)")
     codes = known_codes()
-    extra = [k for k in rows[0] if k not in ("path", "belt_code", "surface")]
+    extra = [k for k in rows[0] if k not in ("path", "belt_code", "surface", "brand")]
     jobs = [(run, t, r) for run in range(1, a.runs + 1) for t in texts for r in rows]
     print(f"✅ {A.engine.llm.describe()} · {len(rows)} รูป × {len(texts)} ข้อความ × {a.runs} รอบ = {len(jobs)} บทสนทนา")
     results = []
@@ -178,11 +237,13 @@ def main() -> int:
         res = surface_result(args) if sc else {}
         lst = res.get("belt_codes_complete") if res.get("matched") else None
         read = [args.get("surface") or ""] + [x.strip() for x in (args.get("alternatives") or "").split(",") if x.strip()]
-        truth, tsurf = r["belt_code"].strip(), r["surface"].strip()
+        truth, tsurf = (r.get("belt_code") or "").strip(), (r.get("surface") or "").strip()
+        brand = (r.get("brand") or "modutech").strip().lower()
         j = (judge(reply, text) if reply else {}) if not a.no_judge else {}
         claimed = j.get("model_claimed") or None
+        mentioned = codes_in(reply, codes)
         rec = {
-            "run": run, "text": text, "path": r["path"], "belt_code": truth, "surface_true": tsurf,
+            "run": run, "text": text, "path": r["path"], "brand": brand, "belt_code": truth, "surface_true": tsurf,
             **{k: r.get(k, "") for k in extra},
             "called": bool(sc), "n_surface_calls": len(sc), "surface_args": args,
             "surface_ok": (tsurf in read) if sc else None,
@@ -191,37 +252,49 @@ def main() -> int:
             "keeps_true": (truth in lst) if lst is not None else None,
             "rank_true": (lst.index(truth) + 1 if truth in lst else None) if lst else None,
             "model_claimed": claimed, "claim_correct": bool(claimed) and norm(claimed) == norm(truth),
-            "asks_useful": j.get("asks_useful"), "brand_outcome": outcome("modutech", j) if j else None,
-            "codes_mentioned": codes_in(reply, codes), "judge": j,
+            "asks_useful": j.get("asks_useful"), "brand_outcome": outcome(brand, j) if j else None,
+            "codes_mentioned": mentioned, "modutech_codes": [c for c in mentioned if codes.get(c) == "modutech"],
+            "as_modutech": bool(res.get("matched")) or j.get("brand_claimed") == "modutech",
+            "judge": j,
             "reply": reply, "error": err, "seconds": sec, "tools": [c.get("tool") for c in calls],
             "llm_calls": usage.get("llm_calls"), "total_tokens": usage.get("total_token_count"),
         }
         results.append(rec)
-        print(f"  {i:>3}/{len(jobs)} {truth:<12} {'เรียก ' + (args.get('surface') or '?') if sc else 'ไม่เรียก':<26}"
+        print(f"  {i:>3}/{len(jobs)} {truth or brand:<12} {'เรียก ' + (args.get('surface') or '?') if sc else 'ไม่เรียก':<26}"
               f" {('มีรุ่นจริง' if rec['keeps_true'] else 'ไม่มีรุ่นจริง') if lst is not None else '':<12}"
               f" {'ฟันธง ' + claimed if claimed else ''} {sec}s")
 
     print(f"\n=== {A.engine.llm.describe()} · prompt {prompt_version()} ===")
-    summarize("ทั้งหมด", results)
+    main_rs = [x for x in results if x["brand"] == "modutech"]
+    ctrl_rs = [x for x in results if x["brand"] != "modutech"]
+    if main_rs:
+        summarize("ทั้งหมด", main_rs)
+    if ctrl_rs:
+        print("\n── กลุ่มควบคุม (ไม่ใช่สายพาน Modutech)")
+        summarize_control("กลุ่มควบคุม", ctrl_rs)
+        for b in sorted({x["brand"] for x in ctrl_rs}):
+            summarize_control(f"brand={b}", [x for x in ctrl_rs if x["brand"] == b], short=True)
     for col in [c.strip() for c in a.by.split(",") if c.strip()] + (["text"] if len(texts) > 1 else []):
         print(f"\n── แยกตาม {col}")
         groups = {}
         for x in results:
             groups.setdefault(str(x.get(col, "")), []).append(x)
         for g in sorted(groups):
-            summarize(f"{col}={g or '(รูปอย่างเดียว)'}", groups[g], short=True)
+            fn = summarize if all(x["brand"] == "modutech" for x in groups[g]) else summarize_control
+            fn(f"{col}={g or '(รูปอย่างเดียว)'}", groups[g], short=True)
     if a.runs > 1:
         by = {}
         for x in results:
             by.setdefault((x["path"], x["text"]), []).append(x)
-        stable = sum(all(x["called"] and x["keeps_true"] and not (x["model_claimed"] and not x["claim_correct"]) for x in v)
-                     for v in by.values())
-        print(f"\nผ่านครบทุก {a.runs} รอบ (เรียก · มีรุ่นจริง · ไม่ฟันธงผิด): {pct(stable, len(by))}")
+        ok = lambda x: (not x["as_modutech"]) if x["brand"] != "modutech" else (   # noqa: E731
+            x["called"] and x["keeps_true"] and not (x["model_claimed"] and not x["claim_correct"]))
+        stable = sum(all(ok(x) for x in v) for v in by.values())
+        print(f"\nผ่านครบทุก {a.runs} รอบ (Modutech: เรียก · มีรุ่นจริง · ไม่ฟันธงผิด · กลุ่มควบคุม: ไม่ตอบเป็น Modutech): {pct(stable, len(by))}")
 
     commit = os.popen(f'git -C "{ROOT}" rev-parse --short HEAD').read().strip()
     env = {k: os.environ.get(k) for k in ("AGENT_PROMPT", "AGENT_REPLY_GUARD", "AGENT_RESOLVE_TAB", "AGENT_DATASHEET_FILES",
                                           "AGENT_IMAGE_SURFACE", "GEMINI_MODEL", "GEMINI_THINKING")}
-    json.dump({"labels": a.labels, "texts": texts, "runs": a.runs, "commit": commit, "env": env,
+    json.dump({"labels": a.labels or a.from_rows, "brands": a.brands if a.from_rows else "modutech", "texts": texts, "runs": a.runs, "commit": commit, "env": env,
                "llm": A.engine.llm.describe(), "prompt": prompt_version(), "results": results},
               open(a.out, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f"ผลรายรูป → {a.out} · commit {commit}")
