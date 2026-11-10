@@ -477,7 +477,10 @@ def main():
                                                  if t["role"] == "bot")
         # หลักฐานสำหรับเล่ม/MLflow: ไฟล์เป้าหมายที่ใช้ (ล็อกด้วย sha) + ค่าตั้งของระบบที่ถูกวัด
         import hashlib
-        meta["goals"] = os.path.relpath(os.path.abspath(a.goals), ROOT).replace("\\", "/")
+        try:
+            meta["goals"] = os.path.relpath(os.path.abspath(a.goals), ROOT).replace("\\", "/")
+        except ValueError:   # Windows: ไฟล์เป้าหมายอยู่คนละไดรฟ์กับ repo (เช่น temp บน C: · repo บน E:) → เก็บพาธเต็ม
+            meta["goals"] = os.path.abspath(a.goals).replace("\\", "/")
         meta["goals_sha"] = hashlib.sha256(open(a.goals, "rb").read()).hexdigest()
         meta["only"] = sorted(only)
         meta["system_info"] = system_info_of(bot, a.module, system_meter(bot))
