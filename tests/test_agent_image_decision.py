@@ -35,7 +35,7 @@ CASES = [
      "movex", "ask_width", "880"),
     ("I02 880 K325 ข้าง · ViT 0.84", sig("880", 0.838, False, C + "LF880_TAB_K325"),
      [(C + "LF880_TAB_K325", 0.0161), (C + "LF880_TAB_K450", 0.0159), (C + "LF820_K325", 0.0070)],
-     "uncertain", "ask_width", "880"),
+     "uncertain", "ask_brand", None),
     ("I05 880 K450 บน", sig("880", 0.936, True, C + "LF880_TAB_K450"),
      [(C + "LF880_TAB_K450", 0.0209), (C + "LF880_TAB_K325", 0.0206), (C + "LF821_K750", 0.0128)],
      "movex", "ask_width", "880"),
@@ -44,7 +44,7 @@ CASES = [
      "movex", "answer", C + "LFN_83_MFM"),
     ("I09 LFN 83 MFM หลัง · ViT 0.83", sig("83", 0.8349, False, C + "LFN_83_MFM"),
      [(C + "LFN_83_MFM", 0.0160), (C + "LFN_103_MFH", 0.0159), (C + "LF820_K325", 0.0071)],
-     "uncertain", "ask_width", "83"),
+     "uncertain", "ask_brand", None),
     ("I14 820 K325 บน", sig("820", 0.9621, True, C + "LF820_K325"),
      [(C + "LF820_K325", 0.0209), (C + "LF820_K750", 0.0044), (C + "LF820_K400", 0.0034)],
      "movex", "answer", C + "LF820_K325"),
@@ -56,9 +56,9 @@ CASES = [
      "movex", "answer", C + "LF820_K325"),
     ("I17 สเตอร์", sig("103", 0.9464, True, "movex_sprocket_57801"),
      [("movex_sprocket_57801", 0.0158)], "movex", "answer", "movex_sprocket_57801"),
-    ("ไม่มีสัญญาณ ViT", None, [], "uncertain", "ask_back", None),
+    ("ไม่มีสัญญาณ ViT", None, [], "uncertain", "ask_brand", None),
     ("ViT ต่ำ 0.31", sig("880", 0.31, False, C + "LF880_TAB_K450"),
-     [(C + "LF880_TAB_K450", 0.01), (C + "LF820_K325", 0.0099)], "uncertain", "ask_back", None),
+     [(C + "LF880_TAB_K450", 0.01), (C + "LF820_K325", 0.0099)], "uncertain", "ask_brand", None),
 ]
 
 fail = 0
@@ -81,9 +81,15 @@ for name, s, rows, brand, action, want in CASES:
               refs == [C + "LF880_TAB_K325", C + "LF880_TAB_K450"], str(refs))
 
 # รูป Modutech ที่ ViT (closed-set) ให้คะแนนสูงแต่ไม่ dominant หรือต่ำกว่า 0.90 → ต้องไม่ตัดสินเป็น Movex
+# และต้องไม่มี action ที่บอกซีรีส์ (diag 11 พ.ย.: รูป Modutech 30/67 ได้ ViT 0.5–0.9)
 for conf, dom in ((0.87, True), (0.89, True), (0.95, False), (0.62, False)):
-    d = MX.image_decision(sig("103", conf, dom, C + "LF820_K325"), [(C + "LF820_K325", 0.01)], PRODUCTS, TH)
-    check(f"ViT {conf} dominant={dom} → brand uncertain", d["brand"] == "uncertain", d["brand"])
+    d = MX.image_decision(sig("880", conf, dom, C + "LF880_TAB_K325"),
+                          [(C + "LF880_TAB_K325", 0.01), (C + "LF880_TAB_K450", 0.0099)], PRODUCTS, TH)
+    check(f"ViT {conf} dominant={dom} → uncertain · ask_brand · ไม่มีช่อง series",
+          d["brand"] == "uncertain" and d["action"] == "ask_brand" and "series" not in d, json.dumps(d, ensure_ascii=False)[:200])
+d = MX.image_decision(sig("880", 0.62, False, C + "LF880_TAB_K325"), [(C + "LF880_TAB_K325", 0.01)], PRODUCTS, TH)
+check("   ↳ series_if_movex = 880 พร้อมความกว้าง K325 · K450", d.get("series_if_movex") == "880"
+      and [w["product_id"] for w in d.get("widths_if_movex", [])] == [C + "LF880_TAB_K325", C + "LF880_TAB_K450"])
 
 # สวิตช์: ปิด = prompt และคำบรรยายผิวเดิมทุกตัวอักษร · เปิด = กฎ decision แทนกฎช่องห่างเดิม
 from agent import agent as AG  # noqa: E402
@@ -102,6 +108,7 @@ curve_on = T.surface_choices()["Curve Top"]
 check("เปิด: ไม่มีกฎ top1_top2_gap เดิม", "top1_top2_gap < 0.003" not in on)
 check("เปิด: ไม่มีกฎ 'ใช้ results อันดับ 1' เดิม", "ใช้ results อันดับ 1" not in on)
 check("เปิด: บังคับเรียก movex_match_image ก่อน", "เรียก movex_match_image ก่อนเสมอ" in on)
+check("เปิด: uncertain ห้ามเอ่ยซีรีส์ Movex", "ห้ามบอกว่าเป็นโซ่ Movex หรือเอ่ยซีรีส์ Movex" in on)
 check("เปิด: belts_by_surface ใช้เมื่อ decision.brand ไม่ใช่ movex", 'ไม่ใช่ "movex") → ดูชนิดผิวเอง' in on)
 check("เปิด: Curve Top บอกว่าโซ่แถวเดียวไม่ใช่ผิวนี้", "โซ่แถวเดียวแคบ" in curve_on and "แถวแคบต่อกัน" not in curve_on, curve_on)
 check("เปิด: ไม่มีชื่อรุ่นในกฎที่เพิ่ม", not any(c in "\n".join(n for _o, n in AG.IMAGE_DECISION_EDITS)

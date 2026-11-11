@@ -67,7 +67,7 @@ def main() -> int:
         v = r.get("vit_signal") or {}
         tally[(brand, d["brand"], d["action"])] += 1
         rows.append({"path": path, "true_brand": brand, "decision_brand": d["brand"], "action": d["action"],
-                     "product_id": d.get("product_id", ""), "series": d.get("series", ""),
+                     "product_id": d.get("product_id", ""), "series": d.get("series") or d.get("series_if_movex", ""),
                      "vit_series": v.get("series"), "vit_conf": v.get("confidence"), "dominant": v.get("dominant"),
                      "top_pid": v.get("top_pid")})
         if i % 20 == 0:
@@ -83,13 +83,15 @@ def main() -> int:
     leak = [r for r in rows if r["true_brand"] != "movex" and r["decision_brand"] == "movex"]
     movex = [r for r in rows if r["true_brand"] == "movex"]
     print(f"\nรูปที่ไม่ใช่ Movex แต่ถูกตัดสินเป็น Movex: {len(leak)} / {len(rows) - len(movex)}")
+    hint = [r for r in rows if r["true_brand"] != "movex" and r["action"] in ("answer", "ask_width")]
+    print(f"รูปที่ไม่ใช่ Movex แต่ได้ action ที่บอกรุ่น/ซีรีส์ Movex: {len(hint)} (ต้องเป็น 0)")
     for r in leak:
         print(f"   ⚠️ {r['true_brand']} {r['path']} · ViT {r['vit_series']} {r['vit_conf']} → {r['product_id']}")
     if movex:
         hit = sum(r["decision_brand"] == "movex" for r in movex)
         print(f"รูป Movex ที่ตัดสินเป็น Movex ได้เลย: {hit} / {len(movex)} (ที่เหลือ agent จะถามแบรนด์เหมือนเดิม)")
     print(f"\nบันทึกทุกรูป → {a.out}")
-    return 1 if leak else 0
+    return 1 if leak or hint else 0
 
 
 if __name__ == "__main__":

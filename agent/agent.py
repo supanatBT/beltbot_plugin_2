@@ -396,11 +396,12 @@ IMAGE_DECISION_EDITS = [
     ("- รูป: ดูรูปเองก่อน แล้วเรียก movex_match_image (โซ่ Movex) หรือ match_catalogue_image (สายพาน Modutech) ประกอบได้ ถ้ายังบอกไม่ได้ว่าเป็นแบรนด์ไหน ให้ถามแบรนด์",
      "- รูปสินค้าทุกรูป: เรียก movex_match_image ก่อนเสมอ แล้วดู decision.brand\n"
      "  · \"movex\" = เป็นโซ่หรือสเตอร์ Movex แน่นอน ห้ามถามแบรนด์ ห้ามเรียก belts_by_surface ทำตาม decision.action ในหมวด Movex\n"
-     "  · \"uncertain\" = เรียก match_catalogue_image ประกอบ ถ้ายังบอกไม่ได้ว่าเป็นแบรนด์ไหน ให้ถามแบรนด์"),
+     "  · \"uncertain\" = ยังบอกแบรนด์ไม่ได้ ห้ามบอกว่าเป็นโซ่ Movex หรือเอ่ยซีรีส์ Movex · เรียก match_catalogue_image ประกอบ ถ้ายังบอกไม่ได้ว่าเป็นแบรนด์ไหน ให้ถามแบรนด์\n"
+     "    ถ้าลูกค้ายืนยันแล้วว่าเป็น Movex ค่อยใช้ decision.series_if_movex และ widths_if_movex ถามความกว้าง"),
     ("  · รูปที่ movex_match_image ให้ vit_signal.confidence ≥ 0.90 และ dominant = true → ใช้ results อันดับ 1",
      "  · รูปที่ decision.action = \"answer\" → ใช้รุ่น decision.product_id เท่านั้น (ไม่ใช่อันดับอื่นใน results)"),
     ("  · รูปโซ่ที่ confidence ≥ 0.50 แต่ < 0.90 → บอกซีรีส์ที่ตรวจได้ก่อน ถามเฉพาะความกว้างและการใช้งาน",
-     "  · รูปที่ decision.action = \"ask_width\" (และรู้แล้วว่าเป็น Movex) → บอกซีรีส์ decision.series ก่อน ถามเฉพาะความกว้างและการใช้งาน\n"
+     "  · รูปที่ decision.action = \"ask_width\" → บอกซีรีส์ decision.series ก่อน ถามเฉพาะความกว้างและการใช้งาน\n"
      "    ตัวเลือกความกว้างคือ decision.widths เท่านั้น ห้ามยกความกว้างของซีรีส์อื่น · ห้ามฟันธงความกว้างจากรูป"),
     ("  · รูปที่ confidence < 0.50 · หรือ top1_top2_gap < 0.003",
      "  · รูปที่ decision.action = \"ask_back\""),

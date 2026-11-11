@@ -277,12 +277,13 @@ def image_decision(sig: dict | None, rows: list[tuple[str, float]], products: di
 
     brand  "movex"     ViT ≥ answer + dominant — เป็นสินค้า Movex แน่ ห้ามถามแบรนด์ ห้ามคัดผิว Modutech
            "uncertain" ต่ำกว่านั้น — รูป Modutech ก็ได้ ViT 0.5–0.87 (closed-set) จึงยังบอกแบรนด์ไม่ได้
-    action "answer"    ตอบรุ่น product_id
-           "ask_width" รู้ซีรีส์ (ถ้าเป็น Movex) ถามความกว้าง/การใช้งาน · widths = ตัวเลือกในซีรีส์นั้นเท่านั้น
-           "ask_back"  ยังไม่รู้ซีรีส์
+    action "answer"    ตอบรุ่น product_id (brand movex เท่านั้น)
+           "ask_width" Movex แน่ รู้ซีรีส์ ถามความกว้าง/การใช้งาน · widths = ตัวเลือกในซีรีส์นั้นเท่านั้น
+           "ask_back"  Movex แน่ แต่อันดับต้นคนละซีรีส์ — ถามกลับ
+           "ask_brand" brand uncertain — ถามแบรนด์ · series_if_movex/widths_if_movex ใช้เมื่อลูกค้ายืนยัน Movex แล้ว
     """
     if not sig or not rows:
-        return {"brand": "uncertain", "action": "ask_back", "why_th": "ไม่มีสัญญาณ ViT หรือไม่พบสินค้าใกล้เคียง"}
+        return {"brand": "uncertain", "action": "ask_brand", "why_th": "ไม่มีสัญญาณ ViT หรือไม่พบสินค้าใกล้เคียง"}
     conf, dom, top = float(sig.get("confidence") or 0), bool(sig.get("dominant")), sig.get("top_pid") or ""
     key = _series_key(sig.get("series"))
     brand = "movex" if conf >= float(th["answer"]) and dom else "uncertain"
@@ -304,10 +305,12 @@ def image_decision(sig: dict | None, rows: list[tuple[str, float]], products: di
                     "why_th": "รู้ซีรีส์ แต่รุ่นในซีรีส์ต่างกันแค่ความกว้าง ดูจากรูปไม่ได้ — ถามความกว้าง ห้ามเดา"}
         return {**out, "action": "ask_back", "candidates": tied,
                 "why_th": "อันดับต้นใกล้กันและคนละซีรีส์ — ถามกลับ"}
+    # ต่ำกว่าเกณฑ์แบรนด์: ไม่ส่งชื่อซีรีส์เป็น action — diag 11 พ.ย. รูป Modutech 30/67 ได้ ViT 0.5–0.9 ถ้าส่ง ask_width
+    # LLM อาจตอบว่า "โซ่ Movex ซีรีส์ …" ทั้งที่เป็น Modutech · ซีรีส์ไว้ใน series_if_movex ใช้เมื่อลูกค้ายืนยันว่า Movex แล้วเท่านั้น
     if conf >= float(th["series"]) and key:
-        return {**out, "action": "ask_width", "series": key, "widths": widths,
-                "why_th": "ViT ต่ำกว่าเกณฑ์แบรนด์ — ถ้ารู้แล้วว่าเป็น Movex ให้บอกซีรีส์นี้แล้วถามความกว้าง ถ้ายังไม่รู้ให้ถามแบรนด์"}
-    return {**out, "action": "ask_back", "why_th": "ViT ต่ำ — ยังไม่รู้ซีรีส์"}
+        return {**out, "action": "ask_brand", "series_if_movex": key, "widths_if_movex": widths,
+                "why_th": "ViT ต่ำกว่าเกณฑ์แบรนด์ — ยังบอกแบรนด์ไม่ได้ ถามแบรนด์ (ถ้าลูกค้ายืนยันแล้วว่า Movex ใช้ series_if_movex)"}
+    return {**out, "action": "ask_brand", "why_th": "ViT ต่ำ — ยังบอกแบรนด์และซีรีส์ไม่ได้"}
 
 
 @_tool
