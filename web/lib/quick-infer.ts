@@ -16,6 +16,9 @@ const WET_DRY = /(แห้ง|เปียก)\s*(?:\)|ครับ|คะ)?\s*
 /** "Movex หรือ Modutech" · "แบรนด์ไหน" (ต้องเอ่ยทั้งสองแบรนด์ในย่อหน้าเดียวกัน) */
 const BRAND_OR = /(movex|modutech)[^\n]{0,60}?หรือ[^\n]{0,60}?(modutech|movex)/i;
 const BRAND_WHICH = /แบรนด์(?:ไหน|ใด)/;
+/** เมนูถามแบรนด์ของระบบ (engine/core/templates.py ask_brand · agent/agent.py) — ขึ้นบรรทัดเดียว ไม่มีบรรทัดว่าง
+ *  เมนูทั้งก้อนจึงเป็นย่อหน้าเดียว และชื่อสองแบรนด์อยู่คนละบรรทัด BRAND_OR จับไม่ได้ (พบบนเว็บ 11 พ.ย.) */
+const BRAND_MENU = /ถามถึงสินค้าแบบไหน|ตอบเป็นเลขข้อหรือชื่อแบรนด์/;
 /** ย่อหน้านั้นต้องเป็นคำถามจริง ไม่ใช่ประโยคบอกเล่า เช่น "สภาวะเปียกจะต่ำกว่าสภาวะแห้ง" */
 //   ไม่นับ "…ครับ" ท้ายประโยคเป็นคำถาม — "ใช้ได้ทั้งไลน์แห้งหรือไลน์เปียกครับ" เป็นประโยคบอกเล่า
 const ASKS = /[?？]|ไหม|หรือเปล่า|หรือไม่|รบกวน|ช่วยแจ้ง|ช่วยบอก|ทราบ|แจ้งด้วย/;
@@ -48,6 +51,7 @@ export function inferSuggestions(lastBotText: string | undefined): Suggestion[] 
   const p = lastParagraph(lastBotText || "");
   if (!p || !ASKS.test(p)) return undefined;
   if (WET_DRY.test(p) && !BOTH.test(p)) return WET_DRY_BUTTONS;
-  if (BRAND_OR.test(p) || (BRAND_WHICH.test(p) && /movex/i.test(p) && /modutech/i.test(p))) return BRAND_BUTTONS;
+  const both = /movex/i.test(p) && /modutech/i.test(p);
+  if (BRAND_OR.test(p) || ((BRAND_WHICH.test(p) || BRAND_MENU.test(p)) && both)) return BRAND_BUTTONS;
   return undefined;
 }
