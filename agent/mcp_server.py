@@ -172,6 +172,11 @@ if "movex" in (os.environ.get("AGENT_BRANDS") or _DEFAULT_BRANDS).lower():
         คืน vit_signal (series · confidence · dominant · top_pid) ระยะห่างคะแนนอันดับ 1–2 และรุ่นที่ใกล้ที่สุด"""
         return M.movex_match_image(image_id, top_k)
 
+    if M.image_decision_on():   # 11 พ.ย. · ปิด = คำอธิบายเครื่องมือเดิมทุกตัวอักษร
+        movex_match_image.__doc__ += """
+        decision (คำนวณด้วยโค้ดจากเกณฑ์ ViT): brand "movex" | "uncertain" · action "answer" (product_id) | "ask_width" (series · widths) | "ask_back"
+        ทำตาม decision — ไม่ต้องตีความ vit_signal เอง"""
+
 
 if __name__ == "__main__":
     app.run()

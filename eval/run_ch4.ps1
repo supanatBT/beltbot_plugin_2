@@ -24,7 +24,8 @@ param(
     [string]$Only = "",
     [string]$Commit = "",         # ใส่ hash ที่ล็อกไว้ = หยุดถ้า HEAD ไม่ตรง (ไม่ใส่ = ไม่ตรวจข้อนี้)
     [switch]$ImageSurface,        # agent: เปิดเครื่องมือผิวจากรูป (ค่าเริ่มต้นของ agent ตั้งแต่ 6 พ.ย.) · ไม่ใส่ = ปิด = ตรงกับ blind v2
-    [switch]$V31                  # agent: ฐาน v31 + prompt r4 (9 พ.ย.)
+    [switch]$V31,                 # agent: ฐาน v31 + prompt r4 (9 พ.ย.)
+    [switch]$ImageDecision        # agent: รูปตัดสินด้วย decision ของ movex_match_image (11 พ.ย.) · ไม่ใส่ = ปิด = ตรงกับผล 10 พ.ย.
 )
 
 $ErrorActionPreference = "Stop"
@@ -66,6 +67,7 @@ if ($V31) {
     if ($System -ne "agent") { Fail "-V31 ใช้กับ agent เท่านั้น (บอทยังใช้ v30_3)" }
     if (-not (Test-Path .\data\modutech_v31.json)) { Fail "ไม่พบ data/modutech_v31.json" }
     $tests["agent"] += @("tests\test_v31.py") }
+if ($ImageDecision) { $tests["agent"] += @("tests\test_agent_image_decision.py") }
 foreach ($t in $tests[$System]) { & $Python $t | Select-Object -Last 1; if ($LASTEXITCODE -ne 0) { Fail "$t ไม่ผ่าน" } }
 
 # ── ค่าตั้งที่ล็อก ──
@@ -75,7 +77,7 @@ if (-not $env:GEMINI_API_KEY) { Fail "ไม่มี GEMINI_API_KEY (.env)" }
 foreach ($k in "BOT_MODULE", "IMAGE_TEST_LOG", "AGENT_IMAGE_MAX_SIDE", "AGENT_IMAGE_TO_LLM", "AGENT_LAZY",
                "FRONT_INTERPRETER", "BOT_DOMAIN_PRODUCT", "MOVEX_UNKNOWN_CODE", "MOVEX_SERIES_ANSWER", "MOVEX_ID_SCRUB",
                "AGENT_PROMPT", "AGENT_DATASHEET_FILES", "AGENT_REPLY_GUARD", "AGENT_RESOLVE_TAB", "IMAGE_INTERPRETER",
-               "AGENT_IMAGE_SURFACE", "AGENT_MODUTECH_JSON") {
+               "AGENT_IMAGE_SURFACE", "AGENT_MODUTECH_JSON", "AGENT_IMAGE_DECISION") {
     Remove-Item "Env:$k" -ErrorAction SilentlyContinue }
 $env:PYTHONIOENCODING = "utf-8"
 $env:GEMINI_THINKING = "low"
@@ -83,7 +85,8 @@ $env:GEMINI_MODEL = "gemini-3.8-flash"
 $cfg = @{ bot = [ordered]@{ FRONT_INTERPRETER = "llm"; BOT_DOMAIN_PRODUCT = "1"; MOVEX_UNKNOWN_CODE = "1";
                             MOVEX_SERIES_ANSWER = "1"; MOVEX_ID_SCRUB = "1" };
           agent = [ordered]@{ AGENT_PROMPT = $(if ($V31) { "r4" } else { "r3" }); AGENT_DATASHEET_FILES = "1"; AGENT_REPLY_GUARD = "1"; AGENT_RESOLVE_TAB = "1";
-                            AGENT_IMAGE_SURFACE = $(if ($ImageSurface) { "1" } else { "0" }) } }
+                            AGENT_IMAGE_SURFACE = $(if ($ImageSurface) { "1" } else { "0" });
+                            AGENT_IMAGE_DECISION = $(if ($ImageDecision) { "1" } else { "0" }) } }
 if ($V31) { $cfg["agent"]["AGENT_MODUTECH_JSON"] = (Resolve-Path .\data\modutech_v31.json).Path }
 foreach ($kv in $cfg[$System].GetEnumerator()) { [Environment]::SetEnvironmentVariable($kv.Key, $kv.Value) }
 $module = @{ bot = "bot.assistant"; agent = "agent.assistant" }[$System]

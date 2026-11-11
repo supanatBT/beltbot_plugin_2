@@ -421,7 +421,15 @@ TOOLS = [overview_catalogue, compare_belts, search_catalogue, lookup_belt, find_
 def surface_choices() -> dict:
     """ชื่อผิวที่รับได้ → คำอธิบายหน้าตา (ใส่ในคำอธิบายเครื่องมือให้ LLM เลือก)"""
     from engine.brands.modutech.image_read import image_spec
-    return image_spec(_state()[0]).surfaces
+    out = dict(image_spec(_state()[0]).surfaces)
+    # AGENT_IMAGE_DECISION=1 (11 พ.ย.): คำบรรยาย Curve Top ตัวเดิม "โมดูลเป็นแถวแคบต่อกันเลี้ยวได้" ตรงกับโซ่ท็อปเชน Movex
+    # (LFN 83 MFM ถูกอ่านเป็น Curve Top) · ในฐาน Curve Top มีแค่ SM127 CRV (แคตตาล็อกหน้า 81: Open, Curve Top Surface · open area 22%)
+    # — แก้เฉพาะคำที่ agent เห็น ไม่แตะของบอท (engine/)
+    if (os.environ.get("AGENT_IMAGE_DECISION") or "0").strip() == "1" and "Curve Top" in out:
+        th = out["Curve Top"].split(" — ")[0]
+        out["Curve Top"] = (f"{th} — สายพานโมดูลาร์แผ่นกว้าง หลายโมดูลเรียงต่อกันตามความกว้าง ผิวมีช่องเปิด วิ่งโค้งได้ · "
+                            "โซ่แถวเดียวแคบ ๆ ที่เลี้ยวได้ไม่ใช่ผิวนี้ (เป็นโซ่ท็อปเชน Movex)")
+    return out
 
 
 def belts_by_surface(surface: str, alternatives: str = "", openness: str = "",

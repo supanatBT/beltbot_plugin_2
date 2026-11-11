@@ -262,7 +262,7 @@ def agent_config() -> dict:
     """ค่าตั้งที่มีผลจริงตอนนี้ (หลังอ่านตัวแปรแวดล้อม) — ใช้เทียบกับ agent_lock.json"""
     import hashlib
     from agent import movex_tools as MT
-    from agent.agent import image_surface_enabled
+    from agent.agent import image_decision_enabled, image_surface_enabled
     return {
         "model": os.environ.get("GEMINI_MODEL") or "gemini-3.8-flash",
         "thinking": (os.environ.get("GEMINI_THINKING") or "low").strip().lower(),
@@ -272,6 +272,7 @@ def agent_config() -> dict:
         "reply_guard": reply_guard_on(), "resolve_tab": MT.resolve_tab_on(),
         "datasheet_files": MT.datasheet_files_on(), "image_surface": image_surface_enabled(),
         "image_max_side": image_max_side(),
+        **({"image_decision": True} if image_decision_enabled() and "movex" in enabled_brands() else {}),
     }
 
 

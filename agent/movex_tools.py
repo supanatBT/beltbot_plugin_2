@@ -249,6 +249,67 @@ def movex_search(query: str, top_k: int = 5) -> str:
                   "note_th": "ผลค้นเรียงตาม final_score สูงสุด เป็นรุ่นที่ใกล้ข้อความที่สุดบางส่วน ไม่ใช่รายชื่อครบ"})
 
 
+# ─────────────── ตัดสินจากรูปด้วยโค้ด (AGENT_IMAGE_DECISION=1 · 11 พ.ย. 2026) ───────────────
+# ที่มา: ผล 10 พ.ย. + diag_movex_images.py — ViT ชี้ LFN 83 MFM ด้วยความมั่นใจ 1.00 แต่ LLM ถามแบรนด์หรือตอบเป็น Modutech ·
+# กฎช่องห่าง < 0.003 ใน prompt โดนเกือบทุกรูป (รุ่นในซีรีส์เดียวกันคะแนนแทบเท่ากัน) LLM จึงเลือกกฎเอง ผลไม่คงที่
+# → โค้ดคำนวณ decision ให้ (แนวเดียวกับบอทเทอมก่อนที่ตัดสินด้วยเกณฑ์ ViT ในโค้ด) · เกณฑ์มาจาก thresholds.json ตัวเดิม
+# ค่าเริ่มต้นปิด (ไม่ตั้ง หรือ 0) = ไม่มีช่อง decision · prompt เดิมทุกตัวอักษร · เปิดด้วย AGENT_IMAGE_DECISION=1
+VIT_CERTAIN = 0.99      # ViT แทบแน่นอน (LFN 83 MFM · LFN 103 MFH ได้ 1.00) → ตัดสินรุ่นได้แม้คะแนนรวมอันดับ 1–2 ใกล้กัน
+TIE_GAP = 0.003         # ค่าเดียวกับกฎใน prompt เดิม (top1_top2_gap < 0.003)
+
+
+def image_decision_on() -> bool:
+    return (os.environ.get("AGENT_IMAGE_DECISION") or "0").strip() == "1"
+
+
+def _thresholds() -> dict:
+    with open(os.path.join(BDIR, "thresholds.json"), encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _series_key(text: str) -> str:
+    m = re.match(r"\s*(\d+)", str(text or ""))
+    return m.group(1) if m else ""
+
+
+def image_decision(sig: dict | None, rows: list[tuple[str, float]], products: dict, th: dict) -> dict:
+    """สัญญาณ ViT + อันดับรวม → สิ่งที่ agent ต้องทำ (ฟังก์ชันล้วน ทดสอบได้โดยไม่โหลดโมเดล)
+
+    brand  "movex"     ViT ≥ answer + dominant — เป็นสินค้า Movex แน่ ห้ามถามแบรนด์ ห้ามคัดผิว Modutech
+           "uncertain" ต่ำกว่านั้น — รูป Modutech ก็ได้ ViT 0.5–0.87 (closed-set) จึงยังบอกแบรนด์ไม่ได้
+    action "answer"    ตอบรุ่น product_id
+           "ask_width" รู้ซีรีส์ (ถ้าเป็น Movex) ถามความกว้าง/การใช้งาน · widths = ตัวเลือกในซีรีส์นั้นเท่านั้น
+           "ask_back"  ยังไม่รู้ซีรีส์
+    """
+    if not sig or not rows:
+        return {"brand": "uncertain", "action": "ask_back", "why_th": "ไม่มีสัญญาณ ViT หรือไม่พบสินค้าใกล้เคียง"}
+    conf, dom, top = float(sig.get("confidence") or 0), bool(sig.get("dominant")), sig.get("top_pid") or ""
+    key = _series_key(sig.get("series"))
+    brand = "movex" if conf >= float(th["answer"]) and dom else "uncertain"
+    tied = [pid for pid, sc in rows if rows[0][1] - sc < TIE_GAP]
+    chains = [pid for pid, p in products.items() if "chain" in str(p.get("product_type", "")).lower()
+              and _series_key(p.get("series")) == key]
+    widths = [{"product_id": pid, "ref": products[pid].get("Ref"), "width_mm": products[pid].get("Plate_Width_mm")}
+              for pid in sorted(chains, key=lambda x: float(products[x].get("Plate_Width_mm") or 0))]
+    out = {"brand": brand, "vit_series": key, "vit_confidence": round(conf, 4)}
+    is_sprocket = "sprocket" in top
+    if brand == "movex":
+        if is_sprocket or len(tied) == 1 or (conf >= VIT_CERTAIN and top == rows[0][0]) or len(chains) == 1:
+            pid = top if top in products else rows[0][0]
+            return {**out, "action": "answer", "product_id": pid, "ref": products[pid].get("Ref"),
+                    "why_th": "ViT มั่นใจและตรงกับอันดับ 1 — ตอบรุ่นนี้"}
+        same = all(_series_key(products[p].get("series")) == key for p in tied if p in products)
+        if same and len(chains) > 1:
+            return {**out, "action": "ask_width", "series": key, "widths": widths,
+                    "why_th": "รู้ซีรีส์ แต่รุ่นในซีรีส์ต่างกันแค่ความกว้าง ดูจากรูปไม่ได้ — ถามความกว้าง ห้ามเดา"}
+        return {**out, "action": "ask_back", "candidates": tied,
+                "why_th": "อันดับต้นใกล้กันและคนละซีรีส์ — ถามกลับ"}
+    if conf >= float(th["series"]) and key:
+        return {**out, "action": "ask_width", "series": key, "widths": widths,
+                "why_th": "ViT ต่ำกว่าเกณฑ์แบรนด์ — ถ้ารู้แล้วว่าเป็น Movex ให้บอกซีรีส์นี้แล้วถามความกว้าง ถ้ายังไม่รู้ให้ถามแบรนด์"}
+    return {**out, "action": "ask_back", "why_th": "ViT ต่ำ — ยังไม่รู้ซีรีส์"}
+
+
 @_tool
 def movex_match_image(image_id: str, top_k: int = 5) -> str:
     path = os.path.join(IMAGE_DIR, os.path.basename(image_id or ""))
@@ -264,7 +325,15 @@ def movex_match_image(image_id: str, top_k: int = 5) -> str:
     sig = res.vit_signal
     scores = [float(p.final_score) for p in ranked.products[:2]]
     R = _data()[0]
-    return _dump({
+    extra = {}
+    if image_decision_on():
+        _R, products, _g = _data()
+        rows = [(p.product_id, float(p.final_score)) for p in ranked.products[:10] if p.product_id in products]
+        extra["decision"] = image_decision(
+            None if sig is None else {"series": sig.series, "confidence": float(sig.confidence),
+                                      "dominant": bool(sig.dominant), "top_pid": sig.top_pid},
+            rows, products, _thresholds())
+    return _dump({**extra,
         "vit_signal": None if sig is None else {"series": sig.series, "confidence": round(float(sig.confidence), 4),
                                                 "dominant": bool(sig.dominant), "top_pid": sig.top_pid},
         "top1_top2_gap": round(scores[0] - scores[1], 4) if len(scores) == 2 else None,
