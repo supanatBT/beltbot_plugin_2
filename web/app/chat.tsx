@@ -837,10 +837,14 @@ export default function Chat() {
               if (m.role === "user")
                 return (
                   <div key={m.id} className={"row me" + (m.failed ? " cv-unsent" : "")}>
-                    <div className="bubble user">
+                    {/* รูปกับข้อความที่ส่งพร้อมกัน: รูปอยู่นอกกล่องสี แยกจากกล่องข้อความ (ซ้อนกันชิดขวา) */}
+                    <div className="me-stack">
                       {m.image && <img src={m.image} alt="รูปที่แนบ" className="thumb" />}
-                      {m.text && <div className="plain">{m.text}</div>}
-                      {!m.text && !m.image && <div className="plain muted">(รูปที่แนบ)</div>}
+                      {(m.text || !m.image) && (
+                        <div className="bubble user">
+                          {m.text ? <div className="plain">{m.text}</div> : <div className="plain muted">(รูปที่แนบ)</div>}
+                        </div>
+                      )}
                     </div>
                     {m.failed && (
                       <span className="cv-unsent-tag">
