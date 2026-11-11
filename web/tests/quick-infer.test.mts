@@ -28,6 +28,11 @@ t("undefined", inferSuggestions(undefined), undefined);
 // แบรนด์
 t("ถามแบรนด์", labels(inferSuggestions("หมายถึงโซ่ท็อปเชน **Movex** หรือสายพานโมดูลาร์ **Modutech** ครับ?")), BR);
 t("แบรนด์ไหน", labels(inferSuggestions("ไม่ทราบว่าต้องการแบรนด์ไหนครับ ระหว่าง Movex กับ Modutech")), BR);
+// เมนูจริงจาก engine/core/templates.py ask_brand (บนเว็บ 11 พ.ย. ไม่ขึ้นปุ่ม)
+t("เมนูถามแบรนด์ของระบบ", labels(inferSuggestions(
+  "ขอทราบก่อนนะครับว่าถามถึงสินค้าแบบไหน\n1. โซ่ท็อปเชน Movex — ลำเลียงขวด กระป๋อง ลัง ในไลน์บรรจุเครื่องดื่ม\n" +
+  "2. สายพานโมดูลาร์ Modutech — งานอาหาร เช่น เนื้อสัตว์ สัตว์ปีก อาหารทะเล เบเกอรี่ ผักผลไม้\n" +
+  "ตอบเป็นเลขข้อหรือชื่อแบรนด์ได้เลยครับ ถ้ามีรหัสรุ่นหรือรูปสินค้าก็ส่งมาแทนได้")), BR);
 t("เอ่ยสองแบรนด์แบบบอกเล่า", inferSuggestions("ระบบนี้มีสินค้า Movex หรือ Modutech ให้เลือกครับ"), undefined);
 console.log(fail ? `\n${fail} ข้อไม่ผ่าน` : "\nผ่านทุกข้อ");
 process.exit(fail ? 1 : 0);
